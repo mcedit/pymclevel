@@ -84,33 +84,26 @@ world.saveInPlace();
 
 
 # Advanced use:
-# The getChunkSlices method returns a ChunkRange object representing a large slice of the world. 
-# It accepts one argument:  A BoundingBox object delimiting the slice.
+# The getChunkSlices method returns an iterator that returns slices of chunks within the specified range.
+# the slices are returned as tuples of (chunk, slices, point)
 
-
- 
-# To iterate through the subslices in each chunk, call forEachChunk on the returned object and pass a function accepting three arguments:
-#
 # chunk:  The InfdevChunk object we're interested in.
 # slices:  A 3-tuple of slice objects that can be used to index chunk's data arrays
 # point:  A 3-tuple of floats representing the relative position of this subslice within the larger slice.
+# 
+# Take caution:
+# the point tuple is ordered (x,y,z) in accordance with the tuples used to initialize a bounding box
+# however, the slices tuple is ordered (x,z,y) for easy indexing into the arrays.
 
 # Here is MCInfdevOldLevel.fillBlocks in its entirety:
 
 def fillBlocks(self, box, blockType, blockData = 0):
-    chunks = self.getChunkSlices(box)
+    chunkIterator = self.getChunkSlices(box)
     
-    def fill(tag, slices, p):
-        tag.Blocks[slices] = blockType
-        tag.Data[slices] = blockData
-        
-    chunks.forEachChunk(fill);
-    chunks.dirtyAllChunks();
-
-
-
-
-
+    for (chunk, slices, point) in chunkIterator:
+        chunk.Blocks[slices] = blockType
+        chunk.Data[slices] = blockData
+        chunk.chunkChanged();
 
 
 Copyright 2010 David Rio Vierra
@@ -131,7 +124,6 @@ from copy import deepcopy
 import time
 from datetime import datetime;
 from box import BoundingBox
-import release
 
 FaceXIncreasing = 0
 FaceXDecreasing = 1
