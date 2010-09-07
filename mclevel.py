@@ -1711,8 +1711,17 @@ class MCInfdevOldLevel(MCLevel):
         else:
             dirtyChunks = [self._presentChunks[c] for c in dirtyChunks if c in self._presentChunks];
             #[d.genFastLights() for d in dirtyChunks]
-        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition) 
+        dirtyChunks = set(dirtyChunks)
         
+        for ch in list(dirtyChunks): #grab all adjoining chunks and relight them, too!
+            cx,cz = ch.chunkPosition
+            for dx,dz in itertools.product( (-1, 0, 1), (-1, 0, 1) ):
+                if (cx+dx,cz+dz) in self._presentChunks:
+                    dirtyChunks.add(self._presentChunks[(cx+dx,cz+dz)]);
+        
+        dirtyChunks = sorted(list(dirtyChunks), key=lambda x:x.chunkPosition) 
+                   
+        print "Lighting {0} chunks".format(len(dirtyChunks))
         for chunk in dirtyChunks:
             chunk.load();
             chunk.chunkChanged();
@@ -1734,7 +1743,7 @@ class MCInfdevOldLevel(MCLevel):
         for light in ("BlockLight", "SkyLight"):
           print light;
           zerochunkLight = getattr(zeroChunk, light); 
-          for i in range(16):
+          for i in range(14):
             print "Pass ", i
             """
             propagate light!
