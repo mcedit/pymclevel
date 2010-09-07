@@ -366,17 +366,21 @@ class MCLevel:
     presentChunks = property(getPresentChunks)
     
     def getChunk(self, cx, cz):
-        if not hasattr(self, 'whiteLight'):
-            self.whiteLight = array([[[15] * self.Height] * 16] * 16, uint8);
+        #if not hasattr(self, 'whiteLight'):
+            #self.whiteLight = array([[[15] * self.Height] * 16] * 16, uint8);
     
         class FakeChunk:
             def load(self):pass
             def compress(self):pass
-            
+        
         f = FakeChunk()
         f.Blocks = self.blocksForChunk(cx, cz)
-        f.BlockLight = self.whiteLight
-        f.SkyLight = self.whiteLight
+        
+        whiteLight = zeros_like(f.Blocks);
+        whiteLight[:] = 15;
+        
+        f.BlockLight = whiteLight
+        f.SkyLight = whiteLight
         f.root_tag = TAG_Compound();
         
         return f
