@@ -439,20 +439,40 @@ class MCLevel:
 #        end = tuple([o+s for o,s in zip(origin,size)])
         return self.Blocks[x:x+w,z:z+l,y:y+h]
     
-    def fillBlocks(self, box, blockType, blockData = 0):
+    def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
         slices = map(slice, box.origin, box.maximum)
         print slices;
-        self.Blocks[slices[0],slices[2],slices[1]] = blockType;
-        if hasattr(self, "Data"):
-            self.Data[slices[0],slices[2],slices[1]] = blockData;
-        
+        blocks = self.Blocks[slices[0],slices[2],slices[1]]
+        if blocksToReplace != None:
+            masks = map(lambda x:blocks==x, blocksToReplace);
+            mask = masks.pop();
+            while len(masks):
+                mask |= masks.pop();
+                
+            blocks[mask] = blockType;
+            if hasattr(self, "Data"):
+                self.Data[slices[0],slices[2],slices[1]][mask] = blockData;
+        else:
+            blocks[:] = blockType;
+            if hasattr(self, "Data"):
+                self.Data[slices[0],slices[2],slices[1]] = blockData;
+               
         #self.saveInPlace();
     
     def conversionTableFromLevel(self, level):
         return level.materials.conversionTables[self.materials]
             
     def rotateLeft(self):
-        self.root_tag[Blocks].value = swapaxes(self.Blocks, 1, 0)[:,::-1,:]; #x=y; y=-x
+        self.Blocks = swapaxes(self.Blocks, 1, 0)[:,::-1,:]; #x=z; z=-x
+        pass;
+        
+    def roll(self):
+        self.Blocks = swapaxes(self.Blocks, 2, 0)[:,:,::-1]; #x=y; y=-x
+        pass    
+    
+    def flipVertical(self):
+        self.Blocks = self.Blocks[:,:,::-1]; #y=-y
+        pass    
     
         
     def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, copyAir, copyWater):
@@ -1241,7 +1261,7 @@ class InfdevChunk(MCLevel):
             return;
             
         self.dirty = True;
-        self.needsLighting = True;
+        self.needsLighting = calcLighting;
         self.generateHeightMap();
         if calcLighting:
             self.genFastLights()
@@ -2040,13 +2060,32 @@ class MCInfdevOldLevel(MCLevel):
             pass;
         chunk.TileEntities.append(entity);
     
-    def fillBlocks(self, box, blockType, blockData = 0):
+    def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
         chunkIterator = self.getChunkSlices(box)
-        
+
         for (chunk, slices, point) in chunkIterator:
-            chunk.Blocks[slices] = blockType
-            chunk.Data[slices] = blockData
-            chunk.chunkChanged();
+            blocks = chunk.Blocks[slices] 
+            mask = None
+            needsLighting = True
+            
+            if blocksToReplace != None:
+                oldAbsorption = self.materials.lightAbsorption[blockType]
+                newAbsorptions = map(self.materials.lightAbsorption.__getitem__, blocksToReplace)
+                needsLighting = False
+                for a in newAbsorptions:
+                    if a != oldAbsorption: needsLighting = True;
+                
+                masks = map(lambda x:blocks==x, blocksToReplace);
+                mask = masks.pop();
+                while len(masks):
+                    mask |= masks.pop();
+                blocks[:][mask] = blockType
+                chunk.Data[slices][mask] = blockData
+                
+            else:
+                blocks[:] = blockType
+                chunk.Data[slices] = blockData
+            chunk.chunkChanged(needsLighting);
             
             
     def createChunksInRange(self, box):
@@ -2619,7 +2658,7 @@ def testJavaLevels():
     print "Java level"
     indevlevel = MCLevel.fromFile("hell.mclevel")
     
-    creativelevel = MCLevel.fromFile("bigshadowmarch.mine");
+    creativelevel = MCLevel.fromFile("Dojo_64_64_128.dat");
     creativelevel.blocksForChunk(0,0);
     creativelevel.copyBlocksFrom(indevlevel, BoundingBox((0,0,0), (64,64,64,)), (0,0,0) )
     assert(all(indevlevel.Blocks[0:64,0:64,0:64] == creativelevel.Blocks[0:64,0:64,0:64])) 
@@ -2635,6 +2674,7 @@ def testIndevLevels():
     indevlevel.blocksForChunk(0,0);
     indevlevel.copyBlocksFrom(srclevel, BoundingBox((0,0,0), (64,64,64,)), (0,0,0) ) 
     assert(all(indevlevel.Blocks[0:64,0:64,0:64] == srclevel.Blocks[0:64,0:64,0:64])) 
+    indevlevel.fillBlocks(BoundingBox((0,0,0), (64,64,64,)), 12, 0, [1,2])
     indevlevel.saveInPlace()
     
 def testAlphaLevels():
@@ -2663,6 +2703,7 @@ def testAlphaLevels():
     level.fillBlocks( BoundingBox((-11, 0, -7), (38, 128, 25)) , 5);
     c = level.getChunk( 0, 0)
     assert all(c.Blocks == 5)
+    level.fillBlocks( BoundingBox((-11, 0, -7), (38, 128, 25)) , 5, 0, [2,3]);
     #print b.shape
     #raise SystemExit
     cx, cz = -3,-1;
