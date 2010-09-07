@@ -354,12 +354,14 @@ materials.transparentBlocks = {
                              40:0, #brown shroom
                              50:0, #torch
                              52:0, #mob spawner
+                             53:0, #wood stairs
                              55:0, #redstone wire
                              59:0, #crops
                              63:0, #sign
                              64:0, #wooden door
                              65:0, #ladder
                              66:0, #rail
+                             67:0, #stone stairs
                              68:0, #wall sign
                              69:0, #lever
                              70:0, #stone floor plate
