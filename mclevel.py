@@ -113,7 +113,7 @@ import nbt
 from nbt import *
 import gzip
 import StringIO
-from numpy import array, zeros, uint8
+from numpy import array, zeros, uint8, zeros_like
 import itertools
 import traceback
 import os;
