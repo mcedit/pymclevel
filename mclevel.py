@@ -1031,7 +1031,20 @@ class MCSchematic (MCLevel):
             
             tileEntity["x"].value = newX
             tileEntity["z"].value = newZ
-            
+    
+    def roll(self):
+        " xxx rotate stuff "
+        self.Blocks = swapaxes(self.Blocks, 2, 0)[:,:,::-1]; #x=z; z=-x
+        self.Data = swapaxes(self.Data, 2, 0)[:,:,::-1];
+        
+    
+    def flipVertical(self):
+        " xxx delete stuff "
+        self.Blocks = self.Blocks[:,:,::-1]; #y=-y
+        self.Data = self.Data[:,:,::-1]; 
+        
+    
+               
     @decompress_first
     def setShape(self, shape):
         """shape is a tuple of (width, height, length).  sets the
