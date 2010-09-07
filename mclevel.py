@@ -933,9 +933,9 @@ class MCSchematic (MCLevel):
         else:
             assert shape != None
             root_tag = TAG_Compound(name="Schematic")
-            root_tag[Height] = TAG_Int(shape[1])
-            root_tag[Length] = TAG_Int(shape[2])
-            root_tag[Width] = TAG_Int(shape[0])
+            root_tag[Height] = TAG_Short(shape[1])
+            root_tag[Length] = TAG_Short(shape[2])
+            root_tag[Width] = TAG_Short(shape[0])
             
             root_tag[Entities] = TAG_List()
             root_tag[TileEntities] = TAG_List()
