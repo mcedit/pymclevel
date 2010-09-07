@@ -451,3 +451,5 @@ def texCoords(idx):
 
 materials.blockTextures = array([map(texCoords, faces) for (faces, name) in materials.blockTextures], dtype='uint8')
 classicMaterials.blockTextures = array([map(texCoords, faces) for (faces, name) in classicMaterials.blockTextures], dtype='uint8')
+
+alphaMaterials = materials;
