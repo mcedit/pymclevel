@@ -119,7 +119,9 @@ import traceback
 import os;
 import sys;
 
+import blockrotation
 from materials import *
+
 from copy import deepcopy
 import time
 from datetime import datetime;
@@ -962,58 +964,11 @@ class MCSchematic (MCLevel):
         self.packChunkData();
         
     def rotateLeft(self):
-        MCLevel.rotateLeft(self);
         
+        self.Blocks = swapaxes(self.Blocks, 1, 0)[:,::-1,:]; #x=z; z=-x
         self.Data = swapaxes(self.Data, 1, 0)[:,::-1,:]; #x=z; z=-x
         
-        torchRotation = array([0, 4, 3, 1, 2, 5,
-                               6, 7, 
-                               
-                               8, 9, 10, 11, 12, 13, 14, 15]);
-                               
-        torchIndexes = (self.Blocks == self.materials.materialNamed("Torch"))
-        if self.materials == materials:
-            torchIndexes |= ( (self.Blocks == self.materials.materialNamed("Redstone Torch (on)")) | 
-                              (self.Blocks == self.materials.materialNamed("Redstone Torch (off)")) )
-                              
-        print "Rotating torches: ", len(torchIndexes.nonzero()[0]);
-        self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
-        
-        
-        if self.materials == materials:
-            railRotation = array([1, 0, 4, 5, 3, 2, 9, 6, 
-                                   7, 8, 
-                                   
-                                   10, 11, 12, 13, 14, 15]);
-                                   
-            railIndexes = (self.Blocks == self.materials.materialNamed("Rail"))
-            print "Rotating rails: ", len(railIndexes.nonzero()[0]);
-            self.Data[railIndexes] = railRotation[self.Data[railIndexes]]
-            
-            
-            
-            
-            ladderRotation = array([0, 1, 4, 5, 3, 2, 
-                
-                                   6, 7,  #xxx more ladders
-                                   8, 9, 10, 11, 12, 13, 14, 15]);
-                                   
-            ladderIndexes = (self.Blocks == self.materials.materialNamed("Ladder"))
-            print "Rotating ladders: ", len(ladderIndexes.nonzero()[0]);
-            self.Data[ladderIndexes] = ladderRotation[self.Data[ladderIndexes]]
-            
-            signIndexes = (self.Blocks == self.materials.materialNamed("Sign"))
-            print "Rotating signs: ", len(signIndexes.nonzero()[0]);
-            self.Data[signIndexes] -= 4
-            self.Data[signIndexes] &= 0xf
-            
-            wallSignRotation = array([0, 1, 4, 5, 3, 2, 6, 7, 
-                                      8, 9, 10, 11, 12, 13, 14, 15]);
-            
-            wallSignIndexes = (self.Blocks == self.materials.materialNamed("Wall Sign"))
-            print "Rotating wallsigns: ", len(wallSignIndexes.nonzero()[0]);
-            self.Data[wallSignIndexes] = wallSignRotation[self.Data[wallSignIndexes]]
-            
+        blockrotation.RotateLeft(self.Blocks, self.Data);
             
         print "Relocating entities..."
         for entity in self.Entities:
