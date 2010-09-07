@@ -135,11 +135,11 @@ FaceZIncreasing = 4
 FaceZDecreasing = 5
 MaxDirections = 6
 
-saveFileDirs = {#xxxx platform
+saveFileDirs = {
     'win32':os.path.expandvars("%APPDATA%\\.minecraft\\saves"),
-    'darwin':os.path.expanduser("~/Library/Application Support/Minecraft"),
+    'darwin':os.path.expanduser("~/Library/Application Support/minecraft/saves"),
 }
-saveFileDir = saveFileDirs.get(sys.platform, os.path.expanduser("~/.minecraft")); #default to Linux save location 
+saveFileDir = saveFileDirs.get(sys.platform, os.path.expanduser("~/.minecraft/saves")); #default to Linux save location 
   
 """
 Indev levels:
