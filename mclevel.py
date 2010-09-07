@@ -335,18 +335,18 @@ class MCLevel:
         try:       
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
         except (IOError,TypeError):
-            print "Malformed NBT data: ", self;
-            #self.world.malformedChunk(*self.chunkPosition);
-            return;
-        
+            print "Malformed NBT data: ", self.filename
+            self.world.malformedChunk(*self.chunkPosition);
+            raise ChunkMalformed, self.filename
+            
         try:
             self.shapeChunkData()
             #print self.chunks[(x,z)].strides
         except KeyError:
             print "Malformed chunk file: ", self.filename
-            #self.world.malformedChunk(*self.chunkPosition);
-            return;
-        
+            self.world.malformedChunk(*self.chunkPosition);
+            raise ChunkMalformed, self.filename
+            
         self.unpackChunkData();
     
     def packChunkData(self): pass;
@@ -1676,6 +1676,7 @@ class MCInfdevOldLevel(MCLevel):
         c.load();
         if not (cx,cz) in self._presentChunks:
             raise ChunkMalformed, "Chunk {0} malformed".format((cx,cz))
+            self.world.malformedChunk(*self.chunkPosition);
             
         return c;
         
@@ -2240,7 +2241,7 @@ class MCInfdevOldLevel(MCLevel):
         #return c.ready();
 
     def malformedChunk(self, cx, cz):
-        print "Chunk {0} malformed ({1})".format((cx,cz), self.chunkFilename(cx,cz))
+        print "Ignoring malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz))
         del self._presentChunks[(cx,cz)]
         
     def createChunk(self, cx, cz):
