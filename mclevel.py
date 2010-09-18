@@ -622,14 +622,16 @@ class MCLevel:
 
         #ungzdata = None
         compressed = True
+        unzippedData = None;
         try:
-            data = gzip.GzipFile(fileobj=StringIO.StringIO(rawdata)).read();
+            unzippedData = gzip.GzipFile(fileobj=StringIO.StringIO(rawdata)).read();
         except Exception,e:
             print "Exception during Gzip operation, assuming {0} uncompressed: ".format(filename), e
-            compressed = False;
+            if unzippedData is None:
+                compressed = False;
         #if(ungzdata): data=ungzdata
         
-        data = fromstring(data, dtype='uint8')
+        data = fromstring(unzippedData, dtype='uint8')
         
         if isJavaLevel(data):
             print "Detected compressed Java-style level"
