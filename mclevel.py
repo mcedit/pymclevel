@@ -513,25 +513,20 @@ class MCLevel:
                 self.Data[ destSlices ] = chunk.Data[slices]
             
         
-        
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, copyAir = True, copyWater = True):
-        if (not isinstance(sourceLevel, MCInfdevOldLevel)) and not(
-               sourceLevel.containsPoint(*sourceBox.origin) and
-               sourceLevel.containsPoint(*map(lambda x:x-1, sourceBox.maximum))):
-            raise ValueError, "{0} cannot provide blocks between {1}".format(sourceLevel, sourceBox)     
-        
-        
+    def adjustCopyParameters(self, sourceLevel, sourceBox, destinationPoint):
+    
         # if the destination box is outside the level, it and the source corners are moved inward to fit.
         # ValueError is raised if the source corners are outside sourceLevel
         (x,y,z) = destinationPoint;
-        
         
         (lx,ly,lz) = sourceBox.size;
         print "Source: ", sourceLevel
         print "Destination: ", self
         print "Asked to copy {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint)
+        
 
         #clip the source ranges to this level's edges.  move the destination point as needed.
+        #xxx abstract this
         if y<0: 
             sourceBox.origin[1] -=y
             sourceBox.size[1] += y
@@ -557,10 +552,21 @@ class MCLevel:
             if z+sourceBox.size[2]>self.Length:
                 sourceBox.size[2] -=z+sourceBox.size[2]-self.Length
                 z=self.Length-sourceBox.size[2]
-            
         destinationPoint = (x,y,z)
         (lx,ly,lz) = sourceBox.size;
-        print "Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint)
+        
+        return sourceBox, destinationPoint
+         
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, copyAir = True, copyWater = True):
+        if (not isinstance(sourceLevel, MCInfdevOldLevel)) and not(
+               sourceLevel.containsPoint(*sourceBox.origin) and
+               sourceLevel.containsPoint(*map(lambda x:x-1, sourceBox.maximum))):
+            raise ValueError, "{0} cannot provide blocks between {1}".format(sourceLevel, sourceBox)     
+        
+        
+        sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
+        
+        print "Copying {0} blocks from {1} to {2}" .format (sourceBox.volume,sourceBox, destinationPoint)
        
         if not isinstance(sourceLevel, MCInfdevOldLevel):
             self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, copyAir, copyWater)
@@ -2284,14 +2290,7 @@ class MCInfdevOldLevel(MCLevel):
         (lx,ly,lz) = sourceBox.size
         #sourcePoint, sourcePoint1 = sourceBox
         
-        if y<0: 
-            sourceBox.origin[1] -=y
-            y = 0;
-        if y+ly>self.Height:
-            sourceBox.size[1] -=y+ly-self.Height
-            y=self.Height-ly
-        
-        destinationPoint = (x,y,z)
+        sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         #needs work xxx
         print "Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint)
         blocksCopied = 0
