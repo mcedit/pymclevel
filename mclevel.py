@@ -819,6 +819,19 @@ class MCLevel:
             blocks[:] = sourceBlocks[:]
         
     def extractSchematic(self, box):
+        x,y,z = box.origin
+        w,h,l = box.size
+        if y<0: 
+            h += y
+            y = 0;
+        if y+h>self.Height:
+            h -=y+h-self.Height
+            y=self.Height-h
+        
+        box.origin = x,y,z 
+        box.size = w,h,l 
+        
+            
         tempSchematic = MCSchematic(shape=box.size)
         tempSchematic.materials = self.materials
         tempSchematic.copyBlocksFrom(self, box, (0,0,0))   
