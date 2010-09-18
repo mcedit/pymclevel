@@ -81,13 +81,13 @@ classicMaterials.blockTextures = [
             ), (
                 (28,)*6, "Red mushroom",#40: 
             ), (
-                (39, 39, 23, 55, 39, 39), "Solid Gold",#41: 
+                (39, 39, 23, 55, 39, 39), "Solid Gold Block",#41: 
             ), (
-                (38, 38, 22, 54, 38, 38), "Solid Iron",#42: 
+                (38, 38, 22, 54, 38, 38), "Solid Iron Block",#42: 
             ), (
-                (5, 5, 6, 6, 5, 5), "Double stone slab",#43: 
+                (5, 5, 6, 6, 5, 5), "Double stone stair step",#43: 
             ), (
-                (5, 5, 6, 6, 5, 5), "Single stone slab",#44: 
+                (5, 5, 6, 6, 5, 5), "Single stone stair step",#44: 
             ), (
                 (7, 7, 7, 7, 7, 7), "Red brick tile",#45: 
             ), (
@@ -113,7 +113,7 @@ classicMaterials.blockTextures = [
             ), (
                 (50, 50, 50, 50, 50, 50), "Diamond Ore",#56: 
             ), (
-                (40, 40, 24, 56, 40, 40), "Solid Diamond",#57: 
+                (40, 40, 24, 56, 40, 40), "Solid Diamond Block",#57: 
             ), (
                 (59, 59, 43, 20, 60, 60), "Crafting Table",#58: 
             ), (
@@ -219,13 +219,13 @@ materials.blockTextures = [
             ), (
                 (28,)*6, "Red mushroom",#40: 
             ), (
-                (39, 39, 23, 55, 39, 39), "Solid Gold",#41: 
+                (39, 39, 23, 55, 39, 39), "Solid Gold Block",#41: 
             ), (
-                (38, 38, 22, 54, 38, 38), "Solid Iron",#42: 
+                (38, 38, 22, 54, 38, 38), "Solid Iron Block",#42: 
             ), (
-                (5, 5, 6, 6, 5, 5), "Double stone slab",#43: 
+                (5, 5, 6, 6, 5, 5), "Double stone stair step",#43: 
             ), (
-                (5, 5, 6, 6, 5, 5), "Single stone slab",#44: 
+                (5, 5, 6, 6, 5, 5), "Single stone stair step",#44: 
             ), (
                 (7, 7, 7, 7, 7, 7), "Red brick tile",#45: 
             ), (
@@ -251,7 +251,7 @@ materials.blockTextures = [
             ), (
                 (50, 50, 50, 50, 50, 50), "Diamond Ore",#56: 
             ), (
-                (40, 40, 24, 56, 40, 40), "Solid Diamond",#57: 
+                (40, 40, 24, 56, 40, 40), "Solid Diamond Block",#57: 
             ), (
                 (59, 59, 43, 20, 60, 60), "Crafting Table",#58: 
             ), (
