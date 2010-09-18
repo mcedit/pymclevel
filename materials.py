@@ -410,21 +410,19 @@ materialNames = dict( (k,v) for v,k in namedMaterials.iteritems() )
 #filters certain block types in old maps to types available in /game/
 blockFilterClassicToAlpha = array(range(len(materials.blockTextures)), uint8)
 b = blockFilterClassicToAlpha
+b[8]=9; #water to still water
+b[10]=11; #lava to still lava
 b[36]=35; # the new white cloth
 #b[19]=35; # sponge - unavailable
 b[55]=35; # cog - 55 is now red wire
-b[52]=8; # infinite water source - now mob spawner
-b[53]=10; # infinite lava source - now wooden stair
+b[52]=9; # infinite water source - now mob spawner
+b[53]=11; # infinite lava source - now wooden stair
 
 for i in range(21, 35): blockFilterClassicToAlpha[i] = 35; # recolor all cloth to white
 
 blockFilterAlphaToClassic = array(range(len(materials.blockTextures)), uint8)
 b = blockFilterAlphaToClassic
-b[50]=36;# torch (change to wool)
-b[51]=36;# fire (change to wool)
-b[52]=1; # infinite water source - now mob spawner (change to rock)
-b[53]=5; # infinite lava source - now wooden stair (change to wood)
-b[54:255] = 36 # change all blocks from chest (54) on up to grey cloth
+b[50:255] = 36 # change all blocks from torch (50) on up to grey cloth
 
 del b;
 ### xxx add filter tables for indev blocks
