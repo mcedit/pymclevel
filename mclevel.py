@@ -280,7 +280,6 @@ class MCLevel:
     materials = classicMaterials;
     
     hasEntities = False;
-    needsCompression = False;
     compressedTag = None
     root_tag = None
     
@@ -299,10 +298,12 @@ class MCLevel:
         return len(self.compressedTag)
         
     def compress(self):
+        #if self.root_tag is not None, then our compressed data must be stale and we need to recompress.
+        
         if self.root_tag is None:
             #print "Asked to compress unloaded chunk! ", self.chunkPosition
             return;
-        if self.needsCompression or (self.compressedTag is None and self.root_tag != None):
+        else:
             #compress if the compressed data is dirty, 
             #or if it's missing, and we also have uncompressed data
             #(if both data are missing, the chunk is not even loaded)
@@ -317,7 +318,7 @@ class MCLevel:
             gzipper.close();
             
             self.compressedTag = buf.getvalue()
-            self.needsCompression = False;
+            
         self.root_tag = None
         
     def decompress(self):
@@ -1106,14 +1107,13 @@ class InfdevChunk(MCLevel):
         self.compressedTag = None
         self.root_tag = None
         self.dirty = False;
-        self.needsCompression = False;
         self.needsLighting = False
         
         if create:
             self.create();
             
     def __str__(self):
-        return "InfdevChunk, coords:{0}, world: {1}, D:{2}, C:{3}, L:{4}".format(self.chunkPosition, os.path.split(self.world.worldDir)[1],self.dirty, self.needsCompression, self.needsLighting)
+        return "InfdevChunk, coords:{0}, world: {1}, D:{2}, L:{4}".format(self.chunkPosition, os.path.split(self.world.worldDir)[1],self.dirty, self.needsLighting)
 
     def create(self):
         (cx,cz) = self.chunkPosition;
@@ -1221,10 +1221,7 @@ class InfdevChunk(MCLevel):
             
         
     def chunkChanged(self, calcLighting = True):
-        if self.root_tag != None:
-            self.needsCompression = True;
-            
-        elif self.compressedTag == None:
+        if self.compressedTag == None:
             #unloaded chunk
             return;
             
