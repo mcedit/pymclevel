@@ -655,11 +655,16 @@ class MCLevel:
                 print "Detected Schematic."
                 return MCSchematic(root_tag=root_tag, filename=filename)
             
-            if(root_tag.name == '' and loadInfinite):
-                print "Detected Infdev level.dat"
-                
-                return MCInfdevOldLevel(root_tag=root_tag, filename=filename);
-
+            if(root_tag.name == ''):
+                if ("Inventory" in root_tag):
+                    print "Detected INVEdit inventory file"
+                    return INVEditChest(root_tag=root_tag, filename=filename);
+                    
+                if ("Data" in root_tag and loadInfinite):
+                    print "Detected Infdev level.dat"
+                    
+                    return MCInfdevOldLevel(root_tag=root_tag, filename=filename);
+                    
         raise IOError, "Cannot detect file type."
     
     def setPlayerPosition(self, pos):
@@ -1083,7 +1088,55 @@ class MCSchematic (MCLevel):
     def addTileEntity(self, entityTag):
         assert isinstance(entityTag, TAG_Compound)
         self.TileEntities.append(entityTag);
+
+class INVEditChest(MCSchematic):
+    Width = 1
+    Height = 1
+    Length = 1
+    Blocks = array([[[materials.materialNamed("Chest")]]], 'uint8');
+    Data = array([[[0]]], 'uint8');
+    Entities = TAG_List();
     
+    def __init__(self, root_tag, filename):
+        
+        if filename:
+            self.filename = filename
+            if None is root_tag:
+                try:
+                    root_tag = nbt.load(filename)
+                except IOError,e:
+                    print "Failed to load file ", e
+                    
+        else:
+            assert root_tag, "Must have either root_tag or filename"
+            self.filename = None
+            
+        for item in list(root_tag["Inventory"]):
+            slot = item["Slot"].value
+            if slot < 9 or slot > 36:
+                root_tag["Inventory"].remove(item)
+            else:
+                item["Slot"].value -= 9 # adjust for different chest slot indexes
+                
+
+        self.root_tag = root_tag;
+        
+        
+    @decompress_first        
+    def getTileEntities(self): 
+        chestTag = TAG_Compound();
+        chestTag["id"] = TAG_String("Chest")
+        chestTag["Items"] = self.root_tag["Inventory"]
+        chestTag["x"] = TAG_Int(0);
+        chestTag["y"] = TAG_Int(0);
+        chestTag["z"] = TAG_Int(0);
+        
+        return TAG_List([chestTag], name="TileEntities")
+        
+        
+    TileEntities = property(getTileEntities);
+    
+        
 class ChunkNotPresent(Exception): pass
 class ChunkMalformed(ChunkNotPresent): pass
 
@@ -2837,9 +2890,17 @@ def testSchematics():
         except ValueError:
             pass
     schematic.copyBlocksFrom(level, BoundingBox((0,0,0), (64,64,64,)), (0,0,0) )
+
+def testINVEditChests():
+    invFile = MCLevel.fromFile("unnamed.inv");
+    print "Blocks: ", invFile.Blocks                      
+    print "Data: ", invFile.Data                      
+    print "Entities: ", invFile.Entities                      
+    print "TileEntities: ", invFile.TileEntities                      
+    #raise SystemExit;
     
-                             
 def testmain():
+    testINVEditChests();
     testSchematics();
     testIndevLevels();
     testAlphaLevels();
