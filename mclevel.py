@@ -287,6 +287,9 @@ class MCLevel:
     Length = None
     Width = None
     
+    def getWorldBounds(self):
+        return BoundingBox( (0,0,0), self.getSize() )
+        
     def getSize(self):
         return (self.Width, self.Height, self.Length)
     size = property(getSize, None, None, "Returns the level's dimensions as a tuple (X,Y,Z)")
@@ -1364,6 +1367,18 @@ class MCInfdevOldLevel(MCLevel):
     materials = materials;
     hasEntities = True;
     
+    def getWorldBounds(self):
+        presentChunksArray = array(self.presentChunks)
+        mincx = min(presentChunksArray[:,0])
+        maxcx = max(presentChunksArray[:,0])
+        mincz = min(presentChunksArray[:,1])
+        maxcz = max(presentChunksArray[:,1])
+        
+        origin = (mincx << 4, 0, mincz << 4)
+        size = ((maxcx-mincx+1) << 4, 128, (maxcz-mincz+1) << 4)
+        
+        return BoundingBox(origin, size)
+        
     
     def __str__(self):
         return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
