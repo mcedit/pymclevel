@@ -382,6 +382,7 @@ for i in materials.transparentBlocks:
     la[i] = materials.transparentBlocks[i];
 materials.transparentBlocks = materials.lightAbsorption < 15
 classicMaterials.transparentBlocks = materials.transparentBlocks
+
 #la[bn("Glass")] = 0
 #la[bn("Leaves")] = 1
 #la[bn("Water")] = 3
@@ -390,12 +391,15 @@ classicMaterials.transparentBlocks = materials.transparentBlocks
 
 
 materials.lightEmission = zeros(256, uint8)
-ib = materials.lightEmission 
-ib[bn("Torch")] = 14
-ib[bn("Lit Furnace")] = 14
-ib[bn("Lava")] = 15
-ib[bn("Stationary lava")] = 15
-ib[bn("Redstone Torch (on)")] = 7
+le = materials.lightEmission 
+le[bn("Torch")] = 14
+le[bn("Lit Furnace")] = 14
+le[bn("Fire")] = 15
+le[bn("Lava")] = 15
+le[bn("Stationary lava")] = 15
+le[bn("Redstone Torch (on)")] = 7
+le[bn("Redstone Ore (glowing)")] = 9
+le[bn("Brown Mushroom")] = 1
 
 
 
