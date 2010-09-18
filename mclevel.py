@@ -1091,7 +1091,7 @@ class ZeroChunk:
     " a placebo for neighboring-chunk routines "
     def compress(self): pass
     def load(self): pass
-    def __init__(self, height=256):
+    def __init__(self, height=512):
         zeroChunk = zeros((16,16,height), uint8)
     
         self.Blocks = zeroChunk
