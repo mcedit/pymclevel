@@ -1712,21 +1712,84 @@ class MCInfdevOldLevel(MCLevel):
         print "Saved {0} chunks".format(dirtyChunkCount);
        
     def generateLights(self, dirtyChunks = None):
-        """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples """
+        """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
+        if none, generate lights for all chunks that need lighting
+        """
         activeBlocks = set();
         #doneBlocks = set()
         la = array(self.materials.lightAbsorption)
-                
+        
+            
         startTime = datetime.now();
-        print "Initializing lights..."
         if dirtyChunks is None:
             dirtyChunks = filter(lambda x: x.needsLighting, self._presentChunks.values());
         else:
             dirtyChunks = [self._presentChunks[c] for c in dirtyChunks if c in self._presentChunks];
+        
+        dirtyChunks = sorted(list(dirtyChunks), key=lambda x:x.chunkPosition) 
+        
+        #at 150k per loaded chunk, 
+        maxLightingChunks = 4000
+        
+        print "Asked to light {0} chunks".format(len(dirtyChunks))
+        chunkLists = [dirtyChunks];
+        def reverseChunkPosition(x):
+            cx,cz = x.chunkPosition;
+            return cz,cx
+            
+        def splitChunkLists(chunkLists):
+            newChunkLists = []
+            for l in chunkLists:
+                
+                #list is already sorted on x position, so this splits into left and right
+                
+                smallX = l[:len(l)/2]
+                bigX = l[len(l)/2:]
+                
+                #sort halves on z position
+                smallX = sorted(smallX, key=reverseChunkPosition) 
+                bigX = sorted(bigX, key=reverseChunkPosition) 
+                
+                #add quarters to list
+                
+                newChunkLists.append(smallX[:len(smallX)/2])
+                newChunkLists.append(smallX[len(smallX)/2:])
+                
+                newChunkLists.append(bigX[:len(bigX)/2])
+                newChunkLists.append(bigX[len(bigX)/2:])
+                
+            return newChunkLists
+            
+        while len(chunkLists[0]) > maxLightingChunks:
+            chunkLists = splitChunkLists(chunkLists);
+        
+        if len(chunkLists) > 1:
+            print "Using {0} batches to conserve memory.".format(len(chunkLists))
+        
+        i=0
+        for dc in chunkLists:
+            i+=1;
+            print "Batch {0}/{1}".format(i, len(chunkLists))
+            
+            dc = sorted(dc, key=lambda x:x.chunkPosition) 
+        
+            self._generateLights(dc)
+            for ch in dc:
+                ch.compress();
+        timeDelta = datetime.now()-startTime;
+        
+        print "Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0)
+            
+        return;
+        
+    def _generateLights(self, dirtyChunks):
+        conserveMemory = False
+        
             #[d.genFastLights() for d in dirtyChunks]
         dirtyChunks = set(dirtyChunks)
         
-        for ch in list(dirtyChunks): #grab all adjoining chunks and relight them, too!
+        for ch in list(dirtyChunks): 
+            #relight all blocks in neighboring chunks in case their light source disappeared.
             cx,cz = ch.chunkPosition
             for dx,dz in itertools.product( (-1, 0, 1), (-1, 0, 1) ):
                 if (cx+dx,cz+dz) in self._presentChunks:
@@ -1739,10 +1802,13 @@ class MCInfdevOldLevel(MCLevel):
             chunk.load();
             chunk.chunkChanged();
             #print chunk;
-            assert chunk.dirty and chunk.needsCompression and chunk.needsLighting
+            assert chunk.dirty and chunk.needsLighting
             #chunk.SkyLight[:] = 0
             #chunk.BlockLight[:] = 0
             chunk.BlockLight[:] = self.materials.lightEmission[chunk.Blocks];
+            
+            if conserveMemory:
+                chunk.compress();
             
         zeroChunk = ZeroChunk(128)
         
@@ -1751,13 +1817,21 @@ class MCInfdevOldLevel(MCLevel):
         #for chunk in dirtyChunks:
             
         la[18] = 0; #for normal light dispersal, leaves absorb the same as empty air.
+        startingDirtyChunks = dirtyChunks
         
+        oldLeftEdge = zeros( (1, 16, 128), 'uint8');
+        oldBottomEdge = zeros( (16, 1, 128), 'uint8');
+        oldChunk = zeros( (16, 16, 128), 'uint8');
+          
         print "Dispersing light..."
         for light in ("BlockLight", "SkyLight"):
           print light;
           zerochunkLight = getattr(zeroChunk, light); 
+          
+          newDirtyChunks = list(startingDirtyChunks);
+           
           for i in range(14):
-            print "Pass ", i
+            print "Pass ", i, ":", len(newDirtyChunks), "chunks"
             """
             propagate light!
             for each of the six cardinal directions, figure a new light value for 
@@ -1767,6 +1841,11 @@ class MCInfdevOldLevel(MCLevel):
             we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.  
             we do an extra cycle because lights sent across edges may lag by one cycle.
             """
+            dirtyChunks = sorted(set(newDirtyChunks), key=lambda x:x.chunkPosition) 
+            
+            newDirtyChunks = list();
+            
+            
             for chunk in dirtyChunks:
                 #xxx code duplication
                 (cx,cz) = chunk.chunkPosition
@@ -1781,11 +1860,15 @@ class MCInfdevOldLevel(MCLevel):
                        neighboringChunks[dir] = self.getChunk(cx+dx,cz+dz)
                        assert neighboringChunks[dir].root_tag != None
                 
+                
                 chunkLa = la[chunk.Blocks]+1;
                 chunkLight = getattr(chunk,light);
+                oldChunk[:] = chunkLight[:]
+                
                 
                 nc = neighboringChunks[FaceXDecreasing]
                 ncLight = getattr(nc,light);
+                oldLeftEdge[:] = ncLight[15:16,:,0:128] #save the old left edge 
                 
                 #left edge
                 newlight = (chunkLight[0:1,:,:128]-la[nc.Blocks[15:16,:,0:128]])-1
@@ -1807,7 +1890,6 @@ class MCInfdevOldLevel(MCLevel):
                 newlight[newlight>15]=0;
                 
                 chunkLight[15:16,:,0:128] = maximum(chunkLight[15:16,:,0:128], newlight)
-                
                 
             
                 #right edge
@@ -1836,10 +1918,15 @@ class MCInfdevOldLevel(MCLevel):
                
                 zerochunkLight[:] = 0;
                 
+                #check if the left edge changed and dirty or compress the chunk appropriately
+                if (oldLeftEdge != ncLight[15:16,:,:128]).any():
+                    #chunk is dirty
+                    newDirtyChunks.append(nc)
                 
                 #bottom edge
                 nc = neighboringChunks[FaceZDecreasing]
                 ncLight = getattr(nc,light);
+                oldBottomEdge[:] = ncLight[:,15:16,:128] # save the old bottom edge
                 
                 newlight = (chunkLight[:,0:1,:128]-la[nc.Blocks[:,15:16,:128]])-1
                 newlight[newlight>15]=0;
@@ -1889,7 +1976,9 @@ class MCInfdevOldLevel(MCLevel):
                
                 zerochunkLight[:] = 0;
                 
-                
+                if (oldBottomEdge != ncLight[:,15:16,:128]).any():
+                    newDirtyChunks.append(nc)
+                        
                 newlight = (chunkLight[:,:,0:127]-chunkLa[:,:,1:128])
                 newlight[newlight>15]=0;
                 chunkLight[:,:,1:128] = maximum(chunkLight[:,:,1:128], newlight)
@@ -1899,14 +1988,12 @@ class MCInfdevOldLevel(MCLevel):
                 chunkLight[:,:,0:127] = maximum(chunkLight[:,:,0:127], newlight)
                 zerochunkLight[:] = 0;
                 
-            
-        timeDelta = datetime.now()-startTime;
-        
-        print "Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0)
-        for ch in dirtyChunks:
+                if (oldChunk != chunkLight).any():
+                    newDirtyChunks.append(chunk);
+                    
+        for ch in startingDirtyChunks:
             ch.needsLighting = False;
-            
-        return;
+                    
         """
             #fill all sky-facing blocks with full light 
             for x,z in itertools.product(range(16),
@@ -2075,7 +2162,9 @@ class MCInfdevOldLevel(MCLevel):
             else:
                 blocks[:] = blockType
                 chunk.Data[slices] = blockData
+                
             chunk.chunkChanged(needsLighting);
+            chunk.compress();
             
             
     def createChunksInRange(self, box):
@@ -2188,6 +2277,7 @@ class MCInfdevOldLevel(MCLevel):
                     data[:] = (sourceData[:,:,:] & 0xf)
         
             chunk.chunkChanged();
+            #chunk.compress(); #xxx find out why this trashes changes to tile entities
                            
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, copyAir = True, copyWater = True):
         (x,y,z) = destinationPoint;
