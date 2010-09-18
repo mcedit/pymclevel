@@ -285,7 +285,7 @@ materials.blockTextures = [
             ), (
                 (0x33,)*6,      "Redstone Ore" #73:
             ), (
-                (0x33,)*6,      "Redstone Ore, Glowing" #74
+                (0x33,)*6,      "Redstone Ore (glowing)" #74
             ), (
                 (0x73,)*6,      "Redstone Torch (off)" #75
             ), (
@@ -399,7 +399,7 @@ le[bn("Lava")] = 15
 le[bn("Stationary lava")] = 15
 le[bn("Redstone Torch (on)")] = 7
 le[bn("Redstone Ore (glowing)")] = 9
-le[bn("Brown Mushroom")] = 1
+le[bn("Brown mushroom")] = 1
 
 
 
