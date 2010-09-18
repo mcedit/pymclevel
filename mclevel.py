@@ -810,7 +810,7 @@ class MCLevel:
             mask=(sourceBlocks!=0)
             if not copyWater:
                 mask &=(sourceBlocks != self.materials.materialNamed("Water"))
-                mask &=(sourceBlocks != self.materials.materialNamed("Stationary Water"))
+                mask &=(sourceBlocks != self.materials.materialNamed("Stationary water"))
                 
             blocks[mask] = sourceBlocks[mask]
             return mask;
