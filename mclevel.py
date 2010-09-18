@@ -2638,9 +2638,9 @@ class MCJavaLevel(MCLevel):
             self.Length = 256
             self.Height = 64
         if(data.shape[0] > (256 * 256 * 64)*2): #could also be 256*256*256
-            self.Width = 256
-            self.Length = 256
-            self.Height = 256
+            self.Width = 512
+            self.Length = 512
+            self.Height = 64
         if(data.shape[0] > 512 * 512 * 64 * 2): # just to load shadowmarch castle
             self.Width = 512
             self.Length = 512
