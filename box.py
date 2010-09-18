@@ -11,13 +11,45 @@ class BoundingBox:
     def getMaxy(self): return self.origin[1]+self.size[1];
     def getMaxz(self): return self.origin[2]+self.size[2];
     
-    minx = property(getMinx);
-    miny = property(getMiny);
-    minz = property(getMinz);
+    def setMinx(self, x):
+        self.size[0] -= x - self.origin[0]
+        self.origin[0] = x;
+        
+    def setMiny(self,y):
+        self.size[1] -= y - self.origin[1]
+        self.origin[1] = y
+        
+    def setMinz(self,z):
+        self.size[2] -= z - self.origin[2]
+        self.origin[2] = z
+        
     
-    maxx = property(getMaxx);
-    maxy = property(getMaxy);
-    maxz = property(getMaxz);
+    def setMaxx(self, x):
+        if x < self.origin[0]:
+            x = self.origin[0];
+             
+        self.size[0] = x - self.origin[0]
+        
+    def setMaxy(self, y): 
+        if y < self.origin[1]:
+            y = self.origin[1];
+             
+        self.size[1] = y - self.origin[1]
+        
+    def setMaxz(self, z): 
+        if z < self.origin[2]:
+            z = self.origin[2];
+             
+        self.size[2] = z - self.origin[2]
+        
+    
+    minx = property(getMinx, setMinx);
+    miny = property(getMiny, setMiny);
+    minz = property(getMinz, setMinz);
+    
+    maxx = property(getMaxx, setMaxx);
+    maxy = property(getMaxy, setMaxy);
+    maxz = property(getMaxz, setMaxz);
     
     def getMincx(self): return self.origin[0]>>4;
     def getMincz(self): return self.origin[2]>>4;
