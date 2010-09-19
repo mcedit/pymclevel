@@ -579,6 +579,7 @@ class mce(object):
                 try:
                     command = raw_input("{0}> ".format(self.shortWorld))
                     if len(command) == 0: continue
+                    print
                     
                     commandWords = command.split()
                     self.processCommand(commandWords)
