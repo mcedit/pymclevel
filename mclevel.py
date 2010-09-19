@@ -2270,7 +2270,8 @@ class MCInfdevOldLevel(MCLevel):
             chunk.chunkChanged(needsLighting);
             chunk.compress();
         
-        print "fillBlocks: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced)
+        if blocksToReplace != None:
+            print "Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced)
             
                 
     def getChunkSlices(self, box):
