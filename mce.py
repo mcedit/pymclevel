@@ -122,15 +122,22 @@ class mce(object):
                 else:
                     break;
             
-            if blockType is None:
-                print "Ambiguous block specifier. Matches: ", matches;
-                raise ValueError
-
+            
             
         else:
-            blockType = int(keyword);
+            try:
+                blockType = int(keyword);
+            except ValueError:
+                blockType = None;
         
-                
+        if blockType is None:
+                print "Ambiguous block specifier: ", keyword 
+                if len(matches):
+                    print "Matches: ", matches;
+                else:
+                    print "No blocks matched."
+                raise ValueError
+        
         return blockType
         
     def _debug(self, command):
