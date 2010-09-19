@@ -2224,25 +2224,44 @@ class MCInfdevOldLevel(MCLevel):
     
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
         chunkIterator = self.getChunkSlices(box)
-
+        needsLighting = True
+            
+        if blocksToReplace != None:
+            oldAbsorption = self.materials.lightAbsorption[blockType]
+            newAbsorptions = map(self.materials.lightAbsorption.__getitem__, blocksToReplace)
+            needsLighting = False
+            for a in newAbsorptions:
+                if a != oldAbsorption: needsLighting = True;
+        
+        i=0;
+        skipped = 0
+        replaced = 0;
+        
         for (chunk, slices, point) in chunkIterator:
+            i+=1;
+            if i % 100 == 0:
+                print "Filled {0}...".format(i)
+                
             blocks = chunk.Blocks[slices] 
             mask = None
-            needsLighting = True
-            
-            if blocksToReplace != None:
-                oldAbsorption = self.materials.lightAbsorption[blockType]
-                newAbsorptions = map(self.materials.lightAbsorption.__getitem__, blocksToReplace)
-                needsLighting = False
-                for a in newAbsorptions:
-                    if a != oldAbsorption: needsLighting = True;
                 
+            if blocksToReplace != None:
                 masks = map(lambda x:blocks==x, blocksToReplace);
                 mask = masks.pop();
                 while len(masks):
                     mask |= masks.pop();
-                blocks[:][mask] = blockType
-                chunk.Data[slices][mask] = blockData
+                
+                blockCount = mask.sum()
+                replaced += blockCount;
+                
+                #don't waste time relighting and copying if the mask is empty
+                if blockCount:
+                    blocks[:][mask] = blockType
+                    chunk.Data[slices][mask] = blockData
+                    
+                else:
+                    skipped += 1;
+                    needsLighting = False;
                 
             else:
                 blocks[:] = blockType
@@ -2250,6 +2269,8 @@ class MCInfdevOldLevel(MCLevel):
                 
             chunk.chunkChanged(needsLighting);
             chunk.compress();
+        
+        print "fillBlocks: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced)
             
                 
     def getChunkSlices(self, box):
