@@ -49,7 +49,7 @@ class TAG_Value:
   def __init__(self, value=0, name=None, data=""):
     self.name=name
     if(data==""):
-        self.value = value
+        self.value = self.dataType(value)
     else:   
         (self.value,) = struct.unpack(self.fmt, data[0:struct.calcsize(self.fmt)]);
   
