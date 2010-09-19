@@ -2248,17 +2248,6 @@ class MCInfdevOldLevel(MCLevel):
             chunk.chunkChanged(needsLighting);
             chunk.compress();
             
-            
-    def createChunksInRange(self, box):
-        print "Creating {0} chunks in range {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz)))
-        for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
-            #print cx,cz
-            if not ((cx,cz) in self._presentChunks):
-                #print "Making", cx, cz
-                self.createChunk(cx,cz);
-            assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
-                
-        #for cx,cz in itertools.product(xrange(minCX,maxCX), xrange(minCZ, maxCZ)):
                 
     def getChunkSlices(self, box):
         """ call this method to iterate through a large slice of the world by 
@@ -2425,6 +2414,16 @@ class MCInfdevOldLevel(MCLevel):
         if (cx,cz) in self._presentChunks: raise ValueError, "{0}:Chunk {1} already present!".format(self, (cx,cz) )
         self._presentChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
         
+    def createChunksInBox(self, box):
+        print "Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz)))
+        for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
+            #print cx,cz
+            if not ((cx,cz) in self._presentChunks):
+                #print "Making", cx, cz
+                self.createChunk(cx,cz);
+            assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
+                
+        #for cx,cz in itertools.product(xrange(minCX,maxCX), xrange(minCZ, maxCZ)):
         
         
     def deleteChunk(self, cx, cz):
@@ -2433,6 +2432,16 @@ class MCInfdevOldLevel(MCLevel):
         
         del self._presentChunks[(cx,cz)]
         
+    def deleteChunksInBox(self, box):
+        print "Deleting {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz)))
+        for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
+            #print cx,cz
+            if not ((cx,cz) in self._presentChunks):
+                #print "Making", cx, cz
+                self.deleteChunk(cx,cz);
+            assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
+                
+        #for cx,cz in itertools.product(xrange(minCX,maxCX), xrange(minCZ, maxCZ)):
         
     def setPlayerSpawnPosition(self, pos):
         xyz = ["SpawnX", "SpawnY", "SpawnZ"]
@@ -2865,7 +2874,7 @@ def testAlphaLevels():
     
     level = MCInfdevOldLevel(filename="d:\Testworld");
     for ch in level.presentChunks: level.deleteChunk(*ch)
-    level.createChunksInRange( BoundingBox((0,0,0), (32, 0, 32)) )
+    level.createChunksInBox( BoundingBox((0,0,0), (32, 0, 32)) )
     level.copyBlocksFrom(indevlevel, BoundingBox((0,0,0), (256, 128, 256)), (-0, 0, 0)) 
     assert all(level.getChunk(0,0).Blocks[0:16,0:16,0:indevlevel.Height] == indevlevel.conversionTableFromLevel(level)[indevlevel.Blocks[0:16,0:16,0:indevlevel.Height]]);
     
