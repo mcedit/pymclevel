@@ -287,6 +287,8 @@ class MCLevel:
     Length = None
     Width = None
     
+    players = ["Player"]
+    
     def getWorldBounds(self):
         return BoundingBox( (0,0,0), self.getSize() )
         
@@ -669,22 +671,22 @@ class MCLevel:
                     
         raise IOError, "Cannot detect file type."
     
-    def setPlayerPosition(self, pos):
+    def setPlayerPosition(self, pos, player = "Player"):
         pass;
 
-    def playerPosition(self):
+    def getPlayerPosition(self, player = "Player"):
         return (8,self.Height*0.75,8);
 
-    def setPlayerSpawnPosition(self, pos):
+    def setPlayerSpawnPosition(self, pos, player = "Player"):
         pass;
 
-    def playerSpawnPosition(self):
-        return self.playerPosition();
+    def playerSpawnPosition(self, player = "Player"):
+        return self.getPlayerPosition();
 
-    def setPlayerOrientation(self, yp):
+    def setPlayerOrientation(self, yp, player = "Player"):
         pass
 
-    def playerOrientation(self):
+    def playerOrientation(self, player = "Player"):
         return (-45.,0.)
 
     def getEntitiesInRange(self, sourceBox, entities):
@@ -1524,7 +1526,13 @@ class MCInfdevOldLevel(MCLevel):
         self.dirhashes = [self.dirhash(n) for n in range(64)];
         self.dirhash=self.dirhashlookup;
 
-        
+        playerFilePath = os.path.join(self.worldDir, "players")
+        if os.path.exists(playerFilePath):
+            playerDats = os.listdir(playerFilePath);
+            playerDats = filter(lambda x:x.endswith(".dat"), playerDats)
+            players = map(lambda x:x[:-4], playerDats);
+            self.players = players
+            
         self.preloadChunkPaths();
     
     def preloadChunkPaths(self):
@@ -2435,19 +2443,46 @@ class MCInfdevOldLevel(MCLevel):
 
     def playerSpawnPosition(self):
         xyz = ["SpawnX", "SpawnY", "SpawnZ"]
-        return array([self.root_tag["Data"][i].value for i in xyz])
+        return [self.root_tag["Data"][i].value for i in xyz]
    
-    def setPlayerPosition(self, pos):
-        self.root_tag["Data"]["Player"]["Pos"] = nbt.TAG_List([nbt.TAG_Double(p) for p in pos])
+    def setPlayerPosition(self, pos, player = "Player"):
+        posList = nbt.TAG_List([nbt.TAG_Double(p) for p in pos]);
+        
+        if player == "Player" and player in self.root_tag["Data"]:
+            #single-player world
+            self.root_tag["Data"]["Player"]["Pos"] = posList
+            posList = self.root_tag["Data"]["Player"]["Pos"];
+        else:
+            playerFilePath = os.path.join(self.worldDir, "players", player + ".dat")
+            if os.path.exists(playerFilePath):
+                #multiplayer world, found this player
+                playerTag = nbt.loadFile(playerFilePath)
+                playerTag["Pos"] = posList
+                playerTag.saveGzipped(playerFilePath)
+            else:
+                raise ValueError, "Player {0} not found.".format(player)
+        
+    def getPlayerPosition(self, player = "Player"):
+        if player == "Player" and player in self.root_tag["Data"]:
+            #single-player world
+            posList = self.root_tag["Data"]["Player"]["Pos"];
+        else:
+            playerFilePath = os.path.join(self.worldDir, "players", player + ".dat")
+            if os.path.exists(playerFilePath):
+                #multiplayer world, found this player
+                playerTag = nbt.loadFile(playerFilePath)
+                posList = playerTag["Pos"]
+            else:
+                raise ValueError, "Player {0} not found.".format(player)
+                 
 
-    def playerPosition(self):
-        pos = map(lambda x:x.value, self.root_tag["Data"]["Player"]["Pos"]);
-        return array(pos);
-    
-    def setPlayerOrientation(self, yp):
+        pos = map(lambda x:x.value, posList);
+        return pos;
+            
+    def setPlayerOrientation(self, yp, player = "Player"):
         self.root_tag["Data"]["Player"]["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
     
-    def playerOrientation(self):
+    def playerOrientation(self, player = "Player"):
         """ returns (yaw, pitch) """
         yp = map(lambda x:x.value, self.root_tag["Data"]["Player"]["Rotation"]);
         y,p = yp;
@@ -2480,7 +2515,7 @@ class MCIndevLevel(MCLevel):
             if x["id"].value == "LocalPlayer":
                 x["Pos"] = nbt.TAG_List([nbt.TAG_Float(p) for p in pos])
     
-    def playerPosition(self):
+    def getPlayerPosition(self):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 return array(map(lambda x:x.value, x["Pos"]));
