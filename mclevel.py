@@ -587,7 +587,7 @@ class MCLevel:
         print "Identifying ", filename
         
         if not filename:
-            raise ValueError
+            raise IOError, "File not found: "+filename
         if not os.path.exists(filename):
             raise IOError, "File not found: "+filename
         try:
