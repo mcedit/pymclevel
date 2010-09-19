@@ -1305,7 +1305,7 @@ class InfdevChunk(MCLevel):
             return;
             
         self.dirty = True;
-        self.needsLighting = calcLighting;
+        self.needsLighting = calcLighting or self.needsLighting;
         self.generateHeightMap();
         if calcLighting:
             self.genFastLights()
