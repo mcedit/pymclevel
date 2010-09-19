@@ -106,7 +106,11 @@ class mce(object):
         blockType = None
         
         if len(matches):
-            while len(matches) and len(command):
+            if len(matches) == 1:
+                blockType = self.level.materials.materialNamed(matches[0])
+
+            #eat up more words that possibly specify a block.  stop eating when 0 matching blocks.
+            while len(command):
                 newMatches = blocksMatching(keyword + " " + command[0]);
                 
                 
