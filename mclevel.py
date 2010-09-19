@@ -1536,6 +1536,7 @@ class MCInfdevOldLevel(MCLevel):
         self.preloadChunkPaths();
     
     def preloadChunkPaths(self):
+        print "Scanning for chunks..."
         worldDirs = os.listdir(self.worldDir);
         for dirname in worldDirs :
             if(dirname in self.dirhashes):
@@ -1555,6 +1556,8 @@ class MCInfdevOldLevel(MCLevel):
                         for c in chunks:
                             self._presentChunks[c] = InfdevChunk(self, c);
                             
+        print "Found {0} chunks.".format(len(self._presentChunks))
+        
                             #self._presentChunks.update(dict(zip(chunks, fullpaths)));
 ##                        for filename, chunk in zip(fullpaths, chunks):
 ##                            chunkfh = file(filename, 'rb')
