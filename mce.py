@@ -4,6 +4,7 @@ import os
 from box import BoundingBox
 
 class UsageError(RuntimeError): pass
+class BlockMatchError(RuntimeError): pass
 
 class mce(object):
     """
@@ -147,7 +148,7 @@ class mce(object):
                         print "{0:3}: {1}".format(self.level.materials.materialNamed(m),m)
                 else:
                     print "No blocks matched."
-                raise ValueError
+                raise BlockMatchError
         
         return blockType
         
@@ -202,6 +203,9 @@ class mce(object):
                 destPoint = box.origin
                 destSize = box.size
                 
+        except BlockMatchError:
+            raise
+            
         except Exception, e:
             if self.debug:
                 traceback.print_exc();
@@ -238,7 +242,10 @@ class mce(object):
                 box = self.level.getWorldBounds();
                 destPoint = box.origin
                 destSize = box.size
-                
+
+        except BlockMatchError:
+            raise
+                    
         except Exception, e:
             if self.debug:
                 traceback.print_exc();
