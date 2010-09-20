@@ -179,16 +179,14 @@ class mce(object):
     sourceSize blocks in each direction. Blocks and entities in the area 
     are cloned at destPoint
     """
-        try:
-            sourcePoint = self.readPoint(command)
-            sourceSize = self.readPoint(command, isPoint = False)
-            destPoint = self.readPoint(command)
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
-        
+        if len(command) == 0:
+            self.printUsage("clone")
+            return;
+            
+        sourcePoint = self.readPoint(command)
+        sourceSize = self.readPoint(command, isPoint = False)
+        destPoint = self.readPoint(command)
+    
         destPoint = map(int, destPoint)
         
         box = BoundingBox(sourcePoint, sourceSize)
@@ -207,25 +205,19 @@ class mce(object):
     destination, fills the whole world. blockType and may be a
     number from 0-255 or a name listed by the 'blocks' command.
     """
-        try:
-            blockType = self.readBlockType(command)
-            assert blockType >=0 and blockType < 256
-            if len(command):
-                destPoint = self.readPoint(command);
-                destSize = self.readPoint(command, isPoint = False);
-            else:
-                box = self.level.getWorldBounds();
-                destPoint = box.origin
-                destSize = box.size
-                
-        except BlockMatchError:
-            raise
-            
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
+        if len(command) == 0:
+            self.printUsage("fill")
+            return;
+        
+        blockType = self.readBlockType(command)
+        assert blockType >=0 and blockType < 256
+        if len(command):
+            destPoint = self.readPoint(command);
+            destSize = self.readPoint(command, isPoint = False);
+        else:
+            box = self.level.getWorldBounds();
+            destPoint = box.origin
+            destSize = box.size
         
         print "Filling with {0}".format(self.level.materials.names[blockType])
         
@@ -244,31 +236,26 @@ class mce(object):
     the whole world. blockType and newBlockType may be numbers 
     from 0-255 or names listed by the 'blocks' command.
     """
-        try:
-            blockType = self.readBlockType(command)
-            assert blockType >=0 and blockType < 256
-            if command[0].lower() == "with": 
-                command.pop(0)
-            newBlockType = self.readBlockType(command)
-            assert newBlockType >=0 and newBlockType < 256
-                
-            if len(command):
-                destPoint = self.readPoint(command);
-                destSize = self.readPoint(command, isPoint = False);
-            else:
-                box = self.level.getWorldBounds();
-                destPoint = box.origin
-                destSize = box.size
-
-        except BlockMatchError:
-            raise
-                    
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
+        if len(command) == 0:
+            self.printUsage("replace")
+            return;
         
+        blockType = self.readBlockType(command)
+        assert blockType >=0 and blockType < 256
+        if command[0].lower() == "with": 
+            command.pop(0)
+        newBlockType = self.readBlockType(command)
+        assert newBlockType >=0 and newBlockType < 256
+            
+        if len(command):
+            destPoint = self.readPoint(command);
+            destSize = self.readPoint(command, isPoint = False);
+        else:
+            box = self.level.getWorldBounds();
+            destPoint = box.origin
+            destSize = box.size
+
+    
         print "Replacing {0} with {1}".format(self.level.materials.names[blockType],
                                               self.level.materials.names[newBlockType])
         
@@ -284,16 +271,14 @@ class mce(object):
     Exports blocks in the specified region to a file in schematic format.
     This file can be imported with mce or MCEdit.
     """
-        try:
-            filename = command.pop(0)
-            sourcePoint = self.readPoint(command)
-            sourceSize = self.readPoint(command, isPoint = False)
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
+        if len(command) == 0:
+            self.printUsage("export")
+            return;
         
+        filename = command.pop(0)
+        sourcePoint = self.readPoint(command)
+        sourceSize = self.readPoint(command, isPoint = False)
+    
         
         box = BoundingBox(sourcePoint, sourceSize)
         tempSchematic = self.level.extractSchematic(box);
@@ -314,15 +299,12 @@ class mce(object):
     - Schematic from RedstoneSim, MCEdit, mce
     - .inv from INVEdit (appears as a chest)
     """
-        filename = command.pop(0)
-        try:
-            destPoint = self.readPoint(command)
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
+        if len(command) == 0:
+            self.printUsage("import")
+            return;
         
+        filename = command.pop(0)
+        destPoint = self.readPoint(command)
         
         importLevel = mclevel.fromFile(filename)
         self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint);
@@ -364,13 +346,7 @@ class mce(object):
     Without a point, prints the world's spawn point.
     """   
         if len(command):
-            try:
-                point = self.readPoint(command)
-            except Exception, e:
-                if self.debug:
-                    traceback.print_exc();
-                    
-                raise UsageError
+            point = self.readPoint(command)
             
             self.level.setPlayerSpawnPosition(point);
         
@@ -386,15 +362,13 @@ class mce(object):
     New chunks are filled with only air. New chunks are written
     to disk immediately.
     """
-        try:
-            point = self.readPoint(command)
-            size = self.readPoint(command, isPoint = False)
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
-            
+        if len(command) == 0:
+            self.printUsage("createchunks")
+            return;
+        
+        point = self.readPoint(command)
+        size = self.readPoint(command, isPoint = False)
+       
         box = BoundingBox(point, size)
         
         oldChunkCount = len(self.level.presentChunks)
@@ -410,15 +384,13 @@ class mce(object):
     Removes all chunks contained in the specified region. 
     Chunks are deleted from disk immediately.
     """
-        try:
-            point = self.readPoint(command)
-            size = self.readPoint(command, isPoint = False)
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
-            
+        if len(command) == 0:
+            self.printUsage("deletechunks")
+            return;
+        
+        point = self.readPoint(command)
+        size = self.readPoint(command, isPoint = False)
+        
         box = BoundingBox(point, size)
         
         oldChunkCount = len(self.level.presentChunks)
@@ -433,15 +405,13 @@ class mce(object):
     Removes all chunks not contained in the specified region. Useful for enforcing a finite map size.
     Chunks are deleted from disk immediately.
     """
-        try:
-            point = self.readPoint(command)
-            size = self.readPoint(command, isPoint = False)
-        except Exception, e:
-            if self.debug:
-                traceback.print_exc();
-                
-            raise UsageError
-            
+        if len(command) == 0:
+            self.printUsage("prune")
+            return;
+        
+        point = self.readPoint(command)
+        size = self.readPoint(command, isPoint = False)
+        
         box = BoundingBox(point, size)
         
         oldChunkCount = len(self.level.presentChunks)
@@ -461,15 +431,9 @@ class mce(object):
     recalculates the entire world.
     """
         if len(command):
-            try:
-                point = self.readPoint(command)
-                size = self.readPoint(command, isPoint = False)
-            except Exception, e:
-                if self.debug:
-                    traceback.print_exc();
-                    
-                raise UsageError
-                
+            point = self.readPoint(command)
+            size = self.readPoint(command, isPoint = False)
+           
             box = BoundingBox(point, size)
             chunks = itertools.product(range(box.mincx, box.maxcx),range(box.mincz, box.maxcz))
         
