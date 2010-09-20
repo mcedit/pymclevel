@@ -124,7 +124,7 @@ class mce(object):
                 
                 
                 if len(newMatches) == 1:
-                    blockType = self.level.materials.materialNamed(matches[0])
+                    blockType = self.level.materials.materialNamed(newMatches[0])
                 if len(newMatches) > 0:
                     matches = newMatches
                     keyword = keyword + " " + command.pop(0)
