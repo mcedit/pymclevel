@@ -212,6 +212,8 @@ class mce(object):
                 
             raise UsageError
         
+        print "Filling with {0}".format(self.level.materials.names[blockType])
+        
         box = BoundingBox(destPoint, destSize)
         self.level.fillBlocks(box, blockType)
         
@@ -251,6 +253,9 @@ class mce(object):
                 traceback.print_exc();
                 
             raise UsageError
+        
+        print "Replacing {0} with {1}".format(self.level.materials.names[blockType],
+                                              self.level.materials.names[newBlockType])
         
         box = BoundingBox(destPoint, destSize)
         self.level.fillBlocks(box, newBlockType, blockData = 0, blocksToReplace = [blockType])
