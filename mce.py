@@ -133,7 +133,10 @@ class mce(object):
         if blockType is None:
                 print "Ambiguous block specifier: ", keyword 
                 if len(matches):
-                    print "Matches: ", matches;
+                    print "Matches: "
+                    for m in matches:
+                        if m == "Future Block!": continue
+                        print "{0:3}: {1}".format(self.level.materials.materialNamed(m),m)
                 else:
                     print "No blocks matched."
                 raise ValueError
