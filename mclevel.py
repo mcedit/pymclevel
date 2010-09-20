@@ -2224,14 +2224,14 @@ class MCInfdevOldLevel(MCLevel):
     
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
         chunkIterator = self.getChunkSlices(box)
-        needsLighting = True
+        changesLighting = True
             
         if blocksToReplace != None:
-            oldAbsorption = self.materials.lightAbsorption[blockType]
-            newAbsorptions = map(self.materials.lightAbsorption.__getitem__, blocksToReplace)
-            needsLighting = False
-            for a in newAbsorptions:
-                if a != oldAbsorption: needsLighting = True;
+            newAbsorption = self.materials.lightAbsorption[blockType]
+            oldAbsorptions = map(self.materials.lightAbsorption.__getitem__, blocksToReplace)
+            changesLighting = False
+            for a in oldAbsorptions:
+                if a != newAbsorption: changesLighting = True;
         
         i=0;
         skipped = 0
@@ -2244,7 +2244,9 @@ class MCInfdevOldLevel(MCLevel):
                 
             blocks = chunk.Blocks[slices] 
             mask = None
-                
+            
+            needsLighting = changesLighting;
+              
             if blocksToReplace != None:
                 masks = map(lambda x:blocks==x, blocksToReplace);
                 mask = masks.pop();
@@ -2258,7 +2260,6 @@ class MCInfdevOldLevel(MCLevel):
                 if blockCount:
                     blocks[:][mask] = blockType
                     chunk.Data[slices][mask] = blockData
-                    
                 else:
                     skipped += 1;
                     needsLighting = False;
