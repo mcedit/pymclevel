@@ -5,6 +5,7 @@ from box import BoundingBox
 
 class UsageError(RuntimeError): pass
 class BlockMatchError(RuntimeError): pass
+class PlayerNotFound(RuntimeError): pass
 
 class mce(object):
     """
@@ -81,24 +82,38 @@ class mce(object):
     debug = False
     
     def readPoint(self, command, isPoint = True):
-        word = command.pop(0)
-        if isPoint and (word in self.level.players):
-            x,y,z = self.level.getPlayerPosition(word)
-            if len(command) and command[0].lower() == "delta":
-                command.pop(0)
-                x += int(command.pop(0))
-                y += int(command.pop(0))
-                z += int(command.pop(0))
+        try:
+            word = command.pop(0)
+            if isPoint and (word in self.level.players):
+                x,y,z = self.level.getPlayerPosition(word)
+                if len(command) and command[0].lower() == "delta":
+                    command.pop(0)
+                    try:
+                        x += int(command.pop(0))
+                        y += int(command.pop(0))
+                        z += int(command.pop(0))
+                        
+                    except ValueError:
+                        raise UsageError, "Error decoding point input (expected a number)."
+                return (x,y,z)
                 
-        else:
+        except IndexError:
+            raise UsageError, "Error decoding point input (expected more values)."
+            
+    
+        try:
             try:
                 x = float(word)
             except ValueError:
                 if isPoint:
-                    raise ValueError, "Cannot find player {0}".format(word)
-            
+                    raise PlayerNotFound, word
+                raise
             y = float(command.pop(0))
             z = float(command.pop(0))
+        except ValueError:
+            raise UsageError, "Error decoding point input (expected a number)."
+        except IndexError:
+            raise UsageError, "Error decoding point input (expected more values)."
         
         return (x,y,z)
     
@@ -639,10 +654,16 @@ class mce(object):
         
         try:
             func(command)
+        except PlayerNotFound, e:
+            print "Cannot find player {0}".format(e.args[0])
+            self._player([])
+
         except UsageError, e:
             print e
+            if self.debug:
+                traceback.print_exc()
             self.printUsage(keyword)
-
+            
         
         
 editor = mce();
