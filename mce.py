@@ -500,7 +500,8 @@ class mce(object):
         for i in range(len(self.level.materials.names)):
             name = self.level.materials.names[i];
             if name == "Future Block!": return;
-            if len(command) and not command[0].lower() in name.lower():
+            if len(command) and not command[0].lower() in name.lower() or not str(i) == command[0]:
+                #don't print blocks that don't match the given name or number
                 continue
             print "{0:3}: {1}".format(i, name)
             
