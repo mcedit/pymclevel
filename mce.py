@@ -517,12 +517,25 @@ class mce(object):
     """
     
         print "ID : Block name"
+        searchName = None
+        if len(command):
+            searchName = " ".join(command)
+            try:
+                searchNumber = int(searchName)
+            except ValueError: 
+                searchNumber = None
+            else:
+                print "{0:3}: {1}".format(searchNumber, self.level.materials.names[searchNumber])
+                return
+                
         for i in range(len(self.level.materials.names)):
             name = self.level.materials.names[i];
             if name == "Future Block!": return;
-            if len(command) and not command[0].lower() in name.lower() or not str(i) == command[0]:
+            if searchName:
+                if not (searchName.lower() in name.lower()):
                 #don't print blocks that don't match the given name or number
-                continue
+                    continue
+                    
             print "{0:3}: {1}".format(i, name)
             
     def printUsage(self, command = ""):
