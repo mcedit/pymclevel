@@ -57,17 +57,22 @@ class mce(object):
         "replace",
         "export",
         "import",
+        
         "player",
         "spawn",
+        
         "createchunks",
         "deletechunks",
         "prune",
         "relight",
+        
         "save",
         "load",
         "reload",
+        
         "quit",
         "exit",
+        
         "help",
         "blocks",
         "debug",
@@ -100,6 +105,9 @@ class mce(object):
         keyword = command.pop(0)
         
         def blocksMatching(search):
+            if search in self.level.materials.names:
+                #exact match
+                return [search]
             return filter(lambda x:search.lower() in x.lower(), self.level.materials.names)
         
         matches = blocksMatching(keyword)
