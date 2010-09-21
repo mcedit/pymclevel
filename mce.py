@@ -10,6 +10,8 @@ class PlayerNotFound(RuntimeError): pass
 class mce(object):
     """
     Usage:
+    
+    Block commands:
        {commandPrefix}clone <sourcePoint> <sourceSize> <destPoint>
        {commandPrefix}fill <blockType> [ <point> <size> ]
        {commandPrefix}replace <blockType> [with] <newBlockType> [ <point> <size> ]
@@ -17,19 +19,26 @@ class mce(object):
        {commandPrefix}export <filename> <sourcePoint> <sourceSize>
        {commandPrefix}import <filename> <destPoint>
        
+    Player commands:
        {commandPrefix}player [ <player> [ <point> ] ]
        {commandPrefix}spawn [ <point> ]
        
+    Entity commands:
+       {commandPrefix}removeEntities [ <EntityID> ]
+    
+    Chunk commands:
        {commandPrefix}createChunks <point> <size>
        {commandPrefix}deleteChunks <point> <size>
        {commandPrefix}prune <point> <size>
        {commandPrefix}relight [ <point> <size> ]
        
+    Editor commands:
        {commandPrefix}save 
        {commandPrefix}reload 
        {commandPrefix}load <filename> | <world number>
        {commandPrefix}quit 
        
+    Informational: 
        {commandPrefix}blocks [ <block name> | <block ID> ]
        {commandPrefix}help [ <command> ]
         
@@ -62,6 +71,8 @@ class mce(object):
         
         "player",
         "spawn",
+        
+        "removeentities",
         
         "createchunks",
         "deletechunks",
@@ -354,6 +365,64 @@ class mce(object):
         else:
             print "Spawn point: ", self.level.playerSpawnPosition(); 
     
+    def _removeentities(self, command):
+        """
+    removeEntities [ [except] [ <EntityID> [ <EntityID> ... ] ] ]
+    
+    Remove all entities matching one or more entity IDs.
+    With the except keyword, removes all entities not 
+    matching one or more entity IDs.
+    
+    Without any IDs, removes all entities in the world.
+    
+    Known Mob Entity IDs: 
+        Mob Monster Creeper Skeleton Spider Giant 
+        Zombie Slime Pig Sheep Cow Chicken
+
+    Known Item Entity IDs: Item Arrow Snowball Painting
+
+    Known Vehicle Entity IDs: Minecart Boat
+    
+    Known Dynamic Tile Entity IDs: PrimedTnt FallingSand
+    """
+        removedEntities = {};
+        
+        if len(command):
+            if command[0].lower() == "except":
+                command.pop(0);
+                print "Removing all entities except ", command
+                def match(entityID):
+                    return not (entityID.lower() in matchWords)
+            else:
+                print "Removing {0}...".format(", ".join(command))
+                def match(entityID):
+                    return entityID.lower() in matchWords
+
+            matchWords = map(lambda x:x.lower(), command)
+
+            
+        else:
+            print "Removing all entities..."
+            def match(entity): return True;
+            
+        for cx,cz in self.level.presentChunks:
+            chunk = self.level.getChunk(cx,cz)
+            for entity in list(chunk.Entities):
+                entityID = entity["id"].value
+                
+                if match(entityID):
+                    removedEntities[entityID] = removedEntities.get(entityID, 0) + 1;
+                    
+                    chunk.Entities.remove(entity)
+            chunk.compress();
+            
+        if len(removedEntities) == 0:
+            print "No entities to remove."
+        else:
+            print "Removed entities:"
+            for entityID in sorted(removedEntities.keys()):
+                print "  {0}: {1:6}".format(entityID, removedEntities[entityID]);
+            
     def _createchunks(self, command):
         """
     createChunks <point> <size>
