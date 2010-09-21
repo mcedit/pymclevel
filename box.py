@@ -1,4 +1,4 @@
-class BoundingBox:
+class BoundingBox (object):
     
     def __init__(self, origin = (0,0,0), size = (0,0,0)):
         self._origin, self._size = list(map(int, origin)),list(map(int, size))
