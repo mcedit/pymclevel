@@ -419,6 +419,8 @@ class mce(object):
             
         for cx,cz in self.level.presentChunks:
             chunk = self.level.getChunk(cx,cz)
+            entitiesRemoved = 0;
+            
             for entity in list(chunk.Entities):
                 entityID = entity["id"].value
                 
@@ -426,6 +428,11 @@ class mce(object):
                     removedEntities[entityID] = removedEntities.get(entityID, 0) + 1;
                     
                     chunk.Entities.remove(entity)
+                    entitiesRemoved += 1;
+            
+            if entitiesRemoved:
+                chunk.chunkChanged(False)
+                
             chunk.compress();
             
         if len(removedEntities) == 0:
