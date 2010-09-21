@@ -1191,6 +1191,10 @@ class InfdevChunk(MCLevel):
         if create:
             self.create();
             
+    def compress(self):
+        if not self.dirty: return
+        MCLevel.compress(self);
+        
     def __str__(self):
         return "InfdevChunk, coords:{0}, world: {1}, D:{2}, L:{4}".format(self.chunkPosition, os.path.split(self.world.worldDir)[1],self.dirty, self.needsLighting)
 
