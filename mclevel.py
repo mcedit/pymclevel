@@ -2240,7 +2240,7 @@ class MCInfdevOldLevel(MCLevel):
         for (chunk, slices, point) in chunkIterator:
             i+=1;
             if i % 100 == 0:
-                print "Filled {0}...".format(i)
+                print "Chunk {0}...".format(i)
                 
             blocks = chunk.Blocks[slices] 
             mask = None
