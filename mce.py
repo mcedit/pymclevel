@@ -96,6 +96,7 @@ class mce(object):
         "debug",
     ]
     debug = False
+    needsSave = False;
     
     def readPoint(self, command, isPoint = True):
         try:
@@ -209,7 +210,7 @@ class mce(object):
         tempSchematic = self.level.extractSchematic(box);
         self.level.copyBlocksFrom(tempSchematic, BoundingBox((0,0,0), sourceSize), destPoint);
         
-        
+        self.needsSave = True;
         print "Cloned 0 blocks." 
     
     def _fill(self, command):
@@ -240,6 +241,8 @@ class mce(object):
         box = BoundingBox(destPoint, destSize)
         self.level.fillBlocks(box, blockType)
         
+        
+        self.needsSave = True;
         print "Filled {0} blocks.".format(box.volume) 
     
     def _replace(self, command):
@@ -278,6 +281,7 @@ class mce(object):
         box = BoundingBox(destPoint, destSize)
         self.level.fillBlocks(box, newBlockType, blockData = 0, blocksToReplace = [blockType])
         
+        self.needsSave = True;
         print "Replaced {0} blocks.".format(box.volume) 
     
     def _export(self, command):
@@ -326,6 +330,7 @@ class mce(object):
         self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint);
         
         
+        self.needsSave = True;
         print "Imported {0} blocks.".format(importLevel.getWorldBounds().volume) 
     
     def _player(self, command):
@@ -352,6 +357,7 @@ class mce(object):
         point = self.readPoint(command)
         self.level.setPlayerPosition(point, player)
         
+        self.needsSave = True;
         print "Moved player {0} to {1}".format(player, point)
     
     def _spawn(self, command):
@@ -366,6 +372,7 @@ class mce(object):
             
             self.level.setPlayerSpawnPosition(point);
         
+            self.needsSave = True;
             print "Moved spawn point to ", map(int, point)
         else:
             print "Spawn point: ", self.level.playerSpawnPosition(); 
@@ -427,7 +434,9 @@ class mce(object):
             print "Removed entities:"
             for entityID in sorted(removedEntities.keys()):
                 print "  {0}: {1:6}".format(entityID, removedEntities[entityID]);
-            
+        
+        self.needsSave = True;
+    
     def _createchunks(self, command):
         """
     createChunks <point> <size>
@@ -450,7 +459,8 @@ class mce(object):
         
         print "Created {0} chunks." .format(len(self.level.presentChunks)-oldChunkCount)
         
-    
+        self.needsSave = True;
+
     def _deletechunks(self, command):
         """
     deleteChunks <point> <size>
@@ -516,6 +526,7 @@ class mce(object):
         self.level.generateLights(chunks)
         
         print "Relit 0 chunks." 
+        self.needsSave = True;
     
     def _degrief(self, command):
         """
@@ -549,6 +560,7 @@ class mce(object):
                                 self.level.materials.materialNamed("Stationary lava"),
                                 ]
                               )
+        self.needsSave = True;
         
     def _quit(self, command):
         """
@@ -572,12 +584,14 @@ class mce(object):
         self._quit(command)
         
     def _save(self, command):
-        self.level.generateLights()
-        self.level.saveInPlace();
-    
+        if self.needsSave:
+            self.level.generateLights()
+            self.level.saveInPlace();
+            self.needsSave = False;
+            
     def _load(self, command):
         """
-    load <filename>
+    load [ <filename> | <world number> ]
     
     Loads another world, discarding all changes to this world.
     """    
