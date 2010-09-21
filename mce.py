@@ -32,6 +32,9 @@ class mce(object):
        {commandPrefix}prune <point> <size>
        {commandPrefix}relight [ <point> <size> ]
        
+    World commands:
+       {commandPrefix}degrief
+    
     Editor commands:
        {commandPrefix}save 
        {commandPrefix}reload 
@@ -78,6 +81,8 @@ class mce(object):
         "deletechunks",
         "prune",
         "relight",
+        
+        "degrief",
         
         "save",
         "load",
@@ -512,6 +517,39 @@ class mce(object):
         
         print "Relit 0 chunks." 
     
+    def _degrief(self, command):
+        """
+    degrief [ <height> ]
+    
+    Reverse a few forms of griefing by removing 
+    Adminium, Obsidian, Fire, and Lava wherever 
+    they occur above the specified height.
+    Without a height, uses height level 32.
+    
+    Removes natural surface lava.
+    
+    Also see removeEntities
+    """
+        box = self.level.getWorldBounds();
+        box.miny = 32
+        if len(command):
+            try:
+                box.miny = int(command[0])
+            except ValueError:
+                pass
+                
+        print "Removing grief matter and surface lava above height {0}...".format(box.miny)
+        
+        self.level.fillBlocks(box,
+                              self.level.materials.materialNamed("Air"),
+                              blocksToReplace=[self.level.materials.materialNamed("Adminium"),
+                                self.level.materials.materialNamed("Obsidian"),
+                                self.level.materials.materialNamed("Fire"),
+                                self.level.materials.materialNamed("Lava"),
+                                self.level.materials.materialNamed("Stationary lava"),
+                                ]
+                              )
+        
     def _quit(self, command):
         """
     quit [ yes | no ]
