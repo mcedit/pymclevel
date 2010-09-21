@@ -649,7 +649,7 @@ class mce(object):
         if len(sys.argv):
             #process one command from command line
             try:
-                self.processCommand(command)
+                self.processCommand(sys.argv)
             except UsageError:
                 self.printUsageAndQuit();
             self._save([]);
