@@ -631,6 +631,7 @@ class MCLevel:
             print "Exception during Gzip operation, assuming {0} uncompressed: ".format(filename), e
             if unzippedData is None:
                 compressed = False;
+                unzippedData = rawdata
         #if(ungzdata): data=ungzdata
         
         data = fromstring(unzippedData, dtype='uint8')
