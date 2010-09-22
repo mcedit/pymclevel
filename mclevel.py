@@ -521,6 +521,8 @@ class MCLevel:
         # ValueError is raised if the source corners are outside sourceLevel
         (x,y,z) = destinationPoint;
         
+        sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
+        
         (lx,ly,lz) = sourceBox.size;
         print "Source: ", sourceLevel
         print "Destination: ", self
