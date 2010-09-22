@@ -1291,10 +1291,13 @@ class InfdevChunk(MCLevel):
             
     def load(self):
         if self.compressedTag is None:
-            compressedData = file(self.filename, 'rb')
-            self.compressedTag = compressedData.read();
-            compressedData.close()
-
+            try:
+                compressedData = file(self.filename, 'rb')
+                self.compressedTag = compressedData.read();
+                compressedData.close()
+            except IOError:
+                raise ChunkNotPresent
+                
         if self.root_tag is None:
             self.decompress()
     
