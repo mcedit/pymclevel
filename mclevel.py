@@ -1144,7 +1144,7 @@ class INVEditChest(MCSchematic):
     def getTileEntities(self): 
         chestTag = TAG_Compound();
         chestTag["id"] = TAG_String("Chest")
-        chestTag["Items"] = self.root_tag["Inventory"]
+        chestTag["Items"] = TAG_List(self.root_tag["Inventory"])
         chestTag["x"] = TAG_Int(0);
         chestTag["y"] = TAG_Int(0);
         chestTag["z"] = TAG_Int(0);
