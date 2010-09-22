@@ -521,8 +521,6 @@ class MCLevel:
         # ValueError is raised if the source corners are outside sourceLevel
         (x,y,z) = destinationPoint;
         
-        sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
-        
         (lx,ly,lz) = sourceBox.size;
         print "Source: ", sourceLevel
         print "Destination: ", self
@@ -1009,7 +1007,7 @@ class MCSchematic (MCLevel):
         for entity in self.Entities:
             for p in "Pos", "Motion":
                 newX = entity[p][2].value
-                newZ = self.Length - entity[p][0].value
+                newZ = self.Length - entity[p][0].value - 1.0
                 
                 entity[p][0].value = newX
                 entity[p][2].value = newZ
@@ -1017,7 +1015,7 @@ class MCSchematic (MCLevel):
         
         for tileEntity in self.TileEntities:
             newX = tileEntity["z"].value
-            newZ = self.Length - tileEntity["x"].value
+            newZ = self.Length - tileEntity["x"].value - 1
             
             tileEntity["x"].value = newX
             tileEntity["z"].value = newZ
