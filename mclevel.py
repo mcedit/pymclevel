@@ -438,6 +438,11 @@ class MCLevel:
         if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
         return self.Blocks[x,z,y]
     
+    def setBlockAt(self, x, y, z, blockID):
+        if x<0 or y<0 or z<0: return 0
+        if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
+        self.Blocks[x,z,y] = blockID
+    
     
 
     def blocksInRanges(self, origin, size):
@@ -1725,6 +1730,17 @@ class MCInfdevOldLevel(MCLevel):
         zInChunk = z & 0xf;
 
         return self.blocksForChunk(xc,zc)[xInChunk, zInChunk, y]
+        
+    def setBlockAt(self, x, y, z, blockID):
+        """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
+        if y < 0 or y >= self.Height: return 0
+
+        zc=z>>4
+        xc=x>>4
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+
+        self.blocksForChunk(xc,zc)[xInChunk, zInChunk, y] = blockID
 
     def skylightAt(self, x, y, z):
 
