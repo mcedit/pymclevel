@@ -1161,7 +1161,8 @@ class INVEditChest(MCSchematic):
         
     TileEntities = property(getTileEntities);
     
-        
+   
+class PlayerNotFound(Exception): pass     
 class ChunkNotPresent(Exception): pass
 class ChunkMalformed(ChunkNotPresent): pass
 
@@ -2522,7 +2523,7 @@ class MCInfdevOldLevel(MCLevel):
                 playerTag["Pos"] = posList
                 playerTag.saveGzipped(playerFilePath)
             else:
-                raise ValueError, "Player {0} not found.".format(player)
+                raise PlayerNotFound, "{0}".format(player)
         
     def getPlayerPosition(self, player = "Player"):
         if player == "Player" and player in self.root_tag["Data"]:
@@ -2535,7 +2536,7 @@ class MCInfdevOldLevel(MCLevel):
                 playerTag = nbt.loadFile(playerFilePath)
                 posList = playerTag["Pos"]
             else:
-                raise ValueError, "Player {0} not found.".format(player)
+                raise PlayerNotFound, "{0}".format(player)
                  
 
         pos = map(lambda x:x.value, posList);
