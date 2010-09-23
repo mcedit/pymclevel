@@ -1260,6 +1260,7 @@ class InfdevChunk(MCLevel):
             #print "Failed to make chunk dir z ", dz, e
             pass
         
+        self.dirty = True;
         self.save();
     
     def remove(self):
