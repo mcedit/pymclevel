@@ -17,37 +17,54 @@ Sample usage:
 
 % python mce.py
     Usage:
-       mce <world> clone <sourcePoint> <sourceSize> <destPoint>
-       mce <world> fill <blockType> <destPoint> <destSize>
-       mce <world> replace <blockType> [with] <withBlockType> <destPoint> <destS
-ize>
-       
-       mce <world> export <filename> <sourcePoint> <sourceSize>
-       mce <world> import <filename> <destPoint>
-       
-       mce <world> player <player> <point>
-       mce <world> spawn <point>
-       
-       mce <world> createChunks <startChunk> <chunkSize>
-       mce <world> deleteChunks <startChunk> <chunkSize>
-       mce <world> prune <startChunk> <chunkSize>
-       mce <world> relight <startChunk> <chunkSize>
+
+    Block commands:
+       clone <sourcePoint> <sourceSize> <destPoint>
+       fill <blockType> [ <point> <size> ]
+       replace <blockType> [with] <newBlockType> [ <point> <size> ]
+
+       export <filename> <sourcePoint> <sourceSize>
+       import <filename> <destPoint>
+
+    Player commands:
+       player [ <player> [ <point> ] ]
+       spawn [ <point> ]
+
+    Entity commands:
+       removeEntities [ <EntityID> ]
+
+    Chunk commands:
+       createChunks <point> <size>
+       deleteChunks <point> <size>
+       prune <point> <size>
+       relight [ <point> <size> ]
+
+    World commands:
+       degrief
+
+    Editor commands:
+       save
+       reload
+       load <filename> | <world number>
+       quit
+
+    Informational:
+       blocks [ <block name> | <block ID> ]
+       help [ <command> ]
        
     Points and sizes are space-separated triplets of numbers ordered X Y Z.
     X is position north-south, increasing southward. 
     Y is position up-down, increasing upward. 
     Z is position east-west, increasing westward.
     
-    A player's name can be used to specify a point. 
-    Use the keyword 'delta' to specify a point near a player. e.g.
-    
-       mce clone codewarrior 5 5 5 codewarrior delta 10 0 0
-    
-    In this command:
-       'codewarrior' is the source point, 
-       '5 5 5' is the size of the source box, and 
-       'codewarrior delta 10 0 0' means 10 blocks south of me.
-       
+    A player's name can be used as a point - it will use the
+    position of the player's head. Use the keyword 'delta' after
+    the name to specify a point near the player.
+
+    Example:
+       codewarrior delta 0 5 0
+
+    This refers to a point 5 blocks above codewarrior's head.       
        
     
 Please enter world number or path to world folder: 3
