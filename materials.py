@@ -332,7 +332,7 @@ materials.freebieBlocks = set( ( 6, #sapling
                                76, #redstone torch
                                ) );
     
-materials.freebieBlocks = fromiter( ( (x in materials.freebieBlocks) for x in range(256)), dtype='bool');
+materials.freebieBlocks = array( [ (x in materials.freebieBlocks) for x in range(256) ], dtype='bool');
 classicMaterials.freebieBlocks = materials.freebieBlocks;
 
 materials.names = [name for (faces, name) in materials.blockTextures]
