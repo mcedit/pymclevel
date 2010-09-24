@@ -2251,7 +2251,11 @@ class MCInfdevOldLevel(MCLevel):
         chunk.TileEntities.append(entity);
     
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
-        chunkIterator = self.getChunkSlices(box)
+        if box is None:
+            chunkIterator = self.getAllChunkSlices() 
+        else:
+            chunkIterator = self.getChunkSlices(box)
+            
         changesLighting = True
             
         if blocksToReplace != None:
@@ -2302,7 +2306,13 @@ class MCInfdevOldLevel(MCLevel):
         if blocksToReplace != None:
             print "Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced)
             
-                
+    
+    def getAllChunkSlices(self):
+        for cpos in self.presentChunks:    
+            xPos, zPos = cpos
+            yield ( self.getChunk(xPos, zPos), ( slice(0,16),slice(0,16),slice(0,128), ), (xPos * 16, 0, zPos * 16) )
+            
+              
     def getChunkSlices(self, box):
         """ call this method to iterate through a large slice of the world by 
             visiting each chunk and indexing its data with a subslice.
