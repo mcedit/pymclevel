@@ -228,17 +228,17 @@ class mce(object):
         
         blockType = self.readBlockType(command)
         assert blockType >=0 and blockType < 256
+        
         if len(command):
             destPoint = self.readPoint(command);
             destSize = self.readPoint(command, isPoint = False);
-        else:
-            box = self.level.getWorldBounds();
-            destPoint = box.origin
-            destSize = box.size
+            box = BoundingBox(destPoint, destSize)
         
+        else:
+            box = None
+                    
         print "Filling with {0}".format(self.level.materials.names[blockType])
         
-        box = BoundingBox(destPoint, destSize)
         self.level.fillBlocks(box, blockType)
         
         
@@ -269,16 +269,15 @@ class mce(object):
         if len(command):
             destPoint = self.readPoint(command);
             destSize = self.readPoint(command, isPoint = False);
+            box = BoundingBox(destPoint, destSize)
+        
         else:
-            box = self.level.getWorldBounds();
-            destPoint = box.origin
-            destSize = box.size
+            box = None
 
     
         print "Replacing {0} with {1}".format(self.level.materials.names[blockType],
                                               self.level.materials.names[newBlockType])
         
-        box = BoundingBox(destPoint, destSize)
         self.level.fillBlocks(box, newBlockType, blockData = 0, blocksToReplace = [blockType])
         
         self.needsSave = True;
