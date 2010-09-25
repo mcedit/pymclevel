@@ -8,6 +8,7 @@ Requires numpy.
 
 Read mclevel.py to get started.
 
+See LICENSE.txt for licensing terms.
 
 
 
