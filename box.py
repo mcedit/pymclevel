@@ -99,6 +99,9 @@ class BoundingBox (object):
         if z<self.minz or z>=self.maxz: return False
         
         return True;
+    
+    def __cmp__(a, b):
+        return cmp( (a.origin, a.size), (b.origin, b.size) )
         
     def __repr__(self):
         return "BoundingBox({0}, {1})".format(self.origin, self.size)
