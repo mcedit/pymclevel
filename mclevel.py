@@ -127,6 +127,9 @@ import time
 from datetime import datetime;
 from box import BoundingBox
 
+import logging
+from logging import log, debug, warn, info, error, critical
+
 FaceXIncreasing = 0
 FaceXDecreasing = 1
 FaceYIncreasing = 2
@@ -306,7 +309,6 @@ class MCLevel:
         #if self.root_tag is not None, then our compressed data must be stale and we need to recompress.
         
         if self.root_tag is None:
-            #print "Asked to compress unloaded chunk! ", self.chunkPosition
             return;
         else:
             self.packChunkData();
@@ -337,15 +339,14 @@ class MCLevel:
         try:       
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
         except (IOError,TypeError):
-            print "Malformed NBT data: ", self.filename
+            error( "Malformed NBT data in file: " + self.filename )
             self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
             
         try:
             self.shapeChunkData()
-            #print self.chunks[(x,z)].strides
         except KeyError:
-            print "Malformed chunk file: ", self.filename
+            error( "Incorrect chunk format in file: " + self.filename )
             self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
             
@@ -449,8 +450,9 @@ class MCLevel:
         return self.Blocks[x:x+w,z:z+l,y:y+h]
     
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
+        info("Filling blocks in {0} with {1}, data={2} replacing{3}".format(box, blockType, blockData, blocksToReplace) )
         slices = map(slice, box.origin, box.maximum)
-        print slices;
+        
         blocks = self.Blocks[slices[0],slices[2],slices[1]]
         if blocksToReplace != None:
             masks = map(lambda x:blocks==x, blocksToReplace);
@@ -490,9 +492,6 @@ class MCLevel:
         destCorner2 = map(lambda a,b:a+b, sourceBox.size, destinationPoint)
         destx, desty, destz = map(slice, destinationPoint, destCorner2)
         
-        print destx, destz, desty, self.Blocks.shape;
-        print sourceBox, sourcex, sourcez, sourcey, sourceLevel.Blocks.shape;
-        
         convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[sourceLevel.Blocks[sourcex, sourcez, sourcey]]
         self.copyBlockArrayMasked(self.Blocks[destx, destz, desty], convertedSourceBlocks, copyAir, copyWater)
         
@@ -505,7 +504,7 @@ class MCLevel:
         for (chunk, slices, point) in chunkIterator:
             point = map(lambda a,b:a+b, point, destinationPoint)
             point = point[0], point[2], point[1]
-            #print self.Blocks[ [slice(p, p+s.stop-s.start) for p,s in zip(point,slices) ] ].shape, chunk.Blocks[slices].shape
+            
             convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[chunk.Blocks[slices]]
             
             destSlices = [slice(p, p+s.stop-s.start) for p,s in zip(point,slices) ]
@@ -525,9 +524,7 @@ class MCLevel:
         sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
         
         (lx,ly,lz) = sourceBox.size;
-        print "Source: ", sourceLevel
-        print "Destination: ", self
-        print "Asked to copy {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint)
+        info("Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format (ly*lz*lx,sourceBox, destinationPoint, sourceLevel, self))
         
 
         #clip the source ranges to this level's edges.  move the destination point as needed.
@@ -571,7 +568,7 @@ class MCLevel:
         
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         
-        print "Copying {0} blocks from {1} to {2}" .format (sourceBox.volume,sourceBox, destinationPoint)
+        info( "Copying {0} blocks from {1} to {2}" .format (sourceBox.volume,sourceBox, destinationPoint) )
        
         if not isinstance(sourceLevel, MCInfdevOldLevel):
             self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, copyAir, copyWater)
@@ -587,7 +584,7 @@ class MCLevel:
     def fromFile(cls, filename, loadInfinite=True):
         ''' The preferred method for loading Minecraft levels of any type.
         pass False to loadInfinite if you'd rather not load infdev levels.'''
-        print "Identifying ", filename
+        info( "Identifying " + filename )
         
         if not filename:
             raise IOError, "File not found: "+filename
@@ -600,12 +597,12 @@ class MCLevel:
             if not loadInfinite:
                 raise;
             try:
-                print "Can't read, attempting to open directory"
+                info( "Can't read, attempting to open directory" )
                 lev = MCInfdevOldLevel(filename=filename)
-                print "Detected Alpha world."
+                info( "Detected Alpha world." )
                 return lev;
             except Exception, ex:
-                print "Couldn't understand this level: ", e, ex
+                warn( "Couldn't understand this file: {1} ".format(ex) )
                 raise; 
         rawdata = f.read()
         f.close()
@@ -620,7 +617,7 @@ class MCLevel:
             data[3] == 0x88)
         
         if isJavaLevel(data):
-            print "Detected Java-style level"
+            info( "Detected Java-style level" )
             lev = MCJavaLevel(data, filename);
             lev.compressed = False;
             return lev;
@@ -631,7 +628,7 @@ class MCLevel:
         try:
             unzippedData = gzip.GzipFile(fileobj=StringIO.StringIO(rawdata)).read();
         except Exception,e:
-            print "Exception during Gzip operation, assuming {0} uncompressed: ".format(filename), e
+            info( "Exception during Gzip operation, assuming {0} uncompressed: ".format(filename), e )
             if unzippedData is None:
                 compressed = False;
                 unzippedData = rawdata
@@ -640,7 +637,7 @@ class MCLevel:
         data = fromstring(unzippedData, dtype='uint8')
         
         if isJavaLevel(data):
-            print "Detected compressed Java-style level"
+            info( "Detected compressed Java-style level" )
             lev = MCJavaLevel(data, filename);
             lev.compressed = compressed;
             return lev;
@@ -648,28 +645,27 @@ class MCLevel:
         try:
             root_tag = nbt.load(buf=data);
         except IOError, e:
-            print e
             #it must be a plain array of blocks. see if MCJavaLevel handles it.
-            print "Detected compressed flat block array, yzx ordered"
+            info( "Detected compressed flat block array, yzx ordered (IOError: {0})".format(e) )
             lev = MCJavaLevel(data, filename);
             lev.compressed = compressed;
             return lev;
 
         else:
             if(root_tag.name == MinecraftLevel):
-                print "Detected Indev .mclevel"
+                info( "Detected Indev .mclevel" )
                 return MCIndevLevel(root_tag, filename)
             if(root_tag.name == "Schematic"):
-                print "Detected Schematic."
+                info( "Detected Schematic." )
                 return MCSchematic(root_tag=root_tag, filename=filename)
             
             if(root_tag.name == ''):
                 if ("Inventory" in root_tag):
-                    print "Detected INVEdit inventory file"
+                    info( "Detected INVEdit inventory file" )
                     return INVEditChest(root_tag=root_tag, filename=filename);
                     
                 if ("Data" in root_tag and loadInfinite):
-                    print "Detected Infdev level.dat"
+                    info( "Detected Infdev level.dat" )
                     
                     return MCInfdevOldLevel(root_tag=root_tag, filename=filename);
                     
@@ -700,7 +696,6 @@ class MCLevel:
             if not (x,y,z) in sourceBox: continue
             entsInRange.append(entity)
             
-        #if isinstance(self, MCSchematic): print "Entities ", entities, entsInRange
         return entsInRange
     
     def getTileEntitiesInRange(self, sourceBox, tileEntities):
@@ -710,7 +705,6 @@ class MCLevel:
             if not (x,y,z) in sourceBox: continue
             entsInRange.append(tileEntity)
             
-        #if isinstance(self, MCSchematic): print "TileEntities ", tileEntities, entsInRange
         return entsInRange
     
     def copyEntitiesFromInfinite(self, sourceLevel, sourceBox, destinationPoint):
@@ -783,7 +777,7 @@ class MCLevel:
                     tileEntsCopied += 1;
                 except ChunkNotPresent:
                     pass
-            print "Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied)
+            info( "Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied) )
             
             """'''
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourcePoint0)
@@ -946,7 +940,7 @@ class MCSchematic (MCLevel):
                 try:
                     root_tag = nbt.load(filename)
                 except IOError,e:
-                    print "Failed to load file ", e
+                    error( "Failed to load file {0}".format (e) )
                     
         else:
             self.filename = None
@@ -1006,7 +1000,7 @@ class MCSchematic (MCLevel):
         
         blockrotation.RotateLeft(self.Blocks, self.Data);
             
-        print "Relocating entities..."
+        info( "Relocating entities..." )
         for entity in self.Entities:
             for p in "Pos", "Motion":
                 newX = entity[p][2].value
@@ -1053,7 +1047,7 @@ class MCSchematic (MCLevel):
         """ save to file named filename, or use self.filename.  XXX NOT THREAD SAFE AT ALL. """
         if filename == None: filename = self.filename
         if filename == None:
-            print "Attempted to save an unnamed schematic in place :x"
+            warn( "Attempted to save an unnamed schematic in place" )
             return; #you fool!
 
         #root_tag = nbt.TAG_Compound(name="Schematic")
@@ -1126,8 +1120,8 @@ class INVEditChest(MCSchematic):
                 try:
                     root_tag = nbt.load(filename)
                 except IOError,e:
-                    print "Failed to load file ", e
-                    
+                    info( "Failed to load file {0}".format(e) )
+                    raise
         else:
             assert root_tag, "Must have either root_tag or filename"
             self.filename = None
@@ -1201,7 +1195,7 @@ class InfdevChunk(MCLevel):
         MCLevel.compress(self);
         
     def __str__(self):
-        return "InfdevChunk, coords:{0}, world: {1}, D:{2}, L:{4}".format(self.chunkPosition, os.path.split(self.world.worldDir)[1],self.dirty, self.needsLighting)
+        return "InfdevChunk, coords:{0}, world: {1}, D:{2}, L:{3}".format(self.chunkPosition, os.path.split(self.world.worldDir)[1],self.dirty, self.needsLighting)
 
     def create(self):
         (cx,cz) = self.chunkPosition;
@@ -1249,12 +1243,12 @@ class InfdevChunk(MCLevel):
         try:
             os.mkdir(dx)
         except Exception, e: 
-            #print "Failed to make chunk dir x ", dx, e
+            debug( "Failed to make chunk dir x {0}: {1}".format(dx, e ) )
             pass
         try:
             os.mkdir(dz)
         except: 
-            #print "Failed to make chunk dir z ", dz, e
+            debug( "Failed to make chunk dir z {0}: {1}".format(dx, e ) )
             pass
         
         self.dirty = True;
@@ -1266,7 +1260,7 @@ class InfdevChunk(MCLevel):
                 
     def save(self):
         """ does not recalculate any data or light """
-        #print "Saving chunk: ", (cx, cz), self._presentChunks[(cx,cz)]
+        debug( "Saving chunk: {0}".format(self) )
         self.compress()
         
         if self.dirty:
@@ -1274,24 +1268,24 @@ class InfdevChunk(MCLevel):
             try:
                 os.rename(self.filename, self.filename + ".old")
             except Exception,e:
-                #print "No existing chunk file to rename"
+                debug( "No existing chunk file to rename" )
                 pass
             try:
                 chunkfh = file(self.filename, 'wb')
                 chunkfh.write(self.compressedTag)
                 chunkfh.close()
                 
-                #print "Saved chunk ", self._presentChunks[(cx,cz)];
+                debug( "Saved chunk {0}".format( self ) )
             except IOError,e:
                 try: os.rename(self.filename + ".old", self.filename)
-                except: print "Unable to restore old chunk file"
-                print "Failed to save ", self.filename, e
+                except: warn( "Unable to restore old chunk file" )
+                error( "Failed to save {0}: {1}".format(self.filename, e) )
                 
             try: os.remove(self.filename + ".old")
             except Exception,e:
-                #print "No old chunk file to remove"
+                debug( "No old chunk file to remove" )
                 pass
-            #print "Saved chunk ", self._presentChunks[(cx,cz)];
+            debug( "Saved chunk {0}".format(self) )
             self.dirty = False;
             
     def load(self):
@@ -1397,7 +1391,7 @@ class InfdevChunk(MCLevel):
          
     def packChunkData(self):
         if self.root_tag is None:
-            #print "packChunkData called on unloaded chunk! ", self.chunkPosition
+            warn( "packChunkData called on unloaded chunk: {0}".format( self.chunkPosition ) )
             return;
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
@@ -1558,7 +1552,7 @@ class MCInfdevOldLevel(MCLevel):
         self.preloadChunkPaths();
     
     def preloadChunkPaths(self):
-        print "Scanning for chunks..."
+        info( "Scanning for chunks..." )
         worldDirs = os.listdir(self.worldDir);
         for dirname in worldDirs :
             if(dirname in self.dirhashes):
@@ -1578,7 +1572,7 @@ class MCInfdevOldLevel(MCLevel):
                         for c in chunks:
                             self._presentChunks[c] = InfdevChunk(self, c);
                             
-        print "Found {0} chunks.".format(len(self._presentChunks))
+        info( "Found {0} chunks.".format(len(self._presentChunks)) )
         
                             #self._presentChunks.update(dict(zip(chunks, fullpaths)));
 ##                        for filename, chunk in zip(fullpaths, chunks):
@@ -1614,13 +1608,14 @@ class MCInfdevOldLevel(MCLevel):
     def decbase36(self, s):
         n = 0;
         neg = False;
+        s = s.lower();
+        
         if s[0] == '-':
             neg = True;
             s=s[1:];
         
         while(len(s)):
             if not s[0] in self.base36alphabet:
-                print "Bad letter", s[0];
                 break;
             n*=36
             n+=self.base36alphabet.index(s[0])
@@ -1827,7 +1822,7 @@ class MCInfdevOldLevel(MCLevel):
             
 
         self.root_tag.save(self.filename);
-        print "Saved {0} chunks".format(dirtyChunkCount);
+        info( "Saved {0} chunks".format(dirtyChunkCount) )
        
     def generateLights(self, dirtyChunks = None):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
@@ -1849,7 +1844,7 @@ class MCInfdevOldLevel(MCLevel):
         #at 150k per loaded chunk, 
         maxLightingChunks = 4000
         
-        print "Asked to light {0} chunks".format(len(dirtyChunks))
+        info( "Asked to light {0} chunks".format(len(dirtyChunks)) )
         chunkLists = [dirtyChunks];
         def reverseChunkPosition(x):
             cx,cz = x.chunkPosition;
@@ -1882,12 +1877,12 @@ class MCInfdevOldLevel(MCLevel):
             chunkLists = splitChunkLists(chunkLists);
         
         if len(chunkLists) > 1:
-            print "Using {0} batches to conserve memory.".format(len(chunkLists))
+            info( "Using {0} batches to conserve memory.".format(len(chunkLists)) )
         
         i=0
         for dc in chunkLists:
             i+=1;
-            print "Batch {0}/{1}".format(i, len(chunkLists))
+            info( "Batch {0}/{1}".format(i, len(chunkLists)) )
             
             dc = sorted(dc, key=lambda x:x.chunkPosition) 
         
@@ -1896,7 +1891,7 @@ class MCInfdevOldLevel(MCLevel):
                 ch.compress();
         timeDelta = datetime.now()-startTime;
         
-        print "Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0)
+        info( "Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0) )
             
         return;
         
@@ -1915,14 +1910,13 @@ class MCInfdevOldLevel(MCLevel):
         
         dirtyChunks = sorted(list(dirtyChunks), key=lambda x:x.chunkPosition) 
                    
-        print "Lighting {0} chunks".format(len(dirtyChunks))
+        info( "Lighting {0} chunks".format(len(dirtyChunks)) )
         for chunk in dirtyChunks:
             chunk.load();
             chunk.chunkChanged();
-            #print chunk;
+            
             assert chunk.dirty and chunk.needsLighting
-            #chunk.SkyLight[:] = 0
-            #chunk.BlockLight[:] = 0
+            
             chunk.BlockLight[:] = self.materials.lightEmission[chunk.Blocks];
             
             if conserveMemory:
@@ -1930,10 +1924,7 @@ class MCInfdevOldLevel(MCLevel):
             
         zeroChunk = ZeroChunk(128)
         
-        
-        #print "Lighting {0} chunks...".format( len(dirtyChunks) )
-        #for chunk in dirtyChunks:
-            
+           
         la[18] = 0; #for normal light dispersal, leaves absorb the same as empty air.
         startingDirtyChunks = dirtyChunks
         
@@ -1941,15 +1932,15 @@ class MCInfdevOldLevel(MCLevel):
         oldBottomEdge = zeros( (16, 1, 128), 'uint8');
         oldChunk = zeros( (16, 16, 128), 'uint8');
           
-        print "Dispersing light..."
+        info( "Dispersing light..." )
         for light in ("BlockLight", "SkyLight"):
-          print light;
           zerochunkLight = getattr(zeroChunk, light); 
           
           newDirtyChunks = list(startingDirtyChunks);
            
           for i in range(14):
-            print "Pass ", i, ":", len(newDirtyChunks), "chunks"
+            info( "{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks)) );
+            
             """
             propagate light!
             for each of the six cardinal directions, figure a new light value for 
@@ -2112,97 +2103,6 @@ class MCInfdevOldLevel(MCLevel):
         for ch in startingDirtyChunks:
             ch.needsLighting = False;
                     
-        """
-            #fill all sky-facing blocks with full light 
-            for x,z in itertools.product(range(16),
-                                       range(16)):
-                lv=15;
-                hm = heightMap[z,x];
-                skyLight[x,z,(hm+1)>>1:] = 255;
-                
-                for y in range(hm, 128):
-                    activeBlocks.add((x+worldX, z+worldZ, y))
-            #===================================================================
-            #    for y in range(0, self.Height).__reversed__():
-            #        
-            #        lv-= self.materials.lightAbsorption[self.blockAt(x,y,z)];
-            #            break
-            #        self.setSkylightAt(x,y,z,15);
-            # 
-            #        activeBlocks.add( (x,z,y) )
-            #===================================================================
-                
-
-        def getHeightMap(x,z):
-            cx,cz = x>>4,z>>4
-            x,z = x&0xf,z&0xf
-            self.getChunk(cx,cz)HeightMap[z,x]
-
-        def getLight(x,z,y):
-            return self.skylightAt(x,y,z)
-        def setLight(x,z,y,lv):
-            return self.setSkylightAt(x,y,z,lv);
-
-        lightAbsorption = self.materials.lightAbsorption
-        
-        print "Lighting %d blocks..." % len(activeBlocks);
-        while len(activeBlocks):
-            currentBlocks = activeBlocks;
-            activeBlocks = set();
-            for p in currentBlocks:
-                #p = activeBlocks.pop();
-                x,z,y = p
-                
-                hm = getHeightMap(x,z)
-                
-                lightValue = getLight(x,z,y);
-                if y < hm: lightValue -= 1;
-                
-                lightValue = lightValue-lightAbsorption[self.blockAt(x,y,z)];
-                setLight(x,z,y,lightValue);
-                
-                if lightValue:
-                    try:        
-                        if y<hm:
-                            if(setLight(x,z,y+1, lightValue)):
-                                activeBlocks.add( (x,z,y+1) )
-                    except KeyError:
-                        pass;
-
-                    try:        
-                        if y>0:
-                            setLight(x,z,y-1, lightValue)
-                            activeBlocks.add( (x,z,y-1) )
-                    except KeyError:
-                        pass;
-                        
-                    try:        
-                        if(setLight(x,z+1,y, lightValue)):
-                            activeBlocks.add( (x,z+1,y) )
-                    except KeyError:
-                        pass;
-                           
-                    try:        
-                        if(setLight(x,z-1,y, lightValue)):
-                            activeBlocks.add( (x,z-1,y) )
-                    except KeyError:
-                        pass;
-                    
-                    try:        
-                        if(setLight(x+1,z,y, lightValue)):
-                            activeBlocks.add( (x+1,z,y) )
-                    except KeyError:
-                        pass;
-                    
-                    try:        
-                        if(setLight(x-1,z,y, lightValue)):
-                            activeBlocks.add( (x-1,z,y) )
-                    except KeyError:
-                        pass;
-                    
-                #doneBlocks.add(p);
-
-            print "Lighting pass:", len(activeBlocks);"""
 
     def entitiesAt(self, x, y, z):
         chunk = self.getChunk(x>>4, z>>4)
@@ -2277,7 +2177,7 @@ class MCInfdevOldLevel(MCLevel):
         for (chunk, slices, point) in chunkIterator:
             i+=1;
             if i % 100 == 0:
-                print "Chunk {0}...".format(i)
+                info( "Chunk {0}...".format(i) )
                 
             blocks = chunk.Blocks[slices] 
             mask = None
@@ -2309,7 +2209,7 @@ class MCInfdevOldLevel(MCLevel):
             chunk.compress();
         
         if blocksToReplace != None:
-            print "Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced)
+            info( "Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced) )
             
     
     def getAllChunkSlices(self):
@@ -2360,12 +2260,8 @@ class MCInfdevOldLevel(MCLevel):
                 try:
                     blocks = level.blocksForChunk(cx, cz)
                 except ChunkNotPresent, e:
-                    #print level, "Chunk not present!", e
-                    #wildChunks.add((cx,cz))
                     continue;
-                #print "Chunk", cx, cz
-                #print "Position in newBlocks (", newMinX, newMinZ, ")-(", newMaxX, newMaxZ, ")"
-                #print "Position in chunk (", localMinX, localMinZ, ")-(", localMaxX, localMaxZ, ")"
+                
                 yield           (level.getChunk(cx, cz),
                                 (slice(localMinX,localMaxX),slice(localMinZ,localMaxZ),slice(box.miny,box.maxy)),  
                                 (newMinX, 0, newMinZ))
@@ -2389,7 +2285,6 @@ class MCInfdevOldLevel(MCLevel):
                 sz+point[2] + blocks.shape[1],
             )
             
-            #print y, mpy
             sourceBlocks = sourceLevel.Blocks[sx+point[0]:localSourceCorner2[0],
                                               sz+point[2]:localSourceCorner2[2],
                                               sy:localSourceCorner2[1]]
@@ -2426,7 +2321,7 @@ class MCInfdevOldLevel(MCLevel):
         
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         #needs work xxx
-        print "Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint)
+        info( "Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint) )
         blocksCopied = 0
         
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
@@ -2462,7 +2357,7 @@ class MCInfdevOldLevel(MCLevel):
                    blocksCopied += 1;
 
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
-        print "Blocks copied: %d" % blocksCopied;
+        info( "Blocks copied: %d" % blocksCopied )
         #self.saveInPlace()
  
 
@@ -2475,7 +2370,7 @@ class MCInfdevOldLevel(MCLevel):
         #return c.ready();
 
     def malformedChunk(self, cx, cz):
-        print "Ignoring malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz))
+        debug( "Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
         del self._presentChunks[(cx,cz)]
         
     def createChunk(self, cx, cz):
@@ -2483,15 +2378,15 @@ class MCInfdevOldLevel(MCLevel):
         self._presentChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
         
     def createChunksInBox(self, box):
-        print "Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz)))
+        info( "Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
+        i=0;
         for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
-            #print cx,cz
+            i+=1;
             if not ((cx,cz) in self._presentChunks):
-                #print "Making", cx, cz
                 self.createChunk(cx,cz);
             assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
-                
-        #for cx,cz in itertools.product(xrange(minCX,maxCX), xrange(minCZ, maxCZ)):
+            if i%100 == 0:
+                info( "Chunk {0}...".format( i ) )
         
         
     def deleteChunk(self, cx, cz):
@@ -2501,15 +2396,16 @@ class MCInfdevOldLevel(MCLevel):
         del self._presentChunks[(cx,cz)]
         
     def deleteChunksInBox(self, box):
-        print "Deleting {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz)))
+        info( "Deleting {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
+        i=0;
         for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
-            #print cx,cz
+            i+=1;
             if not ((cx,cz) in self._presentChunks):
-                #print "Making", cx, cz
                 self.deleteChunk(cx,cz);
             assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
-                
-        #for cx,cz in itertools.product(xrange(minCX,maxCX), xrange(minCZ, maxCZ)):
+            if i%100 == 0:
+                info( "Chunk {0}...".format( i ) )
+        
         
     def setPlayerSpawnPosition(self, pos):
         xyz = ["SpawnX", "SpawnY", "SpawnZ"]
@@ -2684,8 +2580,8 @@ class MCIndevLevel(MCLevel):
                 #self.saveInPlace();
                 
         else:
-            print "New Level!";
-            raise ValueError, "Can't do that sir"
+            info( "Creating new Indev levels is not yet implemented.!" )
+            raise ValueError, "Can't do that yet"
 #            self.SurroundingGroundHeight = root_tag[Environment][SurroundingGroundHeight].value
 #            self.SurroundingGroundType = root_tag[Environment][SurroundingGroundType].value
 #            self.SurroundingWaterHeight = root_tag[Environment][SurroundingGroundHeight].value
@@ -2715,14 +2611,14 @@ class MCIndevLevel(MCLevel):
                                8, 9, 10, 11, 12, 13, 14, 15]);
                                
         torchIndexes = (self.Blocks == self.materials.materialNamed("Torch"))
-        print "Rotating torches: ", len(torchIndexes.nonzero()[0]);
+        info( "Rotating torches: {0}".format( len(torchIndexes.nonzero()[0]) ) )
         self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
         
         
     def saveToFile(self, filename = None):
         if filename == None: filename = self.filename;
         if filename == None:
-            print "Attempted to save an unnamed file in place :x"
+            warn( "Attempted to save an unnamed file in place" )
             return; #you fool!
         
         self.Data <<= 4;
@@ -2743,7 +2639,6 @@ class MCIndevLevel(MCLevel):
         try:
             os.rename(filename, filename + ".old");
         except Exception,e:
-            #print "Atomic Save: No existing file to rename"
             pass
             
         try:
@@ -2753,7 +2648,6 @@ class MCIndevLevel(MCLevel):
             
         try: os.remove(filename + ".old");
         except Exception,e:
-            #print "Atomic Save: No old file to remove"
             pass
         
         self.BlockLight = self.Data & 0xf
@@ -2813,7 +2707,7 @@ class MCJavaLevel(MCLevel):
     
     def guessSize(self, data):
         if(data.shape[0] <= (32 * 32 * 64)*2):
-            print "Tiny map is too small!";
+            warn( "Can't guess the size of a {0} byte level".format(data.shape[0]) )
             raise IOError, "MCJavaLevel attempted for smaller than 64 blocks cubed"
         if(data.shape[0] > (32 * 32 * 64)*2):
             self.Width = 64
@@ -2850,14 +2744,14 @@ class MCJavaLevel(MCLevel):
         else:
             self.guessSize(data);
             
-        print "MCJavaLevel created for potential level of size ", (self.Width, self.Length, self.Height) 
+        info( "MCJavaLevel created for potential level of size " + str( (self.Width, self.Length, self.Height) ) )
             
         blockCount = self.Height * self.Length * self.Width
         if blockCount > data.shape[0]: raise ValueError, "Level file does not contain enough blocks!"
         
         blockOffset = data.shape[0]-blockCount
         blocks = data[blockOffset:blockOffset+blockCount]
-        #print blockOffset, blockCount, len(blocks);
+        
         maxBlockType = 64 #maximum allowed in classic
         while(max(blocks[-4096:]) > maxBlockType):
             #guess the block array by starting at the end of the file
@@ -2886,7 +2780,6 @@ class MCJavaLevel(MCLevel):
 ##        lastdata = filedata[self.blockOffset+len(blockstr):];
 
         s = StringIO.StringIO()
-        #print "COMPRESSED?", self.compressed
         if self.compressed:
             g = gzip.GzipFile(fileobj=s, mode='wb');
         else:
@@ -2901,7 +2794,6 @@ class MCJavaLevel(MCLevel):
         try:
             os.rename(self.filename, self.filename + ".old");
         except Exception,e:
-            #print "Atomic Save: No existing file to rename"
             pass;
         
         try:        
@@ -2909,7 +2801,7 @@ class MCJavaLevel(MCLevel):
             f.write(s.getvalue());
             
         except Exception, e:
-            print "Error while saving java level in place: ", e
+            info( "Error while saving java level in place: {0}".format( e ) )
             f.close()
             try:os.remove(self.filename);
             except: pass
@@ -2918,7 +2810,6 @@ class MCJavaLevel(MCLevel):
         try:
             os.remove(self.filename + ".old");
         except Exception,e:
-            #print "Atomic Save: No old file to remove"
             pass;
         f.close()
             
@@ -3029,6 +2920,7 @@ def testSchematics():
     schematic.copyBlocksFrom(level, BoundingBox((0,0,0), (64,64,64,)), (0,0,0) )
 
 def testINVEditChests():
+    print "INVEdit chest"
     invFile = MCLevel.fromFile("unnamed.inv");
     print "Blocks: ", invFile.Blocks                      
     print "Data: ", invFile.Data                      
@@ -3046,4 +2938,7 @@ def testmain():
 #import cProfile   
 if __name__=="__main__":
     #cProfile.run('testmain()');
+    logging.basicConfig(format='%(levelname)s:%(message)s')
+    logging.getLogger().level = logging.INFO
+    
     testmain();
