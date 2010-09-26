@@ -2,6 +2,7 @@ import mclevel
 import sys
 import os
 from box import BoundingBox
+from numpy import zeros, bincount
 import logging
 
 class UsageError(RuntimeError): pass
@@ -94,6 +95,8 @@ class mce(object):
         
         "help",
         "blocks",
+        "analyze",
+        
         "debug",
         "log",
     ]
@@ -299,6 +302,30 @@ class mce(object):
         self.needsSave = True;
         print "Replaced {0} blocks.".format(box.volume) 
     
+    def _analyze(self, command):
+        """
+    analyze
+    
+    Counts all of the block types in every chunk of the world.
+    """
+        blockCounts = zeros( (256,), 'uint64')
+        
+        i=0;
+        for cPos in self.level.presentChunks:
+            i += 1;
+            ch = self.level.getChunk(*cPos);
+            counts = bincount(ch.Blocks.ravel())
+            blockCounts[:counts.shape[0]] += counts
+            
+            ch.unload();
+            if i % 100 == 0:
+                print "Chunk {0}...".format( i )
+            
+        for i in range(256):
+            if blockCounts[i]:
+                print "{0:30}: {1:10}".format(self.level.materials.names[i], blockCounts[i]);
+                
+            
     def _export(self, command):
         """
     export <filename> <sourcePoint> <sourceSize>
