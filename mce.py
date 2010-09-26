@@ -674,18 +674,10 @@ class mce(object):
         raise UsageError;
     
     def loadWorld(self, world):
+        level = None
         try:
             worldNum = int(world)
-            if str(worldNum) == world:
-                if int(world) > 0 and int(world) <= 5:
-                    self.level = mclevel.loadWorldNumber(int(world))
-                    self.filename = self.level.filename
-                    
-                    self.shortWorld = "World{0}".format(int(world))
         except ValueError:
-            pass
-                
-        if self.level is None:
             self.level = mclevel.fromFile(world)
             
             self.filename = self.level.filename
@@ -693,7 +685,16 @@ class mce(object):
             self.shortWorld = os.path.split(self.level.filename)[1];
             if self.shortWorld == "level.dat":
                 self.shortWorld = os.path.split(os.path.split(self.level.filename)[0])[1];
-            
+        
+        else:
+            if str(worldNum) == world:
+                if worldNum > 0 and worldNum <= 5:
+                    self.level = mclevel.loadWorldNumber(worldNum)
+                    self.filename = self.level.filename
+                    
+                    self.shortWorld = "World{0}".format(worldNum)
+                
+        
     
     level = None  
     shortWorld = "[unknown world]"
