@@ -309,10 +309,6 @@ class MCLevel:
             #print "Asked to compress unloaded chunk! ", self.chunkPosition
             return;
         else:
-            #compress if the compressed data is dirty, 
-            #or if it's missing, and we also have uncompressed data
-            #(if both data are missing, the chunk is not even loaded)
-            
             self.packChunkData();
             
             buf = StringIO.StringIO()
@@ -1299,6 +1295,8 @@ class InfdevChunk(MCLevel):
             self.dirty = False;
             
     def load(self):
+        """ If the chunk is unloaded, reads the chunk from disk.
+        Also decompresses it """
         if self.compressedTag is None:
             try:
                 compressedData = file(self.filename, 'rb')
