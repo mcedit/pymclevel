@@ -1192,7 +1192,9 @@ class InfdevChunk(MCLevel):
             self.create();
             
     def compress(self):
-        if not self.dirty: return
+        if not self.dirty: 
+            self.root_tag = None
+            return
         MCLevel.compress(self);
         
     def __str__(self):
