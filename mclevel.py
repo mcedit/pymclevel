@@ -806,12 +806,13 @@ class MCLevel:
 
     def copyBlockArrayMasked(self, blocks, sourceBlocks, copyAir, copyWater):
         #assumes sourceBlocks has already been converted to my materials
+        mask = sourceBlocks == sourceBlocks
         if not copyAir:
-            mask=(sourceBlocks!=0)
-            if not copyWater:
-                mask &=(sourceBlocks != self.materials.materialNamed("Water"))
-                mask &=(sourceBlocks != self.materials.materialNamed("Stationary water"))
-                
+            mask &=(sourceBlocks != self.materials.materialNamed("Air"))
+        if not copyWater:
+            mask &=(sourceBlocks != self.materials.materialNamed("Water"))
+            mask &=(sourceBlocks != self.materials.materialNamed("Stationary water"))
+            
             blocks[mask] = sourceBlocks[mask]
             return mask;
         
