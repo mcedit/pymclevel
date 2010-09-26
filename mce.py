@@ -21,6 +21,8 @@ class mce(object):
        {commandPrefix}export <filename> <sourcePoint> <sourceSize>
        {commandPrefix}import <filename> <destPoint>
        
+       {commandPrefix}analyze
+       
     Player commands:
        {commandPrefix}player [ <player> [ <point> ] ]
        {commandPrefix}spawn [ <point> ]
@@ -36,7 +38,7 @@ class mce(object):
        
     World commands:
        {commandPrefix}degrief
-    
+       
     Editor commands:
        {commandPrefix}save 
        {commandPrefix}reload 
