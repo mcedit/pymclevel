@@ -1308,6 +1308,13 @@ class InfdevChunk(MCLevel):
         if self.root_tag is None:
             self.decompress()
     
+    def unload(self):
+        """ Frees the chunk's memory. Saves the chunk to disk if needed. """
+        self.compress();
+        self.save();
+            
+        self.compressedTag = None;
+    
     def isLoaded(self):
         #we're loaded if we have our tag data in ram 
         #and we don't have to go back to the disk for it.
