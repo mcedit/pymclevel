@@ -2605,18 +2605,17 @@ class MCIndevLevel(MCLevel):
     def setBlockDataAt(self, x,y,z, newdata):
         if x<0 or y<0 or z<0: return 0
         if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        self.Data[x,z,y] &= 0xf0
-        self.Data[x,z,y] |= (newdata & 0xf);        
+        self.Data[x,z,y] = (newdata & 0xf);        
 
     def blockDataAt(self, x, y, z):
         if x<0 or y<0 or z<0: return 0
         if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        return self.Data[x,z,y] & 0xf;
+        return self.Data[x,z,y];
     
     def blockLightAt(self, x, y, z):
         if x<0 or y<0 or z<0: return 0
         if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        return (self.Data[x,z,y] & 0xf);
+        return self.BlockLight[x,z,y];
     
     def __repr__(self):
         return "MCIndevLevel({0}): {1}W {2}L {3}H".format(self.filename, self.Width, self.Length, self.Height)
@@ -2637,15 +2636,26 @@ class MCIndevLevel(MCLevel):
             self.Width = mapTag[Width].value
             self.Length = mapTag[Length].value
             self.Height = mapTag[Height].value
-            self.Blocks = mapTag[Blocks].value
-            self.Blocks.shape = (self.Width, self.Length, self.Height,  )
-            self.oldBlockStrides = self.Blocks.strides
-            self.Blocks.strides = (1, self.Width, self.Width * self.Length)
+            
+            mapTag[Blocks].value.shape = (self.Height, self.Length, self.Width)
+            
+            self.Blocks = swapaxes(mapTag[Blocks].value, 0, 2)
+            
+            #self.Blocks.shape = (self.Width, self.Length, self.Height,  )
+            #self.oldBlockStrides = self.Blocks.strides
+            #self.Blocks.strides = (1, self.Width, self.Width * self.Length)
 
-            self.Data = mapTag[Data].value
-            self.Data.shape = (self.Width, self.Length, self.Height,  )
-            self.oldDataStrides = self.Data.strides
-            self.Data.strides = (1, self.Width, self.Width * self.Length)
+            mapTag[Data].value.shape = (self.Height, self.Length, self.Width)
+            
+            self.Data = swapaxes(mapTag[Data].value, 0, 2)
+            
+            self.BlockLight = self.Data & 0xf
+            
+            self.Data >>= 4
+            
+            #self.Data.shape = (self.Width, self.Length, self.Height,  )
+            #self.oldDataStrides = self.Data.strides
+            #self.Data.strides = (1, self.Width, self.Width * self.Length)
             
             self.Spawn = [mapTag[Spawn][i].value for i in range(3)];
             
@@ -2706,20 +2716,19 @@ class MCIndevLevel(MCLevel):
     def saveToFile(self, filename = None):
         if filename == None: filename = self.filename;
         if filename == None:
-            print "Attempted to save an unnamed schematic in place :x"
+            print "Attempted to save an unnamed file in place :x"
             return; #you fool!
         
-        newBlockStrides = self.Blocks.strides;
-        self.Blocks.strides = self.oldBlockStrides;
-        newDataStrides = self.Data.strides;
-        self.Data.strides = self.oldDataStrides;
-
+        self.Data <<= 4;
+        self.Data |= (self.BlockLight & 0xf)
+        
         mapTag = nbt.TAG_Compound( name=Map );
         mapTag[Width] = nbt.TAG_Short(self.Width);
         mapTag[Height] = nbt.TAG_Short(self.Height);
         mapTag[Length] = nbt.TAG_Short(self.Length);
         mapTag[Blocks] = nbt.TAG_Byte_Array(self.Blocks);
         mapTag[Data]   = nbt.TAG_Byte_Array(self.Data);
+        
         mapTag[Spawn]  = nbt.TAG_List([nbt.TAG_Short(i) for i in self.Spawn])
 
         self.root_tag[Map] = mapTag;
@@ -2741,9 +2750,10 @@ class MCIndevLevel(MCLevel):
             #print "Atomic Save: No old file to remove"
             pass
         
-        self.Blocks.strides = newBlockStrides;
-        self.Data.strides = newDataStrides;
-         
+        self.BlockLight = self.Data & 0xf
+            
+        self.Data >>= 4
+              
 
 import re
 
