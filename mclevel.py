@@ -2394,7 +2394,7 @@ class MCInfdevOldLevel(MCLevel):
             mask = self.copyBlockArrayMasked(blocks, sourceBlocks, copyAir, copyWater)    
             
             if hasattr(sourceLevel, 'Data'):
-                #infdev or schematic
+                #indev or schematic
                 sourceData = sourceLevel.Data[sx+point[0]:localSourceCorner2[0],
                                               sz+point[2]:localSourceCorner2[2],
                                               sy:localSourceCorner2[1]]
@@ -2453,7 +2453,6 @@ class MCInfdevOldLevel(MCLevel):
                else:
                    chunk.chunkChanged();
                    blocksCopied += 1;
-#""">>>>>>> cfe22db... improved block copying speed"""
 
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
         print "Blocks copied: %d" % blocksCopied;
