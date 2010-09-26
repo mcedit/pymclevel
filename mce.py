@@ -2,6 +2,7 @@ import mclevel
 import sys
 import os
 from box import BoundingBox
+import logging
 
 class UsageError(RuntimeError): pass
 class BlockMatchError(RuntimeError): pass
@@ -94,6 +95,7 @@ class mce(object):
         "help",
         "blocks",
         "debug",
+        "log",
     ]
     debug = False
     needsSave = False;
@@ -187,7 +189,21 @@ class mce(object):
     def _debug(self, command):
         self.debug = not self.debug
         print "Debug", ("disabled", "enabled")[self.debug]
-        
+    def _log(self, command):
+        """
+    log [ <number> ]
+    
+    Get or set the log threshold. 0 logs everything; 50 only logs major errors.
+    """
+        if len(command):
+            try:
+                logging.getLogger().level = int(command[0]);
+            except ValueError:
+                raise UsageError
+        else:
+            print "Log level: {0}".format(logging.getLogger().level)
+            
+    
     def _clone(self, command):
         """
     clone <sourcePoint> <sourceSize> <destPoint>
@@ -684,7 +700,9 @@ class mce(object):
     batchMode = False;
     
     def run(self):
-        
+        logging.basicConfig(format='%(levelname)s:%(message)s')
+        logging.getLogger().level = logging.INFO
+    
         appPath = sys.argv.pop(0)
         if len(sys.argv):
             world = sys.argv.pop(0)
