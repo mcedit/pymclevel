@@ -1831,7 +1831,6 @@ class MCInfdevOldLevel(MCLevel):
         """
         activeBlocks = set();
         #doneBlocks = set()
-        la = array(self.materials.lightAbsorption)
         
             
         startTime = datetime.now();
@@ -1898,6 +1897,7 @@ class MCInfdevOldLevel(MCLevel):
         
     def _generateLights(self, dirtyChunks):
         conserveMemory = False
+        la = array(self.materials.lightAbsorption)
         
             #[d.genFastLights() for d in dirtyChunks]
         dirtyChunks = set(dirtyChunks)
