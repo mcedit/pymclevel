@@ -169,8 +169,7 @@ class TAG_String(TAG_Value):
 
   tag = 8;
   fmt = ">h%ds"
-  def setValue(self, val):
-      _value = str(val)
+  dataType = str
   
   def __init__(self, value="", name=None, data=""):
     self.name=name
