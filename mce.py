@@ -815,6 +815,7 @@ try:
 except Exception, e:
     traceback.print_exc()
     print e
+    raise SystemExit(1)
     #editor.printUsage()
     
 
