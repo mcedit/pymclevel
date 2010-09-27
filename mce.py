@@ -194,6 +194,7 @@ class mce(object):
     def _debug(self, command):
         self.debug = not self.debug
         print "Debug", ("disabled", "enabled")[self.debug]
+
     def _log(self, command):
         """
     log [ <number> ]
