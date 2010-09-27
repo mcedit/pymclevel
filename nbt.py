@@ -141,8 +141,9 @@ class TAG_Byte_Array(TAG_Value):
 
   tag = 7;
   fmt = ">i%ds"
-  def setValue(self, val):
-      _value = numpy.array(val, uint8)
+
+  def dataType(self, value):
+      return array(value, uint8)
       
   def __repr__(self):
     return "<%s: length %d> ( %s )" % (self.__class__, len(self.value), self.name)
