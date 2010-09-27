@@ -313,9 +313,7 @@ class mce(object):
     """
         blockCounts = zeros( (256,), 'uint64')
         
-        i=0;
-        for cPos in self.level.presentChunks:
-            i += 1;
+        for i, cPos in enumerate(self.level.presentChunks, 1):
             ch = self.level.getChunk(*cPos);
             counts = bincount(ch.Blocks.ravel())
             blockCounts[:counts.shape[0]] += counts
