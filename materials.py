@@ -4,7 +4,7 @@ from materials import classicMaterials, materials
 from numpy import *
 NOTEX = 184
 #wow, punching this map in would have been much easier in hex
-class MCMaterials():
+class MCMaterials(object):
     def materialNamed(self, name):
         return self.names.index(name);
 
