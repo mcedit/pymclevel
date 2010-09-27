@@ -23,7 +23,7 @@ import StringIO;
 from numpy import array, zeros, uint8, fromstring
 TAGfmt = ">b"
 
-class TAG_Value:
+class TAG_Value(object):
   """Simple values. Subclasses override fmt to change the type and size. 
   Subclasses may set dataType instead of overriding setValue for automatic data type coercion"""
   
