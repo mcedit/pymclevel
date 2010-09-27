@@ -196,14 +196,14 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
 
   tag = 10;
   
-  def setValue(self, val):
+  def dataType(self, val):
       for i in val:
           assert isinstance(val, TAG_Value)
           assert val.name
-      list = list(val)
+      return list(val)
   
   def __repr__(self):
-    return "%s( %s ): %s" % (str(self.__class__), self.name, self.list)
+    return "%s( %s ): %s" % (str(self.__class__), self.name, self.value)
 
   def __init__(self, value=[], name="",data=""):
       
@@ -211,9 +211,9 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
     if value.__class__ == ''.__class__:
       self.name = value;
       value = [];
-    self.list = []
+    self.value = []
     if(data == ""):
-      self.list += value;
+      self.value += value;
     else:
 
       data_cursor = 0;
@@ -234,39 +234,39 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         tag = tag_handlers[tag_type]( data=data[data_cursor:], name=tag_name )
         
         data_cursor += tag.nbt_length()
-        self.list.append(tag);
+        self.value.append(tag);
         
       
   def nbt_length(self):
-    return sum(map(lambda x:(x.nbt_length()+len(x.name)+3), self.list))+1;
+    return sum(map(lambda x:(x.nbt_length()+len(x.name)+3), self.value))+1;
   
   def write_value(self, buf):
-    for i in self.list:
+    for i in self.value:
       i.save(buf=buf)
     buf.write("\x00")
     
   "collection functions"
   def __getitem__(self, k):
-    #hits=filter(lambda x:x.name==k, self.list);
+    #hits=filter(lambda x:x.name==k, self.value);
     #if(len(hits)): return hits[0];
-    for key in self.list:
+    for key in self.value:
         if key.name == k: return key
     raise KeyError("Key {0} not found".format(k));
   
-  def __iter__(self):       return itertools.imap(lambda x:x.name, self.list);
-  def __contains__(self, k):return k in map(lambda x:x.name, self.list);
-  def __len__(self):        return self.list.__len__()
+  def __iter__(self):       return itertools.imap(lambda x:x.name, self.value);
+  def __contains__(self, k):return k in map(lambda x:x.name, self.value);
+  def __len__(self):        return self.value.__len__()
   
 
   def __setitem__(self, k, v):
     if not (v.__class__ in tag_handlers.values()): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
     """remove any items already named "k".  """
-    olditems = filter(lambda x:x.name==k, self.list)
-    for i in olditems: self.list.remove(i)
-    self.list.append(v);
+    olditems = filter(lambda x:x.name==k, self.value)
+    for i in olditems: self.value.remove(i)
+    self.value.append(v);
     v.name=k;
     
-  def __delitem__(self, k): self.list.__delitem__(self.list.index(self[k]));
+  def __delitem__(self, k): self.value.__delitem__(self.value.index(self[k]));
 
   def add(self, v):
     self[v.name] = v;
