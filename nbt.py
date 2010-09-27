@@ -227,13 +227,8 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         assert_type(tag_type, data_cursor)
         
         
-        tag_name = TAG_String( data=data[data_cursor:] )
-        data_cursor += tag_name.nbt_length()
-        tag_name = tag_name.value
+        data_cursor, tag = load_named(data, data_cursor, tag_type)
         
-        tag = tag_handlers[tag_type]( data=data[data_cursor:], name=tag_name )
-        
-        data_cursor += tag.nbt_length()
         self.value.append(tag);
         
       
@@ -389,6 +384,15 @@ def loadFile(filename):
     else:
       return load(buf=fromstring(data, 'uint8'));
 
+def load_named(data, data_cursor, tag_type):
+    tag_name = TAG_String( data=data[data_cursor:] )
+    data_cursor += tag_name.nbt_length()
+    tag_name = tag_name.value
+    
+    tag = tag_handlers[tag_type]( data=data[data_cursor:], name=tag_name)
+    data_cursor += tag.nbt_length()
+    return data_cursor, tag
+
 def load(filename="", buf = None):
     """Unserialize data from an entire NBT file and return the 
     root TAG_Compound object. Argument can be a string containing a 
@@ -408,12 +412,7 @@ def load(filename="", buf = None):
       raise IOError, 'Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type);
     data_cursor += 1;
 
-    tag_name = TAG_String( data=data[data_cursor:] )
-    data_cursor += tag_name.nbt_length()
-    tag_name = tag_name.value
-    
-    tag = tag_handlers[tag_type]( data=data[data_cursor:])
-    tag.name = tag_name;
+    data_cursor, tag = load_named(data, data_cursor, tag_type)
 
     return tag;
 
