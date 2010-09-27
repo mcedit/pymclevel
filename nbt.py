@@ -376,7 +376,7 @@ tag_handlers = {
     };
 
 def assert_type(t, offset) :
-  if not t in tag_handlers.keys(): raise TypeError("Unexpected type %d at %d" % (t, offset));
+  if not t in tag_handlers: raise TypeError("Unexpected type %d at %d" % (t, offset));
 
 def loadFile(filename):
     #sio = StringIO.StringIO();
