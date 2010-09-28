@@ -486,18 +486,18 @@ class MCLevel:
         pass    
     
         
-    def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, copyAir, copyWater):
+    def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         # assume destinationPoint is entirely within this level, and the size of sourceBox fits entirely within it.
         sourcex, sourcey, sourcez = map(slice, sourceBox.origin, sourceBox.maximum)
         destCorner2 = map(lambda a,b:a+b, sourceBox.size, destinationPoint)
         destx, desty, destz = map(slice, destinationPoint, destCorner2)
         
         convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[sourceLevel.Blocks[sourcex, sourcez, sourcey]]
-        self.copyBlockArrayMasked(self.Blocks[destx, destz, desty], convertedSourceBlocks, copyAir, copyWater)
+        self.copyBlockArrayMasked(self.Blocks[destx, destz, desty], convertedSourceBlocks, blocksToCopy)
         
         #blocks[:] = convertedSourceBlocks
         
-    def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, copyAir, copyWater):
+    def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         
         chunkIterator = sourceLevel.getChunkSlices(sourceBox)
         
@@ -508,7 +508,7 @@ class MCLevel:
             convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[chunk.Blocks[slices]]
             
             destSlices = [slice(p, p+s.stop-s.start) for p,s in zip(point,slices) ]
-            mask = self.copyBlockArrayMasked( self.Blocks[ destSlices ], convertedSourceBlocks, copyAir, copyWater)
+            mask = self.copyBlockArrayMasked( self.Blocks[ destSlices ], convertedSourceBlocks, blocksToCopy)
             if mask != None:
                 self.Data[ destSlices ][mask] = chunk.Data[slices][mask]
             else:
@@ -559,7 +559,7 @@ class MCLevel:
         
         return sourceBox, destinationPoint
          
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, copyAir = True, copyWater = True):
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy = None):
         if (not isinstance(sourceLevel, MCInfdevOldLevel)) and not(
                sourceLevel.containsPoint(*sourceBox.origin) and
                sourceLevel.containsPoint(*map(lambda x:x-1, sourceBox.maximum))):
@@ -571,9 +571,9 @@ class MCLevel:
         info( "Copying {0} blocks from {1} to {2}" .format (sourceBox.volume,sourceBox, destinationPoint) )
        
         if not isinstance(sourceLevel, MCInfdevOldLevel):
-            self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, copyAir, copyWater)
+            self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
         else:
-            self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, copyAir, copyWater)
+            self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
         
         
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
@@ -804,10 +804,17 @@ class MCLevel:
                                     self.addTileEntity(eTag);'''"""
                 
 
-    def copyBlockArrayMasked(self, blocks, sourceBlocks, copyAir, copyWater):
-        #assumes sourceBlocks has already been converted to my materials
+    def copyBlockArrayMasked(self, blocks, sourceBlocks, blocksToCopy):
+        #assumes sourceBlocks has already been converted to my materials and that both arrays are the same shape
         mask = sourceBlocks == sourceBlocks
-        if not copyAir:
+        
+        if not (blocksToCopy is None):
+            mask = in1d(sourceBlocks.flatten(), array(blocksToCopy)).reshape(blocks.shape)
+            
+        blocks[mask] = sourceBlocks[mask]
+        
+        return mask;    
+        """if not copyAir:
             mask &=(sourceBlocks != self.materials.materialNamed("Air"))
         if not copyWater:
             mask &=(sourceBlocks != self.materials.materialNamed("Water"))
@@ -818,7 +825,7 @@ class MCLevel:
         
         else:
             blocks[:] = sourceBlocks[:]
-        
+        """
     def extractSchematic(self, box):
         x,y,z = box.origin
         w,h,l = box.size
@@ -2271,7 +2278,7 @@ class MCInfdevOldLevel(MCLevel):
                 
 
         
-    def copyBlocksFromFinite(self, sourceLevel, sourceBox, destinationPoint, copyAir, copyWater):
+    def copyBlocksFromFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         #assumes destination point and bounds have already been checked.
         (x,y,z) = destinationPoint;
         (sx, sy, sz) = sourceBox.origin
@@ -2296,7 +2303,7 @@ class MCInfdevOldLevel(MCLevel):
             #for small level slices, reduce the destination area
             x,z,y = sourceBlocks.shape
             blocks = blocks[0:x,0:z,0:y]
-            mask = self.copyBlockArrayMasked(blocks, sourceBlocks, copyAir, copyWater)    
+            mask = self.copyBlockArrayMasked(blocks, sourceBlocks, blocksToCopy)    
             
             if hasattr(sourceLevel, 'Data'):
                 #indev or schematic
@@ -2317,7 +2324,7 @@ class MCInfdevOldLevel(MCLevel):
             chunk.chunkChanged();
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
                            
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, copyAir = True, copyWater = True):
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy = None):
         (x,y,z) = destinationPoint;
         (lx,ly,lz) = sourceBox.size
         #sourcePoint, sourcePoint1 = sourceBox
@@ -2328,7 +2335,7 @@ class MCInfdevOldLevel(MCLevel):
         blocksCopied = 0
         
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
-            self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, copyAir, copyWater)
+            self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
             
 
         else: #uggh clone tool will still be slow if it weren't for schematics
@@ -2347,8 +2354,7 @@ class MCInfdevOldLevel(MCLevel):
                    
                    blockType = sourceLevel.blockAt(*s)
                    blockType = filterTable[blockType]
-                   if blockType == 0 and not copyAir: continue
-                   if blockType == 8 or blockType == 9 and not copyWater: continue;
+                   if not (blocksToCopy is None) and not (blockType in blocksToCopy): continue
                    
                    blocks[destBlockX,destBlockZ,destY] = blockType
                    self.setBlockDataAt(destX, destY, destZ, sourceLevel.blockDataAt(*s))
