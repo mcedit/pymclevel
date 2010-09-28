@@ -7,32 +7,9 @@
 *.pyc
 *.pyo
 *~
-build
-downloads
-TerrainPacks
-World1
-MCEdit/*
-download/*
-
-#level files
-*.mclevel
-*.schematic
-*.dat
-*.mine
-*.7z
-*.gz
-
-*.psd
-
-7z.*
 
 .project
 .pydevproject
 
 #profiling/outputs
-mcedit.ini
 *.log
-mcedit.profile
-mcedit.png
-mcedit.dot
-
