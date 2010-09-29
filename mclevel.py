@@ -839,6 +839,8 @@ class MCLevel:
             h -=y+h-self.Height
             y=self.Height-h
         
+        if h<=0: return
+        
         box.origin = x,y,z 
         box.size = w,h,l 
         
