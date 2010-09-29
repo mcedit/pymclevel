@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 MCLevel interfaces
 
@@ -811,9 +812,17 @@ class MCLevel:
         #assumes sourceBlocks has already been converted to my materials and that both arrays are the same shape
         mask = sourceBlocks == sourceBlocks
         
+        def ismember(ar1, ar2) :
+            a = sort(ar2)
+            il = a.searchsorted(ar1, side='left')
+            ir = a.searchsorted(ar1, side='right')
+            return ir != il
+
         if not (blocksToCopy is None):
-            mask = in1d(sourceBlocks.flatten(), array(blocksToCopy)).reshape(blocks.shape)
+            mask = ismember(sourceBlocks.flatten(), array(blocksToCopy))
+            mask = mask.reshape(blocks.shape)
             
+               
         blocks[mask] = sourceBlocks[mask]
         
         return mask;    
