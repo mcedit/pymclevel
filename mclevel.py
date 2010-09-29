@@ -2935,7 +2935,7 @@ def testSchematics():
 
 def testINVEditChests():
     print "INVEdit chest"
-    invFile = MCLevel.fromFile("unnamed.inv");
+    invFile = MCLevel.fromFile("schematics/chests/BuildersBox.inv");
     print "Blocks: ", invFile.Blocks                      
     print "Data: ", invFile.Data                      
     print "Entities: ", invFile.Entities                      
