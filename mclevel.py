@@ -664,10 +664,13 @@ class MCLevel:
                     info( "Detected INVEdit inventory file" )
                     return INVEditChest(root_tag=root_tag, filename=filename);
                     
-                if ("Data" in root_tag and loadInfinite):
+                if ("Data" in root_tag):
                     info( "Detected Infdev level.dat" )
+                    if (loadInfinite):
                     
-                    return MCInfdevOldLevel(root_tag=root_tag, filename=filename);
+                        return MCInfdevOldLevel(root_tag=root_tag, filename=filename);
+                    else:
+                        raise IOError, "Cannot import infinite levels"
                     
         raise IOError, "Cannot detect file type."
     
