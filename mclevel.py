@@ -1978,7 +1978,10 @@ class MCInfdevOldLevel(MCLevel):
             we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.  
             we do an extra cycle because lights sent across edges may lag by one cycle.
             """
-            dirtyChunks = sorted(set(newDirtyChunks), key=lambda x:x.chunkPosition) 
+            newDirtyChunks = set(newDirtyChunks)
+            newDirtyChunks.discard(zeroChunk)
+            
+            dirtyChunks = sorted(newDirtyChunks, key=lambda x:x.chunkPosition) 
             
             newDirtyChunks = list();
             
