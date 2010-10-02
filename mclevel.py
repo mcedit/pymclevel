@@ -1188,10 +1188,10 @@ class ZeroChunk:
     def load(self): pass
     def __init__(self, height=512):
         zeroChunk = zeros((16,16,height), uint8)
-    
+        whiteLight = zeroChunk + 15;
         self.Blocks = zeroChunk
-        self.BlockLight = zeroChunk
-        self.SkyLight = zeroChunk
+        self.BlockLight = whiteLight
+        self.SkyLight = whiteLight
         self.Data = zeroChunk
         HeightMap = zeros((16,16),uint8)
             
