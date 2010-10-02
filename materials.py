@@ -130,35 +130,8 @@ classicMaterials.blockTextures = [
 classicMaterials.names = [name for (faces, name) in classicMaterials.blockTextures]
 
 
-classicMaterials.lightAbsorption = [15]*256;
-bn = classicMaterials.materialNamed
-la = classicMaterials.lightAbsorption
-la[0] = 0;
-la[bn("Glass")] = 0
-la[bn("Leaves")] = 1
-la[bn("Water")] = 3
-la[bn("Stationary water")] = 3
+classicMaterials.lightEmission = zeros( (256,) );
 
-classicMaterials.lightEmission = [0] * 256;
-
-classicMaterials.transparentBlocks = {
-                             0:0, #air
-                             6:0, #sapling
-                             8:3, #water
-                             9:3, #stat. water
-                             10:0, #lava
-                             11:0, #stat. lava
-                             18:1, #leaves
-                             20:0, #glass
-                             37:0, #flower
-                             38:0, #rose
-                             39:0, #brown shroom
-                             40:0, #red shroom
-                             50:0, #torch
-                             52:3, #water spring
-                             53:0, #lava spring
-                             59:0, #crops
-                             };
 
 materials = MCMaterials();
 materials.blockTextures = [
@@ -382,12 +355,7 @@ for i in materials.transparentBlocks:
     la[i] = materials.transparentBlocks[i];
 materials.transparentBlocks = materials.lightAbsorption < 15
 classicMaterials.transparentBlocks = materials.transparentBlocks
-
-#la[bn("Glass")] = 0
-#la[bn("Leaves")] = 1
-#la[bn("Water")] = 3
-#la[bn("Stationary water")] = 3
-#la[bn("Ice")] = 3
+classicMaterials.lightAbsorption = materials.lightAbsorption
 
 
 materials.lightEmission = zeros(256, uint8)
@@ -401,6 +369,7 @@ le[bn("Redstone Torch (on)")] = 7
 le[bn("Redstone Ore (glowing)")] = 9
 le[bn("Brown mushroom")] = 1
 
+classicMaterials.lightEmission = materials.lightEmission
 
 
 namedMaterials = {
