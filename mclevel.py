@@ -1025,8 +1025,12 @@ class MCSchematic (MCLevel):
         info( "Relocating entities..." )
         for entity in self.Entities:
             for p in "Pos", "Motion":
+                if p == "Pos":
+                    zBase = self.Length
+                else:
+                    zBase = 0.0; 
                 newX = entity[p][2].value
-                newZ = self.Length - entity[p][0].value - 1.0
+                newZ = zBase - entity[p][0].value 
                 
                 entity[p][0].value = newX
                 entity[p][2].value = newZ
