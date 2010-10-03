@@ -368,7 +368,7 @@ class MCLevel:
         pass;
     
     def getPresentChunks(self):
-        return itertools.product(xrange(0, self.Width>>4), xrange(0, self.Length>>4))
+        return itertools.product(xrange(0, self.Width+15>>4), xrange(0, self.Length+15>>4))
     presentChunks = property(getPresentChunks)
     
     def getChunk(self, cx, cz):
