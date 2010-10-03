@@ -378,8 +378,13 @@ class MCLevel:
         class FakeChunk:
             def load(self):pass
             def compress(self):pass
-        
+            def __init__(self):pass
+            
+            
+            
         f = FakeChunk()
+        f.world = self;
+        
         f.Blocks = self.blocksForChunk(cx, cz)
         
         whiteLight = zeros_like(f.Blocks);
@@ -387,6 +392,7 @@ class MCLevel:
         
         f.BlockLight = whiteLight
         f.SkyLight = whiteLight
+        
         f.root_tag = TAG_Compound();
         
         return f
