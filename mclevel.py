@@ -1356,7 +1356,7 @@ class InfdevChunk(MCLevel):
             
         self.dirty = True;
         self.needsLighting = calcLighting or self.needsLighting;
-        self.generateHeightMap();
+        generateHeightMap(self);
         if calcLighting:
             self.genFastLights()
             
@@ -1381,32 +1381,7 @@ class InfdevChunk(MCLevel):
                     break;
                 self.SkyLight[x,z,y] = lv;
                 
-    def generateHeightMap(self):
-        if None is self.root_tag: self.load();
-        
-        blocks = self.Blocks
-        heightMap = self.HeightMap
-        heightMap[:] = 0;
-        
-        lightAbsorption = self.world.materials.lightAbsorption[blocks]
-        axes = lightAbsorption.nonzero()
-        heightMap[axes[1],axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
-        heightMap += 1;
-        """
-        for (x,z) in itertools.product(range(16), range(16)):
-            lv = 15;
-            for y in range(self.world.Height).__reversed__():
-                la = lightAbsorption[blocks[x,z,y]]
-                #if la == 15:
-                if la: #xxxx work on heightmap
-                    #again, reversed heightmap indices.
-                    #we actually need y+1 here  - at least that's how it is in game-genned levels.
-                    heightMap[z,x] = y+1; 
-                    break;
-                lv -= la;
-                if lv<=0: 
-                    heightMap[z,x] = y+1; 
-                    break;  """                 
+               
     
     def unpackChunkData(self):
         """ for internal use.  call getChunk and compressChunk to load, compress, and unpack chunks automatically """
@@ -1488,6 +1463,17 @@ class InfdevChunk(MCLevel):
         return self.root_tag[Level][TileEntities]
     TileEntities = property(getTileEntities);
     
+def generateHeightMap(self):
+    if None is self.root_tag: self.load();
+    
+    blocks = self.Blocks
+    heightMap = self.HeightMap
+    heightMap[:] = 0;
+    
+    lightAbsorption = self.world.materials.lightAbsorption[blocks]
+    axes = lightAbsorption.nonzero()
+    heightMap[axes[1],axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
+    heightMap += 1;
 
 class MCInfdevOldLevel(MCLevel):
     materials = materials;
