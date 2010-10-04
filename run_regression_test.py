@@ -99,7 +99,7 @@ def do_test(test_data, result_check, arguments=[]):
         checksum = calculate_result(directory).lower()
         if checksum != result_check.lower():
             raise RegressionError("Checksum mismatch: {0!r} != {1!r}".format(checksum, result_check))
-    print "[OK]"
+    print "[OK] (sha1sum of result is {0!r}, as expected)".format(result_check)
 
 
 def do_test_match_output(test_data, result_check, arguments=[]):
@@ -126,7 +126,7 @@ def do_test_match_output(test_data, result_check, arguments=[]):
         checksum = checksum.hexdigest()
         if checksum != result_check.lower():
             raise RegressionError("Checksum mismatch: {0!r} != {1!r}".format(checksum, result_check))
-    print "[OK]"
+    print "[OK] (sha1sum of result is {0!r}, as expected)".format(result_check)
 
 
 
