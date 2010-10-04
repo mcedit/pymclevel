@@ -129,14 +129,25 @@ def do_test_match_output(test_data, result_check, arguments=[]):
     print "[OK] (sha1sum of result is {0!r}, as expected)".format(result_check)
 
 
+alpha_tests = [
+    (do_test,               'baseline', 'ca66277d8037fde5aea3a135dd186f91e4bf4bef', []),
+    (do_test,               'degrief',  '0f4cbb81f7f109cee10606b82f27fb2681a22f50', ['degrief']),
+    (do_test_match_output,  'analyze',  'f2938515596b88509b2e4c8d598951887d7e0f4c', ['analyze']),
+    (do_test,               'relight',  '28355eae867235859b88a4405d0dd34144ff02e7', ['relight'])
+]
 
 def main(argv):
+    if len(argv) <= 1:
+        do_these_regressions = ['*']
+    else:
+        do_these_regressions = argv[1:]
+
     with untared_content("regression_test/alpha.tar.gz") as directory:
         test_data = os.path.join(directory, "alpha")
-        do_test(test_data, 'ca66277d8037fde5aea3a135dd186f91e4bf4bef')
-        do_test(test_data, '0f4cbb81f7f109cee10606b82f27fb2681a22f50', ['degrief'])
-        do_test_match_output(test_data, 'f2938515596b88509b2e4c8d598951887d7e0f4c', ['analyze'])
-        do_test(test_data, '28355eae867235859b88a4405d0dd34144ff02e7', ['relight'])
+        for func, name, sha, args in alpha_tests:
+            if any(fnmatch.fnmatch(name, x) for x in do_these_regressions):
+                func(test_data, sha, args)
+                print "Regression {0!r} complete.".format(name)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
