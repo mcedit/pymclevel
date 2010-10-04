@@ -1363,7 +1363,7 @@ class InfdevChunk(MCLevel):
             
             self.SkyLight[x,z,self.HeightMap[z,x]:128] = 15 
             lv = 15;
-            for y in xrange(self.HeightMap[z,x]).__reversed__():
+            for y in reversed(xrange(self.HeightMap[z,x])):
                 lv -= max(la[self.Blocks[x,z,y]], 1)
                 
                 if lv <= 0: 
