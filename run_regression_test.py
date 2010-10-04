@@ -102,11 +102,41 @@ def do_test(test_data, result_check, arguments=[]):
     print "[OK]"
 
 
+def do_test_match_output(test_data, result_check, arguments=[]):
+    result_check = result_check.lower()
+
+    env = {
+            'MCE_RANDOM_SEED' : '42',
+            'MCE_LAST_PLAYED' : '42'
+    }
+
+    with directory_clone(test_data) as directory:
+        proc = subprocess.Popen([
+            "./mce.py",
+            directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
+        proc.stdin.close()
+        output = proc.stdout.read()
+        result = proc.wait()
+
+        if os.WIFEXITED(result) and os.WEXITSTATUS(result):
+            raise RegressionError("Program execution failed!")
+
+        checksum = hashlib.sha1()
+        checksum.update(output)
+        checksum = checksum.hexdigest()
+        if checksum != result_check.lower():
+            raise RegressionError("Checksum mismatch: {0!r} != {1!r}".format(checksum, result_check))
+    print "[OK]"
+
+
+
 def main(argv):
     with untared_content("regression_test/alpha.tar.gz") as directory:
         test_data = os.path.join(directory, "alpha")
         do_test(test_data, 'ca66277d8037fde5aea3a135dd186f91e4bf4bef')
         do_test(test_data, '0f4cbb81f7f109cee10606b82f27fb2681a22f50', ['degrief'])
+        do_test_match_output(test_data, 'f2938515596b88509b2e4c8d598951887d7e0f4c', ['analyze'])
+        do_test(test_data, '28355eae867235859b88a4405d0dd34144ff02e7', ['relight'])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
