@@ -1573,10 +1573,7 @@ class MCInfdevOldLevel(MCLevel):
 
         playerFilePath = os.path.join(self.worldDir, "players")
         if os.path.exists(playerFilePath):
-            playerDats = os.listdir(playerFilePath);
-            playerDats = filter(lambda x:x.endswith(".dat"), playerDats)
-            players = map(lambda x:x[:-4], playerDats);
-            self.players = players
+            self.players = [x[:-4] for x in os.listdir(playerFilePath) if x.endswith(".dat")]
             
         self.preloadChunkPaths();
     

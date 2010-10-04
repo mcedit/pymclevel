@@ -233,7 +233,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         
       
   def nbt_length(self):
-    return sum(map(lambda x:(x.nbt_length()+len(x.name)+3), self.value))+1;
+    return sum(x.nbt_length() + len(x.name) + 3 for x in self.value) + 1;
   
   def write_value(self, buf):
     for i in self.value:
@@ -347,7 +347,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
       self.list.insert(i, v);
   
   def nbt_length(self):
-    return 5 + sum(map(lambda x:x.nbt_length(), self.list));
+    return 5 + sum(x.nbt_length() for x in self.list)
   
   def write_value(self, buf):
     buf.write(struct.pack(TAGfmt, self.list_type))
