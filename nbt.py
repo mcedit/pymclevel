@@ -201,8 +201,8 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
   
   def dataType(self, val):
       for i in val:
-          assert isinstance(val, TAG_Value)
-          assert val.name
+          assert isinstance(i, TAG_Value)
+          assert i.name
       return list(val)
   
   def __repr__(self):
