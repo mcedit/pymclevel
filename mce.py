@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import mclevel
 import sys
 import os
