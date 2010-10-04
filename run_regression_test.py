@@ -136,6 +136,7 @@ def main(argv):
         do_test(test_data, 'ca66277d8037fde5aea3a135dd186f91e4bf4bef')
         do_test(test_data, '0f4cbb81f7f109cee10606b82f27fb2681a22f50', ['degrief'])
         do_test_match_output(test_data, 'f2938515596b88509b2e4c8d598951887d7e0f4c', ['analyze'])
+        do_test(test_data, '28355eae867235859b88a4405d0dd34144ff02e7', ['relight'])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
