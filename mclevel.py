@@ -1631,23 +1631,7 @@ class MCInfdevOldLevel(MCLevel):
     
     base36alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
     def decbase36(self, s):
-        n = 0;
-        neg = False;
-        s = s.lower();
-        
-        if s[0] == '-':
-            neg = True;
-            s=s[1:];
-        
-        while(len(s)):
-            if not s[0] in self.base36alphabet:
-                break;
-            n*=36
-            n+=self.base36alphabet.index(s[0])
-            s=s[1:];
-
-        if neg: return -n
-        return n;
+        return int(s, 36)
     
     def base36(self, n):
         n = int(n);
