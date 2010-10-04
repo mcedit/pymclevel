@@ -1636,18 +1636,18 @@ class MCInfdevOldLevel(MCLevel):
     def base36(self, n):
         n = int(n);
         if 0 == n: return '0'
-        s = "";
         neg = "";
         if n < 0:
             neg = "-"
             n = -n;
             
+        work = []
+
         while(n):
-            digit = n % 36;
-            n /= 36
-            s=self.base36alphabet[digit]+s
+            n, digit = divmod(n, 36)
+            work.append(self.base36alphabet[digit])
         
-        return neg + s;
+        return neg + ''.join(reversed(work))
 
     def dirhashlookup(self, n):
         return self.dirhashes[n%64];
