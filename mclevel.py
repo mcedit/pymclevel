@@ -446,9 +446,9 @@ class MCLevel(object):
     def loadChunk(self, cx, cz ):
         pass;
     
-    def getPresentChunks(self):
+    @property
+    def presentChunks(self):
         return itertools.product(xrange(0, self.Width+15>>4), xrange(0, self.Length+15>>4))
-    presentChunks = property(getPresentChunks)
     
     def getChunk(self, cx, cz):
         #if not hasattr(self, 'whiteLight'):
@@ -1073,60 +1073,61 @@ class MCSchematic (MCLevel):
         
     #these refer to the blocks array instead of the file's height because rotation swaps the axes
     # this will have an impact later on when editing schematics instead of just importing/exporting
+    @property
     @decompress_first        
-    def getLength(self):return self.Blocks.shape[1]
+    def Length(self):return self.Blocks.shape[1]
+
+    @property
     @decompress_first        
-    def getWidth(self):return self.Blocks.shape[0]
+    def Width(self):return self.Blocks.shape[0]
+
+    @property
     @decompress_first        
-    def getHeight(self):return self.Blocks.shape[2]
+    def Height(self):return self.Blocks.shape[2]
     
-    Length = property(getLength);
-    Width = property(getWidth);
-    Height = property(getHeight);
     
-    
+    @property
     @decompress_first        
-    def getBlocks(self): 
+    def Blocks(self):
         return self.root_tag[Blocks].value
-        
+
+    @Blocks.setter        
     def setBlocks(self, newval):
         self.root_tag[Blocks].value = newval
-        
-    Blocks = property(getBlocks, setBlocks);
     
+    @property
     @decompress_first        
-    def getData(self): 
+    def Data(self):
         return self.root_tag[Data].value
-    
+
+    @Data.setter    
     def setData(self, newval): 
         self.root_tag[Data].value = newval
     
-    Data = property(getData, setData);
-    
+    @property
     @decompress_first        
-    def getHeightMap(self): 
+    def HeightMap(self):
         return self.root_tag[HeightMap].value
-    HeightMap = property(getHeightMap);
     
+    @property
     @decompress_first        
-    def getSkyLight(self): 
+    def SkyLight(self):
         return self.root_tag[SkyLight].value
-    SkyLight = property(getSkyLight);
     
+    @property
     @decompress_first        
-    def getBlockLight(self): 
+    def BlockLight(self):
         return self.root_tag[BlockLight].value
-    BlockLight = property(getBlockLight);
         
+    @property
     @decompress_first        
-    def getEntities(self): 
+    def Entities(self):
         return self.root_tag[Entities]
-    Entities = property(getEntities);
         
+    @property
     @decompress_first        
-    def getTileEntities(self): 
+    def TileEntities(self):
         return self.root_tag[TileEntities]
-    TileEntities = property(getTileEntities);
     
     @classmethod
     def _isTagLevel(cls, root_tag):
@@ -1387,8 +1388,9 @@ class INVEditChest(MCSchematic):
         self.root_tag = root_tag;
         
         
+    @property
     @decompress_first        
-    def getTileEntities(self): 
+    def TileEntities(self):
         chestTag = TAG_Compound();
         chestTag["id"] = TAG_String("Chest")
         chestTag["Items"] = TAG_List(self.root_tag["Inventory"])
@@ -1397,9 +1399,6 @@ class INVEditChest(MCSchematic):
         chestTag["z"] = TAG_Int(0);
         
         return TAG_List([chestTag], name="TileEntities")
-        
-        
-    TileEntities = property(getTileEntities);
     
    
 class PlayerNotFound(Exception): pass     
@@ -1672,40 +1671,40 @@ class InfdevChunk(MCLevel):
         return MCLevel.removeEntitiesInBox(self, box)
         
         
+    @property
     @decompress_first        
-    def getBlocks(self): 
+    def Blocks(self):
         return self.root_tag[Level][Blocks].value
-    Blocks = property(getBlocks);
     
+    @property
     @decompress_first        
-    def getData(self): 
+    def Data(self):
         return self.root_tag[Level][Data].value
-    Data = property(getData);
     
+    @property
     @decompress_first        
-    def getHeightMap(self): 
+    def HeightMap(self):
         return self.root_tag[Level][HeightMap].value
-    HeightMap = property(getHeightMap);
     
+    @property
     @decompress_first        
-    def getSkyLight(self): 
+    def SkyLight(self):
         return self.root_tag[Level][SkyLight].value
-    SkyLight = property(getSkyLight);
     
+    @property
     @decompress_first        
-    def getBlockLight(self): 
+    def BlockLight(self):
         return self.root_tag[Level][BlockLight].value
-    BlockLight = property(getBlockLight);
         
+    @property
     @decompress_first        
-    def getEntities(self): 
+    def Entities(self):
         return self.root_tag[Level][Entities]
-    Entities = property(getEntities);
         
+    @property
     @decompress_first        
-    def getTileEntities(self): 
+    def TileEntities(self):
         return self.root_tag[Level][TileEntities]
-    TileEntities = property(getTileEntities);
     
     @property
     def TerrainPopulated(self):
@@ -2248,7 +2247,7 @@ class MCInfdevOldLevel(MCLevel):
         """ pass a list of chunk coordinate tuples to get a list of InfdevChunks. 
         pass nothing for a list of every chunk in the level. 
         the chunks are automatically loaded."""
-        if chunks is None: chunks = self.getPresentChunks();
+        if chunks is None: chunks = self.presentChunks;
         return [self.getChunk(cx,cz) for (cx,cz) in chunks if (cx,cz) in self._presentChunks]
             
         
