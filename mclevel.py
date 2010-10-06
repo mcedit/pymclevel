@@ -464,7 +464,7 @@ class MCLevel(object):
         
         blocks = self.Blocks[slices[0],slices[2],slices[1]]
         if blocksToReplace != None:
-            mask = functools.reduce((blocks==x for x in blocksToReplace), operator.or_)
+            mask = functools.reduce(operator.or_, (blocks==x for x in blocksToReplace))
                 
             blocks[mask] = blockType;
             if hasattr(self, "Data"):
@@ -2193,7 +2193,7 @@ class MCInfdevOldLevel(MCLevel):
             needsLighting = changesLighting;
               
             if blocksToReplace != None:
-                mask = functools.reduce((blocks==x for x in blocksToReplace), operator.or_)
+                mask = functools.reduce(operator.or_, (blocks==x for x in blocksToReplace))
                 
                 blockCount = mask.sum()
                 replaced += blockCount;
