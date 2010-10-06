@@ -133,7 +133,9 @@ alpha_tests = [
     (do_test,               'baseline', 'ca66277d8037fde5aea3a135dd186f91e4bf4bef', []),
     (do_test,               'degrief',  '6ae14eceab8e0c600799463a77113448b2d9ff8c', ['degrief']),
     (do_test_match_output,  'analyze',  'f2938515596b88509b2e4c8d598951887d7e0f4c', ['analyze']),
-    (do_test,               'relight',  '00bc507daa3c07fee065973da4b81a099124650f', ['relight'])
+    (do_test,               'relight',  '00bc507daa3c07fee065973da4b81a099124650f', ['relight']),
+    (do_test,               'replace',  'b26c3d3c05dd873fd8fd29b6b7a38e3ebd9a3e8e', ['replace', 'Water', 'with', 'Lava']),
+    (do_test,               'fill',     'f9dd5d49789b4c7363bf55eab03b05846e89f89f', ['fill', 'Water']),
 ]
 
 def main(argv):
