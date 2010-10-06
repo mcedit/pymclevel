@@ -49,9 +49,9 @@ class TAG_Value:
   def __init__(self, value=0, name=None, data=""):
     self.name=name
     if(data==""):
-        self.value = self.dataType(value)
+        self.value = value
     else:   
-        (self.value,) = struct.unpack(self.fmt, data[0:struct.calcsize(self.fmt)]);
+        (self.value,) = struct.unpack_from(self.fmt, data);
   
   def __repr__(self):
     return "%s ( %s ) : %s" % (self.__class__, self.name, repr(self.value))
@@ -152,7 +152,7 @@ class TAG_Byte_Array(TAG_Value):
     if(data==""):
       self.value = value;
     else:
-      (string_len,) = struct.unpack(">i", data[0:4]);
+      (string_len,) = struct.unpack_from(">i", data);
       self.value = fromstring(data[4:string_len+4], 'uint8');
       
   def nbt_length(self) :
@@ -177,7 +177,7 @@ class TAG_String(TAG_Value):
     if(data==""):
       self.value = value;
     else:
-      (string_len,) = struct.unpack(">h", data[0:2]);
+      (string_len,) = struct.unpack_from(">h", data);
       self.value = data[2:string_len+2].tostring();
 
   def nbt_length(self) :
@@ -196,14 +196,14 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
 
   tag = 10;
   
-  def setValue(self, val):
+  def dataType(self, val):
       for i in val:
           assert isinstance(val, TAG_Value)
           assert val.name
-      list = list(val)
+      return list(val)
   
   def __repr__(self):
-    return "%s( %s ): %s" % (str(self.__class__), self.name, self.list)
+    return "%s( %s ): %s" % (str(self.__class__), self.name, self.value)
 
   def __init__(self, value=[], name="",data=""):
       
@@ -211,9 +211,9 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
     if value.__class__ == ''.__class__:
       self.name = value;
       value = [];
-    self.list = []
+    self.value = []
     if(data == ""):
-      self.list += value;
+      self.value += value;
     else:
 
       data_cursor = 0;
@@ -234,39 +234,39 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         tag = tag_handlers[tag_type]( data=data[data_cursor:], name=tag_name )
         
         data_cursor += tag.nbt_length()
-        self.list.append(tag);
+        self.value.append(tag);
         
       
   def nbt_length(self):
-    return sum(map(lambda x:(x.nbt_length()+len(x.name)+3), self.list))+1;
+    return sum(x.nbt_length() + len(x.name) + 3 for x in self.value) + 1;
   
   def write_value(self, buf):
-    for i in self.list:
+    for i in self.value:
       i.save(buf=buf)
     buf.write("\x00")
     
   "collection functions"
   def __getitem__(self, k):
-    #hits=filter(lambda x:x.name==k, self.list);
+    #hits=filter(lambda x:x.name==k, self.value);
     #if(len(hits)): return hits[0];
-    for key in self.list:
+    for key in self.value:
         if key.name == k: return key
     raise KeyError("Key {0} not found".format(k));
   
-  def __iter__(self):       return itertools.imap(lambda x:x.name, self.list);
-  def __contains__(self, k):return k in map(lambda x:x.name, self.list);
-  def __len__(self):        return self.list.__len__()
+  def __iter__(self):       return itertools.imap(lambda x:x.name, self.value);
+  def __contains__(self, k):return k in map(lambda x:x.name, self.value);
+  def __len__(self):        return self.value.__len__()
   
 
   def __setitem__(self, k, v):
     if not (v.__class__ in tag_handlers.values()): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
     """remove any items already named "k".  """
-    olditems = filter(lambda x:x.name==k, self.list)
-    for i in olditems: self.list.remove(i)
-    self.list.append(v);
+    olditems = filter(lambda x:x.name==k, self.value)
+    for i in olditems: self.value.remove(i)
+    self.value.append(v);
     v.name=k;
     
-  def __delitem__(self, k): self.list.__delitem__(self.list.index(self[k]));
+  def __delitem__(self, k): self.value.__delitem__(self.value.index(self[k]));
 
   def add(self, v):
     self[v.name] = v;
@@ -352,7 +352,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
       self.list.insert(i, v);
   
   def nbt_length(self):
-    return 5 + sum(map(lambda x:x.nbt_length(), self.list));
+    return 5 + sum(x.nbt_length() for x in self.list)
   
   def write_value(self, buf):
     buf.write(struct.pack(TAGfmt, self.list_type))
@@ -376,7 +376,7 @@ tag_handlers = {
     };
 
 def assert_type(t, offset) :
-  if not t in tag_handlers.keys(): raise TypeError("Unexpected type %d at %d" % (t, offset));
+  if not t in tag_handlers: raise TypeError("Unexpected type %d at %d" % (t, offset));
 
 def loadFile(filename):
     #sio = StringIO.StringIO();
