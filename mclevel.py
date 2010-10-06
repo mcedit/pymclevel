@@ -303,6 +303,7 @@ def decompress_first(func):
     def dec_first(self, *args, **kw):
         self.decompress();
         return func(self, *args, **kw);
+    dec_first.__doc__ = func.__doc__
     return dec_first
     
 class MCLevel(object):
