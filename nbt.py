@@ -24,6 +24,7 @@ import struct
 import gzip
 import StringIO;
 import os;
+from contextlib import closing
 from numpy import array, zeros, uint8, fromstring
 TAGfmt = ">b"
 
@@ -88,13 +89,14 @@ class TAG_Value(object):
       #print "Atomic Save: No existing file to rename"
       pass
   
-    outputGz = gzip.GzipFile(fileobj=sio, mode="wb", compresslevel=compresslevel)
-    self.save(buf=outputGz);
-    outputGz.flush();
-    outputGz.close();
+    with closing(gzip.GzipFile(fileobj=sio, mode="wb", compresslevel=compresslevel)) as outputGz:
+        self.save(buf=outputGz);
+        outputGz.flush();
+
     #print len(sio.getvalue());
     try:
-      file(filename, "wb").write(sio.getvalue());
+        with open(filename, 'wb') as f:
+            f.write(sio.getvalue());
     except:
       try:
         os.rename(filename + ".old", filename, );
