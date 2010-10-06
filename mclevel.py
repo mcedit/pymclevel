@@ -2188,10 +2188,7 @@ class MCInfdevOldLevel(MCLevel):
             needsLighting = changesLighting;
               
             if blocksToReplace != None:
-                masks = map(lambda x:blocks==x, blocksToReplace);
-                mask = masks.pop();
-                while len(masks):
-                    mask |= masks.pop();
+                mask = functools.reduce((blocks==x for x in blocksToReplace), operator.or_)
                 
                 blockCount = mask.sum()
                 replaced += blockCount;
