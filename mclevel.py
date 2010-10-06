@@ -370,7 +370,7 @@ class MCLevel(object):
         pass;
     
     def getPresentChunks(self):
-        return itertools.product(xrange(0, self.Width>>4), xrange(0, self.Length>>4))
+        return itertools.product(xrange(0, self.Width+15>>4), xrange(0, self.Length+15>>4))
     presentChunks = property(getPresentChunks)
     
     def getChunk(self, cx, cz):
@@ -380,8 +380,13 @@ class MCLevel(object):
         class FakeChunk:
             def load(self):pass
             def compress(self):pass
-        
+            def __init__(self):pass
+            
+            
+            
         f = FakeChunk()
+        f.world = self;
+        
         f.Blocks = self.blocksForChunk(cx, cz)
         
         whiteLight = zeros_like(f.Blocks);
@@ -389,6 +394,7 @@ class MCLevel(object):
         
         f.BlockLight = whiteLight
         f.SkyLight = whiteLight
+        
         f.root_tag = TAG_Compound();
         
         return f
@@ -1024,8 +1030,12 @@ class MCSchematic (MCLevel):
         info( "Relocating entities..." )
         for entity in self.Entities:
             for p in "Pos", "Motion":
+                if p == "Pos":
+                    zBase = self.Length
+                else:
+                    zBase = 0.0; 
                 newX = entity[p][2].value
-                newZ = self.Length - entity[p][0].value - 1.0
+                newZ = zBase - entity[p][0].value 
                 
                 entity[p][0].value = newX
                 entity[p][2].value = newZ
@@ -1183,10 +1193,10 @@ class ZeroChunk(object):
     def load(self): pass
     def __init__(self, height=512):
         zeroChunk = zeros((16,16,height), uint8)
-    
+        whiteLight = zeroChunk + 15;
         self.Blocks = zeroChunk
-        self.BlockLight = zeroChunk
-        self.SkyLight = zeroChunk
+        self.BlockLight = whiteLight
+        self.SkyLight = whiteLight
         self.Data = zeroChunk
         HeightMap = zeros((16,16),uint8)
             
@@ -1345,7 +1355,7 @@ class InfdevChunk(MCLevel):
             
         self.dirty = True;
         self.needsLighting = calcLighting or self.needsLighting;
-        self.generateHeightMap();
+        generateHeightMap(self);
         if calcLighting:
             self.genFastLights()
             
@@ -1370,32 +1380,7 @@ class InfdevChunk(MCLevel):
                     break;
                 self.SkyLight[x,z,y] = lv;
                 
-    def generateHeightMap(self):
-        if None is self.root_tag: self.load();
-        
-        blocks = self.Blocks
-        heightMap = self.HeightMap
-        heightMap[:] = 0;
-        
-        lightAbsorption = self.world.materials.lightAbsorption[blocks]
-        axes = lightAbsorption.nonzero()
-        heightMap[axes[1],axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
-        heightMap += 1;
-        """
-        for (x,z) in itertools.product(range(16), range(16)):
-            lv = 15;
-            for y in range(self.world.Height).__reversed__():
-                la = lightAbsorption[blocks[x,z,y]]
-                #if la == 15:
-                if la: #xxxx work on heightmap
-                    #again, reversed heightmap indices.
-                    #we actually need y+1 here  - at least that's how it is in game-genned levels.
-                    heightMap[z,x] = y+1; 
-                    break;
-                lv -= la;
-                if lv<=0: 
-                    heightMap[z,x] = y+1; 
-                    break;  """                 
+               
     
     def unpackChunkData(self):
         """ for internal use.  call getChunk and compressChunk to load, compress, and unpack chunks automatically """
@@ -1477,6 +1462,17 @@ class InfdevChunk(MCLevel):
         return self.root_tag[Level][TileEntities]
     TileEntities = property(getTileEntities);
     
+def generateHeightMap(self):
+    if None is self.root_tag: self.load();
+    
+    blocks = self.Blocks
+    heightMap = self.HeightMap
+    heightMap[:] = 0;
+    
+    lightAbsorption = self.world.materials.lightAbsorption[blocks]
+    axes = lightAbsorption.nonzero()
+    heightMap[axes[1],axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
+    heightMap += 1;
 
 class MCInfdevOldLevel(MCLevel):
     materials = materials;
@@ -1959,7 +1955,10 @@ class MCInfdevOldLevel(MCLevel):
             we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.  
             we do an extra cycle because lights sent across edges may lag by one cycle.
             """
-            dirtyChunks = sorted(set(newDirtyChunks), key=lambda x:x.chunkPosition) 
+            newDirtyChunks = set(newDirtyChunks)
+            newDirtyChunks.discard(zeroChunk)
+            
+            dirtyChunks = sorted(newDirtyChunks, key=lambda x:x.chunkPosition) 
             
             newDirtyChunks = list();
             
