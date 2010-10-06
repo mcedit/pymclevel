@@ -264,7 +264,7 @@ class mce(object):
         
         
         self.needsSave = True;
-        print "Filled {0} blocks.".format(box.volume) 
+        print "Filled {0} blocks.".format("all" if box is None else box.volume)
     
     def _replace(self, command):
         """
@@ -302,8 +302,8 @@ class mce(object):
         self.level.fillBlocks(box, newBlockType, blockData = 0, blocksToReplace = [blockType])
         
         self.needsSave = True;
-        print "Replaced {0} blocks.".format(box.volume) 
-    
+        print "Replaced {0} blocks.".format("all" if box is None else box.volume)
+
     def _analyze(self, command):
         """
     analyze
