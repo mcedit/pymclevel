@@ -906,12 +906,20 @@ class MCSchematic (MCLevel):
     @decompress_first        
     def getBlocks(self): 
         return self.root_tag[Blocks].value
-    Blocks = property(getBlocks);
+        
+    def setBlocks(self, newval):
+        self.root_tag[Blocks].value = newval
+        
+    Blocks = property(getBlocks, setBlocks);
     
     @decompress_first        
     def getData(self): 
         return self.root_tag[Data].value
-    Data = property(getData);
+    
+    def setData(self, newval): 
+        self.root_tag[Data].value = newval
+    
+    Data = property(getData, setData);
     
     @decompress_first        
     def getHeightMap(self): 
