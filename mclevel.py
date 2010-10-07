@@ -2716,34 +2716,46 @@ class MCSharpLevel(MCLevel):
     }"""
     
 class MCJavaLevel(MCLevel):
+    
     def setBlockDataAt(self, *args): pass
     def blockDataAt(self, *args): return 0;
+    @property 
+    def Height(self):
+        return self.Blocks.shape[2];
+    @property 
+    def Length(self):
+        return self.Blocks.shape[1];
+    @property 
+    def Width(self):
+        return self.Blocks.shape[0];
+    
     
     def guessSize(self, data):
         if(data.shape[0] <= (32 * 32 * 64)*2):
             warn( "Can't guess the size of a {0} byte level".format(data.shape[0]) )
             raise IOError, "MCJavaLevel attempted for smaller than 64 blocks cubed"
         if(data.shape[0] > (32 * 32 * 64)*2):
-            self.Width = 64
-            self.Length = 64
-            self.Height = 64
+            Width = 64
+            Length = 64
+            Height = 64
         if(data.shape[0] > (64 * 64 * 64)*2):
-            self.Width = 128
-            self.Length = 128
-            self.Height = 64
+            Width = 128
+            Length = 128
+            Height = 64
         if(data.shape[0] > (128 * 128 * 64)*2):
-            self.Width = 256
-            self.Length = 256
-            self.Height = 64
+            Width = 256
+            Length = 256
+            Height = 64
         if(data.shape[0] > (256 * 256 * 64)*2): #could also be 256*256*256
-            self.Width = 512
-            self.Length = 512
-            self.Height = 64
+            Width = 512
+            Length = 512
+            Height = 64
         if(data.shape[0] > 512 * 512 * 64 * 2): # just to load shadowmarch castle
-            self.Width = 512
-            self.Length = 512
-            self.Height = 256
-            
+            Width = 512
+            Length = 512
+            Height = 256
+        return (Width, Length, Height)
+        
     def __init__(self, data, filename):
         self.filename = filename;
         self.filedata = data;
@@ -2751,16 +2763,14 @@ class MCJavaLevel(MCLevel):
         r=re.search('(\d+).*?(\d+).*?(\d+)', filename)
         if r and len(r.groups()) == 3:
             (w, l, h) = map(int, r.groups())
-            if w*l*h <= data.shape[0]:
-                (self.Width, self.Length, self.Height) = w,l,h
-            else:
-                self.guessSize(data);
+            if w*l*h > data.shape[0]:
+                w,l,h = self.guessSize(data);
         else:
             self.guessSize(data);
             
-        info( "MCJavaLevel created for potential level of size " + str( (self.Width, self.Length, self.Height) ) )
+        info( "MCJavaLevel created for potential level of size " + str( (w,l,h) ) )
             
-        blockCount = self.Height * self.Length * self.Width
+        blockCount = h*l*w
         if blockCount > data.shape[0]: raise ValueError, "Level file does not contain enough blocks!"
         
         blockOffset = data.shape[0]-blockCount
@@ -2779,8 +2789,8 @@ class MCJavaLevel(MCLevel):
         
         self.Blocks = blocks;
         self.blockOffset = blockOffset;
-        blocks.shape = (self.Width,self.Length,self.Height, );
-        blocks.strides = (1, self.Width, self.Width * self.Length);
+        blocks.shape = (w,l,h);
+        blocks.strides = (1, w, w*l);
 
             
     def saveInPlace(self):
