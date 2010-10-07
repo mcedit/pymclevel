@@ -23,7 +23,7 @@ import StringIO;
 from numpy import array, zeros, uint8, fromstring
 TAGfmt = ">b"
 
-class TAG_Value:
+class TAG_Value(object):
   """Simple values. Subclasses override fmt to change the type and size. 
   Subclasses may set dataType instead of overriding setValue for automatic data type coercion"""
   
@@ -141,8 +141,9 @@ class TAG_Byte_Array(TAG_Value):
 
   tag = 7;
   fmt = ">i%ds"
-  def setValue(self, val):
-      _value = numpy.array(val, uint8)
+
+  def dataType(self, value):
+      return array(value, uint8)
       
   def __repr__(self):
     return "<%s: length %d> ( %s )" % (self.__class__, len(self.value), self.name)
@@ -169,8 +170,7 @@ class TAG_String(TAG_Value):
 
   tag = 8;
   fmt = ">h%ds"
-  def setValue(self, val):
-      _value = str(val)
+  dataType = str
   
   def __init__(self, value="", name=None, data=""):
     self.name=name

@@ -269,7 +269,7 @@ def decompress_first(func):
         return func(self, *args, **kw);
     return dec_first
     
-class MCLevel:
+class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
     including a common copyEntitiesFrom built on class-specific routines, and
     a dummy getChunk/getPresentChunks for the finite levels.
@@ -1188,7 +1188,7 @@ class PlayerNotFound(Exception): pass
 class ChunkNotPresent(Exception): pass
 class ChunkMalformed(ChunkNotPresent): pass
 
-class ZeroChunk:
+class ZeroChunk(object):
     " a placebo for neighboring-chunk routines "
     def compress(self): pass
     def load(self): pass
