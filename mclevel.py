@@ -587,7 +587,7 @@ class MCLevel(object):
     def saveInPlace(self):
         self.saveToFile(self.filename);
     @classmethod
-    def fromFile(cls, filename, loadInfinite=True):
+    def fromFile(cls, filename, loadInfinite=True, random_seed=None, last_played=None):
         ''' The preferred method for loading Minecraft levels of any type.
         pass False to loadInfinite if you'd rather not load infdev levels.'''
         info( "Identifying " + filename )
@@ -604,7 +604,7 @@ class MCLevel(object):
                 raise;
             try:
                 info( "Can't read, attempting to open directory" )
-                lev = MCInfdevOldLevel(filename=filename)
+                lev = MCInfdevOldLevel(filename=filename, random_seed=random_seed, last_played=last_played)
                 info( "Detected Alpha world." )
                 return lev;
             except Exception, ex:
@@ -1494,7 +1494,7 @@ class MCInfdevOldLevel(MCLevel):
     def __str__(self):
         return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
     
-    def __init__(self, filename = None, root_tag = None):
+    def __init__(self, filename = None, root_tag = None, random_seed=None, last_played=None):
         #pass level.dat's root tag and filename to read an existing level.
         #pass only filename to create a new one
         #filename should be the path to the world dir
@@ -1521,8 +1521,13 @@ class MCInfdevOldLevel(MCLevel):
             root_tag[Data][SpawnY] = TAG_Int(2)
             root_tag[Data][SpawnZ] = TAG_Int(0)
             
-            root_tag[Data]['LastPlayed'] = TAG_Long(long(time.time()))
-            root_tag[Data]['RandomSeed'] = TAG_Long(int(random.random() * ((2<<31))))
+            if last_played is None:
+                last_played = time.time()
+            if random_seed is None:
+                random_seed = random.random() * ((2<<31))
+
+            root_tag[Data]['LastPlayed'] = TAG_Long(long(last_played))
+            root_tag[Data]['RandomSeed'] = TAG_Long(int(random_seed))
             root_tag[Data]['SizeOnDisk'] = TAG_Long(long(1048576))
             root_tag[Data]['Time'] = TAG_Long(1)
             root_tag[Data]['SnowCovered'] = TAG_Byte(0);
@@ -1627,18 +1632,18 @@ class MCInfdevOldLevel(MCLevel):
     def base36(self, n):
         n = int(n);
         if 0 == n: return '0'
-        s = "";
         neg = "";
         if n < 0:
             neg = "-"
             n = -n;
             
+        work = []
+
         while(n):
-            digit = n % 36;
-            n /= 36
-            s=self.base36alphabet[digit]+s
+            n, digit = divmod(n, 36)
+            work.append(self.base36alphabet[digit])
         
-        return neg + s;
+        return neg + ''.join(reversed(work))
 
     def dirhashlookup(self, n):
         return self.dirhashes[n%64];

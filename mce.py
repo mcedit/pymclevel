@@ -11,6 +11,8 @@ class BlockMatchError(RuntimeError): pass
 class PlayerNotFound(RuntimeError): pass
 
 class mce(object):
+    random_seed = os.getenv('MCE_RANDOM_SEED', None)
+    last_played = os.getenv("MCE_LAST_PLAYED", None)
     """
     Usage:
     
@@ -195,6 +197,7 @@ class mce(object):
     def _debug(self, command):
         self.debug = not self.debug
         print "Debug", ("disabled", "enabled")[self.debug]
+
     def _log(self, command):
         """
     log [ <number> ]
@@ -369,7 +372,7 @@ class mce(object):
         filename = command.pop(0)
         destPoint = self.readPoint(command)
         
-        importLevel = mclevel.fromFile(filename)
+        importLevel = mclevel.fromFile(filename, last_played=self.last_played, random_seed=self.random_seed)
         self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint);
         
         
@@ -652,7 +655,7 @@ class mce(object):
         self.loadWorld(command[0])
         
     def _reload(self, command):
-        self.level = mclevel.fromFile(self.filename);
+        self.level = mclevel.fromFile(self.filename, last_played=self.last_played, random_seed=self.random_seed);
         
     def _help(self, command):
         if len(command):
@@ -706,7 +709,7 @@ class mce(object):
         try:
             worldNum = int(world)
         except ValueError:
-            self.level = mclevel.fromFile(world)
+            self.level = mclevel.fromFile(world, last_played=self.last_played, random_seed=self.random_seed)
             
             self.filename = self.level.filename
             
@@ -814,6 +817,7 @@ try:
 except Exception, e:
     traceback.print_exc()
     print e
+    raise SystemExit(1)
     #editor.printUsage()
     
 
