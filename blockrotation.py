@@ -65,10 +65,10 @@ def RotateLeft(blocks, data):
     
     
     # Doors
-    doorRotation = array([3, 2, 1, 0, 
-                          7, 6, 5, 4, #swung door
-                          11, 10, 9, 8, #top half
-                          15, 14, 13, 12]) #top half swung
+    doorRotation = array([3, 0, 1, 2, 
+                          7, 4, 5, 6, #swung door
+                          11, 8, 9, 10, #top half
+                          15, 12, 13, 14]) #top half swung
                            
     doorIndexes = (blocks == alphaMaterials.materialNamed("Iron Door") ) | (blocks == alphaMaterials.materialNamed("Wooden Door"))
     print "Rotating doors: ", len(doorIndexes.nonzero()[0]);
