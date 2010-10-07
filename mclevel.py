@@ -2336,28 +2336,28 @@ class MCInfdevOldLevel(MCLevel):
             filterTable = sourceLevel.materials.conversionTables[self.materials]
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourceBox.origin)
             for s in itertools.product(*map(lambda x:range(*x), zip(sourceBox.origin, sourceBox.size))):
-               destX, destZ, destY = copyOffset[0]+s[0], copyOffset[2]+s[2], copyOffset[1]+s[1]
-               
-               destChunkX,destChunkZ = destX>>4,destZ>>4
-               destBlockX = destX & 0xf
-               destBlockZ = destZ & 0xf
-               
-               try:
-                   chunk = self.getChunk( destChunkX,destChunkZ )
-                   blocks=chunk.Blocks
-                   
-                   blockType = sourceLevel.blockAt(*s)
-                   blockType = filterTable[blockType]
-                   if not (blocksToCopy is None) and not (blockType in blocksToCopy): continue
-                   
-                   blocks[destBlockX,destBlockZ,destY] = blockType
-                   self.setBlockDataAt(destX, destY, destZ, sourceLevel.blockDataAt(*s))
-                           
-               except ChunkNotPresent, e:
-                   continue;
-               else:
-                   chunk.chunkChanged();
-                   blocksCopied += 1;
+                destX, destZ, destY = copyOffset[0]+s[0], copyOffset[2]+s[2], copyOffset[1]+s[1]
+                
+                destChunkX,destChunkZ = destX>>4,destZ>>4
+                destBlockX = destX & 0xf
+                destBlockZ = destZ & 0xf
+                
+                try:
+                    chunk = self.getChunk( destChunkX,destChunkZ )
+                    blocks=chunk.Blocks
+                    
+                    blockType = sourceLevel.blockAt(*s)
+                    blockType = filterTable[blockType]
+                    if not (blocksToCopy is None) and not (blockType in blocksToCopy): continue
+                    
+                    blocks[destBlockX,destBlockZ,destY] = blockType
+                    self.setBlockDataAt(destX, destY, destZ, sourceLevel.blockDataAt(*s))
+                            
+                except ChunkNotPresent, e:
+                    continue;
+                else:
+                    chunk.chunkChanged();
+                    blocksCopied += 1;
 
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
         info( "Blocks copied: %d" % blocksCopied )
