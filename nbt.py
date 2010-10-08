@@ -1,3 +1,6 @@
+
+# vim:set sw=2 sts=2 ts=2:
+
 """
 Named Binary Tag library. Serializes and deserializes TAG_* objects
 to and from binary data. Load a Minecraft level by calling nbt.load().
