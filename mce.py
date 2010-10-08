@@ -697,7 +697,7 @@ class mce(object):
         if command.lower() in self.commands:
             print "Usage: ", self.commandUsage(command.lower());
         else:
-            print self.__doc__.format(commandPrefix=("","mcedit <world> ")[not self.batchMode]);
+            print self.__doc__.format(commandPrefix=("","mce.py <world> ")[not self.batchMode]);
         
         
     def printUsageAndQuit(self):
@@ -740,6 +740,7 @@ class mce(object):
             world = sys.argv.pop(0)
             self.loadWorld(world)
         else:
+            self.batchMode = True;
             self.printUsage();
             while True:
                 try:
@@ -767,7 +768,6 @@ class mce(object):
         else:
             #process many commands on standard input, maybe interactively
             command = [""]
-            self.batchMode = True;
             while True:
                 
                 
