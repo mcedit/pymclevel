@@ -11,8 +11,6 @@ class BlockMatchError(RuntimeError): pass
 class PlayerNotFound(RuntimeError): pass
 
 class mce(object):
-    random_seed = os.getenv('MCE_RANDOM_SEED', None)
-    last_played = os.getenv("MCE_LAST_PLAYED", None)
     """
     Usage:
     
@@ -67,6 +65,8 @@ class mce(object):
     This refers to a point 5 blocks above codewarrior's head. 
        
     """
+    random_seed = os.getenv('MCE_RANDOM_SEED', None)
+    last_played = os.getenv("MCE_LAST_PLAYED", None)
     def commandUsage(self, command):
         " returns usage info for the named command - just give the docstring for the handler func "
         func = getattr(self, "_"+command)
