@@ -1927,7 +1927,10 @@ class MCInfdevOldLevel(MCLevel):
                    
         info( "Lighting {0} chunks".format(len(dirtyChunks)) )
         for chunk in dirtyChunks:
-            chunk.load();
+            try:
+                chunk.load();
+            except (ChunkNotPresent, ChunkMalformed):
+                continue;
             chunk.chunkChanged();
             
             assert chunk.dirty and chunk.needsLighting
