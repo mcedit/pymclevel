@@ -280,17 +280,16 @@ class TAG_List(TAG_Value, collections.MutableSequence):
   Empty lists in the wild have been seen with type TAG_Byte"""
 
   tag = 9;
-  
-  def setValue(self, val):
-      listType = TAG_Value
-      for i in val:
-          assert isinstance(val, listType)
-          assert val.name == ""
-          listType = val.__class__
-      list = list(val)
+
+  def dataType(self, val):
+    if val:
+      listType = val[0].__class__
+      # FIXME: This is kinda weird; None as the empty tag name?
+      assert all(isinstance(x, listType) and x.name in ("", "None") for x in val)
+    return list(val)
   
   def __repr__(self):
-    return "%s( %s ): %s" % (self.__class__, self.name, self.list)
+    return "%s( %s ): %s" % (self.__class__, self.name, self.value)
 
   def __init__(self, value=[], name=None, data=None, list_type=TAG_Compound):
     #can be created from a list of tags in value, with an optional
@@ -298,7 +297,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
     #taken from a TAG class or instance
     
     self.name=name
-    self.list = [];
+    self.value = [];
     self.list_type = list_type.tag
     
     if(data == None):
@@ -306,7 +305,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         self.list_type = value[0].tag;
         value = filter(lambda x:x.__class__ == value[0].__class__, value)
         
-      self.list = list(value)
+      self.value = value
 
     else: 
       data_cursor = 0;
@@ -328,35 +327,37 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         data_cursor += tag.nbt_length()
 
   """ collection methods """
-  def __iter__(self):       return self.list.__iter__();
-  def __contains__(self, k):return k in self.list;
-  def __getitem__(self, i): return self.list[i];
-  def __len__(self):        return self.list.__len__()
+  def __iter__(self):       return iter(self.value)
+  def __contains__(self, k):return k in self.value;
+  def __getitem__(self, i): return self.value[i];
+  def __len__(self):        return len(self.value)
   
   def __setitem__(self, i, v):
-    if v.__class__ != tag_handlers[self.list_type]: raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_handlers[self.list_type]))
+    if v.__class__ != tag_handlers[self.list_type]: 
+      raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_handlers[self.list_type]))
     v.name = ""
-    self.list[i] = v;
+    self.value[i] = v;
     
-  def __delitem__(self, i): self.list.__delitem__(i);
+  def __delitem__(self, i): 
+    del self.value[i]
   
   def insert(self, i, v):
       if not v.tag in tag_handlers: raise TypeError("Not a tag type: %s" % (v,))
-      if len(self.list) == 0: 
+      if len(self) == 0: 
           self.list_type = v.tag 
       else:
           if v.__class__ != tag_handlers[self.list_type]: raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_handlers[self.list_type]))
     
       v.name = ""
-      self.list.insert(i, v);
+      self.value.insert(i, v);
   
   def nbt_length(self):
-    return 5 + sum(x.nbt_length() for x in self.list)
+    return 5 + sum(x.nbt_length() for x in self.value)
   
   def write_value(self, buf):
     buf.write(struct.pack(TAGfmt, self.list_type))
-    TAG_Int(len(self.list)).write_value(buf)
-    for i in self.list:
+    TAG_Int(len(self)).write_value(buf)
+    for i in self.value:
       i.write_value(buf)
  
 
