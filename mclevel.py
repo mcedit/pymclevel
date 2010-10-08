@@ -610,7 +610,7 @@ class MCLevel(object):
                 info( "Detected Alpha world." )
                 return lev;
             except Exception, ex:
-                warn( "Couldn't understand this file: {1} ".format(ex) )
+                warn( "Couldn't understand this file: {0} ".format(ex) )
                 raise; 
         rawdata = f.read()
         f.close()
