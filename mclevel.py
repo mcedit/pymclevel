@@ -1923,7 +1923,7 @@ class MCInfdevOldLevel(MCLevel):
                 if (cx+dx,cz+dz) in self._presentChunks:
                     dirtyChunks.add(self._presentChunks[(cx+dx,cz+dz)]);
         
-        dirtyChunks = sorted(list(dirtyChunks), key=lambda x:x.chunkPosition) 
+        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition) 
                    
         info( "Lighting {0} chunks".format(len(dirtyChunks)) )
         for chunk in dirtyChunks:
