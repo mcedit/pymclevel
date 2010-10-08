@@ -786,7 +786,7 @@ class mce(object):
     level = None  
     shortWorld = "[unknown world]"
     batchMode = False;
-    
+
     def run(self):
         logging.basicConfig(format='%(levelname)s:%(message)s')
         logging.getLogger().level = logging.INFO
@@ -863,18 +863,19 @@ class mce(object):
                 traceback.print_exc()
             self.printUsage(keyword)
             
-        
-        
-editor = mce();
 
-import traceback
-try:
-    editor.run();
-except Exception, e:
-    traceback.print_exc()
-    print e
-    raise SystemExit(1)
-    #editor.printUsage()
+def main(argv):
+    profile = os.getenv("MCE_PROFILE", None)
+    editor = mce()
+    if profile:
+        print "Profiling enabled"
+        import cProfile
+        cProfile.runctx('editor.run()', locals(), globals(), profile)
+    else:
+        editor.run()
+
+    return 0
     
-
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
         

@@ -90,8 +90,11 @@ def do_test(test_data, result_check, arguments=[]):
 
     env = {
             'MCE_RANDOM_SEED' : '42',
-            'MCE_LAST_PLAYED' : '42'
+            'MCE_LAST_PLAYED' : '42',
     }
+
+    if 'MCE_PROFILE' in os.environ:
+        env['MCE_PROFILE'] = os.environ['MCE_PROFILE']
 
     with directory_clone(test_data) as directory:
         proc = launch_subprocess(directory, arguments, env)
@@ -141,16 +144,26 @@ alpha_tests = [
     (do_test,               'fill',     'f9dd5d49789b4c7363bf55eab03b05846e89f89f', ['fill', 'Water']),
 ]
 
+import optparse
+
+parser = optparse.OptionParser()
+parser.add_option("--profile", help="Perform profiling on regression tests", action="store_true")
+
 def main(argv):
-    if len(argv) <= 1:
+    options, args = parser.parse_args(argv)
+
+    if len(args) <= 1:
         do_these_regressions = ['*']
     else:
-        do_these_regressions = argv[1:]
+        do_these_regressions = args[1:]
 
     with untared_content("regression_test/alpha.tar.gz") as directory:
         test_data = os.path.join(directory, "alpha")
         for func, name, sha, args in alpha_tests:
             if any(fnmatch.fnmatch(name, x) for x in do_these_regressions):
+                if options.profile:
+                    print >>sys.stderr, "Starting to profile to %s.profile" % name
+                    os.environ['MCE_PROFILE'] = '%s.profile' % name
                 func(test_data, sha, args)
                 print "Regression {0!r} complete.".format(name)
 
