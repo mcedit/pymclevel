@@ -31,7 +31,8 @@ class mce(object):
        
     Entity commands:
        {commandPrefix}removeEntities [ <EntityID> ]
-    
+       {commandPrefix}dumpSigns [ <filename> ]
+       
     Chunk commands:
        {commandPrefix}createChunks <point> <size>
        {commandPrefix}deleteChunks <point> <size>
