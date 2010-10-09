@@ -532,7 +532,7 @@ class MCLevel(object):
         sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
         
         (lx,ly,lz) = sourceBox.size;
-        info("Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format (ly*lz*lx,sourceBox, destinationPoint, sourceLevel, self))
+        info(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format (ly*lz*lx,sourceBox, destinationPoint, sourceLevel, self))
         
 
         #clip the source ranges to this level's edges.  move the destination point as needed.
@@ -576,7 +576,7 @@ class MCLevel(object):
         
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         
-        info( "Copying {0} blocks from {1} to {2}" .format (sourceBox.volume,sourceBox, destinationPoint) )
+        info( u"Copying {0} blocks from {1} to {2}" .format (sourceBox.volume,sourceBox, destinationPoint) )
        
         if not isinstance(sourceLevel, MCInfdevOldLevel):
             self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
@@ -592,7 +592,7 @@ class MCLevel(object):
     def fromFile(cls, filename, loadInfinite=True, random_seed=None, last_played=None):
         ''' The preferred method for loading Minecraft levels of any type.
         pass False to loadInfinite if you'd rather not load infdev levels.'''
-        info( "Identifying " + filename )
+        info( u"Identifying " + filename )
         
         if not filename:
             raise IOError, "File not found: "+filename
@@ -636,7 +636,7 @@ class MCLevel(object):
         try:
             unzippedData = gzip.GzipFile(fileobj=StringIO.StringIO(rawdata)).read();
         except Exception,e:
-            info( "Exception during Gzip operation, assuming {0} uncompressed: ".format(filename), e )
+            info( u"Exception during Gzip operation, assuming {0} uncompressed: ".format(filename), e )
             if unzippedData is None:
                 compressed = False;
                 unzippedData = rawdata
