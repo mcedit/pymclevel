@@ -71,6 +71,13 @@ def untared_content(src):
         f.extractall(dest)
         yield dest
 
+def launch_subprocess(directory, arguments, env = {}):
+    proc = subprocess.Popen((["python.exe"] if sys.platform == "win32" else []) + [
+            "./mce.py",
+            directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
+            
+    return proc
+
 class RegressionError(Exception): pass
 
 def do_test(test_data, result_check, arguments=[]):
@@ -87,13 +94,11 @@ def do_test(test_data, result_check, arguments=[]):
     }
 
     with directory_clone(test_data) as directory:
-        proc = subprocess.Popen([
-            "./mce.py",
-            directory] + arguments, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+        proc = launch_subprocess(directory, arguments, env)
         proc.stdin.close()
-        result = proc.wait()
+        proc.wait()
 
-        if os.WIFEXITED(result) and os.WEXITSTATUS(result):
+        if proc.returncode:
             raise RegressionError("Program execution failed!")
 
         checksum = calculate_result(directory).lower()
@@ -111,14 +116,12 @@ def do_test_match_output(test_data, result_check, arguments=[]):
     }
 
     with directory_clone(test_data) as directory:
-        proc = subprocess.Popen([
-            "./mce.py",
-            directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
+        proc = launch_subprocess(directory, arguments, env)
         proc.stdin.close()
         output = proc.stdout.read()
-        result = proc.wait()
-
-        if os.WIFEXITED(result) and os.WEXITSTATUS(result):
+        proc.wait()
+        
+        if proc.returncode:
             raise RegressionError("Program execution failed!")
 
         checksum = hashlib.sha1()
