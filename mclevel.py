@@ -1489,6 +1489,9 @@ class MCInfdevOldLevel(MCLevel):
     hasEntities = True;
     
     def getWorldBounds(self):
+        if len(self.presentChunks) == 0:
+            return BoundingBox( (0,0,0), (0,0,0) )
+            
         presentChunksArray = array(self.presentChunks)
         mincx = min(presentChunksArray[:,0])
         maxcx = max(presentChunksArray[:,0])
