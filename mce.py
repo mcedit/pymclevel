@@ -84,6 +84,7 @@ class mce(object):
         "spawn",
         
         "removeentities",
+        "dumpsigns",
         
         "createchunks",
         "deletechunks",
@@ -424,6 +425,59 @@ class mce(object):
         else:
             print "Spawn point: ", self.level.playerSpawnPosition(); 
     
+    def _dumpsigns(self, command):
+        """
+    dumpSigns [<filename>]
+    
+    Saves the text and location of every sign in the world to a text file. 
+    With no filename, saves signs to <worldname>.signs
+    
+    Output is newline-delimited. 5 lines per sign. Coordinates are 
+    on the first line, followed by four lines of sign text. For example:
+    
+        [229, 118, -15]
+        "To boldy go
+        where no man
+        has gone
+        before."
+        
+    Coordinates are ordered the same as point inputs: 
+        [North/South, Down/Up, East/West]
+        
+    """
+        if len(command):
+            filename = command[0]
+        else:
+            filename = self.shortWorld + ".signs"
+        
+        outFile = file(filename, "w");
+        
+        print "Dumping signs..."
+        signCount = 0;
+        
+        for i, cPos in enumerate(self.level.presentChunks):
+            try:
+                chunk = self.level.getChunk(*cPos);
+            except mclevel.ChunkMalformed:
+                continue;
+                
+            for tileEntity in chunk.TileEntities:
+                if tileEntity["id"].value == "Sign":
+                    signCount += 1;
+                    
+                    outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n");
+                    for i in range(4):
+                        outFile.write(tileEntity["Text{0}".format(i+1)].value + "\n");
+                    
+            if i % 100 == 0:
+                print "Chunk {0}...".format(i)
+            
+            chunk.unload();
+        
+        print "Dumped {0} signs to {1}".format(signCount, filename);
+        
+        outFile.close();
+        
     def _removeentities(self, command):
         """
     removeEntities [ [except] [ <EntityID> [ <EntityID> ... ] ] ]
