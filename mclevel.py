@@ -2769,7 +2769,7 @@ class MCJavaLevel(MCLevel):
             if w*l*h > data.shape[0]:
                 w,l,h = self.guessSize(data);
         else:
-            self.guessSize(data);
+            w,l,h = self.guessSize(data);
             
         info( "MCJavaLevel created for potential level of size " + str( (w,l,h) ) )
             
