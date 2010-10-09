@@ -870,7 +870,7 @@ fromFile = MCLevel.fromFile
 
                 
 def loadWorldNumber(i):
-    filename = "{0}{1}{2}{3}{1}{4}".format(saveFileDir, os.sep, u"World", i,  u"level.dat")
+    filename = u"{0}{1}{2}{3}{1}{4}".format(saveFileDir, os.sep, u"World", i,  u"level.dat")
     return fromFile(filename)
 
 ##class MCEntity:
@@ -889,7 +889,7 @@ class MCSchematic (MCLevel):
     
     
     def __str__(self):
-        return "MCSchematic(shape={0}, filename=\"{1}\")".format( self.size, self.filename or "")
+        return u"MCSchematic(shape={0}, filename=\"{1}\")".format( self.size, self.filename or u"")
         
     #these refer to the blocks array instead of the file's height because rotation swaps the axes
     # this will have an impact later on when editing schematics instead of just importing/exporting
