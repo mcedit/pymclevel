@@ -1512,7 +1512,7 @@ class MCInfdevOldLevel(MCLevel):
         self.Width = 0
         self.Height = 128 #subject to change?
         
-        if (not (os.sep in filename)) or (os.path.split(filename) and os.path.split(filename)[1].lower() != "level.dat"): #we've been passed a world subdir by some rascal
+        if (not (os.sep in filename)) or (os.path.basename(filename).lower() != "level.dat"): #we've been passed a world subdir by some rascal
             self.worldDir = filename
             filename = os.path.join(filename, "level.dat")
         else:
