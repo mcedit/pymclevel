@@ -5,6 +5,7 @@ import os
 from box import BoundingBox
 from numpy import zeros, bincount
 import logging
+import itertools
 
 class UsageError(RuntimeError): pass
 class BlockMatchError(RuntimeError): pass
