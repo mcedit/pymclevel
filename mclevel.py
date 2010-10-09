@@ -2349,7 +2349,7 @@ class MCInfdevOldLevel(MCLevel):
         else: #uggh clone tool will still be slow if it weren't for schematics
             filterTable = sourceLevel.materials.conversionTables[self.materials]
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourceBox.origin)
-            for s in itertools.product(*map(lambda x:range(*x), zip(sourceBox.origin, sourceBox.size))):
+            for s in itertools.product(*map(lambda x:range(x[0], x[0]+x[1]), zip(sourceBox.origin, sourceBox.size))):
                 destX, destZ, destY = copyOffset[0]+s[0], copyOffset[2]+s[2], copyOffset[1]+s[1]
                 
                 destChunkX,destChunkZ = destX>>4,destZ>>4
