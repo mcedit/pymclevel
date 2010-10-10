@@ -718,6 +718,27 @@ class MCLevel(object):
             
         return entsInRange
     
+    def copyEntityWithOffset(self, entity, copyOffset):
+        eTag = deepcopy(entity)
+        eFloatOffsets = map(lambda pos:pos.value-int(pos.value), eTag[Pos])
+        
+        positionTags = map(lambda pos, off, co: nbt.TAG_Double(pos+co+off), map(lambda x:int(x.value), eTag[Pos]), eFloatOffsets, copyOffset)
+        eTag[Pos] = nbt.TAG_List(positionTags)
+        
+        if eTag["id"].value == "Painting":
+            eTag["TileX"].value += copyOffset[0]
+            eTag["TileY"].value += copyOffset[1]
+            eTag["TileZ"].value += copyOffset[2]
+            
+        return eTag
+        
+    def copyTileEntityWithOffset(self, tileEntity, copyOffset):
+        eTag = deepcopy(tileEntity)
+        eTag['x'] = TAG_Int(tileEntity['x'].value+copyOffset[0])
+        eTag['y'] = TAG_Int(tileEntity['y'].value+copyOffset[1])
+        eTag['z'] = TAG_Int(tileEntity['z'].value+copyOffset[2])
+        return eTag
+            
     def copyEntitiesFromInfinite(self, sourceLevel, sourceBox, destinationPoint):
         chunkIterator = sourceLevel.getChunkSlices(sourceBox);
         
@@ -733,12 +754,8 @@ class MCLevel(object):
                 if y<slices[2].start or y>=slices[2].stop: continue
                 if z-wz<slices[1].start or z-wz>=slices[1].stop: continue
                 
-                destX, destZ, destY = copyOffset[0]+x, copyOffset[2]+z, copyOffset[1]+y
+                eTag = self.copyEntityWithOffset(entity, copyOffset)
                 
-                eTag = deepcopy(entity)
-                #adjust the entity tag's position, making sure to keep its position within the block
-                eOffsets = map(lambda pos:pos.value-int(pos.value), eTag[Pos])
-                eTag[Pos] = nbt.TAG_List(map(lambda dest, off: nbt.TAG_Double(dest+off), (destX, destY, destZ), eOffsets))
                 self.addEntity(eTag);
                 
             for tileEntity in chunk.TileEntities:
@@ -747,10 +764,8 @@ class MCLevel(object):
                 if y<slices[2].start or y>=slices[2].stop: continue
                 if z-wz<slices[1].start or z-wz>=slices[1].stop: continue
                 
-                eTag = deepcopy(tileEntity)
-                eTag['x'] = TAG_Int(x+copyOffset[0])
-                eTag['y'] = TAG_Int(y+copyOffset[1])
-                eTag['z'] = TAG_Int(z+copyOffset[2])
+                eTag = self.copyTileEntityWithOffset(tileEntity, copyOffset)
+                
                 self.addTileEntity(eTag)
                 
             
@@ -769,12 +784,11 @@ class MCLevel(object):
             tileEntsCopied = 0;
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourcePoint0)
             for entity in sourceLevel.getEntitiesInRange(sourceBox, sourceLevel.Entities):
-                eTag = deepcopy(entity)
-                eOffsets = map(lambda pos:pos.value-int(pos.value), eTag[Pos])
-                eTag[Pos] = nbt.TAG_List(map(lambda pos, off, co: nbt.TAG_Double(pos+co+off), map(lambda x:int(x.value), eTag[Pos]), eOffsets, copyOffset))
+                eTag = self.copyEntityWithOffset(entity, copyOffset)
+                
                 self.addEntity(eTag)
                 entsCopied += 1;
-                
+                    
                 
             for entity in sourceLevel.getTileEntitiesInRange(sourceBox, sourceLevel.TileEntities):
                 x,y,z = entity['x'].value, entity['y'].value, entity['z'].value  
@@ -803,8 +817,8 @@ class MCLevel(object):
                                 for eTag in entities:
                                     eTag = deepcopy(eTag)
                                     #adjust the entity tag's position, making sure to keep its position within the block
-                                    eOffsets = map(lambda pos:pos.value-int(pos.value), eTag[Pos])
-                                    eTag[Pos] = nbt.TAG_List(map(lambda dest, off: nbt.TAG_Double(dest+off), (destX, destY, destZ), eOffsets))
+                                    eFloatOffsets = map(lambda pos:pos.value-int(pos.value), eTag[Pos])
+                                    eTag[Pos] = nbt.TAG_List(map(lambda dest, off: nbt.TAG_Double(dest+off), (destX, destY, destZ), eFloatOffsets))
                                     self.addEntity(eTag);
             
                             if tileentities:
