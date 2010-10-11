@@ -366,7 +366,7 @@ class MCLevel(object):
     def addEntity(self, *args): pass
     def addTileEntity(self, *args): pass
     
-    def loadChunk(self, x, z):
+    def loadChunk(self, cx, cz ):
         pass;
     
     def getPresentChunks(self):
