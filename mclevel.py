@@ -1721,7 +1721,7 @@ class MCInfdevOldLevel(MCLevel):
         return self.lightsForChunk(xc,zc)[xInChunk,zInChunk,y]
         
         
-    def setBlockLightAt(self, x, y, z, newlight):
+    def setBlockLightAt(self, x, y, z, newLight):
         if y < 0 or y >= self.Height: return 0
         zc=z>>4
         xc=x>>4
