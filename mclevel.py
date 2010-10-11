@@ -1390,8 +1390,6 @@ class InfdevChunk(MCLevel):
         return self.compressedTag != None and self.root_tag == None
     
     def genFastLights(self):
-        (cx,cz) = self.chunkPosition
-            
         self.SkyLight[:] = 0;
         for x,z in itertools.product(xrange(16), xrange(16)):
             
@@ -1860,11 +1858,9 @@ class MCInfdevOldLevel(MCLevel):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
         if none, generate lights for all chunks that need lighting
         """
-        activeBlocks = set();
-        #doneBlocks = set()
-        
             
         startTime = datetime.now();
+        
         if dirtyChunks is None:
             dirtyChunks = filter(lambda x: x.needsLighting, self._presentChunks.values());
         else:

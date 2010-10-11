@@ -761,7 +761,6 @@ class mce(object):
         raise UsageError;
     
     def loadWorld(self, world):
-        level = None
         try:
             worldNum = int(world)
         except ValueError:
