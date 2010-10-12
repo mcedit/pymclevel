@@ -6,6 +6,7 @@ from box import BoundingBox
 from numpy import zeros, bincount
 import logging
 import itertools
+import traceback
 
 class UsageError(RuntimeError): pass
 class BlockMatchError(RuntimeError): pass
@@ -111,6 +112,12 @@ class mce(object):
     debug = False
     needsSave = False;
     
+    def readBox(self, command):
+        sourcePoint = self.readPoint(command)
+        sourceSize = self.readPoint(command, isPoint = False)
+        box = BoundingBox(sourcePoint, sourceSize)
+        return box
+        
     def readPoint(self, command, isPoint = True):
         try:
             word = command.pop(0)
@@ -228,15 +235,14 @@ class mce(object):
             self.printUsage("clone")
             return;
             
-        sourcePoint = self.readPoint(command)
-        sourceSize = self.readPoint(command, isPoint = False)
+        box = self.readBox(command);
+        
         destPoint = self.readPoint(command)
     
         destPoint = map(int, destPoint)
         
-        box = BoundingBox(sourcePoint, sourceSize)
         tempSchematic = self.level.extractSchematic(box);
-        self.level.copyBlocksFrom(tempSchematic, BoundingBox((0,0,0), sourceSize), destPoint);
+        self.level.copyBlocksFrom(tempSchematic, BoundingBox((0,0,0), box.origin), destPoint);
         
         self.needsSave = True;
         print "Cloned 0 blocks." 
@@ -258,10 +264,7 @@ class mce(object):
         assert blockType >=0 and blockType < 256
         
         if len(command):
-            destPoint = self.readPoint(command);
-            destSize = self.readPoint(command, isPoint = False);
-            box = BoundingBox(destPoint, destSize)
-        
+            box = self.readBox(command)
         else:
             box = None
                     
@@ -295,10 +298,7 @@ class mce(object):
         assert newBlockType >=0 and newBlockType < 256
             
         if len(command):
-            destPoint = self.readPoint(command);
-            destSize = self.readPoint(command, isPoint = False);
-            box = BoundingBox(destPoint, destSize)
-        
+            box = self.readBox(command)
         else:
             box = None
 
@@ -345,11 +345,8 @@ class mce(object):
             return;
         
         filename = command.pop(0)
-        sourcePoint = self.readPoint(command)
-        sourceSize = self.readPoint(command, isPoint = False)
-    
+        box = self.readBox(command)
         
-        box = BoundingBox(sourcePoint, sourceSize)
         tempSchematic = self.level.extractSchematic(box);
         
         tempSchematic.saveToFile(filename)
@@ -560,10 +557,7 @@ class mce(object):
             self.printUsage("createchunks")
             return;
         
-        point = self.readPoint(command)
-        size = self.readPoint(command, isPoint = False)
-       
-        box = BoundingBox(point, size)
+        box = self.readBox(command)
         
         oldChunkCount = len(self.level.presentChunks)
         self.level.createChunksInBox(box)
@@ -583,10 +577,7 @@ class mce(object):
             self.printUsage("deletechunks")
             return;
         
-        point = self.readPoint(command)
-        size = self.readPoint(command, isPoint = False)
-        
-        box = BoundingBox(point, size)
+        box = self.readBox(command)
         
         oldChunkCount = len(self.level.presentChunks)
         self.level.deleteChunksInBox(box)
@@ -604,10 +595,7 @@ class mce(object):
             self.printUsage("prune")
             return;
         
-        point = self.readPoint(command)
-        size = self.readPoint(command, isPoint = False)
-        
-        box = BoundingBox(point, size)
+        box = self.readBox(command)
         
         oldChunkCount = len(self.level.presentChunks)
         
@@ -626,14 +614,12 @@ class mce(object):
     recalculates the entire world.
     """
         if len(command):
-            point = self.readPoint(command)
-            size = self.readPoint(command, isPoint = False)
-           
-            box = BoundingBox(point, size)
+            box = self.readBox(command)
             chunks = itertools.product(range(box.mincx, box.maxcx),range(box.mincz, box.maxcz))
         
         else:
             chunks = self.level.presentChunks
+            
         self.level.generateLights(chunks)
         
         print "Relit 0 chunks." 
