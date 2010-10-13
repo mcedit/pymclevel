@@ -342,14 +342,14 @@ class MCLevel(object):
         try:       
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
         except (IOError,TypeError):
-            error( "Malformed NBT data in file: " + self.filename )
+            error( u"Malformed NBT data in file: " + self.filename )
             self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
             
         try:
             self.shapeChunkData()
         except KeyError:
-            error( "Incorrect chunk format in file: " + self.filename )
+            error( u"Incorrect chunk format in file: " + self.filename )
             self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
             
@@ -461,7 +461,7 @@ class MCLevel(object):
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
         if box is None: box = self.getWorldBounds()
         
-        info("Filling blocks in {0} with {1}, data={2} replacing{3}".format(box, blockType, blockData, blocksToReplace) )
+        info( u"Filling blocks in {0} with {1}, data={2} replacing{3}".format(box, blockType, blockData, blocksToReplace) )
         slices = map(slice, box.origin, box.maximum)
         
         blocks = self.Blocks[slices[0],slices[2],slices[1]]
@@ -605,12 +605,12 @@ class MCLevel(object):
             if not loadInfinite:
                 raise;
             try:
-                info( "Can't read, attempting to open directory" )
+                info( u"Can't read, attempting to open directory" )
                 lev = MCInfdevOldLevel(filename=filename, random_seed=random_seed, last_played=last_played)
-                info( "Detected Alpha world." )
+                info( u"Detected Alpha world." )
                 return lev;
             except Exception, ex:
-                warn( "Couldn't understand this file: {0} ".format(ex) )
+                warn( u"Couldn't understand this file: {0} ".format(ex) )
                 raise; 
         rawdata = f.read()
         f.close()
@@ -625,7 +625,7 @@ class MCLevel(object):
             data[3] == 0x88)
         
         if isJavaLevel(data):
-            info( "Detected Java-style level" )
+            info( u"Detected Java-style level" )
             lev = MCJavaLevel(data, filename);
             lev.compressed = False;
             return lev;
@@ -645,7 +645,7 @@ class MCLevel(object):
         data = fromstring(unzippedData, dtype='uint8')
         
         if isJavaLevel(data):
-            info( "Detected compressed Java-style level" )
+            info( u"Detected compressed Java-style level" )
             lev = MCJavaLevel(data, filename);
             lev.compressed = compressed;
             return lev;
@@ -654,26 +654,26 @@ class MCLevel(object):
             root_tag = nbt.load(buf=data);
         except IOError, e:
             #it must be a plain array of blocks. see if MCJavaLevel handles it.
-            info( "Detected compressed flat block array, yzx ordered (IOError: {0})".format(e) )
+            info( u"Detected compressed flat block array, yzx ordered (IOError: {0})".format(e) )
             lev = MCJavaLevel(data, filename);
             lev.compressed = compressed;
             return lev;
 
         else:
             if(root_tag.name == MinecraftLevel):
-                info( "Detected Indev .mclevel" )
+                info( u"Detected Indev .mclevel" )
                 return MCIndevLevel(root_tag, filename)
             if(root_tag.name == "Schematic"):
-                info( "Detected Schematic." )
+                info( u"Detected Schematic." )
                 return MCSchematic(root_tag=root_tag, filename=filename)
             
             if(root_tag.name == ''):
                 if ("Inventory" in root_tag):
-                    info( "Detected INVEdit inventory file" )
+                    info( u"Detected INVEdit inventory file" )
                     return INVEditChest(root_tag=root_tag, filename=filename);
                     
                 if ("Data" in root_tag):
-                    info( "Detected Infdev level.dat" )
+                    info( u"Detected Infdev level.dat" )
                     if (loadInfinite):
                     
                         return MCInfdevOldLevel(root_tag=root_tag, filename=filename);
@@ -802,7 +802,7 @@ class MCLevel(object):
                     tileEntsCopied += 1;
                 except ChunkNotPresent:
                     pass
-            info( "Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied) )
+            info( u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied) )
             
             """'''
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourcePoint0)
@@ -991,7 +991,7 @@ class MCSchematic (MCLevel):
                 try:
                     root_tag = nbt.load(filename)
                 except IOError,e:
-                    error( "Failed to load file {0}".format (e) )
+                    error( u"Failed to load file {0}".format (e) )
                     
         else:
             self.filename = None
@@ -1051,7 +1051,7 @@ class MCSchematic (MCLevel):
         
         blockrotation.RotateLeft(self.Blocks, self.Data);
             
-        info( "Relocating entities..." )
+        info( u"Relocating entities..." )
         for entity in self.Entities:
             for p in "Pos", "Motion":
                 if p == "Pos":
@@ -1102,7 +1102,7 @@ class MCSchematic (MCLevel):
         """ save to file named filename, or use self.filename.  XXX NOT THREAD SAFE AT ALL. """
         if filename == None: filename = self.filename
         if filename == None:
-            warn( "Attempted to save an unnamed schematic in place" )
+            warn( u"Attempted to save an unnamed schematic in place" )
             return; #you fool!
 
         #root_tag = nbt.TAG_Compound(name="Schematic")
@@ -1175,7 +1175,7 @@ class INVEditChest(MCSchematic):
                 try:
                     root_tag = nbt.load(filename)
                 except IOError,e:
-                    info( "Failed to load file {0}".format(e) )
+                    info( u"Failed to load file {0}".format(e) )
                     raise
         else:
             assert root_tag, "Must have either root_tag or filename"
@@ -1302,12 +1302,12 @@ class InfdevChunk(MCLevel):
         try:
             os.mkdir(dx)
         except Exception, e: 
-            debug( "Failed to make chunk dir x {0}: {1}".format(dx, e ) )
+            debug( u"Failed to make chunk dir x {0}: {1}".format(dx, e ) )
             pass
         try:
             os.mkdir(dz)
         except: 
-            debug( "Failed to make chunk dir z {0}: {1}".format(dx, e ) )
+            debug( u"Failed to make chunk dir z {0}: {1}".format(dx, e ) )
             pass
         
         self.dirty = True;
@@ -1319,7 +1319,7 @@ class InfdevChunk(MCLevel):
                 
     def save(self):
         """ does not recalculate any data or light """
-        debug( "Saving chunk: {0}".format(self) )
+        debug( u"Saving chunk: {0}".format(self) )
         self.compress()
         
         if self.dirty:
@@ -1327,24 +1327,24 @@ class InfdevChunk(MCLevel):
             try:
                 os.rename(self.filename, self.filename + ".old")
             except Exception,e:
-                debug( "No existing chunk file to rename" )
+                debug( u"No existing chunk file to rename" )
                 pass
             try:
                 chunkfh = file(self.filename, 'wb')
                 chunkfh.write(self.compressedTag)
                 chunkfh.close()
                 
-                debug( "Saved chunk {0}".format( self ) )
+                debug( u"Saved chunk {0}".format( self ) )
             except IOError,e:
                 try: os.rename(self.filename + ".old", self.filename)
-                except: warn( "Unable to restore old chunk file" )
-                error( "Failed to save {0}: {1}".format(self.filename, e) )
+                except: warn( u"Unable to restore old chunk file" )
+                error( u"Failed to save {0}: {1}".format(self.filename, e) )
                 
             try: os.remove(self.filename + ".old")
             except Exception,e:
-                debug( "No old chunk file to remove" )
+                debug( u"No old chunk file to remove" )
                 pass
-            debug( "Saved chunk {0}".format(self) )
+            debug( u"Saved chunk {0}".format(self) )
             self.dirty = False;
             
     def load(self):
@@ -1423,7 +1423,7 @@ class InfdevChunk(MCLevel):
          
     def packChunkData(self):
         if self.root_tag is None:
-            warn( "packChunkData called on unloaded chunk: {0}".format( self.chunkPosition ) )
+            warn( u"packChunkData called on unloaded chunk: {0}".format( self.chunkPosition ) )
             return;
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
@@ -1600,7 +1600,7 @@ class MCInfdevOldLevel(MCLevel):
         self.preloadChunkPaths();
     
     def preloadChunkPaths(self):
-        info( "Scanning for chunks..." )
+        info( u"Scanning for chunks..." )
         worldDirs = os.listdir(self.worldDir);
         for dirname in worldDirs :
             if(dirname in self.dirhashes):
@@ -1620,7 +1620,7 @@ class MCInfdevOldLevel(MCLevel):
                         for c in chunks:
                             self._presentChunks[c] = InfdevChunk(self, c);
                             
-        info( "Found {0} chunks.".format(len(self._presentChunks)) )
+        info( u"Found {0} chunks.".format(len(self._presentChunks)) )
         
                             #self._presentChunks.update(dict(zip(chunks, fullpaths)));
 ##                        for filename, chunk in zip(fullpaths, chunks):
@@ -1854,7 +1854,7 @@ class MCInfdevOldLevel(MCLevel):
             
 
         self.root_tag.save(self.filename);
-        info( "Saved {0} chunks".format(dirtyChunkCount) )
+        info( u"Saved {0} chunks".format(dirtyChunkCount) )
        
     def generateLights(self, dirtyChunks = None):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
@@ -1873,7 +1873,7 @@ class MCInfdevOldLevel(MCLevel):
         #at 150k per loaded chunk, 
         maxLightingChunks = 4000
         
-        info( "Asked to light {0} chunks".format(len(dirtyChunks)) )
+        info( u"Asked to light {0} chunks".format(len(dirtyChunks)) )
         chunkLists = [dirtyChunks];
         def reverseChunkPosition(x):
             cx,cz = x.chunkPosition;
@@ -1906,12 +1906,12 @@ class MCInfdevOldLevel(MCLevel):
             chunkLists = splitChunkLists(chunkLists);
         
         if len(chunkLists) > 1:
-            info( "Using {0} batches to conserve memory.".format(len(chunkLists)) )
+            info( u"Using {0} batches to conserve memory.".format(len(chunkLists)) )
         
         i=0
         for dc in chunkLists:
             i+=1;
-            info( "Batch {0}/{1}".format(i, len(chunkLists)) )
+            info( u"Batch {0}/{1}".format(i, len(chunkLists)) )
             
             dc = sorted(dc, key=lambda x:x.chunkPosition) 
         
@@ -1920,7 +1920,7 @@ class MCInfdevOldLevel(MCLevel):
                 ch.compress();
         timeDelta = datetime.now()-startTime;
         
-        info( "Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0) )
+        info( u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0) )
             
         return;
         
@@ -1940,7 +1940,7 @@ class MCInfdevOldLevel(MCLevel):
         
         dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition) 
                    
-        info( "Lighting {0} chunks".format(len(dirtyChunks)) )
+        info( u"Lighting {0} chunks".format(len(dirtyChunks)) )
         for chunk in dirtyChunks:
             try:
                 chunk.load();
@@ -1965,14 +1965,14 @@ class MCInfdevOldLevel(MCLevel):
         oldBottomEdge = zeros( (16, 1, 128), 'uint8');
         oldChunk = zeros( (16, 16, 128), 'uint8');
           
-        info( "Dispersing light..." )
+        info( u"Dispersing light..." )
         for light in ("BlockLight", "SkyLight"):
           zerochunkLight = getattr(zeroChunk, light); 
           
           newDirtyChunks = list(startingDirtyChunks);
            
           for i in range(14):
-            info( "{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks)) );
+            info( u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks)) );
             
             """
             propagate light!
@@ -2218,7 +2218,7 @@ class MCInfdevOldLevel(MCLevel):
         for (chunk, slices, point) in chunkIterator:
             i+=1;
             if i % 100 == 0:
-                info( "Chunk {0}...".format(i) )
+                info( u"Chunk {0}...".format(i) )
                 
             blocks = chunk.Blocks[slices] 
             mask = None
@@ -2247,7 +2247,7 @@ class MCInfdevOldLevel(MCLevel):
             chunk.compress();
         
         if blocksToReplace != None:
-            info( "Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced) )
+            info( u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced) )
             
     
     def getAllChunkSlices(self):
@@ -2359,7 +2359,7 @@ class MCInfdevOldLevel(MCLevel):
         
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         #needs work xxx
-        info( "Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint) )
+        info( u"Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint) )
         blocksCopied = 0
         
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
@@ -2394,7 +2394,7 @@ class MCInfdevOldLevel(MCLevel):
                     blocksCopied += 1;
 
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
-        info( "Blocks copied: %d" % blocksCopied )
+        info( u"Blocks copied: %d" % blocksCopied )
         #self.saveInPlace()
  
 
@@ -2407,7 +2407,7 @@ class MCInfdevOldLevel(MCLevel):
         #return c.ready();
 
     def malformedChunk(self, cx, cz):
-        debug( "Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
+        debug( u"Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
         if (cx,cz) in self._presentChunks:
             del self._presentChunks[(cx,cz)]
         
@@ -2416,7 +2416,7 @@ class MCInfdevOldLevel(MCLevel):
         self._presentChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
         
     def createChunksInBox(self, box):
-        info( "Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
+        info( u"Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
         i=0;
         for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
             i+=1;
@@ -2424,7 +2424,7 @@ class MCInfdevOldLevel(MCLevel):
                 self.createChunk(cx,cz);
             assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
             if i%100 == 0:
-                info( "Chunk {0}...".format( i ) )
+                info( u"Chunk {0}...".format( i ) )
         
         
     def deleteChunk(self, cx, cz):
@@ -2434,7 +2434,7 @@ class MCInfdevOldLevel(MCLevel):
         del self._presentChunks[(cx,cz)]
         
     def deleteChunksInBox(self, box):
-        info( "Deleting {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
+        info( u"Deleting {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
         i=0;
         for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
             i+=1;
@@ -2442,7 +2442,7 @@ class MCInfdevOldLevel(MCLevel):
                 self.deleteChunk(cx,cz);
             assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
             if i%100 == 0:
-                info( "Chunk {0}...".format( i ) )
+                info( u"Chunk {0}...".format( i ) )
         
         
     def setPlayerSpawnPosition(self, pos):
@@ -2558,7 +2558,7 @@ class MCIndevLevel(MCLevel):
         return self.BlockLight[x,z,y];
     
     def __repr__(self):
-        return "MCIndevLevel({0}): {1}W {2}L {3}H".format(self.filename, self.Width, self.Length, self.Height)
+        return u"MCIndevLevel({0}): {1}W {2}L {3}H".format(self.filename, self.Width, self.Length, self.Height)
     def __init__(self, root_tag = None, filename = ""):
         self.Width = 0
         self.Height = 0
@@ -2618,7 +2618,7 @@ class MCIndevLevel(MCLevel):
                 #self.saveInPlace();
                 
         else:
-            info( "Creating new Indev levels is not yet implemented.!" )
+            info( u"Creating new Indev levels is not yet implemented.!" )
             raise ValueError, "Can't do that yet"
 #            self.SurroundingGroundHeight = root_tag[Environment][SurroundingGroundHeight].value
 #            self.SurroundingGroundType = root_tag[Environment][SurroundingGroundType].value
@@ -2649,14 +2649,14 @@ class MCIndevLevel(MCLevel):
                                8, 9, 10, 11, 12, 13, 14, 15]);
                                
         torchIndexes = (self.Blocks == self.materials.materialNamed("Torch"))
-        info( "Rotating torches: {0}".format( len(torchIndexes.nonzero()[0]) ) )
+        info( u"Rotating torches: {0}".format( len(torchIndexes.nonzero()[0]) ) )
         self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
         
         
     def saveToFile(self, filename = None):
         if filename == None: filename = self.filename;
         if filename == None:
-            warn( "Attempted to save an unnamed file in place" )
+            warn( u"Attempted to save an unnamed file in place" )
             return; #you fool!
         
         self.Data <<= 4;
@@ -2756,7 +2756,7 @@ class MCJavaLevel(MCLevel):
     
     def guessSize(self, data):
         if(data.shape[0] <= (32 * 32 * 64)*2):
-            warn( "Can't guess the size of a {0} byte level".format(data.shape[0]) )
+            warn( u"Can't guess the size of a {0} byte level".format(data.shape[0]) )
             raise IOError, "MCJavaLevel attempted for smaller than 64 blocks cubed"
         if(data.shape[0] > (32 * 32 * 64)*2):
             Width = 64
@@ -2792,7 +2792,7 @@ class MCJavaLevel(MCLevel):
         else:
             w,l,h = self.guessSize(data);
             
-        info( "MCJavaLevel created for potential level of size " + str( (w,l,h) ) )
+        info( u"MCJavaLevel created for potential level of size " + str( (w,l,h) ) )
             
         blockCount = h*l*w
         if blockCount > data.shape[0]: raise ValueError, "Level file does not contain enough blocks!"
@@ -2849,7 +2849,7 @@ class MCJavaLevel(MCLevel):
             f.write(s.getvalue());
             
         except Exception, e:
-            info( "Error while saving java level in place: {0}".format( e ) )
+            info( u"Error while saving java level in place: {0}".format( e ) )
             f.close()
             try:os.remove(self.filename);
             except: pass
