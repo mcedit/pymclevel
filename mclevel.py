@@ -1999,11 +1999,10 @@ class MCInfdevOldLevel(MCLevel):
                                       (FaceXIncreasing,1,0,0), 
                                       (FaceZDecreasing,0,0, -1), 
                                       (FaceZIncreasing,0,0, 1) ):
-                   if not self.containsChunk(cx+dx,cz+dz):
-                       neighboringChunks[dir] = zeroChunk
-                   else:
+                   try:
                        neighboringChunks[dir] = self.getChunk(cx+dx,cz+dz)
-                       assert neighboringChunks[dir].root_tag != None
+                   except (ChunkNotPresent, ChunkMalformed):
+                       neighboringChunks[dir] = zeroChunk;
                 
                 
                 chunkLa = la[chunk.Blocks]+1;
