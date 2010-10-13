@@ -2402,7 +2402,8 @@ class MCInfdevOldLevel(MCLevel):
 
     def malformedChunk(self, cx, cz):
         debug( "Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
-        del self._presentChunks[(cx,cz)]
+        if (cx,cz) in self._presentChunks:
+            del self._presentChunks[(cx,cz)]
         
     def createChunk(self, cx, cz):
         if (cx,cz) in self._presentChunks: raise ValueError, "{0}:Chunk {1} already present!".format(self, (cx,cz) )
