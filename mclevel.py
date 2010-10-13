@@ -1995,6 +1995,12 @@ class MCInfdevOldLevel(MCLevel):
                 #xxx code duplication
                 (cx,cz) = chunk.chunkPosition
                 neighboringChunks = {};
+                try:
+                    chunk.load();
+                except (ChunkNotPresent, ChunkMalformed), e:
+                    print "Chunk error during relight, chunk skipped: ", e
+                    continue;
+                    
                 for dir,dx,dy,dz in ( (FaceXDecreasing,-1,0,0), 
                                       (FaceXIncreasing,1,0,0), 
                                       (FaceZDecreasing,0,0, -1), 
