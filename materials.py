@@ -125,7 +125,9 @@ classicMaterials.blockTextures = [
             ), (
                 (45, 45,  1,  1, 61, 61), "Lit Furnace",#62: 
             )] + [((NOTEX,)*6, "Not present in Creative") , #63-255: "Bugs",
-            ] * 200
+            ] * 200 #create extras, then cut them off on the next line
+
+classicMaterials.blockTextures = classicMaterials.blockTextures[:256]
 
 classicMaterials.names = [name for (faces, name) in classicMaterials.blockTextures]
 
@@ -284,8 +286,9 @@ materials.blockTextures = [
             ), 
              
             
-            ] + [((NOTEX,)*6, "Future Block!") , ] * 200
+            ] + [((NOTEX,)*6, "Future Block!") , ] * 200 #create extras, then cut them off on the next line
 
+materials.blockTextures = materials.blockTextures[:256]
 
 
 
