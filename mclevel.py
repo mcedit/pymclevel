@@ -1725,11 +1725,11 @@ class MCInfdevOldLevel(MCLevel):
         
     def dirhash(self, n):
         n=n%64;
-        s="";
+        s=u"";
         if(n>=36):
-            s+="1";
+            s+=u"1";
             n-=36;
-        s+="0123456789abcdefghijklmnopqrstuvwxyz"[n]
+        s+=u"0123456789abcdefghijklmnopqrstuvwxyz"[n]
 
         return s;
 
