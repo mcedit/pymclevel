@@ -886,7 +886,10 @@ class MCLevel(object):
     def extractSchematic(self, box):
         x,y,z = box.origin
         w,h,l = box.size
+        destX = destY = destZ = 0;
+        
         if y<0: 
+            destY -= y
             h += y
             y = 0;
         if y+h>self.Height:
@@ -895,13 +898,34 @@ class MCLevel(object):
         
         if h<=0: return
         
-        box.origin = x,y,z 
-        box.size = w,h,l 
-        
+        if self.Width:
+            if x < 0:
+                destX -= x;
+                x = 0;
+                w += x
+            if x + w > self.Width:
+                w = self.Width - x
             
+            if w <= 0: return
+            
+            if z < 0:
+                destZ -= z;
+                z = 0;
+                l += z
+            if z + l > self.Length:
+                l = self.Length - z
+            
+            if l <= 0: return
+            
+             
+                 
+        
+        box = BoundingBox ( (x,y,z), (w,h,l) )
+        
+        
         tempSchematic = MCSchematic(shape=box.size)
         tempSchematic.materials = self.materials
-        tempSchematic.copyBlocksFrom(self, box, (0,0,0))   
+        tempSchematic.copyBlocksFrom(self, box, (destX, destY, destZ))   
         return tempSchematic
         
 fromFile = MCLevel.fromFile
