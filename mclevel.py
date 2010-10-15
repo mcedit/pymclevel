@@ -1362,12 +1362,12 @@ class InfdevChunk(MCLevel):
         try:
             os.mkdir(dx)
         except Exception, e: 
-            debug( u"Failed to make chunk dir x {0}: {1}".format(dx, e ) )
+            debug( u"Failed to make chunk dir x {0}: {1}".format(self.world.dirhash(cx), e ) )
             pass
         try:
             os.mkdir(dz)
         except: 
-            debug( u"Failed to make chunk dir z {0}: {1}".format(dx, e ) )
+            debug( u"Failed to make chunk dir z {0}: {1}".format(self.world.dirhash(cz), e ) )
             pass
         
         self.dirty = True;
