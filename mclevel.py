@@ -600,6 +600,10 @@ class MCLevel(object):
         
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         
+        if min(sourceBox.size) <= 0: 
+            print "Empty source box, aborting"
+            return;
+            
         info( u"Copying {0} blocks from {1} to {2}" .format (sourceBox.volume,sourceBox, destinationPoint) )
        
         if not isinstance(sourceLevel, MCInfdevOldLevel):
@@ -892,7 +896,10 @@ class MCLevel(object):
             destY -= y
             h += y
             y = 0;
-        if y+h>self.Height:
+        
+        if y >= self.Height: return;
+        
+        if y+h>=self.Height:
             h -=y+h-self.Height
             y=self.Height-h
         
@@ -900,19 +907,24 @@ class MCLevel(object):
         
         if self.Width:
             if x < 0:
+                w += x
                 destX -= x;
                 x = 0;
-                w += x
-            if x + w > self.Width:
+            if x >= self.Width: return;
+            
+            if x + w >= self.Width:
                 w = self.Width - x
             
             if w <= 0: return
             
             if z < 0:
+                l += z
                 destZ -= z;
                 z = 0;
-                l += z
-            if z + l > self.Length:
+                
+            if z >= self.Length: return;
+            
+            if z + l >= self.Length:
                 l = self.Length - z
             
             if l <= 0: return
