@@ -141,12 +141,36 @@ FaceZIncreasing = 4
 FaceZDecreasing = 5
 MaxDirections = 6
 
+#as it turns out, you can't pass unicode strings to path.expandxxx because it 
+#returns the expanded path as a byte array encoded for the filesystem routines, 
+# but unicode string formatters and whatnot try to decode it as 'ascii'
+
+# this basically means you can't print them without knowing the filesystem encoding
+
+
 saveFileDirs = {
-    'win32':os.path.expandvars("%APPDATA%\\.minecraft\\saves"),
+    #'win32':os.path.expandvars("%APPDATA%\\.minecraft\\saves"),
     'darwin':os.path.expanduser("~/Library/Application Support/minecraft/saves"),
 }
 saveFileDir = saveFileDirs.get(sys.platform, os.path.expanduser("~/.minecraft/saves")); #default to Linux save location 
-  
+
+if sys.platform == "win32":
+    #do it using win32com because expandvars always returns a byte array when we 
+    #need a unicode for the filesystem routines
+            
+    import win32com.client
+    
+    objShell = win32com.client.Dispatch("WScript.Shell")
+    saveFileDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft", u"saves")
+    
+ 
+#if sys.platform == "win32":
+#    from win32com.shell import shell, shellcon
+#    saveFileDir = shell.SHGetPathFromIDListEx (
+#    shell.SHGetSpecialFolderLocation (0, shellcon.CSIDL_APPDATA)
+#    )
+#    
+    
 """
 Indev levels:
 
