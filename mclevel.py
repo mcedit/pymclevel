@@ -2023,7 +2023,7 @@ class MCInfdevOldLevel(MCLevel):
                 chunk.compress();
             
         zeroChunk = ZeroChunk(128)
-        zeroChunk.Light[:] = 0;
+        zeroChunk.BlockLight[:] = 0;
         zeroChunk.SkyLight[:] = 0;
         
            
