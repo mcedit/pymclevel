@@ -402,7 +402,7 @@ def load(filename="", buf = None):
     root TAG_Compound object. Argument can be a string containing a 
     filename or an array of integers containing TAG_Compound data. """
     
-    if filename and isinstance(filename, str):
+    if filename and isinstance(filename, (str, unicode)):
       return loadFile(filename)
     if isinstance(buf, str): buf = fromstring(buf, uint8)
     data = buf;
