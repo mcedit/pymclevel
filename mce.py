@@ -94,6 +94,7 @@ class mce(object):
         "relight",
         
         "degrief",
+        "time",
         
         "save",
         "load",
@@ -671,7 +672,58 @@ class mce(object):
                                 ]
                               )
         self.needsSave = True;
-        
+    
+    def _time(self, command):
+        """
+    time [time of day]
+    
+    Set or display the time of day. Acceptable values are "morning", "noon", 
+    "evening", "midnight", or a time of day such as 8:02, 12:30 PM, or 16:45.
+    """
+        ticks = self.level.root_tag["Data"]["Time"].value
+        timeOfDay = ticks % 24000;
+        ageInTicks = ticks - timeOfDay;
+        if len(command) == 0:
+            
+            days = ageInTicks / 24000
+            hours = timeOfDay / 1000;
+            clockHours = (hours + 6) % 24
+            
+            ampm = ("AM", "PM")[clockHours > 11]
+            
+            minutes = (timeOfDay % 1000) / 60;
+            
+            print "It is {0}:{1:02} {2} on Day {3}".format(clockHours%12 or 12, minutes, ampm, days)
+        else:
+            times = { "morning":6, "noon":12, "evening":18, "midnight":24 }
+            word = command[0];
+            minutes = 0;
+            
+            if word in times:
+                hours = times[word]
+            else:
+                try:
+                    if ":" in word:
+                        h, m = word.split(":")
+                        hours = int(h)
+                        minutes = int(m)
+                    else:
+                        hours = int(word)
+                except Exception, e:
+                    raise UsageError, ("Cannot interpret time, ", e);
+                    
+                if len(command) > 1:
+                    if command[1].lower() == "pm":
+                        hours += 12;
+                
+            ticks = ageInTicks + hours * 1000 + minutes * 1000 / 60 - 6000;
+            if ticks < 0: ticks += 18000
+            
+            ampm = ("AM", "PM")[hours > 11 and hours < 24]
+            print "Changed time to {0}:{1:02} {2}".format(hours%12 or 12, minutes, ampm)
+            self.level.root_tag["Data"]["Time"].value = ticks
+            self.needsSave = True;
+            
     def _quit(self, command):
         """
     quit [ yes | no ]
