@@ -136,7 +136,7 @@ def do_test_match_output(test_data, result_check, arguments=[]):
 
 
 alpha_tests = [
-    (do_test,               'baseline', 'ca66277d8037fde5aea3a135dd186f91e4bf4bef', []),
+    (do_test,               'baseline', '9e7460d39c8e0456789cf89fee45276db2719aaa', []),
     (do_test,               'degrief',  '6ae14eceab8e0c600799463a77113448b2d9ff8c', ['degrief']),
     (do_test_match_output,  'analyze',  'f2938515596b88509b2e4c8d598951887d7e0f4c', ['analyze']),
     (do_test,               'relight',  '00bc507daa3c07fee065973da4b81a099124650f', ['relight']),
