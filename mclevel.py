@@ -887,6 +887,9 @@ class MCLevel(object):
         else:
             blocks[:] = sourceBlocks[:]
         """
+    def generateLights(self, dirtyChunks = None):
+        pass;
+        
     def extractSchematic(self, box):
         x,y,z = box.origin
         w,h,l = box.size
