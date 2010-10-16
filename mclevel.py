@@ -1600,11 +1600,7 @@ class MCInfdevOldLevel(MCLevel):
             
         self._presentChunks = {};
         
-        try:
-            root_tag = nbt.load(filename)
-        except Exception, e:
-            print 'Failed to load Alpha level.dat'
-            
+        
         if create:
             
             if filename == None:
@@ -1652,6 +1648,8 @@ class MCInfdevOldLevel(MCLevel):
             if not os.path.exists(self.worldDir):
                 os.mkdir(self.worldDir)
         
+        else:
+            root_tag = nbt.load(filename)
          
         self.root_tag = root_tag;
         self.filename = filename;
