@@ -2023,6 +2023,8 @@ class MCInfdevOldLevel(MCLevel):
                 chunk.compress();
             
         zeroChunk = ZeroChunk(128)
+        zeroChunk.Light[:] = 0;
+        zeroChunk.SkyLight[:] = 0;
         
            
         la[18] = 0; #for normal light dispersal, leaves absorb the same as empty air.
