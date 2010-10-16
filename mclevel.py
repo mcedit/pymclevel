@@ -2313,7 +2313,12 @@ class MCInfdevOldLevel(MCLevel):
     def getAllChunkSlices(self):
         for cpos in self.presentChunks:    
             xPos, zPos = cpos
-            yield ( self.getChunk(xPos, zPos), ( slice(0,16),slice(0,16),slice(0,128), ), (xPos * 16, 0, zPos * 16) )
+            try:
+                chunk = self.getChunk(xPos, zPos)
+            except (ChunkMalformed, ChunkNotPresent):
+                continue
+                
+            yield ( chunk, ( slice(0,16),slice(0,16),slice(0,128), ), (xPos * 16, 0, zPos * 16) )
             
               
     def getChunkSlices(self, box):
