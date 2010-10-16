@@ -386,7 +386,7 @@ class mce(object):
         destPoint = self.readPoint(command)
         blocksToCopy = self.readBlocksToCopy(command)
                 
-        importLevel = mclevel.fromFile(filename, last_played=self.last_played, random_seed=self.random_seed)
+        importLevel = mclevel.fromFile(filename)
         self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint, blocksToCopy);
         
         
@@ -762,7 +762,7 @@ class mce(object):
         self.loadWorld(command[0])
         
     def _reload(self, command):
-        self.level = mclevel.fromFile(self.filename, last_played=self.last_played, random_seed=self.random_seed);
+        self.level = mclevel.fromFile(self.filename);
         
     def _help(self, command):
         if len(command):
@@ -815,7 +815,7 @@ class mce(object):
         try:
             worldNum = int(world)
         except ValueError:
-            self.level = mclevel.fromFile(world, last_played=self.last_played, random_seed=self.random_seed)
+            self.level = mclevel.fromFile(world)
             
             self.filename = self.level.filename
             

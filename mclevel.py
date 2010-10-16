@@ -617,7 +617,7 @@ class MCLevel(object):
     def saveInPlace(self):
         self.saveToFile(self.filename);
     @classmethod
-    def fromFile(cls, filename, loadInfinite=True, random_seed=None, last_played=None):
+    def fromFile(cls, filename, loadInfinite=True):
         ''' The preferred method for loading Minecraft levels of any type.
         pass False to loadInfinite if you'd rather not load infdev levels.'''
         info( u"Identifying " + filename )
@@ -634,7 +634,7 @@ class MCLevel(object):
                 raise;
             try:
                 info( u"Can't read, attempting to open directory" )
-                lev = MCInfdevOldLevel(filename=filename, random_seed=random_seed, last_played=last_played)
+                lev = MCInfdevOldLevel(filename=filename)
                 info( u"Detected Alpha world." )
                 return lev;
             except Exception, ex:
