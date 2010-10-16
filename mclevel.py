@@ -704,7 +704,7 @@ class MCLevel(object):
                     info( u"Detected Infdev level.dat" )
                     if (loadInfinite):
                     
-                        return MCInfdevOldLevel(root_tag=root_tag, filename=filename);
+                        return MCInfdevOldLevel(filename=filename);
                     else:
                         raise IOError, "Cannot import infinite levels"
                     
@@ -1584,7 +1584,7 @@ class MCInfdevOldLevel(MCLevel):
     def __str__(self):
         return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
     
-    def __init__(self, filename = None, root_tag = None, random_seed=None, last_played=None):
+    def __init__(self, filename = None, create = False, random_seed=None, last_played=None):
         #pass level.dat's root tag and filename to read an existing level.
         #pass only filename to create a new one
         #filename should be the path to the world dir
@@ -1600,7 +1600,12 @@ class MCInfdevOldLevel(MCLevel):
             
         self._presentChunks = {};
         
-        if root_tag is None:
+        try:
+            root_tag = nbt.load(filename)
+        except Exception, e:
+            print 'Failed to load Alpha level.dat'
+            
+        if create:
             
             if filename == None:
                 raise ValueError, "Can't create an Infinite level without a filename!"
@@ -1651,13 +1656,15 @@ class MCInfdevOldLevel(MCLevel):
         self.root_tag = root_tag;
         self.filename = filename;
         
-        self.saveInPlace();
+        if create:
+            self.saveInPlace();
+        
         
         self.dirhashes = [self.dirhash(n) for n in range(64)];
         self.dirhash=self.dirhashlookup;
 
         playerFilePath = os.path.join(self.worldDir, "players")
-        if os.path.exists(playerFilePath):
+        if os.path.isdir(playerFilePath):
             self.players = [x[:-4] for x in os.listdir(playerFilePath) if x.endswith(".dat")]
             
         self.preloadChunkPaths();
