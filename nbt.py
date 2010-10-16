@@ -23,6 +23,7 @@ import itertools
 import struct
 import gzip
 import StringIO;
+import os;
 from numpy import array, zeros, uint8, fromstring
 TAGfmt = ">b"
 
