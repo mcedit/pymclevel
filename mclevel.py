@@ -1332,7 +1332,6 @@ class InfdevChunk(MCLevel):
         
         levelTag[BlockLight] = TAG_Byte_Array()
         levelTag[BlockLight].value = zeros(16*16*64, uint8)
-        levelTag[BlockLight].value[:] = 255
         
         levelTag[Blocks] = TAG_Byte_Array()
         levelTag[Blocks].value = zeros(16*16*128, uint8)
