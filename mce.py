@@ -203,7 +203,18 @@ class mce(object):
                 raise BlockMatchError
         
         return blockType
-        
+    
+    def readBlocksToCopy(self, command):
+        blocksToCopy = range(256);
+        while len(command):
+            word = command.pop();
+            if word == "noair":
+                blocksToCopy.remove(0);
+            if word == "nowater":
+                blocksToCopy.remove(8);
+                blocksToCopy.remove(9);
+                
+        return blocksToCopy
     def _debug(self, command):
         self.debug = not self.debug
         print "Debug", ("disabled", "enabled")[self.debug]
@@ -225,11 +236,11 @@ class mce(object):
     
     def _clone(self, command):
         """
-    clone <sourcePoint> <sourceSize> <destPoint>
+    clone <sourcePoint> <sourceSize> <destPoint> [noair] [nowater]
     
     Clone blocks in a cuboid starting at sourcePoint and extending for 
     sourceSize blocks in each direction. Blocks and entities in the area 
-    are cloned at destPoint
+    are cloned at destPoint.
     """
         if len(command) == 0:
             self.printUsage("clone")
@@ -238,11 +249,12 @@ class mce(object):
         box = self.readBox(command);
         
         destPoint = self.readPoint(command)
-    
+        
         destPoint = map(int, destPoint)
+        blocksToCopy = self.readBlocksToCopy(command);
         
         tempSchematic = self.level.extractSchematic(box);
-        self.level.copyBlocksFrom(tempSchematic, BoundingBox((0,0,0), box.origin), destPoint);
+        self.level.copyBlocksFrom(tempSchematic, BoundingBox((0,0,0), box.origin), destPoint, blocksToCopy);
         
         self.needsSave = True;
         print "Cloned 0 blocks." 
@@ -355,7 +367,7 @@ class mce(object):
     
     def _import(self, command):
         """
-    import <filename> <destPoint>
+    import <filename> <destPoint> [noair] [nowater]
     
     Imports a level or schematic into this world, beginning at destPoint.
     Supported formats include 
@@ -371,9 +383,10 @@ class mce(object):
         
         filename = command.pop(0)
         destPoint = self.readPoint(command)
-        
+        blocksToCopy = self.readBlocksToCopy(command)
+                
         importLevel = mclevel.fromFile(filename, last_played=self.last_played, random_seed=self.random_seed)
-        self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint);
+        self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint, blocksToCopy);
         
         
         self.needsSave = True;
