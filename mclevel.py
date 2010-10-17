@@ -148,11 +148,11 @@ MaxDirections = 6
 # this basically means you can't print them without knowing the filesystem encoding
 
 
-saveFileDirs = {
+minecraftDirs = {
     #'win32':os.path.expandvars("%APPDATA%\\.minecraft\\saves"),
-    'darwin':os.path.expanduser("~/Library/Application Support/minecraft/saves"),
+    'darwin':os.path.expanduser("~/Library/Application Support/minecraft"),
 }
-saveFileDir = saveFileDirs.get(sys.platform, os.path.expanduser("~/.minecraft/saves")); #default to Linux save location 
+minecraftDir = minecraftDirs.get(sys.platform, os.path.expanduser("~/.minecraft")); #default to Linux save location 
 
 if sys.platform == "win32":
     #do it using win32com because expandvars always returns a byte array when we 
@@ -161,8 +161,9 @@ if sys.platform == "win32":
     import win32com.client
     
     objShell = win32com.client.Dispatch("WScript.Shell")
-    saveFileDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft", u"saves")
-    
+    minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
+
+saveFileDir = os.path.join(minecraftDir, u"saves")
  
 #if sys.platform == "win32":
 #    from win32com.shell import shell, shellcon
