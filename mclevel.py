@@ -122,6 +122,8 @@ import traceback
 import os;
 import sys;
 
+from collections import deque;
+
 import blockrotation
 from materials import *
 
@@ -1308,12 +1310,20 @@ class InfdevChunk(MCLevel):
         
         if create:
             self.create();
-            
+    
     def compress(self):
+        
         if not self.dirty: 
             self.root_tag = None
-            return
-        MCLevel.compress(self);
+        else:
+            MCLevel.compress(self);
+            
+        self.world.chunkDidCompress(self);
+    
+    def decompress(self):
+        MCLevel.decompress(self);
+        self.world.chunkDidDecompress(self);
+        
         
     def __str__(self):
         return "InfdevChunk, coords:{0}, world: {1}, D:{2}, L:{3}".format(self.chunkPosition, os.path.split(self.world.worldDir)[1],self.dirty, self.needsLighting)
@@ -1420,9 +1430,13 @@ class InfdevChunk(MCLevel):
                 compressedData.close()
             except IOError:
                 raise ChunkNotPresent
-                
+            
+            self.world.chunkDidLoad(self)
+            
         if self.root_tag is None:
             self.decompress()
+        
+        
     
     def unload(self):
         """ Frees the chunk's memory. Saves the chunk to disk if needed. """
@@ -1430,12 +1444,16 @@ class InfdevChunk(MCLevel):
         self.save();
             
         self.compressedTag = None;
-    
+        self.world.chunkDidUnload(self)
+        
     def isLoaded(self):
         #we're loaded if we have our tag data in ram 
         #and we don't have to go back to the disk for it.
         return not (self.compressedTag is None and self.root_tag is None)
-            
+    
+    def isCompressed(self):
+        return self.isLoaded() and self.root_tag == None
+                
         
     def chunkChanged(self, calcLighting = True):
         if self.compressedTag == None:
@@ -1450,10 +1468,7 @@ class InfdevChunk(MCLevel):
             
     def ready(self):
         return not (self.compressedTag is None)
-    
-    def isCompressed(self):
-        return self.compressedTag != None and self.root_tag == None
-    
+
     def genFastLights(self):
         self.SkyLight[:] = 0;
         for x,z in itertools.product(xrange(16), xrange(16)):
@@ -1600,6 +1615,8 @@ class MCInfdevOldLevel(MCLevel):
             
         self._presentChunks = {};
         
+        self.loadedChunks = deque()
+        self.decompressedChunks = deque()
         
         if create:
             
@@ -1711,7 +1728,39 @@ class MCInfdevOldLevel(MCLevel):
     def compressChunk(self, x, z):
         if not (x,z) in self._presentChunks: return; #not an error
         self._presentChunks[x,z].compress()
-        
+    
+    decompressedChunkLimit = 2048 # about 320 megabytes
+    compressedChunkLimit = 8192 # from 8mb to 800mb depending on chunk contents
+            
+    
+    def chunkDidCompress(self, chunk):
+        # searching decompressedChunks every time is slow, especially with the above limits
+        try:
+            self.decompressedChunks.remove(chunk)
+        except ValueError:
+            pass
+    
+    def chunkDidDecompress(self, chunk):
+        if not chunk in self.decompressedChunks:
+            self.decompressedChunks.append(chunk);
+            if len(self.decompressedChunks) > self.decompressedChunkLimit:
+                oldestChunk = self.decompressedChunks[0];
+                oldestChunk.compress(); #calls chunkDidCompress
+    
+    def chunkDidUnload(self, chunk):
+        try:
+            self.loadedChunks.remove(chunk)
+        except ValueError:
+            pass
+    
+    def chunkDidLoad(self, chunk):
+        if not chunk in self.loadedChunks:
+            self.loadedChunks.append(chunk);
+            if len(self.loadedChunks) > self.compressedChunkLimit:
+                oldestChunk = self.loadedChunks[0];
+                oldestChunk.unload(); #calls chunkDidUnload
+    
+    
     def discardAllChunks(self):
         """ clear lots of memory, fast. """
         
@@ -1904,11 +1953,7 @@ class MCInfdevOldLevel(MCLevel):
             self.world.malformedChunk(*self.chunkPosition);
             
         return c;
-        
-    def chunkIsCompressed(self, cx, cz):
-        if not (cx,cz) in self._presentChunks: raise ChunkNotPresent;
-        return self._presentChunks[cx,cz].isCompressed();
-        
+
     def markDirtyChunk(self, cx, cz):
         if not (cx,cz) in self._presentChunks: return
         self._presentChunks[cx,cz].chunkChanged();
