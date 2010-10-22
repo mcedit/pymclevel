@@ -2453,6 +2453,7 @@ class MCInfdevOldLevel(MCLevel):
         (sx, sy, sz) = sourceBox.origin
         
         filterTable = self.conversionTableFromLevel(sourceLevel);
+        blocksCopied = 0;
         
         destChunks = self.getChunkSlices(BoundingBox(destinationPoint, sourceBox.size))
         for (chunk, slices, point) in destChunks:
@@ -2487,10 +2488,14 @@ class MCInfdevOldLevel(MCLevel):
                 data = chunk.Data[slices][0:x,0:z,0:y]
                 if mask != None:
                     data[mask] = (sourceData[:,:,:] & 0xf)[mask]
+                    blocksCopied += sum(mask)
                 else:
                     data[:] = (sourceData[:,:,:] & 0xf)
-        
+                    blocksCopied += x*z*y
+                    
             chunk.chunkChanged();
+            
+        return blocksCopied
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
                            
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy = None):
@@ -2504,7 +2509,7 @@ class MCInfdevOldLevel(MCLevel):
         blocksCopied = 0
         
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
-            self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
+            blocksCopied = self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
             
 
         else: #uggh clone tool will still be slow if it weren't for schematics
