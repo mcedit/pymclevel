@@ -224,6 +224,7 @@ class mce(object):
         else:
             try:
                 blockType = int(keyword);
+                blockType = blockType & 0xff
             except ValueError:
                 blockType = None;
         
