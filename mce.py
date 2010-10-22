@@ -21,8 +21,8 @@ class mce(object):
     
     Block commands:
        {commandPrefix}clone <sourcePoint> <sourceSize> <destPoint> [noair] [nowater]
-       {commandPrefix}fill <blockType> [ <point> <size> ]
-       {commandPrefix}replace <blockType> [with] <newBlockType> [ <point> <size> ]
+       {commandPrefix}fill <blockType> [ <box> ]
+       {commandPrefix}replace <blockType> [with] <newBlockType> [ <box> ]
        
        {commandPrefix}export <filename> <sourcePoint> <sourceSize>
        {commandPrefix}import <filename> <destPoint> [noair] [nowater]
@@ -39,10 +39,10 @@ class mce(object):
        {commandPrefix}dumpSigns [ <filename> ]
        
     Chunk commands:
-       {commandPrefix}createChunks <point> <size>
-       {commandPrefix}deleteChunks <point> <size>
-       {commandPrefix}prune <point> <size>
-       {commandPrefix}relight [ <point> <size> ]
+       {commandPrefix}createChunks <box>
+       {commandPrefix}deleteChunks <box>
+       {commandPrefix}prune <box>
+       {commandPrefix}relight [ <box> ]
        
     World commands:
        {commandPrefix}degrief
@@ -57,19 +57,11 @@ class mce(object):
        {commandPrefix}blocks [ <block name> | <block ID> ]
        {commandPrefix}help [ <command> ]
         
-    Points and sizes are space-separated triplets of numbers ordered X Y Z.
-    X is position north-south, increasing southward. 
-    Y is position up-down, increasing upward. 
-    Z is position east-west, increasing westward.
-    
-    A player's name can be used as a point - it will use the
-    position of the player's head. Use the keyword 'delta' after 
-    the name to specify a point near the player. 
-    
-    Example:
-       codewarrior delta 0 5 0
+    **IMPORTANT**
+       {commandPrefix}box 
        
-    This refers to a point 5 blocks above codewarrior's head. 
+       Type 'box' to learn how to specify points and areas.
+       
        
     """
     random_seed = os.getenv('MCE_RANDOM_SEED', None)
@@ -115,6 +107,7 @@ class mce(object):
         
         "debug",
         "log",
+        "box",
     ]
     debug = False
     needsSave = False;
@@ -254,6 +247,43 @@ class mce(object):
                 blocksToCopy.remove(9);
                 
         return blocksToCopy
+        
+    def _box(self, command):
+        """
+        Boxes:
+        
+    Many commands require a <box> as arguments. A box can be specified with
+    a point and a size:
+        (12, 5, 15), (5, 5, 5)
+    
+    or with two points, making sure to put the keyword "to" between them:
+        (12, 5, 15) to (17, 10, 20)
+        
+    The commas and parentheses are not important. 
+    You may add them for improved readability.
+    
+    
+        Points:
+        
+    Points and sizes are triplets of numbers ordered X Y Z.
+    X is position north-south, increasing southward. 
+    Y is position up-down, increasing upward. 
+    Z is position east-west, increasing westward.
+    
+    
+        Players:
+    
+    A player's name can be used as a point - it will use the
+    position of the player's head. Use the keyword 'delta' after 
+    the name to specify a point near the player. 
+    
+    Example:
+       codewarrior delta 0 5 0
+       
+    This refers to a point 5 blocks above codewarrior's head. 
+    
+    """
+        raise UsageError;
     def _debug(self, command):
         self.debug = not self.debug
         print "Debug", ("disabled", "enabled")[self.debug]
@@ -300,7 +330,7 @@ class mce(object):
     
     def _fill(self, command):
         """
-    fill <blockType> [ <point> <size> ]
+    fill <blockType> [ <box> ]
     
     Fill blocks with blockType in a cuboid starting at point and 
     extending for size blocks in each direction. Without a 
@@ -329,7 +359,7 @@ class mce(object):
     
     def _replace(self, command):
         """
-    replace <blockType> [with] <newBlockType> [ <point> <size> ]
+    replace <blockType> [with] <newBlockType> [ <box> ]
     
     Replace all blockType blocks with newBlockType in a cuboid 
     starting at point and extending for size blocks in 
@@ -617,7 +647,7 @@ class mce(object):
     
     def _createchunks(self, command):
         """
-    createChunks <point> <size>
+    createChunks <box>
     
     Creates any chunks not present in the specified region. 
     New chunks are filled with only air. New chunks are written
@@ -638,7 +668,7 @@ class mce(object):
 
     def _deletechunks(self, command):
         """
-    deleteChunks <point> <size>
+    deleteChunks <box>
     
     Removes all chunks contained in the specified region. 
     Chunks are deleted from disk immediately.
@@ -656,7 +686,7 @@ class mce(object):
         
     def _prune(self, command):
         """
-    prune <point> <size>
+    prune <box>
     
     Removes all chunks not contained in the specified region. Useful for enforcing a finite map size.
     Chunks are deleted from disk immediately.
@@ -678,7 +708,7 @@ class mce(object):
     
     def _relight(self, command):
         """
-    relight [ <point> <size> ]
+    relight [ <box> ]
     
     Recalculates lights in the region specified. If omitted, 
     recalculates the entire world.
