@@ -7,6 +7,8 @@ from numpy import zeros, bincount
 import logging
 import itertools
 import traceback
+import shlex
+from math import floor
 
 class UsageError(RuntimeError): pass
 class BlockMatchError(RuntimeError): pass
@@ -122,14 +124,27 @@ class mce(object):
         except ValueError:
             raise UsageError, "Cannot understand numeric input"
         return val
+    
+    def prettySplit(self, command):
+        cmdstring = " ".join(command);
+        
+        lex = shlex.shlex(cmdstring);
+        lex.whitespace += "(),"
+            
+        command[:] = list(lex)
         
     def readBox(self, command):
+        self.prettySplit(command)
+        
         sourcePoint = self.readIntPoint(command)
         if command[0].lower() == "to":
             command.pop(0)
             sourcePoint2 = self.readIntPoint(command)
+            sourceSize = map(operator.sub, sourcePoint2, sourcePoint)
         else:
             sourceSize = self.readIntPoint(command, isPoint = False)
+        if len([p for p in sourceSize if p <= 0]):
+            raise UsageError, "Box size cannot be zero or negative"
         box = BoundingBox(sourcePoint, sourceSize)
         return box
     
@@ -139,6 +154,7 @@ class mce(object):
         return point
         
     def readPoint(self, command, isPoint = True):
+        self.prettySplit(command)
         try:
             word = command.pop(0)
             if isPoint and (word in self.level.players):
