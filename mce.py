@@ -8,6 +8,7 @@ import logging
 import itertools
 import traceback
 import shlex
+import operator
 from math import floor
 
 class UsageError(RuntimeError): pass
@@ -129,6 +130,7 @@ class mce(object):
         cmdstring = " ".join(command);
         
         lex = shlex.shlex(cmdstring);
+        lex.whitespace_split = True;
         lex.whitespace += "(),"
             
         command[:] = list(lex)
