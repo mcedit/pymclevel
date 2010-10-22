@@ -113,11 +113,27 @@ class mce(object):
     debug = False
     needsSave = False;
     
+    def readInt(self, command):
+        try:
+            val = int(command.pop(0))
+        except ValueError:
+            raise UsageError, "Cannot understand numeric input"
+        return val
+        
     def readBox(self, command):
-        sourcePoint = self.readPoint(command)
-        sourceSize = self.readPoint(command, isPoint = False)
+        sourcePoint = self.readIntPoint(command)
+        if command[0].lower() == "to":
+            command.pop(0)
+            sourcePoint2 = self.readIntPoint(command)
+        else:
+            sourceSize = self.readIntPoint(command, isPoint = False)
         box = BoundingBox(sourcePoint, sourceSize)
         return box
+    
+    def readIntPoint(self, command, isPoint = True):
+        point = self.readPoint(self, command, isPoint)
+        point = map(int, map(floor(point)))
+        return point
         
     def readPoint(self, command, isPoint = True):
         try:
