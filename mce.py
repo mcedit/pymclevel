@@ -17,12 +17,12 @@ class mce(object):
     Usage:
     
     Block commands:
-       {commandPrefix}clone <sourcePoint> <sourceSize> <destPoint>
+       {commandPrefix}clone <sourcePoint> <sourceSize> <destPoint> [noair] [nowater]
        {commandPrefix}fill <blockType> [ <point> <size> ]
        {commandPrefix}replace <blockType> [with] <newBlockType> [ <point> <size> ]
        
        {commandPrefix}export <filename> <sourcePoint> <sourceSize>
-       {commandPrefix}import <filename> <destPoint>
+       {commandPrefix}import <filename> <destPoint> [noair] [nowater]
        
        {commandPrefix}analyze
        
