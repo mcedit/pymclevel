@@ -149,8 +149,8 @@ class mce(object):
         return box
     
     def readIntPoint(self, command, isPoint = True):
-        point = self.readPoint(self, command, isPoint)
-        point = map(int, map(floor(point)))
+        point = self.readPoint(command, isPoint)
+        point = map(int, map(floor, point))
         return point
         
     def readPoint(self, command, isPoint = True):
