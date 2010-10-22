@@ -554,7 +554,7 @@ class MCLevel(object):
     
         # if the destination box is outside the level, it and the source corners are moved inward to fit.
         # ValueError is raised if the source corners are outside sourceLevel
-        (x,y,z) = destinationPoint;
+        (x,y,z) = map(int, destinationPoint)
         
         sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
         
