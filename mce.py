@@ -249,7 +249,7 @@ class mce(object):
             try:
                 logging.getLogger().level = int(command[0]);
             except ValueError:
-                raise UsageError
+                raise UsageError, "Cannot understand numeric input."
         else:
             print "Log level: {0}".format(logging.getLogger().level)
             
@@ -476,7 +476,7 @@ class mce(object):
     
     def _dumpsigns(self, command):
         """
-    dumpSigns [<filename>]
+    dumpSigns [ <filename> ]
     
     Saves the text and location of every sign in the world to a text file. 
     With no filename, saves signs to <worldname>.signs
