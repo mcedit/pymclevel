@@ -1225,6 +1225,26 @@ class MCSchematic (MCLevel):
         assert isinstance(entityTag, TAG_Compound)
         self.TileEntities.append(entityTag);
 
+    @classmethod
+    def chestWithItemID(self, itemID, count=64, damage=0):
+        """ Creates a chest with a stack of 'itemID' in each slot. 
+        Optionally specify the count of items in each stack. Pass a negative 
+        value for damage to create unnaturally sturdy tools. """
+        root_tag = TAG_Compound();
+        invTag = TAG_List();
+        root_tag["Inventory"] = invTag
+        for slot in range(9, 36):
+            itemTag = TAG_Compound();
+            itemTag["Slot"] = TAG_Byte(slot)
+            itemTag["Count"] = TAG_Byte(count)
+            itemTag["id"] = TAG_Short(itemID)
+            itemTag["Damage"] = TAG_Short(damage)
+            invTag.append(itemTag);
+            
+        chest = INVEditChest(root_tag, "");
+    
+        return chest;
+    
 class INVEditChest(MCSchematic):
     Width = 1
     Height = 1
@@ -1233,6 +1253,7 @@ class INVEditChest(MCSchematic):
     Data = array([[[0]]], 'uint8');
     Entities = TAG_List();
     
+        
     def __init__(self, root_tag, filename):
         
         if filename:
@@ -1249,7 +1270,7 @@ class INVEditChest(MCSchematic):
             
         for item in list(root_tag["Inventory"]):
             slot = item["Slot"].value
-            if slot < 9 or slot > 36:
+            if slot < 9 or slot >= 36:
                 root_tag["Inventory"].remove(item)
             else:
                 item["Slot"].value -= 9 # adjust for different chest slot indexes

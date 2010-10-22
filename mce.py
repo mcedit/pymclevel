@@ -24,6 +24,7 @@ class mce(object):
        {commandPrefix}export <filename> <sourcePoint> <sourceSize>
        {commandPrefix}import <filename> <destPoint> [noair] [nowater]
        
+       {commandPrefix}createChest <point> <item> [ <count> ]
        {commandPrefix}analyze
        
     Player commands:
@@ -81,6 +82,8 @@ class mce(object):
         "replace",
         "export",
         "import",
+        
+        "createchest",
         
         "player",
         "spawn",
@@ -340,6 +343,23 @@ class mce(object):
         self.needsSave = True;
         print "Replaced {0} blocks.".format("all" if box is None else box.volume)
 
+    def _createchest(self, command):
+        """
+    createChest <point> <item> [ <count> ]
+    
+    Create a chest filled with the specified item. 
+    Stacks are 64 if count is not given.
+    """
+        point = self.readPoint(command)
+        itemID = self.readInt(command)
+        count = 64;
+        if len(command):
+            count = self.readInt(command)
+            
+        chest = mclevel.MCSchematic.chestWithItemID(itemID, count);
+        self.level.copyBlocksFrom(chest, chest.getWorldBounds(), point);
+        self.needsSave = True;
+        
     def _analyze(self, command):
         """
     analyze
