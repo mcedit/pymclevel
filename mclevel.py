@@ -2564,14 +2564,18 @@ class MCInfdevOldLevel(MCLevel):
     def createChunksInBox(self, box):
         info( u"Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
         i=0;
+        ret = [];
         for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
             i+=1;
             if not ((cx,cz) in self._presentChunks):
+                ret.append( (cx,cz) )
                 self.createChunk(cx,cz);
             assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
             if i%100 == 0:
                 info( u"Chunk {0}...".format( i ) )
         
+        info( "Created {0} chunks.".format(len(ret)) )
+        return ret;
         
     def deleteChunk(self, cx, cz):
         if not (cx,cz) in self._presentChunks: return;
