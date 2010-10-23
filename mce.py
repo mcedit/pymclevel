@@ -960,9 +960,8 @@ class mce(object):
         else:
             #process many commands on standard input, maybe interactively
             command = [""]
+            self.batchMode = True;
             while True:
-                
-                
                 try:
                     command = raw_input("{0}> ".format(self.shortWorld))
                     if len(command) == 0: continue
