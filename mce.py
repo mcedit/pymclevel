@@ -46,6 +46,7 @@ class mce(object):
        
     World commands:
        {commandPrefix}degrief
+       {commandPrefix}heightmap <filename>
        
     Editor commands:
        {commandPrefix}save 
@@ -93,6 +94,7 @@ class mce(object):
         
         "degrief",
         "time",
+        "heightmap",
         
         "save",
         "load",
@@ -809,7 +811,75 @@ class mce(object):
             print "Changed time to {0}:{1:02} {2}".format(hours%12 or 12, minutes, ampm)
             self.level.root_tag["Data"]["Time"].value = ticks
             self.needsSave = True;
-            
+
+    def _heightmap(self,command):
+        """
+    heightmap <filename>
+
+    Takes a png and imports it as the terrain starting at chunk 0,0.
+    Requires a PNG image in grayscale.  The individual channel values must
+    not exceed 127.  Use Photoshop's levels tool to "flatten" your heightmap.
+
+    Please please please try out a small test image before using a big source.
+    Using the levels tool to get a good heightmap is an art, not a science.
+    A smaller map lets you experiment and get it right before having to blow
+    all night generating the really big map.
+
+    Requires the PIL library.
+    """
+        if len(command) == 0:
+            self.printUsage("heightmap")
+            return
+
+        if raw_input(
+     "This will destroy a large portion of the map and may take a long time.  Did you really want to do this?"
+     ).lower() in ("yes", "y", "1", "true"):
+            from PIL import Image
+            import datetime
+
+            filename = command.pop(0)
+
+            imgobj = Image.open(filename)
+            png = imgobj.load()
+            width, height = imgobj.size
+
+            for x in range(width):
+                for y in range(height):
+                    if png[x,y][0] >= 128:
+                        print "Pixel value out of range!"
+                        raise UsageError;
+                    if png[x,y][0] != png[x,y][1] or png[x,y][1] != png[x,y][2]:
+                        print "You want a grayscale image here!"
+                        raise UsageError;
+            print "PNG checked"
+
+            ychunks = height/16 if (height % 16 == 0) else (height/16) + 1
+            xchunks = width/16 if (width % 16 == 0) else (width/16) + 1
+
+            start = datetime.datetime.now()
+            for cx in range(xchunks):
+                for cy in range(ychunks):
+                    try:
+                        self.level.createChunk(cx,cy)
+                    except:
+                        pass
+                    c = self.level.getChunk(cx,cy)
+                    for i in range(16):
+                        for j in range(16):
+                            if i+(cx*16) < width-1 and j+(cy*16) < height-1:
+                                for z in range(png[i+(cx*16),j+(cy*16)][0]):
+                                    c.Blocks[i,j,z] = 3 #dirt
+                    c.chunkChanged()
+                    print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cy)
+
+            print "Done with mapping!"
+            self.level.generateLights()
+            print "Done with lights!"
+            self.needsSave = True;
+            stop = datetime.datetime.now()
+            print "Took %s." % str(stop-start)
+            print "You probably want to change your spawn point."
+
     def _quit(self, command):
         """
     quit [ yes | no ]
