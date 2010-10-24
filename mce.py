@@ -889,8 +889,6 @@ class mce(object):
                     print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cy)
 
             print "Done with mapping!"
-            self.level.generateLights()
-            print "Done with lights!"
             self.needsSave = True;
             stop = datetime.datetime.now()
             print "Took %s." % str(stop-start)
