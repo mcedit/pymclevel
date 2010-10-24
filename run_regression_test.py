@@ -164,8 +164,12 @@ def main(argv):
                 if options.profile:
                     print >>sys.stderr, "Starting to profile to %s.profile" % name
                     os.environ['MCE_PROFILE'] = '%s.profile' % name
-                func(test_data, sha, args)
-                print "Regression {0!r} complete.".format(name)
+                try:
+                    func(test_data, sha, args)
+                except RegressionError, e:
+                    print "Regression {0} failed: {1}".format(name, e)
+                else:
+                    print "Regression {0!r} complete.".format(name)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
