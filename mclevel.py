@@ -1620,6 +1620,53 @@ class MCInfdevOldLevel(MCLevel):
     def __str__(self):
         return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
     
+    def create(self, filename, random_seed, last_played):
+        
+        if filename == None:
+            raise ValueError, "Can't create an Infinite level without a filename!"
+        #create a new level
+        root_tag = TAG_Compound();
+        root_tag[Data] = TAG_Compound();
+        root_tag[Data][SpawnX] = TAG_Int(0)
+        root_tag[Data][SpawnY] = TAG_Int(2)
+        root_tag[Data][SpawnZ] = TAG_Int(0)
+        
+        if last_played is None:
+            last_played = time.time()
+        if random_seed is None:
+            random_seed = random.random() * ((2<<31))
+
+        root_tag[Data]['LastPlayed'] = TAG_Long(long(last_played))
+        root_tag[Data]['RandomSeed'] = TAG_Long(int(random_seed))
+        root_tag[Data]['SizeOnDisk'] = TAG_Long(long(1048576))
+        root_tag[Data]['Time'] = TAG_Long(1)
+        root_tag[Data]['SnowCovered'] = TAG_Byte(0);
+        
+        ### if singleplayer:
+        root_tag[Data][Player] = TAG_Compound()
+        
+        
+        root_tag[Data][Player]['Air'] = TAG_Short(300);
+        root_tag[Data][Player]['AttackTime'] = TAG_Short(0)
+        root_tag[Data][Player]['DeathTime'] = TAG_Short(0);
+        root_tag[Data][Player]['Fire'] = TAG_Short(-20);
+        root_tag[Data][Player]['Health'] = TAG_Short(20);
+        root_tag[Data][Player]['HurtTime'] = TAG_Short(0);
+        root_tag[Data][Player]['Score'] = TAG_Int(0);
+        root_tag[Data][Player]['FallDistance'] = TAG_Float(0)
+        root_tag[Data][Player]['OnGround'] = TAG_Byte(0)
+
+        root_tag[Data][Player]['Inventory'] = TAG_List()
+
+        root_tag[Data][Player]['Motion'] = TAG_List([TAG_Double(0) for i in range(3)])
+        root_tag[Data][Player]['Pos'] = TAG_List([TAG_Double([0.5,2.8,0.5][i]) for i in range(3)])
+        root_tag[Data][Player]['Rotation'] = TAG_List([TAG_Float(0), TAG_Float(0)])
+        
+        #root_tag["Creator"] = TAG_String("MCEdit-"+release.release);
+        
+        if not os.path.exists(self.worldDir):
+            os.mkdir(self.worldDir)
+        
     def __init__(self, filename = None, create = False, random_seed=None, last_played=None):
         #pass level.dat's root tag and filename to read an existing level.
         #pass only filename to create a new one
@@ -1632,60 +1679,17 @@ class MCInfdevOldLevel(MCLevel):
             self.worldDir = filename
             filename = os.path.join(filename, "level.dat")
         else:
+            
             self.worldDir = os.path.split(filename)[0]
             
         self._presentChunks = {};
         
+        #used to limit memory usage
         self.loadedChunks = deque()
         self.decompressedChunks = deque()
         
         if create:
-            
-            if filename == None:
-                raise ValueError, "Can't create an Infinite level without a filename!"
-            #create a new level
-            root_tag = TAG_Compound();
-            root_tag[Data] = TAG_Compound();
-            root_tag[Data][SpawnX] = TAG_Int(0)
-            root_tag[Data][SpawnY] = TAG_Int(2)
-            root_tag[Data][SpawnZ] = TAG_Int(0)
-            
-            if last_played is None:
-                last_played = time.time()
-            if random_seed is None:
-                random_seed = random.random() * ((2<<31))
-
-            root_tag[Data]['LastPlayed'] = TAG_Long(long(last_played))
-            root_tag[Data]['RandomSeed'] = TAG_Long(int(random_seed))
-            root_tag[Data]['SizeOnDisk'] = TAG_Long(long(1048576))
-            root_tag[Data]['Time'] = TAG_Long(1)
-            root_tag[Data]['SnowCovered'] = TAG_Byte(0);
-            
-            ### if singleplayer:
-            root_tag[Data][Player] = TAG_Compound()
-            
-            
-            root_tag[Data][Player]['Air'] = TAG_Short(300);
-            root_tag[Data][Player]['AttackTime'] = TAG_Short(0)
-            root_tag[Data][Player]['DeathTime'] = TAG_Short(0);
-            root_tag[Data][Player]['Fire'] = TAG_Short(-20);
-            root_tag[Data][Player]['Health'] = TAG_Short(20);
-            root_tag[Data][Player]['HurtTime'] = TAG_Short(0);
-            root_tag[Data][Player]['Score'] = TAG_Int(0);
-            root_tag[Data][Player]['FallDistance'] = TAG_Float(0)
-            root_tag[Data][Player]['OnGround'] = TAG_Byte(0)
-
-            root_tag[Data][Player]['Inventory'] = TAG_List()
-
-            root_tag[Data][Player]['Motion'] = TAG_List([TAG_Double(0) for i in range(3)])
-            root_tag[Data][Player]['Pos'] = TAG_List([TAG_Double([0.5,2.8,0.5][i]) for i in range(3)])
-            root_tag[Data][Player]['Rotation'] = TAG_List([TAG_Float(0), TAG_Float(0)])
-            
-            #root_tag["Creator"] = TAG_String("MCEdit-"+release.release);
-            
-            if not os.path.exists(self.worldDir):
-                os.mkdir(self.worldDir)
-        
+            self.create(filename, random_seed, last_played);
         else:
             root_tag = nbt.load(filename)
          
@@ -1694,7 +1698,6 @@ class MCInfdevOldLevel(MCLevel):
         
         if create:
             self.saveInPlace();
-        
         
         self.dirhashes = [self.dirhash(n) for n in range(64)];
         self.dirhash=self.dirhashlookup;
