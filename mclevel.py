@@ -322,9 +322,6 @@ class MCLevel(object):
     
     players = ["Player"]
     @classmethod
-    
-    def getWorldBounds(self):
-        return BoundingBox( (0,0,0), self.getSize() )
     def isLevel(cls, filename):
         """Tries to find out whether the given filename can be loaded
         by this class.  Returns True or False.
@@ -350,9 +347,13 @@ class MCLevel(object):
         
         return False
             
-    def getSize(self):
+    def getWorldBounds(self):
+        return BoundingBox( (0,0,0), self.size )
+   
+    @property     
+    def size(self):
+        "Returns the level's dimensions as a tuple (X,Y,Z)"
         return (self.Width, self.Height, self.Length)
-    size = property(getSize, None, None, "Returns the level's dimensions as a tuple (X,Y,Z)")
     
     def compressedSize(self):
         "return the size of the compressed data for this level, in bytes."
