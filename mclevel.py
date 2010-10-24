@@ -1623,6 +1623,31 @@ def generateHeightMap(self):
     heightMap[axes[1],axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
     heightMap += 1;
 
+        
+class dequeset(object):
+    def __init__(self):
+        self.deque = deque();
+        self.set = set();
+        
+    def __contains__(self, obj):
+        return obj in self.set;
+    
+    def __len__(self):
+        return len(self.set);
+        
+    def append(self, obj):
+        self.deque.append(obj);
+        self.set.add(obj);
+    
+    def discard(self, obj):
+        if obj in self.set:
+            self.deque.remove(obj);
+        self.set.discard(obj);
+        
+        
+    def __getitem__(self, idx):
+        return self.deque[idx];
+        
 class MCInfdevOldLevel(MCLevel):
     materials = materials;
     hasEntities = True;
@@ -1722,8 +1747,8 @@ class MCInfdevOldLevel(MCLevel):
         self._presentChunks = {};
         
         #used to limit memory usage
-        self.loadedChunks = deque()
-        self.decompressedChunks = deque()
+        self.loadedChunks = dequeset()
+        self.decompressedChunks = dequeset()
         
         if create:
             self.create(filename, random_seed, last_played);
@@ -1792,12 +1817,12 @@ class MCInfdevOldLevel(MCLevel):
     
     decompressedChunkLimit = 2048 # about 320 megabytes
     compressedChunkLimit = 8192 # from 8mb to 800mb depending on chunk contents
-            
     
+            
     def chunkDidCompress(self, chunk):
         # searching decompressedChunks every time is slow, especially with the above limits
         try:
-            self.decompressedChunks.remove(chunk)
+            self.decompressedChunks.discard(chunk)
         except ValueError:
             pass
     
@@ -1810,7 +1835,7 @@ class MCInfdevOldLevel(MCLevel):
     
     def chunkDidUnload(self, chunk):
         try:
-            self.loadedChunks.remove(chunk)
+            self.loadedChunks.discard(chunk)
         except ValueError:
             pass
     
