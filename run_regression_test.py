@@ -137,11 +137,11 @@ def do_test_match_output(test_data, result_check, arguments=[]):
 
 alpha_tests = [
     (do_test,               'baseline', '9e7460d39c8e0456789cf89fee45276db2719aaa', []),
-    (do_test,               'degrief',  '6ae14eceab8e0c600799463a77113448b2d9ff8c', ['degrief']),
-    (do_test_match_output,  'analyze',  'f2938515596b88509b2e4c8d598951887d7e0f4c', ['analyze']),
-    (do_test,               'relight',  '00bc507daa3c07fee065973da4b81a099124650f', ['relight']),
-    (do_test,               'replace',  'b26c3d3c05dd873fd8fd29b6b7a38e3ebd9a3e8e', ['replace', 'Water', 'with', 'Lava']),
-    (do_test,               'fill',     'f9dd5d49789b4c7363bf55eab03b05846e89f89f', ['fill', 'Water']),
+    (do_test,               'degrief',  '403e6c6147cf1f8d73377b18bbf5e4973606a311', ['degrief']),
+    (do_test_match_output,  'analyze',  '7c533d1a9305610756bf90f646732a34e431a9d8', ['analyze']),
+    (do_test,               'relight',  'e0cf60c62adfdb313f198af5314c31f89d158c12', ['relight']),
+    (do_test,               'replace',  'd73767293e903b6d1c49c1838eb1849b69d83ad8', ['replace', 'Water', 'with', 'Lava']),
+    (do_test,               'fill',     'f4f57c3d902b6894031d416cb9279232e7e24bd7', ['fill', 'Water']),
 ]
 
 import optparse
