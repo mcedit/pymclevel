@@ -622,42 +622,42 @@ class MCLevel(object):
     @classmethod
     def fromFile(cls, filename, loadInfinite=True):
         ''' The preferred method for loading Minecraft levels of any type.
-        pass False to loadInfinite if you'd rather not load infdev levels.'''
+        pass False to loadInfinite if you'd rather not load infdev levels.
+        '''
         info( u"Identifying " + filename )
         
         if not filename:
             raise IOError, "File not found: "+filename
         if not os.path.exists(filename):
             raise IOError, "File not found: "+filename
-        try:
-            f = file(filename,'rb');
-        except IOError, e:
-            #directory, maybe?
-            if not loadInfinite:
-                raise;
-            try:
-                info( u"Can't read, attempting to open directory" )
-                lev = MCInfdevOldLevel(filename=filename)
-                info( u"Detected Alpha world." )
-                return lev;
-            except Exception, ex:
-                warn( u"Couldn't understand this file: {0} ".format(ex) )
-                raise; 
+        
+        if (MCInfdevOldLevel._isLevel(filename)):
+            info( u"Detected Infdev level.dat" )
+            if (loadInfinite):
+                return MCInfdevOldLevel(filename=filename);
+            else:
+                raise ValueError, "Asked to load {0} which is an infinite level, loadInfinite was False".format(os.path.basename(filename));
+        
+        if os.path.isdir(filename):
+            raise ValueError, "Folder {0} was not identified as a Minecraft level.".format(os.path.basename(filename));
+            
+        f = file(filename, 'rb');
         rawdata = f.read()
         f.close()
         if len(rawdata) < 4:
-            raise ValueError, "File is too small!  " + filename
+            raise ValueError, "{0} is too small! ({1}) ".format(filename, len(rawdata))
+            
+            
+        
         
         data = fromstring(rawdata, dtype='uint8')
-        isJavaLevel = lambda data: (
-            data[0] == 0x27 and
-            data[1] == 0x1B and
-            data[2] == 0xb7 and
-            data[3] == 0x88)
+        if not data.any():
+            raise ValueError, "{0} contains only zeroes. This file is damaged beyond repair."
         
-        if isJavaLevel(data):
+        
+        if MCJavaLevel._isDataLevel(data):
             info( u"Detected Java-style level" )
-            lev = MCJavaLevel(data, filename);
+            lev = MCJavaLevel(filename, data);
             lev.compressed = False;
             return lev;
 
@@ -671,46 +671,38 @@ class MCLevel(object):
             if unzippedData is None:
                 compressed = False;
                 unzippedData = rawdata
-        #if(ungzdata): data=ungzdata
         
         data = fromstring(unzippedData, dtype='uint8')
         
-        if isJavaLevel(data):
+        if MCJavaLevel._isDataLevel(data):
             info( u"Detected compressed Java-style level" )
-            lev = MCJavaLevel(data, filename);
+            lev = MCJavaLevel(filename, data);
             lev.compressed = compressed;
             return lev;
 
         try:
             root_tag = nbt.load(buf=data);
-        except IOError, e:
-            #it must be a plain array of blocks. see if MCJavaLevel handles it.
-            info( u"Detected compressed flat block array, yzx ordered (IOError: {0})".format(e) )
-            lev = MCJavaLevel(data, filename);
+        except:
+            info( u"Fallback: Detected compressed flat block array, yzx ordered " )
+            lev = MCJavaLevel(filename, data);
             lev.compressed = compressed;
             return lev;
-
+            
         else:
-            if(root_tag.name == MinecraftLevel):
+            if(MCIndevLevel._isTagLevel(root_tag)):
                 info( u"Detected Indev .mclevel" )
                 return MCIndevLevel(root_tag, filename)
-            if(root_tag.name == "Schematic"):
+            if(MCSchematic._isTagLevel(root_tag)):
                 info( u"Detected Schematic." )
                 return MCSchematic(root_tag=root_tag, filename=filename)
             
-            if(root_tag.name == ''):
-                if ("Inventory" in root_tag):
-                    info( u"Detected INVEdit inventory file" )
-                    return INVEditChest(root_tag=root_tag, filename=filename);
-                    
-                if ("Data" in root_tag):
-                    info( u"Detected Infdev level.dat" )
-                    if (loadInfinite):
-                    
-                        return MCInfdevOldLevel(filename=filename);
-                    else:
-                        raise IOError, "Cannot import infinite levels"
-                    
+            if (INVEditChest._isTagLevel(root_tag)):
+                info( u"Detected INVEdit inventory file" )
+                return INVEditChest(root_tag=root_tag, filename=filename);
+                
+            
+        #it must be a plain array of blocks. see if MCJavaLevel handles it.
+        
         raise IOError, "Cannot detect file type."
     
     def setPlayerPosition(self, pos, player = "Player"):
@@ -1028,6 +1020,11 @@ class MCSchematic (MCLevel):
         return self.root_tag[TileEntities]
     TileEntities = property(getTileEntities);
     
+    @classmethod
+    def _isTagLevel(cls, root_tag):
+        return "Schematic" == root_tag.name
+        
+            
     def __init__(self, shape = None, root_tag = None, filename = None, mats = 'Alpha'):
         """ shape is (x,y,z) for a new level's shape.  if none, takes
         root_tag as a TAG_Compound for an existing schematic file.  if
@@ -1253,7 +1250,10 @@ class INVEditChest(MCSchematic):
     Data = array([[[0]]], 'uint8');
     Entities = TAG_List();
     
-        
+    @classmethod
+    def _isTagLevel(cls, root_tag):
+        return "Inventory" in root_tag;
+                
     def __init__(self, root_tag, filename):
         
         if filename:
@@ -1601,6 +1601,17 @@ class MCInfdevOldLevel(MCLevel):
     materials = materials;
     hasEntities = True;
     
+    @classmethod
+    def _isLevel(cls, filename):
+        if os.path.isdir(filename):
+            files = os.listdir(filename);
+            if "level.dat" in files or "level.dat_old" in files:
+                return True;
+        elif os.path.basename(filename) in ("level.dat", "level.dat_old"):
+            return True;
+            
+        return False
+        
     def getWorldBounds(self):
         if len(self.presentChunks) == 0:
             return BoundingBox( (0,0,0), (0,0,0) )
@@ -1675,7 +1686,7 @@ class MCInfdevOldLevel(MCLevel):
         self.Width = 0
         self.Height = 128 #subject to change?
         
-        if (not (os.sep in filename)) or (os.path.basename(filename).lower() != "level.dat"): #we've been passed a world subdir by some rascal
+        if os.path.isdir(filename):
             self.worldDir = filename
             filename = os.path.join(filename, "level.dat")
         else:
@@ -2712,6 +2723,11 @@ class MCIndevLevel(MCLevel):
     
     def __repr__(self):
         return u"MCIndevLevel({0}): {1}W {2}L {3}H".format(self.filename, self.Width, self.Length, self.Height)
+        
+    @classmethod
+    def _isTagLevel(cls, root_tag):
+        return "MinecraftLevel" == root_tag.name
+           
     def __init__(self, root_tag = None, filename = ""):
         self.Width = 0
         self.Height = 0
@@ -2933,7 +2949,14 @@ class MCJavaLevel(MCLevel):
             Height = 256
         return (Width, Length, Height)
         
-    def __init__(self, data, filename):
+    @classmethod
+    def _isDataLevel(cls, data):
+        return (data[0] == 0x27 and
+                data[1] == 0x1B and
+                data[2] == 0xb7 and
+                data[3] == 0x88)
+            
+    def __init__(self, filename, data):
         self.filename = filename;
         self.filedata = data;
         #try to take x,z,y from the filename
