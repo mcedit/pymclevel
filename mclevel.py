@@ -321,10 +321,35 @@ class MCLevel(object):
     Width = None
     
     players = ["Player"]
+    @classmethod
     
     def getWorldBounds(self):
         return BoundingBox( (0,0,0), self.getSize() )
+    def isLevel(cls, filename):
+        """Tries to find out whether the given filename can be loaded
+        by this class.  Returns True or False.
         
+        Subclasses should implement _isLevel, _isDataLevel, or _isTagLevel.
+        """ 
+        if hasattr(cls, "_isLevel"):
+            return cls._isLevel(filename);
+        
+        with file(filename) as f:
+            data = f.read();
+        
+        if hasattr(cls, "_isDataLevel"):
+            return cls._isDataLevel(data);
+        
+        if hasattr(cls, "_isTagLevel"):
+            try:
+                root_tag = nbt.load(filename, data)
+            except:
+                return False;
+            
+            return cls._isTagLevel(root_tag);
+        
+        return False
+            
     def getSize(self):
         return (self.Width, self.Height, self.Length)
     size = property(getSize, None, None, "Returns the level's dimensions as a tuple (X,Y,Z)")
