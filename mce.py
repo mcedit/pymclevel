@@ -94,6 +94,7 @@ class mce(object):
         
         "degrief",
         "time",
+        "worldsize",
         "heightmap",
         
         "save",
@@ -811,7 +812,22 @@ class mce(object):
             print "Changed time to {0}:{1:02} {2}".format(hours%12 or 12, minutes, ampm)
             self.level.root_tag["Data"]["Time"].value = ticks
             self.needsSave = True;
-
+    
+    def _worldsize(self, command):
+        """
+    worldsize
+    
+    Computes and prints the dimensions of the world.  For infinite worlds, 
+    also prints the most negative corner.
+    """
+        bounds = self.level.getWorldBounds();
+        if isinstance(self.level, mclevel.MCInfdevOldLevel):
+            print "\nWorld size: \n  {0[0]:7} north to south\n  {0[2]:7} east to west\n".format(bounds.size);
+            print "Smallest and largest points: ({0[0]},{0[2]}), ({1[0]},{1[2]})".format(bounds.origin, bounds.maximum);
+            
+        else:
+            print "\nWorld size: \n  {0[0]:7} wide\n  {0[1]:7} tall\n  {0[2]:7} long\n".format(bounds.size);
+            
     def _heightmap(self,command):
         """
     heightmap <filename>
