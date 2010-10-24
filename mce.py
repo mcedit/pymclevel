@@ -1008,11 +1008,11 @@ class mce(object):
                 try:
                     world = raw_input("Please enter world number or path to world folder: ")
                     self.loadWorld(world)
-                except IOError, e:
-                    print "Cannot open {0}: {1}".format(world, e);
                 except EOFError, e:
                     print "End of input."
                     raise SystemExit;
+                except Exception, e:
+                    print "Cannot open {0}: {1}".format(world, e);
                 else:
                     break;
         
