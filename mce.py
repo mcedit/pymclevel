@@ -330,7 +330,7 @@ class mce(object):
         
         destPoint = self.readPoint(command)
         
-        destPoint = map(int, map(floor(destPoint)))
+        destPoint = map(int, map(floor, destPoint))
         blocksToCopy = self.readBlocksToCopy(command);
         
         tempSchematic = self.level.extractSchematic(box);
@@ -525,7 +525,7 @@ class mce(object):
     """   
         if len(command):
             point = self.readPoint(command)
-            point = map(int, map(floor(point)))
+            point = map(int, map(floor, point))
             
             self.level.setPlayerSpawnPosition(point);
         
