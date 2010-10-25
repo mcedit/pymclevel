@@ -960,8 +960,12 @@ class mce(object):
             self.needsSave = True;
             stop = datetime.datetime.now()
             print "Took %s." % str(stop-start)
-            print "You probably want to change your spawn point."
-
+            
+            spawnz = width / 2
+            spawnx = height / 2;
+            spawny = imgarray[spawnz, spawnx];
+            print "You probably want to change your spawn point. I suggest {0}".format( (spawnx, spawny, spawnz) )
+            
     def _quit(self, command):
         """
     quit [ yes | no ]
