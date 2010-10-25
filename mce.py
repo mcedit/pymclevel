@@ -950,6 +950,7 @@ class mce(object):
                                 
                                 
                     c.chunkChanged()
+                    c.TerrainPopulated = False
                     print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cy)
 
             print "Done with mapping!"
