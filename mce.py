@@ -734,10 +734,15 @@ class mce(object):
     
     def _create(self, command):
         """
-    create <filename>
+    create [ <filename> ]
     
     Create and load a new Minecraft Alpha world. This world will have no 
-    chunks and a random terrain seed.
+    chunks and a random terrain seed. If run from the shell, filename is not
+    needed because you already specified a filename earlier in the command.
+    For example: 
+        
+        mce.py MyWorld create
+        
     """
         if len(command) < 1:
             raise UsageError, "Expected a filename"
@@ -1039,9 +1044,17 @@ class mce(object):
         logging.getLogger().level = logging.INFO
     
         appPath = sys.argv.pop(0)
+        
         if len(sys.argv):
             world = sys.argv.pop(0)
-            self.loadWorld(world)
+            if len(sys.argv) and sys.argv[0].lower() == "create":
+                #accept the syntax, "mce world3 create"
+                self._create([world]);
+                print "Created world {0}".format(world);
+                
+                sys.exit(0)
+            else:
+                self.loadWorld(world)
         else:
             self.batchMode = True;
             self.printUsage();
