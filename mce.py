@@ -45,7 +45,8 @@ class mce(object):
        {commandPrefix}relight [ <box> ]
        
     World commands:
-       {commandPrefix}degrief
+       {commandPrefix}create <filename>
+       {commandPrefix}degrief 
        {commandPrefix}time [ <time> ]
        {commandPrefix}worldsize       
        {commandPrefix}heightmap <filename>
@@ -94,6 +95,7 @@ class mce(object):
         "prune",
         "relight",
         
+        "create",
         "degrief",
         "time",
         "worldsize",
@@ -730,6 +732,31 @@ class mce(object):
         print "Relit 0 chunks." 
         self.needsSave = True;
     
+    def _create(self, command):
+        """
+    create <filename>
+    
+    Create and load a new Minecraft Alpha world. This world will have no 
+    chunks and a random terrain seed.
+    """
+        if len(command) < 1:
+            raise UsageError, "Expected a filename"
+        
+        filename = command[0];
+        if not os.path.exists(filename):
+            os.mkdir(filename);
+
+        if not os.path.isdir(filename):
+            raise IOError, "{0} already exists".format(filename)
+        
+        if mclevel.MCInfdevOldLevel.isLevel(filename):
+            raise IOError, "{0} is already a Minecraft Alpha world".format(filename)
+        
+        level = mclevel.MCInfdevOldLevel(filename, create = True);
+        
+        self.level = level;
+        
+                
     def _degrief(self, command):
         """
     degrief [ <height> ]
