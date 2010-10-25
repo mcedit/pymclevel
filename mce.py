@@ -806,7 +806,7 @@ class mce(object):
     Set or display the time of day. Acceptable values are "morning", "noon", 
     "evening", "midnight", or a time of day such as 8:02, 12:30 PM, or 16:45.
     """
-        ticks = self.level.root_tag["Data"]["Time"].value
+        ticks = self.level.Time
         timeOfDay = ticks % 24000;
         ageInTicks = ticks - timeOfDay;
         if len(command) == 0:
@@ -847,7 +847,7 @@ class mce(object):
             
             ampm = ("AM", "PM")[hours > 11 and hours < 24]
             print "Changed time to {0}:{1:02} {2}".format(hours%12 or 12, minutes, ampm)
-            self.level.root_tag["Data"]["Time"].value = ticks
+            self.level.Time = ticks
             self.needsSave = True;
     
     def _randomseed(self, command):
