@@ -1708,7 +1708,7 @@ class MCInfdevOldLevel(MCLevel):
         if last_played is None:
             last_played = time.time()
         if random_seed is None:
-            random_seed = random.random() * ((2<<31))
+            random_seed = long(random.random() * 0xffffffffffffffffL)
 
         root_tag[Data]['LastPlayed'] = TAG_Long(long(last_played))
         root_tag[Data]['RandomSeed'] = TAG_Long(int(random_seed))
