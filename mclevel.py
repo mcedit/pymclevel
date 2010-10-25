@@ -1615,6 +1615,15 @@ class InfdevChunk(MCLevel):
         return self.root_tag[Level][TileEntities]
     TileEntities = property(getTileEntities);
     
+    @property
+    def TerrainPopulated(self):
+        return self.root_tag[Level]["TerrainPopulated"].value;
+    @TerrainPopulated.setter
+    def TerrainPopulated(self, val):
+        """True or False. If False, the game will populate the chunk with 
+        ores and vegetation on next load"""
+        self.root_tag[Level]["TerrainPopulated"].value = val;
+    
 def generateHeightMap(self):
     if None is self.root_tag: self.load();
     
