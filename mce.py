@@ -942,7 +942,13 @@ class mce(object):
                                 #for z in range(png[i+(cx*16),j+(cy*16)][0]):
                                 h = imgarray[i+(cx*16),j+(cy*16)]
                                 
-                                c.Blocks[i,j,0:h+1] = 3 #dirt
+                                c.Blocks[i,j,h+1:] = 0 #air
+                                c.Blocks[i,j,h:h+1] = 2 #grass
+                                c.Blocks[i,j,h-4:h] = 3 #dirt
+                                c.Blocks[i,j,:h-4] = 1 #rock
+                                
+                                
+                                
                     c.chunkChanged()
                     print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cy)
 
