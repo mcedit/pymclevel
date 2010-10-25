@@ -349,7 +349,11 @@ class MCLevel(object):
             
     def getWorldBounds(self):
         return BoundingBox( (0,0,0), self.size )
-   
+    
+    @property
+    def displayName(self):
+        return os.path.basename(self.filename)
+        
     @property     
     def size(self):
         "Returns the level's dimensions as a tuple (X,Y,Z)"
@@ -1651,6 +1655,14 @@ class dequeset(object):
 class MCInfdevOldLevel(MCLevel):
     materials = materials;
     hasEntities = True;
+    
+    @property
+    def displayName(self):
+        #shortname = os.path.basename(self.filename);
+        #if shortname == "level.dat":
+        shortname = os.path.basename(os.path.dirname(self.filename))
+            
+        return shortname
     
     @classmethod
     def _isLevel(cls, filename):
