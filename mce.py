@@ -46,6 +46,8 @@ class mce(object):
        
     World commands:
        {commandPrefix}degrief
+       {commandPrefix}time [ <time> ]
+       {commandPrefix}worldsize       
        {commandPrefix}heightmap <filename>
        
     Editor commands:
