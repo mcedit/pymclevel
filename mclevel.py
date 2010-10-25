@@ -1712,7 +1712,7 @@ class MCInfdevOldLevel(MCLevel):
 
         root_tag[Data]['LastPlayed'] = TAG_Long(long(last_played))
         root_tag[Data]['RandomSeed'] = TAG_Long(int(random_seed))
-        root_tag[Data]['SizeOnDisk'] = TAG_Long(long(1048576))
+        root_tag[Data]['SizeOnDisk'] = TAG_Long(long(0))
         root_tag[Data]['Time'] = TAG_Long(1)
         root_tag[Data]['SnowCovered'] = TAG_Byte(0);
         
