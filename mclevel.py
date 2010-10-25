@@ -1694,6 +1694,39 @@ class MCInfdevOldLevel(MCLevel):
     def __str__(self):
         return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
     
+    @property 
+    def SnowCovered(self):
+        return self.root_tag[Data]['SnowCovered'].value
+    
+    @SnowCovered.setter
+    def SnowCovered(self, val):
+        self.root_tag[Data]['SnowCovered'].value = val
+    
+    @property 
+    def RandomSeed(self):
+        return self.root_tag[Data]['RandomSeed'].value
+    
+    @RandomSeed.setter
+    def RandomSeed(self, val):
+        self.root_tag[Data]['RandomSeed'].value = val
+    
+    @property 
+    def Time(self):
+        """ Age of the world in ticks. 20 ticks per second; 24000 ticks per day."""
+        return self.root_tag[Data]['Time'].value
+    
+    @Time.setter
+    def Time(self, val):
+        self.root_tag[Data]['Time'].value = val
+    
+    @property 
+    def LastPlayed(self):
+        return self.root_tag[Data]['LastPlayed'].value
+    
+    @LastPlayed.setter
+    def LastPlayed(self, val):
+        self.root_tag[Data]['LastPlayed'].value = val
+    
     def create(self, filename, random_seed, last_played):
         
         if filename == None:
