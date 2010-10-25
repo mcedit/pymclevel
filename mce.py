@@ -951,6 +951,9 @@ class mce(object):
                                 
                     c.chunkChanged()
                     c.TerrainPopulated = False
+                    #the quick lighting from chunkChanged has already lit this simple terrain completely
+                    c.needsLighting = False 
+                    
                     print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cy)
 
             print "Done with mapping!"
