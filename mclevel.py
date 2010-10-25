@@ -2360,9 +2360,10 @@ class MCInfdevOldLevel(MCLevel):
         assert isinstance(entity, TAG_Compound)
         x = int(entity[Pos][0].value)
         z = int(entity[Pos][2].value)
-
-        chunk = self.getChunk(x>>4, z>>4)
-        if not chunk:
+        
+        try:
+            chunk = self.getChunk(x>>4, z>>4)
+        except (ChunkNotPresent, ChunkMalformed), e:
             return None
             # raise Error, can't find a chunk?
         chunk.Entities.append(entity);
