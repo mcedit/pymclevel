@@ -50,6 +50,7 @@ class mce(object):
        {commandPrefix}time [ <time> ]
        {commandPrefix}worldsize       
        {commandPrefix}heightmap <filename>
+       {commandPrefix}randomseed [ <seed> ]
        
     Editor commands:
        {commandPrefix}save 
@@ -79,6 +80,7 @@ class mce(object):
         "clone",
         "fill",
         "replace",
+        
         "export",
         "import",
         
@@ -100,6 +102,7 @@ class mce(object):
         "time",
         "worldsize",
         "heightmap",
+        "randomseed",
         
         "save",
         "load",
@@ -846,6 +849,24 @@ class mce(object):
             print "Changed time to {0}:{1:02} {2}".format(hours%12 or 12, minutes, ampm)
             self.level.root_tag["Data"]["Time"].value = ticks
             self.needsSave = True;
+    
+    def _randomseed(self, command):
+        """
+    randomseed [ <seed> ]
+    
+    Set or display the world's random seed, a 64-bit integer that uniquely
+    defines the world's terrain.
+    """
+        if len(command):
+            try:
+                seed = long(command[0]);
+            except ValueError:
+                raise UsageError, "Expected a long integer."
+            
+            self.level.RandomSeed = seed;
+            
+        else:
+            print "Random Seed: ", self.level.RandomSeed
     
     def _worldsize(self, command):
         """
