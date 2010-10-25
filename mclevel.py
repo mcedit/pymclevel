@@ -1816,7 +1816,7 @@ class MCInfdevOldLevel(MCLevel):
         self._presentChunks[x,z].compress()
     
     decompressedChunkLimit = 2048 # about 320 megabytes
-    compressedChunkLimit = 8192 # from 8mb to 800mb depending on chunk contents
+    loadedChunkLimit = 8192 # from 8mb to 800mb depending on chunk contents
     
             
     def chunkDidCompress(self, chunk):
@@ -1835,7 +1835,7 @@ class MCInfdevOldLevel(MCLevel):
     def chunkDidLoad(self, chunk):
         if not chunk in self.loadedChunks:
             self.loadedChunks.append(chunk);
-            if len(self.loadedChunks) > self.compressedChunkLimit:
+            if len(self.loadedChunks) > self.loadedChunkLimit:
                 oldestChunk = self.loadedChunks[0];
                 oldestChunk.unload(); #calls chunkDidUnload
     
