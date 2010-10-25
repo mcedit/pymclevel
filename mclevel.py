@@ -1741,6 +1741,8 @@ class MCInfdevOldLevel(MCLevel):
         if not os.path.exists(self.worldDir):
             os.mkdir(self.worldDir)
         
+        self.root_tag = root_tag;
+        
     def __init__(self, filename = None, create = False, random_seed=None, last_played=None):
         #pass level.dat's root tag and filename to read an existing level.
         #pass only filename to create a new one
@@ -1767,7 +1769,7 @@ class MCInfdevOldLevel(MCLevel):
         else:
             root_tag = nbt.load(filename)
          
-        self.root_tag = root_tag;
+            self.root_tag = root_tag;
         self.filename = filename;
         
         if create:
