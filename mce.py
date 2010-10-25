@@ -3,6 +3,7 @@ import mclevel
 import sys
 import os
 from box import BoundingBox
+import numpy
 from numpy import zeros, bincount
 import logging
 import itertools
@@ -905,27 +906,27 @@ class mce(object):
         if raw_input(
      "This will destroy a large portion of the map and may take a long time.  Did you really want to do this?"
      ).lower() in ("yes", "y", "1", "true"):
+         
+            
             from PIL import Image
             import datetime
 
             filename = command.pop(0)
 
             imgobj = Image.open(filename)
-            png = imgobj.load()
-            width, height = imgobj.size
-
-            for x in range(width):
-                for y in range(height):
-                    if png[x,y][0] >= 128:
-                        print "Pixel value out of range!"
-                        raise UsageError;
-                    if png[x,y][0] != png[x,y][1] or png[x,y][1] != png[x,y][2]:
-                        print "You want a grayscale image here!"
-                        raise UsageError;
-            print "PNG checked"
-
-            ychunks = height/16 if (height % 16 == 0) else (height/16) + 1
-            xchunks = width/16 if (width % 16 == 0) else (width/16) + 1
+            
+            greyimg = imgobj.convert("L") #luminance
+            
+            imgarray = numpy.asarray(greyimg)
+            
+            width, height = greyimg.size
+            
+            imgarray = imgarray / 2; #scale to 0-127
+            
+                
+            
+            ychunks = (height+15)/16
+            xchunks = (width+15)/16
 
             start = datetime.datetime.now()
             for cx in range(xchunks):
@@ -938,8 +939,10 @@ class mce(object):
                     for i in range(16):
                         for j in range(16):
                             if i+(cx*16) < width-1 and j+(cy*16) < height-1:
-                                for z in range(png[i+(cx*16),j+(cy*16)][0]):
-                                    c.Blocks[i,j,z] = 3 #dirt
+                                #for z in range(png[i+(cx*16),j+(cy*16)][0]):
+                                h = imgarray[i+(cx*16),j+(cy*16)]
+                                
+                                c.Blocks[i,j,0:h+1] = 3 #dirt
                     c.chunkChanged()
                     print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cy)
 
