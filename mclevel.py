@@ -3011,7 +3011,7 @@ class MCJavaLevel(MCLevel):
         self.filename = filename;
         self.filedata = data;
         #try to take x,z,y from the filename
-        r=re.search('(\d+).*?(\d+).*?(\d+)', filename)
+        r=re.search('(\d+).*?(\d+).*?(\d+)', os.path.basename(filename))
         if r and len(r.groups()) == 3:
             (w, l, h) = map(int, r.groups())
             if w*l*h > data.shape[0]:
