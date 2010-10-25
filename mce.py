@@ -553,7 +553,7 @@ class mce(object):
         if len(command):
             filename = command[0]
         else:
-            filename = self.shortWorld + ".signs"
+            filename = self.level.displayName + ".signs"
         
         outFile = file(filename, "w");
         
@@ -1018,22 +1018,20 @@ class mce(object):
             
             self.filename = self.level.filename
             
-            self.shortWorld = os.path.split(self.level.filename)[1];
-            if self.shortWorld == "level.dat":
-                self.shortWorld = os.path.split(os.path.split(self.level.filename)[0])[1];
-        
+            
+            
         else:
             if str(worldNum) == world:
                 if worldNum > 0 and worldNum <= 5:
                     self.level = mclevel.loadWorldNumber(worldNum)
                     self.filename = self.level.filename
                     
-                    self.shortWorld = "World{0}".format(worldNum)
+                    
                 
         
     
     level = None  
-    shortWorld = "[unknown world]"
+    
     batchMode = False;
 
     def run(self):
@@ -1076,7 +1074,7 @@ class mce(object):
             self.batchMode = True;
             while True:
                 try:
-                    command = raw_input("{0}> ".format(self.shortWorld))
+                    command = raw_input("{0}> ".format(self.level.displayName))
                     if len(command) == 0: continue
                     print
                     
