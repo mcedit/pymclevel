@@ -925,27 +925,29 @@ class mce(object):
             
                 
             
-            ychunks = (height+15)/16
-            xchunks = (width+15)/16
+            xchunks = (height+15)/16
+            zchunks = (width+15)/16
 
             start = datetime.datetime.now()
             for cx in range(xchunks):
-                for cy in range(ychunks):
+                for cz in range(zchunks):
                     try:
-                        self.level.createChunk(cx,cy)
+                        self.level.createChunk(cx,cz)
                     except:
                         pass
-                    c = self.level.getChunk(cx,cy)
-                    for i in range(16):
-                        for j in range(16):
-                            if i+(cx*16) < width-1 and j+(cy*16) < height-1:
-                                #for z in range(png[i+(cx*16),j+(cy*16)][0]):
-                                h = imgarray[i+(cx*16),j+(cy*16)]
+                    c = self.level.getChunk(cx,cz)
+                    for x in range(16):
+                        for z in range(16):
+                            if z+(cz*16) < width-1 and x+(cx*16) < height-1:
+                                #world dimension X goes north-south
+                                #first array axis goes up-down
                                 
-                                c.Blocks[i,j,h+1:] = 0 #air
-                                c.Blocks[i,j,h:h+1] = 2 #grass
-                                c.Blocks[i,j,h-4:h] = 3 #dirt
-                                c.Blocks[i,j,:h-4] = 1 #rock
+                                h = imgarray[x+(cx*16),z+(cz*16)]
+                                
+                                c.Blocks[x,z,h+1:] = 0 #air
+                                c.Blocks[x,z,h:h+1] = 2 #grass
+                                c.Blocks[x,z,h-4:h] = 3 #dirt
+                                c.Blocks[x,z,:h-4] = 1 #rock
                                 
                                 
                                 
@@ -963,7 +965,7 @@ class mce(object):
             
             spawnz = width / 2
             spawnx = height / 2;
-            spawny = imgarray[spawnz, spawnx];
+            spawny = imgarray[spawnx, spawnz];
             print "You probably want to change your spawn point. I suggest {0}".format( (spawnx, spawny, spawnz) )
             
     def _quit(self, command):
