@@ -1820,11 +1820,7 @@ class MCInfdevOldLevel(MCLevel):
     
             
     def chunkDidCompress(self, chunk):
-        # searching decompressedChunks every time is slow, especially with the above limits
-        try:
-            self.decompressedChunks.discard(chunk)
-        except ValueError:
-            pass
+        self.decompressedChunks.discard(chunk)
     
     def chunkDidDecompress(self, chunk):
         if not chunk in self.decompressedChunks:
@@ -1834,11 +1830,8 @@ class MCInfdevOldLevel(MCLevel):
                 oldestChunk.compress(); #calls chunkDidCompress
     
     def chunkDidUnload(self, chunk):
-        try:
-            self.loadedChunks.discard(chunk)
-        except ValueError:
-            pass
-    
+        self.loadedChunks.discard(chunk)
+        
     def chunkDidLoad(self, chunk):
         if not chunk in self.loadedChunks:
             self.loadedChunks.append(chunk);
