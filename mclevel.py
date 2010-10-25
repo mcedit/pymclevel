@@ -1744,9 +1744,16 @@ class MCInfdevOldLevel(MCLevel):
         self.root_tag = root_tag;
         
     def __init__(self, filename = None, create = False, random_seed=None, last_played=None):
-        #pass level.dat's root tag and filename to read an existing level.
-        #pass only filename to create a new one
-        #filename should be the path to the world dir
+        """
+        Load an Alpha level from the given filename. It can point to either
+        a level.dat or a folder containing one. If create is True, it will
+        also create the world using the random_seed and last_played arguments.
+        If they are none, a random 64-bit seed will be selected for RandomSeed
+        and time.time() will be used for LastPlayed.
+        
+        If you try to create an existing world, its level.dat will be replaced.
+        """
+        
         self.Length = 0
         self.Width = 0
         self.Height = 128 #subject to change?
