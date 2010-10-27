@@ -953,7 +953,7 @@ class mce(object):
                                 if h <= water_level:
                                     c.Blocks[x,z,h+1:water_level] = 9 #water
                                 if h <= water_level+3:
-                                    c.Blocks[x,z,h-4:h] = 12 #sand if it's under water level
+                                    c.Blocks[x,z,h-3:h+1] = 12 #sand if it's under water level
                                 else:
                                     c.Blocks[x,z,h-4:h] = 3 #dirt
                                 c.Blocks[x,z,0] = 7
