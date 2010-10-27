@@ -948,19 +948,22 @@ class mce(object):
                                 
                                 c.Blocks[x,z,h+1:] = 0 #air
                                 c.Blocks[x,z,h:h+1] = 2 #grass
-                                c.Blocks[x,z,h-4:h] = 3 #dirt
                                 c.Blocks[x,z,:h-4] = 1 #rock
-                                
+
                                 if h <= water_level:
-                                    c.Blocks[x,z,h+1:water_level] = 9 #stationary water
- 
+                                    c.Blocks[x,z,h+1:water_level] = 9 #water
+                                if h <= water_level+3:
+                                    c.Blocks[x,z,h-4:h] = 12 #sand if it's under water level
+                                else:
+                                    c.Blocks[x,z,h-4:h] = 3 #dirt
+                                c.Blocks[x,z,0] = 7
                                 
                     c.chunkChanged()
                     c.TerrainPopulated = False
                     #the quick lighting from chunkChanged has already lit this simple terrain completely
                     c.needsLighting = False 
                     
-                    #print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cy)
+                    print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cz)
 
             print "Done with mapping!"
             self.needsSave = True;
