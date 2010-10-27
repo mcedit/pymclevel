@@ -595,7 +595,8 @@ class mce(object):
     With the except keyword, removes all entities not 
     matching one or more entity IDs.
     
-    Without any IDs, removes all entities in the world.
+    Without any IDs, removes all entities in the world,
+    except for Paintings.
     
     Known Mob Entity IDs: 
         Mob Monster Creeper Skeleton Spider Giant 
@@ -624,8 +625,8 @@ class mce(object):
 
             
         else:
-            print "Removing all entities..."
-            def match(entity): return True;
+            print "Removing all entities except Painting..."
+            def match(entityID): return entityID != "Painting";
             
         for cx,cz in self.level.presentChunks:
             chunk = self.level.getChunk(cx,cz)
