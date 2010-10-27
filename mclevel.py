@@ -1751,10 +1751,10 @@ class MCInfdevOldLevel(MCLevel):
         if last_played is None:
             last_played = time.time()
         if random_seed is None:
-            random_seed = long(random.random() * 0xffffffffffffffffL)
+            random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
         root_tag[Data]['LastPlayed'] = TAG_Long(long(last_played))
-        root_tag[Data]['RandomSeed'] = TAG_Long(int(random_seed))
+        root_tag[Data]['RandomSeed'] = TAG_Long(long(random_seed))
         root_tag[Data]['SizeOnDisk'] = TAG_Long(long(0))
         root_tag[Data]['Time'] = TAG_Long(1)
         root_tag[Data]['SnowCovered'] = TAG_Byte(0);
