@@ -923,7 +923,7 @@ class mce(object):
             
             imgarray = imgarray / 2; #scale to 0-127
             
-                
+            water_level = 63  
             
             xchunks = (height+15)/16
             zchunks = (width+15)/16
@@ -949,7 +949,9 @@ class mce(object):
                                 c.Blocks[x,z,h-4:h] = 3 #dirt
                                 c.Blocks[x,z,:h-4] = 1 #rock
                                 
-                                
+                                if h <= water_level:
+                                    c.Blocks[x,z,h+1:water_level] = 9 #stationary water
+ 
                                 
                     c.chunkChanged()
                     c.TerrainPopulated = False
