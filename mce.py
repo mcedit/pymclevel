@@ -890,8 +890,9 @@ class mce(object):
     heightmap <filename>
 
     Takes a png and imports it as the terrain starting at chunk 0,0.
-    Requires a PNG image in grayscale.  The individual channel values must
-    not exceed 127.  Use Photoshop's levels tool to "flatten" your heightmap.
+    Data is internally converted to greyscale and scaled to the maximum height.
+    The game will fill the terrain with trees and mineral deposits the next
+    time you play the level.
 
     Please please please try out a small test image before using a big source.
     Using the levels tool to get a good heightmap is an art, not a science.
@@ -975,7 +976,7 @@ class mce(object):
         """
     quit [ yes | no ]
     
-    Quits the program in interactive mode. 
+    Quits the program. 
     Without 'yes' or 'no', prompts to save before quitting. 
     
     In batch mode, an end of file automatically saves the level.
