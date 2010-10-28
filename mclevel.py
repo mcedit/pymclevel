@@ -1802,6 +1802,13 @@ class MCInfdevOldLevel(MCLevel):
         self.Width = 0
         self.Height = 128 #subject to change?
         
+        if not os.path.exists(filename):
+            if not create:
+                raise IOError, 'File not found'
+
+            self.worldDir = filename
+            os.mkdir(self.worldDir)
+            
         if os.path.isdir(filename):
             self.worldDir = filename
             filename = os.path.join(filename, "level.dat")
