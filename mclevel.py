@@ -1842,9 +1842,6 @@ class MCInfdevOldLevel(MCLevel):
                 info( "level.dat restored from backup." )
                 self.saveInPlace();
         
-        self.dirhashes = [self.dirhash(n) for n in range(64)];
-        self.dirhash=self.dirhashlookup;
-
         playerFilePath = os.path.join(self.worldDir, "players")
         if os.path.isdir(playerFilePath):
             self.players = [x[:-4] for x in os.listdir(playerFilePath) if x.endswith(".dat")]
@@ -1949,10 +1946,10 @@ class MCInfdevOldLevel(MCLevel):
         
         return neg + ''.join(reversed(work))
 
-    def dirhashlookup(self, n):
-        return self.dirhashes[n%64];
-        
     def dirhash(self, n):
+        return self.dirhashes[n%64];
+    
+    def _dirhash(n):
         n=n%64;
         s=u"";
         if(n>=36):
@@ -1961,7 +1958,9 @@ class MCInfdevOldLevel(MCLevel):
         s+=u"0123456789abcdefghijklmnopqrstuvwxyz"[n]
 
         return s;
-
+    
+    dirhashes = [_dirhash(n) for n in range(64)];
+    
     
     def chunkFilename(self, x, z):
         s= os.path.join(self.worldDir, self.dirhash(x), self.dirhash(z),
