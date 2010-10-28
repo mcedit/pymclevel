@@ -973,7 +973,7 @@ fromFile = MCLevel.fromFile
 
                 
 def loadWorldNumber(i):
-    filename = u"{0}{1}{2}{3}{1}{4}".format(saveFileDir, os.sep, u"World", i,  u"level.dat")
+    filename = u"{0}{1}{2}{3}{1}".format(saveFileDir, os.sep, u"World", i)
     return fromFile(filename)
 
 ##class MCEntity:
