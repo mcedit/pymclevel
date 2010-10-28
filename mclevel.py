@@ -1863,11 +1863,15 @@ class MCInfdevOldLevel(MCLevel):
                         #fullpaths = map(fullname, filenames);
                         bits = map(lambda x:x.split('.'), filenames);
 
-                        bits = filter(lambda x:(len(x) == 4 and x[0].lower() == 'c' and x[3].lower() == 'dat'), bits)
-                        chunks = [(self.decbase36(b[1]), self.decbase36(b[2])) for b in bits if len(b) > 3]
+                        chunkfilenames = filter(lambda x:(len(x) == 4 and x[0].lower() == 'c' and x[3].lower() == 'dat'), bits)
                         
-                        for c in chunks:
-                            self._presentChunks[c] = InfdevChunk(self, c);
+                        for c in chunkfilenames:
+                            try:
+                                cx, cz = (self.decbase36(c[1]), self.decbase36(c[2]))
+                            except Exception, e:
+                                info( 'Skipped file {0} ({1})'.format('.'.join(c), e) )
+                                continue
+                            self._presentChunks[ (cx, cz) ] = InfdevChunk(self, (cx, cz));
                             
         info( u"Found {0} chunks.".format(len(self._presentChunks)) )
         
