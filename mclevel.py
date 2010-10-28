@@ -1811,27 +1811,36 @@ class MCInfdevOldLevel(MCLevel):
             
         if os.path.isdir(filename):
             self.worldDir = filename
-            filename = os.path.join(filename, "level.dat")
+            
         else:
+            if os.path.basename(filename) in ("level.dat", "level.dat_old"):
+                self.worldDir = os.path.dirname(filename)
+            else:
+                raise IOError, 'File is not a Minecraft Alpha world'
             
-            self.worldDir = os.path.split(filename)[0]
+        self.filename = os.path.join(self.worldDir, "level.dat")
             
+                
+        #maps (cx,cz) pairs to InfdevChunks    
         self._presentChunks = {};
         
         #used to limit memory usage
         self.loadedChunks = dequeset()
         self.decompressedChunks = dequeset()
         
-        if create:
-            self.create(filename, random_seed, last_played);
-        else:
-            root_tag = nbt.load(filename)
-         
-            self.root_tag = root_tag;
-        self.filename = filename;
         
         if create:
+            self.create(self.filename, random_seed, last_played);
             self.saveInPlace();
+        else:
+            try:
+                self.root_tag = nbt.load(self.filename)
+            except Exception, e:
+                filename_old = os.path.join(self.worldDir, "level.dat_old")
+                info( "Error loading level.dat, trying level.dat_old ({0})".format( e ) )
+                self.root_tag = nbt.load(filename_old)
+                info( "level.dat restored from backup." )
+                self.saveInPlace();
         
         self.dirhashes = [self.dirhash(n) for n in range(64)];
         self.dirhash=self.dirhashlookup;
