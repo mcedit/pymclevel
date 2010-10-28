@@ -385,7 +385,7 @@ def loadFile(filename):
     except IOError:
       print "File %s not zipped" % filename
       data = file(filename, "rb").read();
-    else:
+    finally:
       return load(buf=fromstring(data, 'uint8'));
 
 def load_named(data, data_cursor, tag_type):
