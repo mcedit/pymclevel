@@ -925,7 +925,7 @@ class mce(object):
             
             imgarray = imgarray / 2; #scale to 0-127
             
-            water_level = 63  
+            water_level = 64  
             
             xchunks = (height+15)/16
             zchunks = (width+15)/16
