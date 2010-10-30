@@ -913,6 +913,23 @@ class MCLevel(object):
         else:
             blocks[:] = sourceBlocks[:]
         """
+        
+    def removeEntitiesInBox(self, box):
+        
+        if not hasattr(self, "Entities"): return;
+        newEnts = [];
+        for ent in self.Entities:
+            if map(lambda x:x.value, ent["Pos"]) in box: 
+                continue;
+            newEnts.append(ent);
+            
+        entsRemoved = len(self.Entities) - len(newEnts);
+        info( "Removed {0} entities".format(entsRemoved))
+        
+        self.Entities.list[:] = newEnts
+        
+        return entsRemoved
+                
     def generateLights(self, dirtyChunks = None):
         pass;
         
@@ -2475,6 +2492,21 @@ class MCInfdevOldLevel(MCLevel):
             pass;
         chunk.TileEntities.append(entity);
     
+    def removeEntitiesInBox(self, box):
+        count = 0;
+        for chunk, slices, point in self.getChunkSlices(box):
+            newEnts = [];
+            for ent in chunk.Entities:
+                if map(lambda x:x.value, ent["Pos"]) in box: 
+                    count += 1;
+                    continue;
+                newEnts.append(ent);
+                
+            chunk.Entities.list[:] = newEnts
+        
+        info( "Removed {0} entities".format(count) )
+        return count;
+            
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
         if box is None:
             chunkIterator = self.getAllChunkSlices() 
