@@ -283,6 +283,16 @@ materials.blockTextures = [
                 (0x4A, 0x4A, 0x4A, 0x4B, 0x4A, 0x4A), "Jukebox" #84
             ), (
                 (NOTEX,)*6, "Fence" #85
+            ), (
+                (0x76, 0x76, 0x66, 0x76, 0x76, 0x76), "Pumpkin" #86
+            ), (
+                (0x67,)*6, "Nether Stone" #87
+            ), (
+                (0x68,)*6, "Ash" #88
+            ), (
+                (0x69,)*6, "Sulfur" #89
+            ), (
+                (NOTEX,)*6, "Nether Portal" #90
             ), 
              
             
@@ -371,6 +381,7 @@ le[bn("Stationary lava")] = 15
 le[bn("Redstone Torch (on)")] = 7
 le[bn("Redstone Ore (glowing)")] = 9
 le[bn("Brown mushroom")] = 1
+le[bn("Sulfur")] = 15
 
 classicMaterials.lightEmission = materials.lightEmission
 
