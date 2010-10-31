@@ -360,6 +360,7 @@ materials.transparentBlocks = {
                              79:3, #ice
                              83:0, #reeds
                              85:0, #fence
+                             90:0, #nether portal
                              };
 bn = materials.materialNamed
 la = materials.lightAbsorption
