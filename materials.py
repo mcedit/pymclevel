@@ -284,16 +284,18 @@ materials.blockTextures = [
             ), (
                 (NOTEX,)*6, "Fence" #85
             ), (
-                (0x76, 0x76, 0x66, 0x76, 0x76, 0x76), "Pumpkin" #86
+                (0x77, 0x76, 0x66, 0x76, 0x76, 0x76), "Pumpkin" #86
             ), (
-                (0x67,)*6, "Nether Stone" #87
+                (0x67,)*6, "Bloodstone" #87
             ), (
-                (0x68,)*6, "Ash" #88
+                (0x68,)*6, "Slow sand" #88
             ), (
-                (0x69,)*6, "Sulfur" #89
+                (0x69,)*6, "Lightstone" #89
             ), (
                 (NOTEX,)*6, "Nether Portal" #90
-            ), 
+            ), (
+                (0x78, 0x76, 0x66, 0x76, 0x76, 0x76), "Glowing Pumpkin" #91
+            ),
              
             
             ] + [((NOTEX,)*6, "Future Block!") , ] * 200 #create extras, then cut them off on the next line
@@ -382,7 +384,9 @@ le[bn("Stationary lava")] = 15
 le[bn("Redstone Torch (on)")] = 7
 le[bn("Redstone Ore (glowing)")] = 9
 le[bn("Brown mushroom")] = 1
-le[bn("Sulfur")] = 15
+le[bn("Lightstone")] = 15
+le[bn("Glowing Pumpkin")] = 15
+
 
 classicMaterials.lightEmission = materials.lightEmission
 
