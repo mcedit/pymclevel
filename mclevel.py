@@ -926,7 +926,7 @@ class MCLevel(object):
             newEnts.append(ent);
             
         entsRemoved = len(self.Entities) - len(newEnts);
-        info( "Removed {0} entities".format(entsRemoved))
+        debug( "Removed {0} entities".format(entsRemoved))
         
         self.Entities.list[:] = newEnts
         
@@ -1601,6 +1601,11 @@ class InfdevChunk(MCLevel):
         if not Entities in chunkTag[Level]:
             chunkTag[Level][Entities] = TAG_List();
     
+    def removeEntitiesInBox(self, box):
+        self.dirty = True;
+        return MCLevel.removeEntitiesInBox(self, box)
+        
+        
     @decompress_first        
     def getBlocks(self): 
         return self.root_tag[Level][Blocks].value
@@ -2497,15 +2502,8 @@ class MCInfdevOldLevel(MCLevel):
     def removeEntitiesInBox(self, box):
         count = 0;
         for chunk, slices, point in self.getChunkSlices(box):
-            newEnts = [];
-            for ent in chunk.Entities:
-                if map(lambda x:x.value, ent["Pos"]) in box: 
-                    count += 1;
-                    continue;
-                newEnts.append(ent);
-                
-            chunk.Entities.list[:] = newEnts
-        
+            count += chunk.removeEntitiesInBox(box);
+            
         info( "Removed {0} entities".format(count) )
         return count;
             
