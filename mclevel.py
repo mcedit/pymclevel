@@ -803,7 +803,9 @@ class MCLevel(object):
             
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourceBox.origin)
             for entity in chunk.Entities:
-                x,y,z = map(lambda x:int(x.value), entity[Pos])
+                pos = map(lambda x:x.value, entity[Pos])
+                x,y,z = [0 if isnan(p) else int(floor(p)) for p in pos];
+                
                 if x-wx<slices[0].start or x-wx>=slices[0].stop: continue
                 if y<slices[2].start or y>=slices[2].stop: continue
                 if z-wz<slices[1].start or z-wz>=slices[1].stop: continue
