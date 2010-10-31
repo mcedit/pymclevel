@@ -774,9 +774,8 @@ class MCLevel(object):
     
     def copyEntityWithOffset(self, entity, copyOffset):
         eTag = deepcopy(entity)
-        eFloatOffsets = map(lambda pos:pos.value-int(pos.value), eTag[Pos])
         
-        positionTags = map(lambda pos, off, co: nbt.TAG_Double(pos+co+off), map(lambda x:int(x.value), eTag[Pos]), eFloatOffsets, copyOffset)
+        positionTags = map(lambda p, co: nbt.TAG_Double(p.value+co), eTag[Pos], copyOffset)
         eTag[Pos] = nbt.TAG_List(positionTags)
         
         if eTag["id"].value == "Painting":
@@ -803,8 +802,7 @@ class MCLevel(object):
             
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourceBox.origin)
             for entity in chunk.Entities:
-                pos = map(lambda x:x.value, entity[Pos])
-                x,y,z = [0 if isnan(p) else int(floor(p)) for p in pos];
+                x,y,z = map(lambda x:x.value, entity[Pos])
                 
                 if x-wx<slices[0].start or x-wx>=slices[0].stop: continue
                 if y<slices[2].start or y>=slices[2].stop: continue
