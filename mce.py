@@ -108,6 +108,7 @@ class mce(object):
         "save",
         "load",
         "reload",
+        "dimension",
         
         "quit",
         "exit",
@@ -1014,6 +1015,43 @@ class mce(object):
         
     def _reload(self, command):
         self.level = mclevel.fromFile(self.filename);
+    
+    def _dimension(self, command):
+        """
+    dimension [ <dim> ]
+    
+    Load another dimension, a sub-world of this level. Without options, lists
+    all of the dimensions found in this world. <dim> can be a number or one of 
+    these keywords: 
+        nether, hell, slip: DIM-1
+        earth, overworld, parent: parent world
+    """
+        
+        if len(command):
+            if command[0].lower() in ("earth", "overworld", "parent"):
+                if self.level.parentWorld:
+                    self.level = self.level.parentWorld
+                    return;
+                else:
+                    print "You are already on earth."
+                    return;
+                    
+            elif command[0].lower() in ("hell", "nether", "slip"):
+                dimNo = -1
+            else:
+                dimNo = self.readInt(command);
+                
+            if dimNo in self.level.dimensions:
+                self.level = self.level.dimensions[dimNo]
+                return;
+        
+        if self.level.parentWorld:
+            print "Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName);
+            
+        if len(self.level.dimensions):
+            print "Dimensions in {0}:".format(self.level.displayName)
+            for k in self.level.dimensions:
+                print "{0}: {1}".format(k, mclevel.MCAlphaDimension.dimensionNames.get(k, "Unknown"));
         
     def _help(self, command):
         if len(command):
