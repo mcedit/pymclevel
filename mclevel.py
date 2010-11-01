@@ -1688,6 +1688,8 @@ class dequeset(object):
 class MCInfdevOldLevel(MCLevel):
     materials = materials;
     hasEntities = True;
+    parentWorld = None;
+    dimNo = 0;
     
     @property
     def displayName(self):
@@ -1841,15 +1843,29 @@ class MCInfdevOldLevel(MCLevel):
                 raise IOError, 'File is not a Minecraft Alpha world'
             
         self.filename = os.path.join(self.worldDir, "level.dat")
-            
                 
         #maps (cx,cz) pairs to InfdevChunks    
         self._presentChunks = {};
+        
         
         #used to limit memory usage
         self.loadedChunks = dequeset()
         self.decompressedChunks = dequeset()
         
+        self.loadLevelDat(create, random_seed, last_played);
+                    
+        self.playersDir = os.path.join(self.worldDir, "players");
+        
+        if os.path.isdir(self.playersDir):
+            self.players = [x[:-4] for x in os.listdir(self.playersDir) if x.endswith(".dat")]
+        
+         
+        self.preloadChunkPaths();
+        
+        self.dimensions = {};
+        self.preloadDimensions();
+       
+    def loadLevelDat(self, create, random_seed, last_played):
         
         if create:
             self.create(self.filename, random_seed, last_played);
@@ -1860,20 +1876,36 @@ class MCInfdevOldLevel(MCLevel):
             except Exception, e:
                 filename_old = os.path.join(self.worldDir, "level.dat_old")
                 info( "Error loading level.dat, trying level.dat_old ({0})".format( e ) )
-                self.root_tag = nbt.load(filename_old)
-                info( "level.dat restored from backup." )
-                self.saveInPlace();
-        
-        playerFilePath = os.path.join(self.worldDir, "players")
-        if os.path.isdir(playerFilePath):
-            self.players = [x[:-4] for x in os.listdir(playerFilePath) if x.endswith(".dat")]
-            
-        self.preloadChunkPaths();
+                try:
+                    self.root_tag = nbt.load(filename_old)
+                    info( "level.dat restored from backup." )
+                    self.saveInPlace();
+                except Exception, e:
+                    info( "Error loading level.dat_old. Initializing with defaults." );
+                    self.create(self.filename, random_seed, last_played);
     
+    def preloadDimensions(self):
+        worldDirs = os.listdir(self.worldDir);
+        
+        for dirname in worldDirs :
+            if dirname.startswith("DIM"):
+                dimNo = int(dirname[3:]);
+                info( "Found dimension {0}".format(dirname))
+                dim = MCAlphaDimension(filename = os.path.join(self.worldDir, dirname));
+                dim.parentWorld = self;
+                dim.dimNo = dimNo
+                dim.root_tag = self.root_tag;
+                dim.filename = self.filename
+                dim.playersDir = self.playersDir;
+                dim.players = self.players
+                
+                self.dimensions[dimNo] = dim;
+                
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
         worldDirs = os.listdir(self.worldDir);
-        for dirname in worldDirs :
+        
+        for dirname in worldDirs:
             if(dirname in self.dirhashes):
                 subdirs = os.listdir(os.path.join(self.worldDir, dirname));
                 for subdirname in subdirs:
@@ -2144,13 +2176,16 @@ class MCInfdevOldLevel(MCLevel):
         self._presentChunks[cx,cz].chunkChanged();
     
     def saveInPlace(self):
+        for level in self.dimensions.itervalues():
+            level.saveInPlace(True);
+
         dirtyChunkCount = 0;
-        for chunk in self._presentChunks.values():
+        for chunk in self._presentChunks.itervalues():
             if chunk.dirty: 
                 dirtyChunkCount += 1;
             chunk.save();
-            
-
+        
+        
         self.root_tag.save(self.filename);
         info( u"Saved {0} chunks".format(dirtyChunkCount) )
        
@@ -2825,7 +2860,25 @@ class MCInfdevOldLevel(MCLevel):
         yp = y,p;
         return array(yp);
 
+class MCAlphaDimension (MCInfdevOldLevel):
+    def loadLevelDat(self, create, random_seed, last_played):
+        pass;
     
+    dimensionNames = { -1: "Nether" };
+    @property
+    def displayName(self):
+        return "{0} ({1})".format(self.parentWorld.displayName, self.dimensionNames[self.dimNo])
+    
+    def saveInPlace(self, saveSelf = False):
+        """saving the dimension will save the parent world, which will save any
+         other dimensions that need saving.  the intent is that all of them can
+         stay loaded at once for fast switching """
+         
+        if saveSelf:
+            MCInfdevOldLevel.saveInPlace(self);
+        else:
+            self.parentWorld.saveInPlace();
+            
 class MCIndevLevel(MCLevel):
     
     """ IMPORTANT: self.Blocks and self.Data are indexed with [y,z,x]
