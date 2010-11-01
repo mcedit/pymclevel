@@ -1154,7 +1154,17 @@ class mce(object):
     def processCommand(self, command):
         keyword = command.pop(0).lower()
         if not keyword in self.commands:
-            raise UsageError, "Command {0} not recognized.".format(keyword)
+            matches = filter(lambda x:x.startswith(keyword), self.commands);
+            if len(matches) == 1:
+                keyword = matches[0];
+            elif len(matches):
+                print "Ambiguous command. Matches: "
+                for k in matches:
+                    print "  ",k;
+                return;
+            else:
+                raise UsageError, "Command {0} not recognized.".format(keyword)
+                
         func = getattr(self, "_" + keyword)
         
         try:
