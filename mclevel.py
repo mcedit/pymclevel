@@ -2814,6 +2814,35 @@ class MCInfdevOldLevel(MCLevel):
         xyz = ["SpawnX", "SpawnY", "SpawnZ"]
         return [self.root_tag["Data"][i].value for i in xyz]
    
+    def getPlayerDimension(self, player = "Player"):
+        if player == "Player" and player in self.root_tag["Data"]:
+            #single-player world
+            return self.root_tag["Data"]["Player"]["Dimension"].value
+        else:
+            playerFilePath = os.path.join(self.worldDir, "players", player + ".dat")
+            if os.path.exists(playerFilePath):
+                #multiplayer world, found this player
+                playerTag = nbt.loadFile(playerFilePath)
+                return playerTag["Dimension"].value
+            else:
+                raise PlayerNotFound, "{0}".format(player)
+        
+    def setPlayerDimension(self, d, player = "Player"):
+        if player == "Player" and player in self.root_tag["Data"]:
+            #single-player world
+            self.root_tag["Data"]["Player"]["Dimension"].value = d;
+                
+        else:
+            playerFilePath = os.path.join(self.worldDir, "players", player + ".dat")
+            if os.path.exists(playerFilePath):
+                #multiplayer world, found this player
+                playerTag = nbt.loadFile(playerFilePath)
+                playerTag["Dimension"].value = d;
+                playerTag.saveGzipped(playerFilePath)
+            else:
+                raise PlayerNotFound, "{0}".format(player)
+        
+        
     def setPlayerPosition(self, pos, player = "Player"):
         posList = nbt.TAG_List([nbt.TAG_Double(p) for p in pos]);
         
