@@ -1853,6 +1853,7 @@ class MCInfdevOldLevel(MCLevel):
                 
         #maps (cx,cz) pairs to InfdevChunks    
         self._presentChunks = {};
+        self.dimensions = {};
         
         
         #used to limit memory usage
@@ -1869,7 +1870,6 @@ class MCInfdevOldLevel(MCLevel):
          
         self.preloadChunkPaths();
         
-        self.dimensions = {};
         self.preloadDimensions();
        
     def loadLevelDat(self, create, random_seed, last_played):
