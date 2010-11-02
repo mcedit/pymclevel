@@ -321,6 +321,8 @@ class MCLevel(object):
     Width = None
     
     players = ["Player"]
+    dimNo = 0;
+    parentWorld = None
     @classmethod
     def isLevel(cls, filename):
         """Tries to find out whether the given filename can be loaded
