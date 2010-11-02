@@ -741,7 +741,10 @@ class MCLevel(object):
 
     def getPlayerPosition(self, player = "Player"):
         return (8,self.Height*0.75,8);
-
+    
+    def getPlayerDimension(self, player = "Player"): return 0;
+    def setPlayerDimension(self, d, player = "Player"): return;
+    
     def setPlayerSpawnPosition(self, pos, player = "Player"):
         pass;
 
@@ -2817,12 +2820,16 @@ class MCInfdevOldLevel(MCLevel):
     def getPlayerDimension(self, player = "Player"):
         if player == "Player" and player in self.root_tag["Data"]:
             #single-player world
-            return self.root_tag["Data"]["Player"]["Dimension"].value
+            playerTag = self.root_tag["Data"]["Player"];
+            if "Dimension" not in playerTag: return 0;
+            
+            return playerTag["Dimension"].value
         else:
             playerFilePath = os.path.join(self.worldDir, "players", player + ".dat")
             if os.path.exists(playerFilePath):
                 #multiplayer world, found this player
                 playerTag = nbt.loadFile(playerFilePath)
+                if "Dimension" not in playerTag: return 0;
                 return playerTag["Dimension"].value
             else:
                 raise PlayerNotFound, "{0}".format(player)
@@ -2830,14 +2837,19 @@ class MCInfdevOldLevel(MCLevel):
     def setPlayerDimension(self, d, player = "Player"):
         if player == "Player" and player in self.root_tag["Data"]:
             #single-player world
-            self.root_tag["Data"]["Player"]["Dimension"].value = d;
+            playerTag = self.root_tag["Data"]["Player"];
+            if "Dimension" not in playerTag: playerTag["Dimension"] = nbt.TAG_Byte(0);
+            playerTag["Dimension"].value = d;
                 
         else:
             playerFilePath = os.path.join(self.worldDir, "players", player + ".dat")
             if os.path.exists(playerFilePath):
                 #multiplayer world, found this player
                 playerTag = nbt.loadFile(playerFilePath)
+                
+                if "Dimension" not in playerTag: playerTag["Dimension"] = nbt.TAG_Byte(0);
                 playerTag["Dimension"].value = d;
+                
                 playerTag.saveGzipped(playerFilePath)
             else:
                 raise PlayerNotFound, "{0}".format(player)
