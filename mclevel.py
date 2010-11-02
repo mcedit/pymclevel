@@ -394,14 +394,16 @@ class MCLevel(object):
         try:
             data = gzipper.read();
             if data == None: return;
-        except IOError:
+        except Exception, e:
+            error( u"Error reading compressed data, assuming uncompressed: {0}".format(e) )
             data = self.compressedTag
+            
         gzipper.close();
 
         try:       
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
-        except (IOError,TypeError):
-            error( u"Malformed NBT data in file: " + self.filename )
+        except Exception, e:
+            error( u"Malformed NBT data in file: {0} ({1})".format(self.filename, e) )
             self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
             
