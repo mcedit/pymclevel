@@ -73,9 +73,9 @@ classicMaterials.blockTextures = [
             )
             ] + list(((64+i,)*6, "{0} Cloth".format(clothColors[i])) for i in range(16)) + [ #21-36:"Cloth",
             (
-                (12, 12, 12, 12, 12, 12), "Flower",#37: 
+                (13, 13, 13, 13, 13, 13), "Flower",#37: 
             ), (
-                (13, 13, 13, 13, 13, 13), "Rose",#38: 
+                (12, 12, 12, 12, 12, 12), "Rose",#38: 
             ), (
                 (29,)*6, "Brown mushroom",#39: 
             ), (
@@ -186,9 +186,9 @@ materials.blockTextures = [
             ), (
                 (NOTEX,)*6,     "Unusable White Cloth"
             ), (
-                (12, 12, 12, 12, 12, 12), "Flower",#37: 
+                (13, 13, 13, 13, 13, 13), "Flower",#37: 
             ), (
-                (13, 13, 13, 13, 13, 13), "Rose",#38: 
+                (12, 12, 12, 12, 12, 12), "Rose",#38: 
             ), (
                 (29,)*6, "Brown mushroom",#39: 
             ), (
