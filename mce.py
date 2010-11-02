@@ -411,7 +411,7 @@ class mce(object):
     Create a chest filled with the specified item. 
     Stacks are 64 if count is not given.
     """
-        point = self.readPoint(command)
+        point = map(lambda x: int(floor(float(x))), self.readPoint(command))
         itemID = self.readInt(command)
         count = 64;
         if len(command):
