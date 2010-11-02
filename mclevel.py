@@ -2838,7 +2838,7 @@ class MCInfdevOldLevel(MCLevel):
         if player == "Player" and player in self.root_tag["Data"]:
             #single-player world
             playerTag = self.root_tag["Data"]["Player"];
-            if "Dimension" not in playerTag: playerTag["Dimension"] = nbt.TAG_Byte(0);
+            if "Dimension" not in playerTag: playerTag["Dimension"] = nbt.TAG_Long(0);
             playerTag["Dimension"].value = d;
                 
         else:
@@ -2847,7 +2847,7 @@ class MCInfdevOldLevel(MCLevel):
                 #multiplayer world, found this player
                 playerTag = nbt.loadFile(playerFilePath)
                 
-                if "Dimension" not in playerTag: playerTag["Dimension"] = nbt.TAG_Byte(0);
+                if "Dimension" not in playerTag: playerTag["Dimension"] = nbt.TAG_Long(0);
                 playerTag["Dimension"].value = d;
                 
                 playerTag.saveGzipped(playerFilePath)
