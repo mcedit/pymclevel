@@ -831,7 +831,7 @@ class MCLevel(object):
                 
                 self.addTileEntity(eTag)
                 
-            
+            chunk.compress();
                     
                 
     def copyEntitiesFrom(self, sourceLevel, sourceBox, destinationPoint):
@@ -2547,7 +2547,7 @@ class MCInfdevOldLevel(MCLevel):
         count = 0;
         for chunk, slices, point in self.getChunkSlices(box):
             count += chunk.removeEntitiesInBox(box);
-            
+            chunk.compress();
         info( "Removed {0} entities".format(count) )
         return count;
             
@@ -2713,6 +2713,7 @@ class MCInfdevOldLevel(MCLevel):
                     blocksCopied += x*z*y
                     
             chunk.chunkChanged();
+            chunk.compress();
             
         return blocksCopied
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
@@ -2789,10 +2790,11 @@ class MCInfdevOldLevel(MCLevel):
             if not ((cx,cz) in self._presentChunks):
                 ret.append( (cx,cz) )
                 self.createChunk(cx,cz);
+                self.compressChunk(cx,cz);
             assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
             if i%100 == 0:
                 info( u"Chunk {0}...".format( i ) )
-        
+                
         info( "Created {0} chunks.".format(len(ret)) )
         return ret;
         
