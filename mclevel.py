@@ -1548,6 +1548,8 @@ class InfdevChunk(MCLevel):
 
     def genFastLights(self):
         self.SkyLight[:] = 0;
+        if self.world.dimNo == -1: 
+            return #no light in nether
         for x,z in itertools.product(xrange(16), xrange(16)):
             
             self.SkyLight[x,z,self.HeightMap[z,x]:128] = 15 
