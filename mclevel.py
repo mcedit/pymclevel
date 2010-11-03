@@ -583,6 +583,8 @@ class MCLevel(object):
             else:
                 self.Data[ destSlices ] = chunk.Data[slices]
             
+            chunk.compress();
+            
         
     def adjustCopyParameters(self, sourceLevel, sourceBox, destinationPoint):
     
