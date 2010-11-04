@@ -426,14 +426,19 @@ class mce(object):
     analyze
     
     Counts all of the block types in every chunk of the world.
+    Also updates the level's 'SizeOnDisk' field, correcting its size in the
+    world select menu.  
     """
         blockCounts = zeros( (256,), 'uint64')
+        sizeOnDisk = 0;
+        
+        print "Analyzing {0} chunks...".format(len(self.level.presentChunks))
         
         for i, cPos in enumerate(self.level.presentChunks, 1):
             ch = self.level.getChunk(*cPos);
             counts = bincount(ch.Blocks.ravel())
             blockCounts[:counts.shape[0]] += counts
-            
+            sizeOnDisk += ch.compressedSize();
             ch.unload();
             if i % 100 == 0:
                 print "Chunk {0}...".format( i )
@@ -441,7 +446,10 @@ class mce(object):
         for i in range(256):
             if blockCounts[i]:
                 print "{0:30}: {1:10}".format(self.level.materials.names[i], blockCounts[i]);
-                
+        
+        print "Size on disk: {0:.3}MB".format(sizeOnDisk / 1048576.0)
+        self.level.SizeOnDisk = sizeOnDisk
+        self.needsSave = True
             
     def _export(self, command):
         """
