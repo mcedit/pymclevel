@@ -402,7 +402,7 @@ class mce(object):
         self.level.fillBlocks(box, newBlockType, blockData = 0, blocksToReplace = [blockType])
         
         self.needsSave = True;
-        print "Replaced {0} blocks.".format("all" if box is None else box.volume)
+        print "Done."
 
     def _createchest(self, command):
         """
