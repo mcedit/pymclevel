@@ -1500,8 +1500,8 @@ class InfdevChunk(MCLevel):
             self.dirty = False;
             
     def load(self):
-        """ If the chunk is unloaded, reads the chunk from disk.
-        Also decompresses it """
+        """ If the chunk is unloaded, reads the chunk from disk. decompression
+        and unpacking is done lazily."""
         if self.compressedTag is None:
             try:
                 compressedData = file(self.filename, 'rb')
@@ -1512,13 +1512,14 @@ class InfdevChunk(MCLevel):
             
             self.world.chunkDidLoad(self)
             
-        if self.root_tag is None:
-            self.decompress()
+        #if self.root_tag is None:
+        #    self.decompress()
         
         
     
     def unload(self):
-        """ Frees the chunk's memory. Saves the chunk to disk if needed. """
+        """ Frees the chunk's memory. Saves the chunk to disk if needed.
+        The chunk remembers if it is marked for relighting. """
         self.compress();
         self.save();
             
