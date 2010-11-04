@@ -1855,7 +1855,7 @@ class MCInfdevOldLevel(MCLevel):
         self.filename = os.path.join(self.worldDir, "level.dat")
                 
         #maps (cx,cz) pairs to InfdevChunks    
-        self._presentChunks = {};
+        self.__presentChunks = None;
         self.dimensions = {};
         
         
@@ -1871,7 +1871,7 @@ class MCInfdevOldLevel(MCLevel):
             self.players = [x[:-4] for x in os.listdir(self.playersDir) if x.endswith(".dat")]
         
          
-        self.preloadChunkPaths();
+        #self.preloadChunkPaths();
         
         self.preloadDimensions();
        
@@ -1914,6 +1914,7 @@ class MCInfdevOldLevel(MCLevel):
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
         worldDirs = os.listdir(self.worldDir);
+        self.__presentChunks = {};
         
         for dirname in worldDirs:
             if(dirname in self.dirhashes):
@@ -2156,9 +2157,15 @@ class MCInfdevOldLevel(MCLevel):
         return heightMap[z&0xf][x&0xf]; 
         #the heightmap is ordered differently because in minecraft it is a flat array
     
-    def getPresentChunks(self):
+    @property
+    def presentChunks(self):
         return self._presentChunks.keys();
-    presentChunks = property (getPresentChunks)
+    
+    @property
+    def _presentChunks(self): 
+        if self.__presentChunks is None:
+            self.preloadChunkPaths();
+        return self.__presentChunks
     
     def getChunks(self, chunks = None):
         """ pass a list of chunk coordinate tuples to get a list of InfdevChunks. 
