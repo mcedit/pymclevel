@@ -482,8 +482,12 @@ class mce(object):
         filename = command.pop(0)
         destPoint = self.readPoint(command)
         blocksToCopy = self.readBlocksToCopy(command)
-                
+        
         importLevel = mclevel.fromFile(filename)
+        
+        destBox = BoundingBox(destPoint, importLevel.size)
+        self.level.createChunksInBox(destBox);
+        
         self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint, blocksToCopy);
         
         
