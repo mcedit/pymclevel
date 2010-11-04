@@ -1185,7 +1185,9 @@ class mce(object):
                 except Exception, e:
                     if self.debug:
                         traceback.print_exc();
-                    print e
+                    print 'Exception during command: {0!r}'.format(e);
+                    print "Use 'debug' to enable tracebacks."
+                    
                     #self.printUsage();
                     
                 
