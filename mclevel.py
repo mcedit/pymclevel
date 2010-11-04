@@ -1536,6 +1536,10 @@ class InfdevChunk(MCLevel):
                 
         
     def chunkChanged(self, calcLighting = True):
+        """ You are required to call this function after you are done modifying
+        the chunk. Pass False for calcLighting if you know your changes will 
+        not change any lights."""
+        
         if self.compressedTag == None:
             #unloaded chunk
             return;
@@ -1546,9 +1550,6 @@ class InfdevChunk(MCLevel):
         if calcLighting:
             self.genFastLights()
             
-    def ready(self):
-        return not (self.compressedTag is None)
-
     def genFastLights(self):
         self.SkyLight[:] = 0;
         if self.world.dimNo == -1: 
@@ -2177,7 +2178,9 @@ class MCInfdevOldLevel(MCLevel):
             
         
     def getChunk(self, cx, cz):
-        """ read the chunk from disk, load it, decompress it, unpack its 4-bit arrays to 8-bit, and return it. """
+        """ read the chunk from disk, load it, and return it. 
+        decompression and unpacking is done lazily."""
+        
         
         if not (cx,cz) in self._presentChunks: 
             raise ChunkNotPresent, "Chunk {0} not present".format((cx,cz))
@@ -2777,8 +2780,7 @@ class MCInfdevOldLevel(MCLevel):
     
     def containsChunk(self, cx, cz):
         return (cx, cz) in self._presentChunks;
-        #return c.ready();
-
+        
     def malformedChunk(self, cx, cz):
         debug( u"Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
         if (cx,cz) in self._presentChunks:
