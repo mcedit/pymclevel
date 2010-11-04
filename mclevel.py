@@ -1741,12 +1741,12 @@ class MCInfdevOldLevel(MCLevel):
         return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
     
     @property 
-    def SnowCovered(self):
-        return self.root_tag[Data]['SnowCovered'].value
+    def SizeOnDisk(self):
+        return self.root_tag[Data]['SizeOnDisk'].value
     
-    @SnowCovered.setter
-    def SnowCovered(self, val):
-        self.root_tag[Data]['SnowCovered'].value = val
+    @SizeOnDisk.setter
+    def SizeOnDisk(self, val):
+        self.root_tag[Data]['SizeOnDisk'].value = val
     
     @property 
     def RandomSeed(self):
@@ -1793,7 +1793,6 @@ class MCInfdevOldLevel(MCLevel):
         root_tag[Data]['RandomSeed'] = TAG_Long(long(random_seed))
         root_tag[Data]['SizeOnDisk'] = TAG_Long(long(0))
         root_tag[Data]['Time'] = TAG_Long(1)
-        root_tag[Data]['SnowCovered'] = TAG_Byte(0);
         
         ### if singleplayer:
         root_tag[Data][Player] = TAG_Compound()
