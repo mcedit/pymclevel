@@ -385,6 +385,7 @@ le[bn("Redstone Torch (on)")] = 7
 le[bn("Redstone Ore (glowing)")] = 9
 le[bn("Brown mushroom")] = 1
 le[bn("Lightstone")] = 15
+le[bn("Nether Portal")] = 11
 le[bn("Glowing Pumpkin")] = 15
 
 
