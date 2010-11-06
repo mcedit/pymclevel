@@ -1960,6 +1960,10 @@ class MCInfdevOldLevel(MCLevel):
             self.compressedTags[c] = chunkfh.read();
             chunkfh.close();
     
+    def compressAllChunks(self):
+        for ch in self._presentChunks.itervalues():
+            ch.compress();
+            
     def compressChunk(self, x, z):
         if not (x,z) in self._presentChunks: return; #not an error
         self._presentChunks[x,z].compress()
