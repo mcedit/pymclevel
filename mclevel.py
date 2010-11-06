@@ -719,7 +719,7 @@ class MCLevel(object):
         try:
             root_tag = nbt.load(buf=data);
         except Exception, e:
-            info( u"Error during NBT load: {0}".format(e) )
+            info( u"Error during NBT load: {0!r}".format(e) )
             info( u"Fallback: Detected compressed flat block array, yzx ordered " )
             lev = MCJavaLevel(filename, data);
             lev.compressed = compressed;
