@@ -2815,9 +2815,9 @@ class MCInfdevOldLevel(MCLevel):
         i=0;
         for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
             i+=1;
-            if not ((cx,cz) in self._presentChunks):
+            if ((cx,cz) in self._presentChunks):
                 self.deleteChunk(cx,cz);
-            assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
+            assert not self.containsChunk(cx,cz), "Just deleted {0} but it didn't take".format((cx,cz))
             if i%100 == 0:
                 info( u"Chunk {0}...".format( i ) )
         
