@@ -21,11 +21,11 @@ class mce(object):
     Usage:
     
     Block commands:
-       {commandPrefix}clone <sourcePoint> <sourceSize> <destPoint> [noair] [nowater]
+       {commandPrefix}clone <sourceBox> <destPoint> [noair] [nowater]
        {commandPrefix}fill <blockType> [ <box> ]
        {commandPrefix}replace <blockType> [with] <newBlockType> [ <box> ]
        
-       {commandPrefix}export <filename> <sourcePoint> <sourceSize>
+       {commandPrefix}export <filename> <sourceBox>
        {commandPrefix}import <filename> <destPoint> [noair] [nowater]
        
        {commandPrefix}createChest <point> <item> [ <count> ]
@@ -317,7 +317,7 @@ class mce(object):
     
     def _clone(self, command):
         """
-    clone <sourcePoint> <sourceSize> <destPoint> [noair] [nowater]
+    clone <sourceBox> <destPoint> [noair] [nowater]
     
     Clone blocks in a cuboid starting at sourcePoint and extending for 
     sourceSize blocks in each direction. Blocks and entities in the area 
@@ -453,7 +453,7 @@ class mce(object):
             
     def _export(self, command):
         """
-    export <filename> <sourcePoint> <sourceSize>
+    export <filename> <sourceBox>
     
     Exports blocks in the specified region to a file in schematic format.
     This file can be imported with mce or MCEdit.
