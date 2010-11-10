@@ -388,7 +388,11 @@ class MCLevel(object):
         
     def decompress(self):
         if self.root_tag != None: return
-        if self.compressedTag is None: return
+        if self.compressedTag is None: 
+            if self.root_tag is None:
+                self.load();
+            else:
+                return;
         
         gzipper = gzip.GzipFile(fileobj=StringIO.StringIO(self.compressedTag))
         try:
