@@ -2583,6 +2583,12 @@ class MCInfdevOldLevel(MCLevel):
             changesLighting = False
             for a in oldAbsorptions:
                 if a != newAbsorption: changesLighting = True;
+                
+            newEmission = self.materials.lightEmission[blockType]
+            oldEmissions = map(self.materials.lightEmission.__getitem__, blocksToReplace)
+            for a in oldEmissions:
+                if a != newEmission: changesLighting = True;
+        
         
         i=0;
         skipped = 0
