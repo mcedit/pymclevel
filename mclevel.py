@@ -96,7 +96,7 @@ world.saveInPlace();
 # the point tuple is ordered (x,y,z) in accordance with the tuples used to initialize a bounding box
 # however, the slices tuple is ordered (x,z,y) for easy indexing into the arrays.
 
-# Here is MCInfdevOldLevel.fillBlocks in its entirety:
+# Here is an old version of MCInfdevOldLevel.fillBlocks in its entirety:
 
 def fillBlocks(self, box, blockType, blockData = 0):
     chunkIterator = self.getChunkSlices(box)
