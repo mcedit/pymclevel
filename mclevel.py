@@ -2699,6 +2699,8 @@ class MCInfdevOldLevel(MCLevel):
         blocksCopied = 0;
         
         destChunks = self.getChunkSlices(BoundingBox(destinationPoint, sourceBox.size))
+        i = 0;
+        
         for (chunk, slices, point) in destChunks:
             i+= 1;
             if i % 100 != 0:
