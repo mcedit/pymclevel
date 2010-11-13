@@ -11,7 +11,11 @@ import traceback
 import shlex
 import operator
 from math import floor
-
+try:
+    import readline
+except:
+    pass
+    
 class UsageError(RuntimeError): pass
 class BlockMatchError(RuntimeError): pass
 class PlayerNotFound(RuntimeError): pass
