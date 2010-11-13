@@ -1,3 +1,5 @@
+import itertools
+
 class BoundingBox (object):
     
     def __init__(self, origin = (0,0,0), size = (0,0,0)):
@@ -91,6 +93,14 @@ class BoundingBox (object):
     
     def getVolume(self): return reduce(int.__mul__, self.size)
     volume = property(getVolume, None, None, "The volume of the box in blocks")
+    
+    @property
+    def chunkPositions(self):
+        #iterate through all of the chunk positions within this selection box
+        return itertools.product(xrange(self.mincx,self.maxcx), xrange(self.mincz, self.maxcz));
+        
+    
+    
     
     def __contains__(self, pos):
         x,y,z = pos;

@@ -2808,7 +2808,7 @@ class MCInfdevOldLevel(MCLevel):
         info( u"Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
         i=0;
         ret = [];
-        for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
+        for cx,cz in box.chunkPositions:
             i+=1;
             if not ((cx,cz) in self._presentChunks):
                 ret.append( (cx,cz) )
