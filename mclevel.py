@@ -568,7 +568,6 @@ class MCLevel(object):
         convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[sourceLevel.Blocks[sourcex, sourcez, sourcey]]
         self.copyBlockArrayMasked(self.Blocks[destx, destz, desty], convertedSourceBlocks, blocksToCopy)
         
-        #blocks[:] = convertedSourceBlocks
         
     def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         
@@ -2728,11 +2727,6 @@ class MCInfdevOldLevel(MCLevel):
                 sourceData = sourceLevel.Data[sx+point[0]:localSourceCorner2[0],
                                               sz+point[2]:localSourceCorner2[2],
                                               sy:localSourceCorner2[1]]
-            #
-                #if isinstance(sourceLevel, MCIndevLevel):
-                #    chunk.Data[slices][0:x,0:z,0:y] = sourceData[:,:,:] & 0xf #high order bits rofl
-                    #chunk.Data[slices][0:x,0:z,0:y] &= 0xf
-                #else:
                 data = chunk.Data[slices][0:x,0:z,0:y]
                 if mask != None:
                     data[mask] = (sourceData[:,:,:] & 0xf)[mask]
