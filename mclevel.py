@@ -2700,6 +2700,10 @@ class MCInfdevOldLevel(MCLevel):
         
         destChunks = self.getChunkSlices(BoundingBox(destinationPoint, sourceBox.size))
         for (chunk, slices, point) in destChunks:
+            i+= 1;
+            if i % 100 != 0:
+                info("Chunk {0}...".format(i))
+                
             blocks = chunk.Blocks[slices];
             
             localSourceCorner2 = (
