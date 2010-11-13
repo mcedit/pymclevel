@@ -1552,21 +1552,27 @@ class InfdevChunk(MCLevel):
         generateHeightMap(self);
         if calcLighting:
             self.genFastLights()
-            
+    
     def genFastLights(self):
         self.SkyLight[:] = 0;
         if self.world.dimNo == -1: 
             return #no light in nether
+        
+        blocks = self.Blocks;
+        la = self.world.materials.lightAbsorption
+        skylight = self.SkyLight;
+        heightmap = self.HeightMap;
+        
         for x,z in itertools.product(xrange(16), xrange(16)):
             
-            self.SkyLight[x,z,self.HeightMap[z,x]:128] = 15 
+            skylight[x,z,heightmap[z,x]:128] = 15 
             lv = 15;
-            for y in reversed(xrange(self.HeightMap[z,x])):
-                lv -= max(la[self.Blocks[x,z,y]], 1)
+            for y in reversed(range(heightmap[z,x])):
+                lv -= (la[blocks[x,z,y]] or 1)
                 
                 if lv <= 0: 
                     break;
-                self.SkyLight[x,z,y] = lv;
+                skylight[x,z,y] = lv;
                 
                
     
