@@ -2696,7 +2696,6 @@ class MCInfdevOldLevel(MCLevel):
         (sx, sy, sz) = sourceBox.origin
         
         filterTable = self.conversionTableFromLevel(sourceLevel);
-        blocksCopied = 0;
         
         destChunks = self.getChunkSlices(BoundingBox(destinationPoint, sourceBox.size))
         i = 0;
@@ -2737,15 +2736,12 @@ class MCInfdevOldLevel(MCLevel):
                 data = chunk.Data[slices][0:x,0:z,0:y]
                 if mask != None:
                     data[mask] = (sourceData[:,:,:] & 0xf)[mask]
-                    blocksCopied += sum(mask)
                 else:
                     data[:] = (sourceData[:,:,:] & 0xf)
-                    blocksCopied += x*z*y
                     
             chunk.chunkChanged();
             chunk.compress();
             
-        return blocksCopied
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
                            
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy = None):
@@ -2757,7 +2753,6 @@ class MCInfdevOldLevel(MCLevel):
         #needs work xxx
         info( u"Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint) )
         startTime = datetime.now()
-        blocksCopied = 0
         
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
             blocksCopied = self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
@@ -2792,7 +2787,6 @@ class MCInfdevOldLevel(MCLevel):
 
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
         info( "Duration: {0}".format(datetime.now()-startTime) )
-        info( u"Blocks copied: %d" % blocksCopied )
         #self.saveInPlace()
  
 
