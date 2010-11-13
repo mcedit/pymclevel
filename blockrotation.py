@@ -7,7 +7,7 @@ def RotateLeft(blocks, data):
     torchRotation = array([0, 4, 3, 1, 2, 5,
                            6, 7, 
                            
-                           8, 9, 10, 11, 12, 13, 14, 15]);
+                           8, 9, 10, 11, 12, 13, 14, 15], dtype='uint8');
                            
     torchIndexes = (blocks == alphaMaterials.materialNamed("Torch"))
     torchIndexes |= ( (blocks == alphaMaterials.materialNamed("Redstone Torch (on)")) | 
@@ -21,7 +21,7 @@ def RotateLeft(blocks, data):
     railRotation = array([1, 0, 4, 5, 3, 2, 9, 6, 
                            7, 8, 
                            
-                           10, 11, 12, 13, 14, 15]);
+                           10, 11, 12, 13, 14, 15], dtype='uint8');
                            
     railIndexes = (blocks == alphaMaterials.materialNamed("Rail"))
     print "Rotating rails: ", len(railIndexes.nonzero()[0]);
@@ -32,7 +32,7 @@ def RotateLeft(blocks, data):
     ladderRotation = array([0, 1, 4, 5, 3, 2, 
         
                            6, 7,  #xxx more ladders
-                           8, 9, 10, 11, 12, 13, 14, 15]);
+                           8, 9, 10, 11, 12, 13, 14, 15], dtype='uint8');
                            
     ladderIndexes = (blocks == alphaMaterials.materialNamed("Ladder"))
     print "Rotating ladders: ", len(ladderIndexes.nonzero()[0]);
@@ -48,7 +48,7 @@ def RotateLeft(blocks, data):
     
     # Wall signs
     wallSignRotation = array([0, 1, 4, 5, 3, 2, 6, 7, 
-                              8, 9, 10, 11, 12, 13, 14, 15]);
+                              8, 9, 10, 11, 12, 13, 14, 15], dtype='uint8');
     
     wallSignIndexes = (blocks == alphaMaterials.materialNamed("Wall Sign"))
     print "Rotating wallsigns: ", len(wallSignIndexes.nonzero()[0]);
@@ -57,7 +57,7 @@ def RotateLeft(blocks, data):
     
     # Levers
     leverRotation = array([0, 4, 3, 1, 2, 6, 5, 7,                         
-                           8, 12, 11, 9, 10, 14, 13, 15]) #thrown levers
+                           8, 12, 11, 9, 10, 14, 13, 15], dtype='uint8') #thrown levers
                            
     leverIndexes = (blocks == alphaMaterials.materialNamed("Lever"))
     print "Rotating levers: ", len(leverIndexes.nonzero()[0]);
@@ -68,7 +68,7 @@ def RotateLeft(blocks, data):
     doorRotation = array([3, 0, 1, 2, 
                           7, 4, 5, 6, #swung door
                           11, 8, 9, 10, #top half
-                          15, 12, 13, 14]) #top half swung
+                          15, 12, 13, 14], dtype='uint8') #top half swung
                            
     doorIndexes = (blocks == alphaMaterials.materialNamed("Iron Door") ) | (blocks == alphaMaterials.materialNamed("Wooden Door"))
     print "Rotating doors: ", len(doorIndexes.nonzero()[0]);
@@ -77,7 +77,7 @@ def RotateLeft(blocks, data):
     
     # Buttons
     buttonRotation = array([0, 4, 3, 1, 2, 5, 6, 7,                         
-                            8, 12, 11, 9, 10, 13, 14, 15]) #pressed buttons, unusual
+                            8, 12, 11, 9, 10, 13, 14, 15], dtype='uint8') #pressed buttons, unusual
                            
     buttonIndexes = (blocks == alphaMaterials.materialNamed("Stone Button"))
     print "Rotating buttons: ", len(buttonIndexes.nonzero()[0]);
@@ -86,7 +86,7 @@ def RotateLeft(blocks, data):
     
     # Stairs
     stairRotation = array([3, 2, 0, 1, 4, 5, 6, 7,                         
-                           8, 9, 10, 11, 12, 13, 14, 15])
+                           8, 9, 10, 11, 12, 13, 14, 15], dtype='uint8')
                            
     stairIndexes = (blocks == alphaMaterials.materialNamed("Wooden Stair")) | (blocks == alphaMaterials.materialNamed("Stone Stair"))
     print "Rotating stairs: ", len(stairIndexes.nonzero()[0]);
