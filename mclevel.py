@@ -2754,6 +2754,7 @@ class MCInfdevOldLevel(MCLevel):
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         #needs work xxx
         info( u"Copying {0} blocks from {1} to {2}" .format (ly*lz*lx,sourceBox, destinationPoint) )
+        startTime = datetime.now()
         blocksCopied = 0
         
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
@@ -2788,6 +2789,7 @@ class MCInfdevOldLevel(MCLevel):
                     blocksCopied += 1;
 
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
+        info( "Duration: {0}".format(datetime.now()-startTime) )
         info( u"Blocks copied: %d" % blocksCopied )
         #self.saveInPlace()
  
