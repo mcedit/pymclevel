@@ -2740,9 +2740,10 @@ class MCInfdevOldLevel(MCLevel):
                     
             chunk.chunkChanged();
             chunk.compress();
-            
+        
         d = datetime.now()-start;
-        info( "Finished in {0} ({1} per chunk)".format(d, d / i) )
+        info( "Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i) )
+        
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
                            
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy = None):
