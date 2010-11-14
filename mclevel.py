@@ -566,25 +566,44 @@ class MCLevel(object):
         destx, desty, destz = map(slice, destinationPoint, destCorner2)
         
         convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[sourceLevel.Blocks[sourcex, sourcez, sourcey]]
-        self.copyBlockArrayMasked(self.Blocks[destx, destz, desty], convertedSourceBlocks, blocksToCopy)
+        
+        blocks = self.Blocks[destx, destz, desty]
+        mask = slice(None, None)
+        
+        if not (blocksToCopy is None):
+            typemask = zeros( (256) , dtype='bool')
+            typemask[blocksToCopy] = True;
+            mask = typemask[convertedSourceBlocks]
+            
+        blocks[mask] = convertedSourceBlocks[mask]
         
         
     def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         
         chunkIterator = sourceLevel.getChunkSlices(sourceBox)
         
+        
+        if blocksToCopy is not None:
+            typemask = zeros( (256) , dtype='bool')
+            typemask[blocksToCopy] = True;
+        
         for (chunk, slices, point) in chunkIterator:
             point = map(lambda a,b:a+b, point, destinationPoint)
             point = point[0], point[2], point[1]
+            mask = slice(None, None)
             
             convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[chunk.Blocks[slices]]
             
             destSlices = [slice(p, p+s.stop-s.start) for p,s in zip(point,slices) ]
-            mask = self.copyBlockArrayMasked( self.Blocks[ destSlices ], convertedSourceBlocks, blocksToCopy)
-            if mask != None:
-                self.Data[ destSlices ][mask] = chunk.Data[slices][mask]
-            else:
-                self.Data[ destSlices ] = chunk.Data[slices]
+            
+            blocks = self.Blocks[ destSlices ];
+            
+            if blocksToCopy is not None:
+                mask = typemask[convertedSourceBlocks]
+                
+            blocks[mask] = convertedSourceBlocks[mask]
+            
+            self.Data[ destSlices ][mask] = chunk.Data[slices][mask]
             
             chunk.compress();
             
@@ -894,37 +913,6 @@ class MCLevel(object):
                                     for i,v in zip('xyz',vals): eTag[i]=v;
                                     self.addTileEntity(eTag);'''"""
                 
-
-    def copyBlockArrayMasked(self, blocks, sourceBlocks, blocksToCopy):
-        #assumes sourceBlocks has already been converted to my materials and that both arrays are the same shape
-        mask = sourceBlocks == sourceBlocks
-        
-        def ismember(ar1, ar2) :
-            a = sort(ar2)
-            il = a.searchsorted(ar1, side='left')
-            ir = a.searchsorted(ar1, side='right')
-            return ir != il
-
-        if not (blocksToCopy is None):
-            mask = ismember(sourceBlocks.flatten(), array(blocksToCopy))
-            mask = mask.reshape(blocks.shape)
-            
-               
-        blocks[mask] = sourceBlocks[mask]
-        
-        return mask;    
-        """if not copyAir:
-            mask &=(sourceBlocks != self.materials.materialNamed("Air"))
-        if not copyWater:
-            mask &=(sourceBlocks != self.materials.materialNamed("Water"))
-            mask &=(sourceBlocks != self.materials.materialNamed("Stationary water"))
-            
-            blocks[mask] = sourceBlocks[mask]
-            return mask;
-        
-        else:
-            blocks[:] = sourceBlocks[:]
-        """
         
     def removeEntitiesInBox(self, box):
         
@@ -2703,6 +2691,12 @@ class MCInfdevOldLevel(MCLevel):
         filterTable = self.conversionTableFromLevel(sourceLevel);
         
         start = datetime.now();
+        
+        if blocksToCopy is not None:
+            typemask = zeros( (256) , dtype='bool')
+            typemask[blocksToCopy] = 1;
+        
+        
         destChunks = self.getChunkSlices(BoundingBox(destinationPoint, sourceBox.size))
         i = 0;
         
@@ -2712,6 +2706,7 @@ class MCInfdevOldLevel(MCLevel):
                 info("Chunk {0}...".format(i))
                 
             blocks = chunk.Blocks[slices];
+            mask = slice(None, None)
             
             localSourceCorner2 = (
                 sx+point[0] + blocks.shape[0],
@@ -2727,18 +2722,21 @@ class MCInfdevOldLevel(MCLevel):
             #for small level slices, reduce the destination area
             x,z,y = sourceBlocks.shape
             blocks = blocks[0:x,0:z,0:y]
-            mask = self.copyBlockArrayMasked(blocks, sourceBlocks, blocksToCopy)    
-            
+            if blocksToCopy is not None:
+                mask = typemask[sourceBlocks]
+
+            blocks[mask] = sourceBlocks[mask]
+                        
             if hasattr(sourceLevel, 'Data'):
                 #indev or schematic
                 sourceData = sourceLevel.Data[sx+point[0]:localSourceCorner2[0],
                                               sz+point[2]:localSourceCorner2[2],
                                               sy:localSourceCorner2[1]]
                 data = chunk.Data[slices][0:x,0:z,0:y]
-                if mask != None:
-                    data[mask] = (sourceData[:,:,:] & 0xf)[mask]
-                else:
-                    data[:] = (sourceData[:,:,:] & 0xf)
+                
+                data[mask] = (sourceData[:,:,:] & 0xf)[mask]
+                
+                
                     
             chunk.chunkChanged();
             chunk.compress();
