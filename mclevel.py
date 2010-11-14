@@ -2275,7 +2275,8 @@ class MCInfdevOldLevel(MCLevel):
                 ch.compress();
         timeDelta = datetime.now()-startTime;
         
-        info( u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0) )
+        if len(dirtyChunks):
+            info( u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta/len(dirtyChunks) or 0) )
             
         return;
         
@@ -2742,7 +2743,8 @@ class MCInfdevOldLevel(MCLevel):
             chunk.compress();
         
         d = datetime.now()-start;
-        info( "Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i) )
+        if i:
+            info( "Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i) )
         
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
                            
