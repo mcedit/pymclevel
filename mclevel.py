@@ -1549,7 +1549,7 @@ class InfdevChunk(MCLevel):
         and unpacking is done lazily."""
         if self.compressedTag is None:
             try:
-                compressedData = file(self.filename, 'rb')
+                compressedData = self.world._loadChunk(self);
                 self.compressedTag = compressedData.read();
                 compressedData.close()
             except IOError:
@@ -2043,7 +2043,9 @@ class MCInfdevOldLevel(MCLevel):
                 oldestChunk = self.loadedChunks[0];
                 oldestChunk.unload(); #calls chunkDidUnload
     
-    
+    def _loadChunk(self, chunk):
+        return file(chunk.filename, 'rb')
+        
     def discardAllChunks(self):
         """ clear lots of memory, fast. """
         
