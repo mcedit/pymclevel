@@ -127,18 +127,22 @@ def do_test_match_output(test_data, result_check, arguments=[]):
         if proc.returncode:
             raise RegressionError("Program execution failed!")
 
+        print "Output\n{0}".format(output)
+
         checksum = hashlib.sha1()
         checksum.update(output)
         checksum = checksum.hexdigest()
+
         if checksum != result_check.lower():
             raise RegressionError("Checksum mismatch: {0!r} != {1!r}".format(checksum, result_check))
+
     print "[OK] (sha1sum of result is {0!r}, as expected)".format(result_check)
 
 
 alpha_tests = [
     (do_test,               'baseline', '9e7460d39c8e0456789cf89fee45276db2719aaa', []),
     (do_test,               'degrief',  '403e6c6147cf1f8d73377b18bbf5e4973606a311', ['degrief']),
-    (do_test_match_output,  'analyze',  '7c533d1a9305610756bf90f646732a34e431a9d8', ['analyze']),
+    (do_test_match_output,  'analyze',  '5fc0fb54bacc9c6dfcafd5c6a48cc86b7dd5fc4b', ['analyze']),
     (do_test,               'relight',  'e0cf60c62adfdb313f198af5314c31f89d158c12', ['relight']),
     (do_test,               'replace',  'd73767293e903b6d1c49c1838eb1849b69d83ad8', ['replace', 'Water', 'with', 'Lava']),
     (do_test,               'fill',     'f4f57c3d902b6894031d416cb9279232e7e24bd7', ['fill', 'Water']),
