@@ -158,15 +158,19 @@ minecraftDirs = {
     'darwin':os.path.expanduser("~/Library/Application Support/minecraft"),
 }
 minecraftDir = minecraftDirs.get(sys.platform, os.path.expanduser("~/.minecraft")); #default to Linux save location 
+minecraftDir = minecraftDir.decode(sys.getfilesystemencoding());
 
 if sys.platform == "win32":
-    #do it using win32com because expandvars always returns a byte array when we 
-    #need a unicode for the filesystem routines
-            
-    import win32com.client
-    
-    objShell = win32com.client.Dispatch("WScript.Shell")
-    minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
+    #not sure why win32com is needed if the %APPDATA% var is available
+    try:      
+        import win32com.client
+        
+        objShell = win32com.client.Dispatch("WScript.Shell")
+        minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
+    except Exception, e:
+        print "WScript error {0!r}".format(e)
+        minecraftDir = os.path.expandvars("%APPDATA%\\.minecraft\\saves")
+        minecraftDir = minecraftDir.decode(sys.getfilesystemencoding());
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
  
