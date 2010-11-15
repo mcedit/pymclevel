@@ -617,7 +617,7 @@ class MCLevel(object):
         sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
         
         (lx,ly,lz) = sourceBox.size;
-        info(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format (ly*lz*lx,sourceBox, destinationPoint, sourceLevel, self))
+        debug(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format (ly*lz*lx,sourceBox, destinationPoint, sourceLevel, self))
         
 
         #clip the source ranges to this level's edges.  move the destination point as needed.
