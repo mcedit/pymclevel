@@ -2747,7 +2747,33 @@ class MCInfdevOldLevel(MCLevel):
             info( "Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i) )
         
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
-                           
+    
+    def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+        """ copy blocks between two infinite levels via repeated export/import.  hilariously slow. """
+        
+        #assumes destination point and bounds have already been checked.
+        
+        tempSize = 64
+        
+        def iterateSubsections():
+            #tempShape = (tempSize, sourceBox.height, tempSize)
+            dx, dy, dz = destinationPoint
+            ox, oy, oz = sourceBox.origin
+            sx, sy, sz = sourceBox.size
+            mx, my, mz = sourceBox.maximum
+            for x,z in itertools.product(arange(ox, ox+sx, tempSize), arange(oz, oz+sz, tempSize)):
+                box = BoundingBox((x, oy, z), (min(tempSize, mx-x), sy, min(tempSize, mz-z)))
+                destPoint = (dx + x - ox, dy, dz + z - oz)
+                yield box, destPoint
+        
+        i=0;
+        for box, destPoint in iterateSubsections():
+            info( "Subsection {0} at {1}".format(i, destPoint) )
+            temp = sourceLevel.extractSchematic(box);
+            self.copyBlocksFrom(temp, BoundingBox( (0,0,0), box.size ), destPoint);
+            i+= 1;
+            
+                    
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy = None):
         (x,y,z) = destinationPoint;
         (lx,ly,lz) = sourceBox.size
@@ -2759,10 +2785,13 @@ class MCInfdevOldLevel(MCLevel):
         startTime = datetime.now()
         
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
-            blocksCopied = self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
+            self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
             
 
-        else: #uggh clone tool will still be slow if it weren't for schematics
+        else:
+            self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy) 
+            """
+            #uggh clone tool will still be slow if it weren't for schematics
             filterTable = sourceLevel.materials.conversionTables[self.materials]
             copyOffset = map(lambda x,y:x-y, destinationPoint, sourceBox.origin)
             for s in itertools.product(*map(lambda x:range(x[0], x[0]+x[1]), zip(sourceBox.origin, sourceBox.size))):
