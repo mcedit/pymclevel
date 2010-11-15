@@ -2598,9 +2598,10 @@ class MCInfdevOldLevel(MCLevel):
         y = int(entity['y'].value)
         z = int(entity['z'].value)
 
-        chunk = self.getChunk(x>>4, z>>4)
-        if not chunk:
-            return None
+        try:
+            chunk = self.getChunk(x>>4, z>>4)
+        except (ChunkNotPresent, ChunkMalformed):
+            return 
             # raise Error, can't find a chunk?
         def samePosition(a):
             return (a['x'].value == x and a['y'].value == y and a['z'].value == z)
