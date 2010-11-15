@@ -1025,10 +1025,6 @@ class MCLevel(object):
         import shutil
         shutil.rmtree(filename)
         
-        #zipfilename = filename + ".zip"
-        #zf = ZipFile(zipfilename, "w")
-        #zf.add(filename);
-        
         
 def zipdir(basedir, archivename):
     assert os.path.isdir(basedir)
