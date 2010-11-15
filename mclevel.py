@@ -2810,7 +2810,7 @@ class MCInfdevOldLevel(MCLevel):
         
         #assumes destination point and bounds have already been checked.
         
-        tempSize = 64
+        tempSize = 128
         
         def iterateSubsections():
             #tempShape = (tempSize, sourceBox.height, tempSize)
