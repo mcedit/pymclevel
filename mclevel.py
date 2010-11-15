@@ -121,7 +121,10 @@ import itertools
 import traceback
 import os;
 import sys;
+import tempfile
 
+from contextlib import closing
+from zipfile import ZipFile, ZIP_STORED, is_zipfile
 from collections import deque;
 
 import blockrotation
@@ -155,15 +158,19 @@ minecraftDirs = {
     'darwin':os.path.expanduser("~/Library/Application Support/minecraft"),
 }
 minecraftDir = minecraftDirs.get(sys.platform, os.path.expanduser("~/.minecraft")); #default to Linux save location 
+minecraftDir = minecraftDir.decode(sys.getfilesystemencoding());
 
 if sys.platform == "win32":
-    #do it using win32com because expandvars always returns a byte array when we 
-    #need a unicode for the filesystem routines
-            
-    import win32com.client
-    
-    objShell = win32com.client.Dispatch("WScript.Shell")
-    minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
+    #not sure why win32com is needed if the %APPDATA% var is available
+    try:      
+        import win32com.client
+        
+        objShell = win32com.client.Dispatch("WScript.Shell")
+        minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
+    except Exception, e:
+        print "WScript error {0!r}".format(e)
+        minecraftDir = os.path.expandvars("%APPDATA%\\.minecraft\\saves")
+        minecraftDir = minecraftDir.decode(sys.getfilesystemencoding());
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
  
@@ -689,6 +696,12 @@ class MCLevel(object):
         if not os.path.exists(filename):
             raise IOError, "File not found: "+filename
         
+        if (ZipSchematic._isLevel(filename)):
+            info( "Zipfile found, attempting zipped infinite level" )
+            lev = ZipSchematic(filename);
+            info( "Detected zipped Infdev level" )
+            return lev
+            
         if (MCInfdevOldLevel._isLevel(filename)):
             info( u"Detected Infdev level.dat" )
             if (loadInfinite):
@@ -933,7 +946,7 @@ class MCLevel(object):
     def generateLights(self, dirtyChunks = None):
         pass;
         
-    def extractSchematic(self, box):
+    def adjustExtractionParameters(self, box):
         x,y,z = box.origin
         w,h,l = box.size
         destX = destY = destZ = 0;
@@ -974,18 +987,59 @@ class MCLevel(object):
                 l = self.Length - z
             
             if l <= 0: return
-            
-             
-                 
-        
+                  
         box = BoundingBox ( (x,y,z), (w,h,l) )
         
+        return box, (destX, destY, destZ)
+        
+    def extractSchematic(self, box):
+        box, destPoint = self.adjustExtractionParameters(box);
         
         tempSchematic = MCSchematic(shape=box.size)
         tempSchematic.materials = self.materials
-        tempSchematic.copyBlocksFrom(self, box, (destX, destY, destZ))   
-        return tempSchematic
+        tempSchematic.copyBlocksFrom(self, box, destPoint)
         
+        return tempSchematic
+    
+    def extractZipSchematic(self, box, zipfilename):
+        box, destPoint = self.adjustExtractionParameters(box);
+        destPoint = (0,0,0)
+        
+        filename = tempfile.mktemp("schematic")
+        
+        tempSchematic = MCInfdevOldLevel(filename, create = True);
+        tempSchematic.createChunksInBox(BoundingBox(destPoint, box.size))
+        tempSchematic.copyBlocksFrom(self, box, destPoint)
+        tempSchematic.saveInPlace(); #lights not needed for this format - crashes minecraft though
+        
+        schematicDat = TAG_Compound()
+        schematicDat.name = "Mega Schematic"
+        
+        schematicDat["Width"] = TAG_Int(box.size[0]);
+        schematicDat["Height"] = TAG_Int(box.size[1]);
+        schematicDat["Length"] = TAG_Int(box.size[2]);
+        schematicDat.save(os.path.join(filename, "schematic.dat"))
+        
+        zipdir(filename, zipfilename)
+        
+        import shutil
+        shutil.rmtree(filename)
+        
+        #zipfilename = filename + ".zip"
+        #zf = ZipFile(zipfilename, "w")
+        #zf.add(filename);
+        
+        
+def zipdir(basedir, archivename):
+    assert os.path.isdir(basedir)
+    with closing(ZipFile(archivename, "w", ZIP_STORED)) as z:
+        for root, dirs, files in os.walk(basedir):
+            #NOTE: ignore empty directories
+            for fn in files:
+                absfn = os.path.join(root, fn)
+                zfn = absfn[len(basedir)+len(os.sep):] #XXX: relative path
+                z.write(absfn, zfn)
+                            
 fromFile = MCLevel.fromFile
 
                 
@@ -1495,7 +1549,7 @@ class InfdevChunk(MCLevel):
         and unpacking is done lazily."""
         if self.compressedTag is None:
             try:
-                compressedData = file(self.filename, 'rb')
+                compressedData = self.world._loadChunk(self);
                 self.compressedTag = compressedData.read();
                 compressedData.close()
             except IOError:
@@ -1989,7 +2043,9 @@ class MCInfdevOldLevel(MCLevel):
                 oldestChunk = self.loadedChunks[0];
                 oldestChunk.unload(); #calls chunkDidUnload
     
-    
+    def _loadChunk(self, chunk):
+        return file(chunk.filename, 'rb')
+        
     def discardAllChunks(self):
         """ clear lots of memory, fast. """
         
@@ -2542,9 +2598,10 @@ class MCInfdevOldLevel(MCLevel):
         y = int(entity['y'].value)
         z = int(entity['z'].value)
 
-        chunk = self.getChunk(x>>4, z>>4)
-        if not chunk:
-            return None
+        try:
+            chunk = self.getChunk(x>>4, z>>4)
+        except (ChunkNotPresent, ChunkMalformed):
+            return 
             # raise Error, can't find a chunk?
         def samePosition(a):
             return (a['x'].value == x and a['y'].value == y and a['z'].value == z)
@@ -2790,7 +2847,7 @@ class MCInfdevOldLevel(MCLevel):
 
         else:
             self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy) 
-            
+
         self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
         info( "Duration: {0}".format(datetime.now()-startTime) )
         #self.saveInPlace()
@@ -2960,7 +3017,26 @@ class MCAlphaDimension (MCInfdevOldLevel):
             MCInfdevOldLevel.saveInPlace(self);
         else:
             self.parentWorld.saveInPlace();
-            
+
+class ZipSchematic (MCInfdevOldLevel):
+    def __init__(self, filename):
+        tempdir = tempfile.mktemp("schematic")
+        zf = ZipFile(filename)
+        zf.extractall(tempdir)
+        
+        MCInfdevOldLevel.__init__(self, tempdir)
+        
+        schematicDat = os.path.join(tempdir, "schematic.dat")
+        if os.path.exists(schematicDat):
+            schematicDat = nbt.load(schematicDat);
+            self.Width = schematicDat['Width'].value;
+            self.Height = schematicDat['Height'].value;
+            self.Length = schematicDat['Length'].value;
+    
+    @classmethod
+    def _isLevel(cls, filename):
+        return is_zipfile(filename)
+        
 class MCIndevLevel(MCLevel):
     
     """ IMPORTANT: self.Blocks and self.Data are indexed with [y,z,x]
