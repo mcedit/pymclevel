@@ -1523,9 +1523,7 @@ class InfdevChunk(MCLevel):
                 debug( u"No existing chunk file to rename" )
                 pass
             try:
-                chunkfh = file(self.filename, 'wb')
-                chunkfh.write(self.compressedTag)
-                chunkfh.close()
+                self.world._saveChunk(self, self.compressedTag)
                 
                 debug( u"Saved chunk {0}".format( self ) )
             except IOError,e:
@@ -2041,6 +2039,11 @@ class MCInfdevOldLevel(MCLevel):
     
     def _loadChunk(self, chunk):
         return file(chunk.filename, 'rb')
+    
+    def _saveChunk(self, chunk, data):
+        chunkfh = file(chunk.filename, 'wb')
+        chunkfh.write(data)
+        chunkfh.close()  
         
     def discardAllChunks(self):
         """ clear lots of memory, fast. """
