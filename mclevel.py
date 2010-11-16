@@ -1802,7 +1802,7 @@ class MCInfdevOldLevel(MCLevel):
     @SizeOnDisk.setter
     def SizeOnDisk(self, val):
         if 'SizeOnDisk' not in self.root_tag[Data]:
-            self.root_tag[Data]['SizeOnDisk'] = TAG_String(value=val)
+            self.root_tag[Data]['SizeOnDisk'] = TAG_Long(value=val)
         else:
             self.root_tag[Data]['SizeOnDisk'].value = val
     
