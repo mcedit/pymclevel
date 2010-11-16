@@ -997,7 +997,9 @@ class MCLevel(object):
         return box, (destX, destY, destZ)
         
     def extractSchematic(self, box):
-        box, destPoint = self.adjustExtractionParameters(box);
+        p = self.adjustExtractionParameters(box);
+        if p is None: return
+        box, destPoint = p
         
         tempSchematic = MCSchematic(shape=box.size)
         tempSchematic.materials = self.materials
@@ -1006,7 +1008,10 @@ class MCLevel(object):
         return tempSchematic
     
     def extractZipSchematic(self, box, zipfilename):
-        box, destPoint = self.adjustExtractionParameters(box);
+        p = self.adjustExtractionParameters(box);
+        if p is None: return
+        box, destPoint = p
+        
         destPoint = (0,0,0)
         
         filename = tempfile.mktemp("schematic")
