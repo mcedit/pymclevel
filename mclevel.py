@@ -368,6 +368,10 @@ class MCLevel(object):
         "Returns the level's dimensions as a tuple (X,Y,Z)"
         return (self.Width, self.Height, self.Length)
     
+    @property
+    def bounds(self):
+        return BoundingBox( (0,0,0), self.size )
+        
     def compressedSize(self):
         "return the size of the compressed data for this level, in bytes."
         self.compress();
@@ -531,7 +535,7 @@ class MCLevel(object):
         return self.Blocks[x:x+w,z:z+l,y:y+h]
     
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
-        if box is None: box = self.getWorldBounds()
+        if box is None: box = self.bounds
         
         info( u"Filling blocks in {0} with {1}, data={2} replacing{3}".format(box, blockType, blockData, blocksToReplace) )
         slices = map(slice, box.origin, box.maximum)
@@ -1820,6 +1824,16 @@ class MCInfdevOldLevel(MCLevel):
     def LastPlayed(self, val):
         self.root_tag[Data]['LastPlayed'].value = val
     
+    _bounds = None
+    @property
+    def bounds(self):
+        if self._bounds is None: self._bounds = self.getWorldBounds();
+        return self._bounds
+        
+    @property
+    def size(self):
+        return self.bounds.size
+        
     def create(self, filename, random_seed, last_played):
         
         if filename == None:
@@ -2857,15 +2871,17 @@ class MCInfdevOldLevel(MCLevel):
     
     def containsChunk(self, cx, cz):
         return (cx, cz) in self._presentChunks;
-        
+    
     def malformedChunk(self, cx, cz):
         debug( u"Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
         if (cx,cz) in self._presentChunks:
             del self._presentChunks[(cx,cz)]
-        
+            self._bounds = None
+            
     def createChunk(self, cx, cz):
         if (cx,cz) in self._presentChunks: raise ValueError, "{0}:Chunk {1} already present!".format(self, (cx,cz) )
         self._presentChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
+        self._bounds = None
         
     def createChunksInBox(self, box):
         info( u"Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
@@ -2889,6 +2905,7 @@ class MCInfdevOldLevel(MCLevel):
         self._presentChunks[(cx,cz)].remove();
         
         del self._presentChunks[(cx,cz)]
+        self._bounds = None
         
     def deleteChunksInBox(self, box):
         info( u"Deleting {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )

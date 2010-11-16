@@ -422,7 +422,7 @@ class mce(object):
             count = self.readInt(command)
             
         chest = mclevel.MCSchematic.chestWithItemID(itemID, count);
-        self.level.copyBlocksFrom(chest, chest.getWorldBounds(), point);
+        self.level.copyBlocksFrom(chest, chest.bounds, point);
         self.needsSave = True;
         
     def _analyze(self, command):
@@ -473,7 +473,7 @@ class mce(object):
         
         tempSchematic.saveToFile(filename)
         
-        print "Exported {0} blocks.".format(tempSchematic.getWorldBounds().volume) 
+        print "Exported {0} blocks.".format(tempSchematic.bounds.volume) 
     
     def _import(self, command):
         """
@@ -500,11 +500,11 @@ class mce(object):
         destBox = BoundingBox(destPoint, importLevel.size)
         self.level.createChunksInBox(destBox);
         
-        self.level.copyBlocksFrom(importLevel, importLevel.getWorldBounds(), destPoint, blocksToCopy);
+        self.level.copyBlocksFrom(importLevel, importLevel.bounds, destPoint, blocksToCopy);
         
         
         self.needsSave = True;
-        print "Imported {0} blocks.".format(importLevel.getWorldBounds().volume) 
+        print "Imported {0} blocks.".format(importLevel.bounds.volume) 
     
     def _player(self, command):
         """
@@ -797,7 +797,7 @@ class mce(object):
     
     Also see removeEntities
     """
-        box = self.level.getWorldBounds();
+        box = self.level.bounds;
         box.miny = 32
         if len(command):
             try:
@@ -894,7 +894,7 @@ class mce(object):
     Computes and prints the dimensions of the world.  For infinite worlds, 
     also prints the most negative corner.
     """
-        bounds = self.level.getWorldBounds();
+        bounds = self.level.bounds;
         if isinstance(self.level, mclevel.MCInfdevOldLevel):
             print "\nWorld size: \n  {0[0]:7} north to south\n  {0[2]:7} east to west\n".format(bounds.size);
             print "Smallest and largest points: ({0[0]},{0[2]}), ({1[0]},{1[2]})".format(bounds.origin, bounds.maximum);
