@@ -1455,7 +1455,7 @@ class InfdevChunk(MCLevel):
         
         
     def __str__(self):
-        return "InfdevChunk, coords:{0}, world: {1}, D:{2}, L:{3}".format(self.chunkPosition, os.path.split(self.world.worldDir)[1],self.dirty, self.needsLighting)
+        return "InfdevChunk, coords:{0}, world: {1}, D:{2}, L:{3}".format(self.chunkPosition, self.world.displayName,self.dirty, self.needsLighting)
 
     def create(self):
         (cx,cz) = self.chunkPosition;
