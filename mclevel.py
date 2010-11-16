@@ -1902,9 +1902,8 @@ class MCInfdevOldLevel(MCLevel):
         self.filename = os.path.join(self.worldDir, "level.dat")
                 
         #maps (cx,cz) pairs to InfdevChunks    
-        self.__presentChunks = None;
+        self._presentChunksDict = None;
         self.dimensions = {};
-        
         
         #used to limit memory usage
         self.loadedChunks = dequeset()
@@ -1961,7 +1960,7 @@ class MCInfdevOldLevel(MCLevel):
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
         worldDirs = os.listdir(self.worldDir);
-        self.__presentChunks = {};
+        self._presentChunksDict = {};
         
         for dirname in worldDirs:
             if(dirname in self.dirhashes):
@@ -2221,9 +2220,9 @@ class MCInfdevOldLevel(MCLevel):
     
     @property
     def _presentChunks(self): 
-        if self.__presentChunks is None:
+        if self._presentChunksDict is None:
             self.preloadChunkPaths();
-        return self.__presentChunks
+        return self._presentChunksDict
     
     def getChunks(self, chunks = None):
         """ pass a list of chunk coordinate tuples to get a list of InfdevChunks. 
