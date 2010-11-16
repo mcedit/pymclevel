@@ -994,6 +994,21 @@ class mce(object):
             spawny = imgarray[spawnx, spawnz];
             print "You probably want to change your spawn point. I suggest {0}".format( (spawnx, spawny, spawnz) )
             
+    def _execute(self, command):
+		"""
+    execute <filename>
+    Execute all commands in a file and save.
+    """
+		if len(command) == 0:
+			print "You must give the file with commands to execute"
+		else:
+			commandFile = open(command[0],"r")
+			commandsFromFile = commandFile.readlines()
+			for commandFromFile in commandsFromFile:
+				print commandFromFile
+				self.processCommand(commandFromFile.split())
+			self._save("")
+		
     def _quit(self, command):
         """
     quit [ yes | no ]
@@ -1011,7 +1026,7 @@ class mce(object):
             self._save(command);
 
         raise SystemExit
-            
+		
     def _exit(self, command):
         self._quit(command)
         
