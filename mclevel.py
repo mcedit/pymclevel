@@ -2398,6 +2398,8 @@ class MCInfdevOldLevel(MCLevel):
           newDirtyChunks = list(startingDirtyChunks);
            
           for i in range(14):
+            if len(newDirtyChunks) == 0: break
+            
             info( u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks)) );
             
             """
