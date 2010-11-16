@@ -3018,22 +3018,84 @@ class MCAlphaDimension (MCInfdevOldLevel):
 
 class ZipSchematic (MCInfdevOldLevel):
     def __init__(self, filename):
-        tempdir = tempfile.mktemp("schematic")
+        tempdir = tempfile.mkdtemp("schematic")
+
+        self.worldDir = tempdir
+        
+        #used to limit memory usage
+        self.loadedChunks = dequeset()
+        self.decompressedChunks = dequeset()
+        
         zf = ZipFile(filename)
-        zf.extractall(tempdir)
+        self.zipfile = zf
+        self._presentChunksDict = None;
+        self.dimensions = {};
+        self.loadLevelDat(False, 0, 0)
         
-        MCInfdevOldLevel.__init__(self, tempdir)
-        
-        schematicDat = os.path.join(tempdir, "schematic.dat")
-        if os.path.exists(schematicDat):
-            schematicDat = nbt.load(schematicDat);
-            self.Width = schematicDat['Width'].value;
-            self.Height = schematicDat['Height'].value;
-            self.Length = schematicDat['Length'].value;
+        try:
+            schematicDat = os.path.join(tempdir, "schematic.dat")
+            with closing(self.zipfile.open("level.dat")) as f:
+                with closing(gzip.GzipFile(fileobj=StringIO.StringIO(f.read()))) as g:
+                    schematicDat = nbt.load(buf=g.read())
+                
+                self.Width = schematicDat['Width'].value;
+                self.Height = schematicDat['Height'].value;
+                self.Length = schematicDat['Length'].value;
+        except Exception, e:
+            print "Exception reading schematic.dat, skipping: {0!r}".format(e)
+            self.Width = 0
+            self.Height = 128
+            self.Length = 0
+            
+    def __del__(self):
+        self.zipfile.close()
     
     @classmethod
     def _isLevel(cls, filename):
         return is_zipfile(filename)
+    
+    def _loadChunk(self, chunk):
+        return self.zipfile.open(chunk.filename)
+        
+    def _saveChunk(self, chunk):
+        raise NotImplemented, "Cannot save zipfiles yet!"
+    
+    def preloadChunkPaths(self):
+        info( u"Scanning for chunks..." )
+        self._presentChunksDict = {}
+        
+        infos = self.zipfile.infolist()
+        names = [i.filename.split('/') for i in infos]
+        goodnames = [n for n in names if len(n) == 3 and n[0] in self.dirhashes and n[1] in self.dirhashes]
+        
+        for name in goodnames:
+            c = name[2].split('.')
+            if len(c) == 4 and c[0].lower() == 'c' and c[3].lower() == 'dat':
+                try:
+                    cx, cz = (self.decbase36(c[1]), self.decbase36(c[2]))
+                except Exception, e:
+                    info( 'Skipped file {0} ({1})'.format('.'.join(c), e) )
+                    continue
+                self._presentChunksDict[ (cx, cz) ] = InfdevChunk(self, (cx, cz));
+            
+        info( u"Found {0} chunks.".format(len(self._presentChunksDict)) )
+        
+        
+    def preloadDimensions(self):
+        pass
+    
+    def loadLevelDat(self, create, random_seed, last_played):
+        if create:
+            raise NotImplemented, "Cannot save zipfiles yet!"
+            
+        with closing(self.zipfile.open("level.dat")) as f:
+            with closing(gzip.GzipFile(fileobj=StringIO.StringIO(f.read()))) as g:
+                self.root_tag = nbt.load(buf=g.read())
+            
+    def chunkFilename(self, x, z):
+        s= "/".join((self.dirhash(x), self.dirhash(z),
+                                     "c.%s.%s.dat" % (self.base36(x), self.base36(z))));
+        return s;
         
 class MCIndevLevel(MCLevel):
     
