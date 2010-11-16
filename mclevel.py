@@ -2023,7 +2023,7 @@ class MCInfdevOldLevel(MCLevel):
     def chunkDidDecompress(self, chunk):
         if not chunk in self.decompressedChunks:
             self.decompressedChunks.append(chunk);
-            if len(self.decompressedChunks) > self.decompressedChunkLimit:
+            if self.decompressedChunkLimit and (len(self.decompressedChunks) > self.decompressedChunkLimit):
                 oldestChunk = self.decompressedChunks[0];
                 oldestChunk.compress(); #calls chunkDidCompress
     
@@ -2033,7 +2033,7 @@ class MCInfdevOldLevel(MCLevel):
     def chunkDidLoad(self, chunk):
         if not chunk in self.loadedChunks:
             self.loadedChunks.append(chunk);
-            if len(self.loadedChunks) > self.loadedChunkLimit:
+            if self.loadedChunkLimit and (len(self.loadedChunks) > self.loadedChunkLimit):
                 oldestChunk = self.loadedChunks[0];
                 oldestChunk.unload(); #calls chunkDidUnload
     
