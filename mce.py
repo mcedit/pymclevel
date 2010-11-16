@@ -61,6 +61,7 @@ class mce(object):
        {commandPrefix}save 
        {commandPrefix}reload 
        {commandPrefix}load <filename> | <world number>
+       {commandPrefix}execute <filename>
        {commandPrefix}quit 
        
     Informational: 
