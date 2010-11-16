@@ -1552,9 +1552,8 @@ class InfdevChunk(MCLevel):
         and unpacking is done lazily."""
         if self.compressedTag is None:
             try:
-                compressedData = self.world._loadChunk(self);
-                self.compressedTag = compressedData.read();
-                compressedData.close()
+                self.compressedTag = self.world._loadChunk(self);
+                
             except IOError:
                 raise ChunkNotPresent
             
@@ -2056,13 +2055,13 @@ class MCInfdevOldLevel(MCLevel):
                 oldestChunk.unload(); #calls chunkDidUnload
     
     def _loadChunk(self, chunk):
-        return file(chunk.filename, 'rb')
+        with file(chunk.filename, 'rb') as f:
+            return f.read()
     
     def _saveChunk(self, chunk, data):
-        chunkfh = file(chunk.filename, 'wb')
-        chunkfh.write(data)
-        chunkfh.close()  
-        
+        with file(chunk.filename, 'wb') as f:
+            f.write(data)
+            
     def discardAllChunks(self):
         """ clear lots of memory, fast. """
         
@@ -3079,9 +3078,9 @@ class ZipSchematic (MCInfdevOldLevel):
         return is_zipfile(filename)
     
     def _loadChunk(self, chunk):
-        return self.zipfile.open(chunk.filename)
+        return self.zipfile.read(chunk.filename)
         
-    def _saveChunk(self, chunk):
+    def _saveChunk(self, chunk, data):
         raise NotImplemented, "Cannot save zipfiles yet!"
         
     def saveInPlace(self):
