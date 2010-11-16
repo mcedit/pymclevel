@@ -3042,8 +3042,8 @@ class MCAlphaDimension (MCInfdevOldLevel):
 
 class ZipSchematic (MCInfdevOldLevel):
     def __init__(self, filename):
-        tempdir = tempfile.mkdtemp("schematic")
-
+        tempdir = tempfile.mktemp("schematic")
+        self.filename = filename
         self.worldDir = tempdir
         
         #used to limit memory usage
@@ -3082,6 +3082,9 @@ class ZipSchematic (MCInfdevOldLevel):
         return self.zipfile.open(chunk.filename)
         
     def _saveChunk(self, chunk):
+        raise NotImplemented, "Cannot save zipfiles yet!"
+        
+    def saveInPlace(self):
         raise NotImplemented, "Cannot save zipfiles yet!"
     
     def preloadChunkPaths(self):
