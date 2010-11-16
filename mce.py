@@ -88,6 +88,7 @@ class mce(object):
         "replace",
         
         "export",
+        "execute",
         "import",
         
         "createchest",
