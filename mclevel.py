@@ -2905,12 +2905,12 @@ class MCInfdevOldLevel(MCLevel):
         if (cx,cz) in self._presentChunks: raise ValueError, "{0}:Chunk {1} already present!".format(self, (cx,cz) )
         self._presentChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
         self._bounds = None
+    
+    def createChunks(self, chunks):
         
-    def createChunksInBox(self, box):
-        info( u"Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
         i=0;
         ret = [];
-        for cx,cz in box.chunkPositions:
+        for cx,cz in chunks:
             i+=1;
             if not ((cx,cz) in self._presentChunks):
                 ret.append( (cx,cz) )
@@ -2919,9 +2919,14 @@ class MCInfdevOldLevel(MCLevel):
             assert self.containsChunk(cx,cz), "Just created {0} but it didn't take".format((cx,cz))
             if i%100 == 0:
                 info( u"Chunk {0}...".format( i ) )
-                
+        
         info( "Created {0} chunks.".format(len(ret)) )
+        
         return ret;
+        
+    def createChunksInBox(self, box):
+        info( u"Creating {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
+        return self.createChunks(box.chunkPositions);
         
     def deleteChunk(self, cx, cz):
         if not (cx,cz) in self._presentChunks: return;
