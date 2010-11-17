@@ -3079,10 +3079,10 @@ class ZipSchematic (MCInfdevOldLevel):
         return self.zipfile.read(chunk.filename)
         
     def _saveChunk(self, chunk, data):
-        raise NotImplemented, "Cannot save zipfiles yet!"
+        raise NotImplementedError, "Cannot save zipfiles yet!"
         
     def saveInPlace(self):
-        raise NotImplemented, "Cannot save zipfiles yet!"
+        raise NotImplementedError, "Cannot save zipfiles yet!"
     
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
@@ -3110,7 +3110,7 @@ class ZipSchematic (MCInfdevOldLevel):
     
     def loadLevelDat(self, create, random_seed, last_played):
         if create:
-            raise NotImplemented, "Cannot save zipfiles yet!"
+            raise NotImplementedError, "Cannot save zipfiles yet!"
             
         with closing(self.zipfile.open("level.dat")) as f:
             with closing(gzip.GzipFile(fileobj=StringIO.StringIO(f.read()))) as g:
