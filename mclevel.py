@@ -1088,7 +1088,7 @@ class MCSchematic (MCLevel):
         return self.root_tag[Blocks].value
 
     @Blocks.setter        
-    def setBlocks(self, newval):
+    def Blocks(self, newval):
         self.root_tag[Blocks].value = newval
     
     @property
@@ -1097,7 +1097,7 @@ class MCSchematic (MCLevel):
         return self.root_tag[Data].value
 
     @Data.setter    
-    def setData(self, newval): 
+    def Data(self, newval): 
         self.root_tag[Data].value = newval
     
     @property
