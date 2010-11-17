@@ -1005,25 +1005,44 @@ class MCLevel(object):
         return tempSchematic
     
     def extractZipSchematic(self, box, zipfilename):
+        #converts classic blocks to alpha
+        #probably should only apply to alpha levels
+        
         p = self.adjustExtractionParameters(box);
         if p is None: return
-        box, destPoint = p
+        sourceBox, destPoint = p
         
         destPoint = (0,0,0)
         
         filename = tempfile.mktemp("schematic")
         
         tempSchematic = MCInfdevOldLevel(filename, create = True);
-        tempSchematic.createChunksInBox(BoundingBox(destPoint, box.size))
-        tempSchematic.copyBlocksFrom(self, box, destPoint)
+        
+        destBox = BoundingBox(destPoint, sourceBox.size);
+        
+        if ((sourceBox.origin[0] & 0xf == 0) and 
+            (sourceBox.origin[2] & 0xf == 0)):
+            #create chunks in the destination area corresponding only to chunks
+            #present in the source
+            chunks = sourceBox.chunkPositions
+            destChunks = destBox.chunkPositions
+            chunkIter = itertools.izip(chunks, destChunks)
+            
+            chunks = ( x[1] for x in chunkIter if self.containsChunk(*x[0]))
+            tempSchematic.createChunks(chunks)
+            
+        else:
+            tempSchematic.createChunksInBox(destBox)
+        
+        tempSchematic.copyBlocksFrom(self, sourceBox, destPoint)
         tempSchematic.saveInPlace(); #lights not needed for this format - crashes minecraft though
         
         schematicDat = TAG_Compound()
         schematicDat.name = "Mega Schematic"
         
-        schematicDat["Width"] = TAG_Int(box.size[0]);
-        schematicDat["Height"] = TAG_Int(box.size[1]);
-        schematicDat["Length"] = TAG_Int(box.size[2]);
+        schematicDat["Width"] = TAG_Int(sourceBox.size[0]);
+        schematicDat["Height"] = TAG_Int(sourceBox.size[1]);
+        schematicDat["Length"] = TAG_Int(sourceBox.size[2]);
         schematicDat.save(os.path.join(filename, "schematic.dat"))
         
         zipdir(filename, zipfilename)
