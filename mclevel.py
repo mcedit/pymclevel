@@ -388,11 +388,8 @@ class MCLevel(object):
             self.packChunkData();
             
             buf = StringIO.StringIO()
-            gzipper = gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)
-            
-                
-            self.root_tag.save(buf=gzipper)
-            gzipper.close();
+            with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
+                self.root_tag.save(buf=gzipper)
             
             self.compressedTag = buf.getvalue()
             
@@ -406,15 +403,14 @@ class MCLevel(object):
             else:
                 return;
         
-        gzipper = gzip.GzipFile(fileobj=StringIO.StringIO(self.compressedTag))
-        try:
-            data = gzipper.read();
-            if data == None: return;
-        except Exception, e:
-            error( u"Error reading compressed data, assuming uncompressed: {0}".format(e) )
-            data = self.compressedTag
+        with closing(gzip.GzipFile(fileobj=StringIO.StringIO(self.compressedTag))) as gzipper:
+            try:
+                data = gzipper.read();
+                if data == None: return;
+            except Exception, e:
+                error( u"Error reading compressed data, assuming uncompressed: {0}".format(e) )
+                data = self.compressedTag
             
-        gzipper.close();
 
         try:       
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
@@ -1288,9 +1284,9 @@ class MCSchematic (MCLevel):
         #root_tag[Materials] = nbt.TAG_String(materialNames[self.materials])
         #self.packChunkData();
         self.compress();
-        chunkfh = file(filename, 'wb')
-        chunkfh.write(self.compressedTag)
-        chunkfh.close()
+
+        with open(filename, 'wb') as chunkfh:
+            chunkfh.write(self.compressedTag)
         
         #self.root_tag.saveGzipped(filename);
         #self.unpackChunkData();
@@ -2021,9 +2017,8 @@ class MCInfdevOldLevel(MCLevel):
         #intended to be called on a second thread.
         #as a side effect, the operating system will have the given chunk files in the file cache.
         for c in chunks:
-            chunkfh = file(self._presentChunks[c].filename, 'rb')
-            self.compressedTags[c] = chunkfh.read();
-            chunkfh.close();
+            with open(self._presentChunks[c].filename, 'rb') as chunkfh:
+                self.compressedTags[c] = chunkfh.read();
     
     def compressAllChunks(self):
         for ch in self._presentChunks.itervalues():
@@ -3480,12 +3475,10 @@ class MCJavaLevel(MCLevel):
             pass;
         
         try:        
-            f = file(self.filename, 'wb')
-            f.write(s.getvalue());
-            
+            with open(self.filename, 'wb') as f:
+                f.write(s.getvalue());
         except Exception, e:
             info( u"Error while saving java level in place: {0}".format( e ) )
-            f.close()
             try:os.remove(self.filename);
             except: pass
             os.rename(self.filename + ".old", self.filename);
@@ -3494,7 +3487,6 @@ class MCJavaLevel(MCLevel):
             os.remove(self.filename + ".old");
         except Exception,e:
             pass;
-        f.close()
             
 ###xxxxx CHECK RESULTS
 def testJavaLevels():
