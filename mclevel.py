@@ -940,7 +940,7 @@ class MCLevel(object):
         entsRemoved = len(self.Entities) - len(newEnts);
         debug( "Removed {0} entities".format(entsRemoved))
         
-        self.Entities.list[:] = newEnts
+        self.Entities.value[:] = newEnts
         
         return entsRemoved
                 
