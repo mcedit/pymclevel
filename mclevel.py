@@ -2040,15 +2040,6 @@ class MCInfdevOldLevel(MCLevel):
 ##                            chunkfh.close();
                             
 
-##        for chunk in self._presentChunks.keys():
-##            self.loadChunk(*chunk);
-                        
-    def preloadInitialChunks(self, chunks):
-        #intended to be called on a second thread.
-        #as a side effect, the operating system will have the given chunk files in the file cache.
-        for c in chunks:
-            with open(self._presentChunks[c].filename, 'rb') as chunkfh:
-                self.compressedTags[c] = chunkfh.read();
     
     def compressAllChunks(self):
         for ch in self._presentChunks.itervalues():
