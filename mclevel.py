@@ -2869,12 +2869,69 @@ class MCInfdevOldLevel(MCLevel):
                 destPoint = (dx + x - ox, dy, dz + z - oz)
                 yield box, destPoint
         
-        i=0;
-        for box, destPoint in iterateSubsections():
-            info( "Subsection {0} at {1}".format(i, destPoint) )
-            temp = sourceLevel.extractSchematic(box);
-            self.copyBlocksFrom(temp, BoundingBox( (0,0,0), box.size ), destPoint);
-            i+= 1;
+        
+        destBox = BoundingBox(destinationPoint, sourceBox.size)
+        
+        def isChunkBox(box):
+            return box.isChunkAligned and box.miny == 0 and box.height == sourceLevel.Height
+        
+        if isChunkBox(sourceBox) and isChunkBox(destBox):
+            print "Copying with chunk alignment!"
+            cxoffset = destBox.mincx - sourceBox.mincx
+            czoffset = destBox.mincz - sourceBox.mincz
+            changedChunks = deque();
+            
+            for cx,cz in sourceBox.chunkPositions:
+                dcx = cx+cxoffset
+                dcz = cz+czoffset
+                try:
+                    sourceChunk = sourceLevel.getChunk(cx, cz);
+                    destChunk = self.getChunk(dcx, dcz);
+                except (ChunkNotPresent, ChunkMalformed), e:
+                    continue;
+                else:
+                    x = cx<<4
+                    z = cz<<4
+                    width = sourceBox.maxx-x;
+                    length = sourceBox.maxz-z;
+                    if width<16 or length<16:
+                        slices = (slice(0, width), slice(0, length), slice(None, None));
+                    else:
+                        slices = (slice(None, None))
+                        
+                    destChunk.Blocks[slices] = sourceChunk.Blocks[slices]
+                    destChunk.Data[slices] = sourceChunk.Data[slices]
+                    destChunk.BlockLight[slices] = sourceChunk.BlockLight[slices]
+                    destChunk.SkyLight[slices] = sourceChunk.SkyLight[slices]
+                    destChunk.HeightMap[slices] = sourceChunk.HeightMap[slices]
+                    destChunk.copyEntitiesFrom(sourceChunk, sourceBox, destinationPoint);
+                    
+                    changedChunks.append(destChunk);
+                    
+                    destChunk.dirty = True;
+                    destChunk.compress();
+                    
+            #calculate which chunks need lighting after the mass copy. 
+            #find non-changed chunks adjacent to changed ones and mark for light
+            changedChunkPositions = set([ch.chunkPosition for ch in changedChunks])
+            
+            for ch in changedChunks:
+                cx,cz = ch.chunkPosition
+                
+                for dx, dz in itertools.product( (-1, 0, 1), (-1, 0, 1) ):
+                    ncPos = (cx+dx, cz+dz);
+                    if ncPos not in changedChunkPositions:
+                        ch = self._presentChunks.get((cx,cz), None);
+                        if ch:
+                            ch.needsLighting = True
+                
+        else:  
+            i=0;
+            for box, destPoint in iterateSubsections():
+                info( "Subsection {0} at {1}".format(i, destPoint) )
+                temp = sourceLevel.extractSchematic(box);
+                self.copyBlocksFrom(temp, BoundingBox( (0,0,0), box.size ), destPoint);
+                i+= 1;
             
                     
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy = None):
