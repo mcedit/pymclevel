@@ -483,6 +483,8 @@ class mce(object):
     
     Imports a level or schematic into this world, beginning at destPoint.
     Supported formats include 
+    - Alpha single or multiplayer world folder containing level.dat,
+    - Zipfile containing Alpha world folder,
     - Classic single-player .mine, 
     - Classic multiplayer server_level.dat,
     - Indev .mclevel
