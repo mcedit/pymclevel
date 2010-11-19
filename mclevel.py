@@ -305,6 +305,12 @@ def decompress_first(func):
         return func(self, *args, **kw);
     dec_first.__doc__ = func.__doc__
     return dec_first
+def unpack_first(func):
+    def upk_first(self, *args, **kw):
+        self.unpackChunkData();
+        return func(self, *args, **kw);
+    upk_first.__doc__ = func.__doc__
+    return upk_first
     
 class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
@@ -425,11 +431,9 @@ class MCLevel(object):
             error( u"Incorrect chunk format in file: " + self.filename )
             self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
-            
-        self.unpackChunkData();
+        
+        self.dataIsPacked = True; 
     
-    def packChunkData(self): pass;
-    def unpackChunkData(self): pass;
     
     def compressChunk(self, x, z): pass
     def entitiesAt(self, x, y, z):
@@ -1102,20 +1106,26 @@ class MCSchematic (MCLevel):
     
     
     @property
-    @decompress_first        
+    @decompress_first     
+    @unpack_first   
     def Blocks(self):
         return self.root_tag[Blocks].value
 
     @Blocks.setter        
+    @decompress_first     
+    @unpack_first   
     def Blocks(self, newval):
         self.root_tag[Blocks].value = newval
     
     @property
-    @decompress_first        
+    @decompress_first     
+    @unpack_first   
     def Data(self):
         return self.root_tag[Data].value
 
     @Data.setter    
+    @decompress_first     
+    @unpack_first   
     def Data(self, newval): 
         self.root_tag[Data].value = newval
     
@@ -1214,7 +1224,7 @@ class MCSchematic (MCLevel):
             
             self.root_tag = root_tag;
         
-        self.unpackChunkData();
+        self.dataIsPacked = True;
             
     def shapeChunkData(self):
         w = self.root_tag[Width].value
@@ -1223,14 +1233,22 @@ class MCSchematic (MCLevel):
         
         self.root_tag[Blocks].value.shape=(h,l,w)
         self.root_tag[Data].value.shape=(h,l,w)
-       
-    def packChunkData(self):
+    
+   
+    def packUnpack(self):
         self.root_tag[Blocks].value = swapaxes(self.root_tag[Blocks].value, 0, 2)#yzx to xzy
         self.root_tag[Data].value = swapaxes(self.root_tag[Data].value, 0, 2)#yzx to xzy
-        
+    
+    def packChunkData(self):
+        if not self.dataIsPacked:
+            self.packUnpack()
+            self.dataIsPacked = True;
+            
     def unpackChunkData(self):
-        self.packChunkData();
-        
+        if self.dataIsPacked:
+            self.packUnpack()
+            self.dataIsPacked = False;
+            
     def rotateLeft(self):
         
         self.Blocks = swapaxes(self.Blocks, 1, 0)[:,::-1,:]; #x=z; z=-x
@@ -1511,7 +1529,8 @@ class InfdevChunk(MCLevel):
         
         self.root_tag = chunkTag
         self.shapeChunkData();
-        self.unpackChunkData();
+        self.dataIsPacked = True;
+        
         dx = os.path.join(self.world.worldDir, self.world.dirhash(cx))
         dz = os.path.join(dx, self.world.dirhash(cz))
         
@@ -1636,6 +1655,7 @@ class InfdevChunk(MCLevel):
                
     
     def unpackChunkData(self):
+        if not self.dataIsPacked: return
         """ for internal use.  call getChunk and compressChunk to load, compress, and unpack chunks automatically """
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
@@ -1649,8 +1669,11 @@ class InfdevChunk(MCLevel):
             
             
             self.root_tag[Level][key].value=unpackedData.reshape(16,16,128)
-         
+            self.dataIsPacked = False;
+            
     def packChunkData(self):
+        if self.dataIsPacked: return
+        
         if self.root_tag is None:
             warn( u"packChunkData called on unloaded chunk: {0}".format( self.chunkPosition ) )
             return;
@@ -1663,6 +1686,7 @@ class InfdevChunk(MCLevel):
             unpackedData[...,1] |= unpackedData[...,0]
             self.root_tag[Level][key].value=array(unpackedData[:,:,:,1])
             
+            self.dataIsPacked = True;
         
     def shapeChunkData(self):
         """Applies the chunk shape to all of the data arrays 
@@ -1692,6 +1716,7 @@ class InfdevChunk(MCLevel):
     
     @property
     @decompress_first        
+    @unpack_first
     def Data(self):
         return self.root_tag[Level][Data].value
     
@@ -1702,11 +1727,13 @@ class InfdevChunk(MCLevel):
     
     @property
     @decompress_first        
+    @unpack_first
     def SkyLight(self):
         return self.root_tag[Level][SkyLight].value
     
     @property
     @decompress_first        
+    @unpack_first
     def BlockLight(self):
         return self.root_tag[Level][BlockLight].value
         
