@@ -1130,27 +1130,12 @@ class MCSchematic (MCLevel):
         self.root_tag[Data].value = newval
     
     @property
-    @decompress_first        
-    def HeightMap(self):
-        return self.root_tag[HeightMap].value
-    
-    @property
-    @decompress_first        
-    def SkyLight(self):
-        return self.root_tag[SkyLight].value
-    
-    @property
-    @decompress_first        
-    def BlockLight(self):
-        return self.root_tag[BlockLight].value
-        
-    @property
-    @decompress_first        
+    @decompress_first     
     def Entities(self):
         return self.root_tag[Entities]
         
     @property
-    @decompress_first        
+    @decompress_first     
     def TileEntities(self):
         return self.root_tag[TileEntities]
     
