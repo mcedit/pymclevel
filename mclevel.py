@@ -1024,8 +1024,7 @@ class MCLevel(object):
         
         destBox = BoundingBox(destPoint, sourceBox.size);
         
-        if ((sourceBox.origin[0] & 0xf == 0) and 
-            (sourceBox.origin[2] & 0xf == 0)):
+        if (sourceBox.isChunkAligned):
             #create chunks in the destination area corresponding only to chunks
             #present in the source
             chunks = sourceBox.chunkPositions

@@ -100,7 +100,9 @@ class BoundingBox (object):
         return itertools.product(xrange(self.mincx,self.maxcx), xrange(self.mincz, self.maxcz));
         
     
-    
+    @property
+    def isChunkAligned(self):
+        return (self.origin[0] & 0xf == 0) and (self.origin[2] & 0xf == 0)
     
     def __contains__(self, pos):
         x,y,z = pos;
