@@ -1466,7 +1466,7 @@ class InfdevChunk(MCLevel):
         self.world.chunkDidCompress(self);
     
     def decompress(self):
-        if not self in self.world.decompressedChunks:
+        if not self in self.world.decompressedChunkQueue:
             MCLevel.decompress(self);
             self.world.chunkDidDecompress(self);
         
@@ -1953,8 +1953,8 @@ class MCInfdevOldLevel(MCLevel):
         self.dimensions = {};
         
         #used to limit memory usage
-        self.loadedChunks = dequeset()
-        self.decompressedChunks = dequeset()
+        self.loadedChunkQueue = dequeset()
+        self.decompressedChunkQueue = dequeset()
         
         self.loadLevelDat(create, random_seed, last_played);
                     
@@ -2054,23 +2054,23 @@ class MCInfdevOldLevel(MCLevel):
     
             
     def chunkDidCompress(self, chunk):
-        self.decompressedChunks.discard(chunk)
+        self.decompressedChunkQueue.discard(chunk)
     
     def chunkDidDecompress(self, chunk):
-        if not chunk in self.decompressedChunks:
-            self.decompressedChunks.append(chunk);
-            if self.decompressedChunkLimit and (len(self.decompressedChunks) > self.decompressedChunkLimit):
-                oldestChunk = self.decompressedChunks[0];
+        if not chunk in self.decompressedChunkQueue:
+            self.decompressedChunkQueue.append(chunk);
+            if self.decompressedChunkLimit and (len(self.decompressedChunkQueue) > self.decompressedChunkLimit):
+                oldestChunk = self.decompressedChunkQueue[0];
                 oldestChunk.compress(); #calls chunkDidCompress
     
     def chunkDidUnload(self, chunk):
-        self.loadedChunks.discard(chunk)
+        self.loadedChunkQueue.discard(chunk)
         
     def chunkDidLoad(self, chunk):
-        if not chunk in self.loadedChunks:
-            self.loadedChunks.append(chunk);
-            if self.loadedChunkLimit and (len(self.loadedChunks) > self.loadedChunkLimit):
-                oldestChunk = self.loadedChunks[0];
+        if not chunk in self.loadedChunkQueue:
+            self.loadedChunkQueue.append(chunk);
+            if self.loadedChunkLimit and (len(self.loadedChunkQueue) > self.loadedChunkLimit):
+                oldestChunk = self.loadedChunkQueue[0];
                 oldestChunk.unload(); #calls chunkDidUnload
     
     def _loadChunk(self, chunk):
@@ -3127,8 +3127,8 @@ class ZipSchematic (MCInfdevOldLevel):
         self.worldDir = tempdir
         
         #used to limit memory usage
-        self.loadedChunks = dequeset()
-        self.decompressedChunks = dequeset()
+        self.loadedChunkQueue = dequeset()
+        self.decompressedChunkQueue = dequeset()
         
         zf = ZipFile(filename)
         self.zipfile = zf
