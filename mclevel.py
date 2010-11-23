@@ -2871,8 +2871,12 @@ class MCInfdevOldLevel(MCLevel):
             cxoffset = destBox.mincx - sourceBox.mincx
             czoffset = destBox.mincz - sourceBox.mincz
             changedChunks = deque();
-            
+            i=0;
             for cx,cz in sourceBox.chunkPositions:
+                i+=1;
+                if i % 100 == 0:
+                    info("Chunk {0}...".format(i))
+                    
                 dcx = cx+cxoffset
                 dcz = cz+czoffset
                 try:
