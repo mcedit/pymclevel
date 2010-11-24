@@ -1302,7 +1302,8 @@ class MCSchematic (MCLevel):
         #root_tag[Data] = nbt.TAG_Byte_Array(swapaxes(self.Data.reshape(self.Width,self.Length,self.Height), 0, 2))
         #root_tag[Entities] = self.Entities;
         #root_tag[TileEntities] = self.TileEntities;
-        #root_tag[Materials] = nbt.TAG_String(materialNames[self.materials])
+        self.root_tag[Materials] = nbt.TAG_String(materialNames[self.materials])
+        
         #self.packChunkData();
         self.compress();
 
