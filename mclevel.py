@@ -2905,7 +2905,7 @@ class MCInfdevOldLevel(MCLevel):
                     changedChunks.append(destChunk);
                     
                     destChunk.dirty = True;
-                    destChunk.compress();
+                    destChunk.unload(); #also saves the chunk
                     
             #calculate which chunks need lighting after the mass copy. 
             #find non-changed chunks adjacent to changed ones and mark for light
