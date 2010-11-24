@@ -185,7 +185,7 @@ materials.blockTextures = [
             ), (
                 (49, 49, 49, 49, 49, 49), "Glass",#20: 
             )
-            ] + list(((64+i,)*6, "Unusable {0} Cloth".format(clothColors[i])) for i in range(14)) + [ #21-34:"Old Cloth",
+            ] + list(((NOTEX,)*6, "Unusable {0} Cloth".format(clothColors[i])) for i in range(14)) + [ #21-34:"Old Cloth",
             (
                 (64,)*6,        "White Wool Cloth"
             ), (
