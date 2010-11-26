@@ -451,6 +451,9 @@ class MCLevel(object):
         return itertools.product(xrange(0, self.Width+15>>4), xrange(0, self.Length+15>>4))
     
     @property
+    def presentChunks(self): return self.allChunks #backward compatibility
+    
+    @property
     def allChunks(self):
         return self.loadedChunks
         
