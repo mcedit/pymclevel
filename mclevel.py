@@ -1306,7 +1306,8 @@ class MCSchematic (MCLevel):
         #root_tag[Data] = nbt.TAG_Byte_Array(swapaxes(self.Data.reshape(self.Width,self.Length,self.Height), 0, 2))
         #root_tag[Entities] = self.Entities;
         #root_tag[TileEntities] = self.TileEntities;
-        #root_tag[Materials] = nbt.TAG_String(materialNames[self.materials])
+        self.root_tag[Materials] = nbt.TAG_String(materialNames[self.materials])
+        
         #self.packChunkData();
         self.compress();
 
@@ -2883,8 +2884,12 @@ class MCInfdevOldLevel(MCLevel):
             cxoffset = destBox.mincx - sourceBox.mincx
             czoffset = destBox.mincz - sourceBox.mincz
             changedChunks = deque();
-            
+            i=0;
             for cx,cz in sourceBox.chunkPositions:
+                i+=1;
+                if i % 100 == 0:
+                    info("Chunk {0}...".format(i))
+                    
                 dcx = cx+cxoffset
                 dcz = cz+czoffset
                 try:
@@ -2912,7 +2917,7 @@ class MCInfdevOldLevel(MCLevel):
                     changedChunks.append(destChunk);
                     
                     destChunk.dirty = True;
-                    destChunk.compress();
+                    destChunk.unload(); #also saves the chunk
                     
             #calculate which chunks need lighting after the mass copy. 
             #find non-changed chunks adjacent to changed ones and mark for light

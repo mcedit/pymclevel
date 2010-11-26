@@ -5,6 +5,9 @@ from numpy import *
 NOTEX = 184
 #wow, punching this map in would have been much easier in hex
 class MCMaterials(object):
+    def __repr__(self):
+        return "<MCMaterials ({0})>".format(self.name)
+        
     def materialNamed(self, name):
         return self.names.index(name);
 
@@ -27,6 +30,7 @@ clothColors = [
     "White",
     ]
 classicMaterials = MCMaterials();
+classicMaterials.name = "Classic"
 classicMaterials.blockTextures = [
             (
                 (NOTEX,)*6, "Air",
@@ -136,6 +140,7 @@ classicMaterials.lightEmission = zeros( (256,) );
 
 
 materials = MCMaterials();
+materials.name = "Alpha"
 materials.blockTextures = [
             (
                 (NOTEX,)*6, "Air", #0: 
@@ -180,7 +185,7 @@ materials.blockTextures = [
             ), (
                 (49, 49, 49, 49, 49, 49), "Glass",#20: 
             )
-            ] + list(((64+i,)*6, "Unusable {0} Cloth".format(clothColors[i])) for i in range(14)) + [ #21-34:"Old Cloth",
+            ] + list(((NOTEX,)*6, "Unusable {0} Cloth".format(clothColors[i])) for i in range(14)) + [ #21-34:"Old Cloth",
             (
                 (64,)*6,        "White Wool Cloth"
             ), (
