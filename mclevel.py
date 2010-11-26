@@ -2280,7 +2280,7 @@ class MCInfdevOldLevel(MCLevel):
         
         if self._allChunks is not None:
             if not (cx,cz) in self._allChunks:
-                return;
+                raise ChunkNotPresent, (cx,cz);
                 
         
         if not (cx,cz) in self._loadedChunks: 
