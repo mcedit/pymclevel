@@ -1814,7 +1814,7 @@ class MCInfdevOldLevel(MCLevel):
         if len(self.allChunks) == 0:
             return BoundingBox( (0,0,0), (0,0,0) )
             
-        allChunksArray = array(self.allChunks)
+        allChunksArray = array(list(self.allChunks), dtype='uint32')
         mincx = min(allChunksArray[:,0])
         maxcx = max(allChunksArray[:,0])
         mincz = min(allChunksArray[:,1])
