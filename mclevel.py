@@ -318,7 +318,7 @@ def unpack_first(func):
 class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
     including a common copyEntitiesFrom built on class-specific routines, and
-    a dummy getChunk/getPresentChunks for the finite levels.
+    a dummy getChunk/allChunks for the finite levels.
     
     MCLevel subclasses must have Width, Length, and Height attributes.  The first two are always zero for infinite levels.
     Subclasses must also have Blocks, and optionally Data and BlockLight.
