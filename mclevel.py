@@ -2984,6 +2984,8 @@ class MCInfdevOldLevel(MCLevel):
             
     def createChunk(self, cx, cz):
         if (cx,cz) in self._loadedChunks: raise ValueError, "{0}:Chunk {1} already present!".format(self, (cx,cz) )
+        if self._allChunks is not None: self._allChunks.add( (cx,cz) )
+                
         self._loadedChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
         self._bounds = None
     
@@ -3012,6 +3014,7 @@ class MCInfdevOldLevel(MCLevel):
     def deleteChunk(self, cx, cz):
         if not (cx,cz) in self._loadedChunks: return;
         self._loadedChunks[(cx,cz)].remove();
+        if self._allChunks is not None: self._allChunks.discard( (cx,cz) )
         
         del self._loadedChunks[(cx,cz)]
         self._bounds = None
