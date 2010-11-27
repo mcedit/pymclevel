@@ -3196,7 +3196,7 @@ class ZipSchematic (MCInfdevOldLevel):
     
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
-        self._allChunks = {}
+        self._allChunks = set()
         
         infos = self.zipfile.infolist()
         names = [i.filename.split('/') for i in infos]
