@@ -72,9 +72,15 @@ def untared_content(src):
         yield dest
 
 def launch_subprocess(directory, arguments, env = {}):
+    #my python breaks with an empty environ, i think it wants PATH
+    #if sys.platform == "win32":
+    newenv = {}
+    newenv.update(os.environ)
+    newenv.update(env);
+    
     proc = subprocess.Popen((["python.exe"] if sys.platform == "win32" else []) + [
             "./mce.py",
-            directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
+            directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=newenv)
             
     return proc
 
