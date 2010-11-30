@@ -2283,22 +2283,26 @@ class MCInfdevOldLevel(MCLevel):
         if chunks is None: chunks = self.allChunks;
         return [self.getChunk(cx,cz) for (cx,cz) in chunks if self.containsChunk(cx,cz)]
             
+    
+    def _makeChunk(self, cx,cz):
+        """return the chunk object at the given position, creating it if necessary.
+        because loading the chunk is done later, accesses to chunk attributes may
+        raise ChunkMalformed"""
+        
+        if not self.containsChunk(cx,cz):
+            raise ChunkNotPresent, (cx,cz);
+                
+        if not (cx,cz) in self._loadedChunks: 
+            self._loadedChunks[cx,cz] = InfdevChunk(self, (cx, cz));
+        
+        return self._loadedChunks[cx,cz]
         
     def getChunk(self, cx, cz):
         """ read the chunk from disk, load it, and return it. 
         decompression and unpacking is done lazily."""
         
-        if self._allChunks is not None:
-            if not (cx,cz) in self._allChunks:
-                raise ChunkNotPresent, (cx,cz);
-                
         
-        if not (cx,cz) in self._loadedChunks: 
-            self._loadedChunks[cx,cz] = InfdevChunk(self, (cx, cz));
-    
-            
-            #raise ChunkNotPresent, "Chunk {0} not present".format((cx,cz))
-        c = self._loadedChunks[cx,cz]
+        c = self._makeChunk(cx,cz)
         c.load();
         if not (cx,cz) in self._loadedChunks:
             raise ChunkMalformed, "Chunk {0} malformed".format((cx,cz))
