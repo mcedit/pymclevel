@@ -2480,14 +2480,14 @@ class MCInfdevOldLevel(MCLevel):
                     print "Chunk error during relight, chunk skipped: ", e
                     continue;
                     
-                for dir,dx,dy,dz in ( (FaceXDecreasing,-1,0,0), 
-                                      (FaceXIncreasing,1,0,0), 
-                                      (FaceZDecreasing,0,0, -1), 
-                                      (FaceZIncreasing,0,0, 1) ):
-                   try:
-                       neighboringChunks[dir] = self.getChunk(cx+dx,cz+dz)
-                   except (ChunkNotPresent, ChunkMalformed):
-                       neighboringChunks[dir] = zeroChunk;
+                for dir,dx,dz in ( (FaceXDecreasing,-1,0), 
+                                      (FaceXIncreasing,1,0), 
+                                      (FaceZDecreasing,0, -1), 
+                                      (FaceZIncreasing,0, 1) ):
+                    try:
+                        neighboringChunks[dir] = self.getChunk(cx+dx,cz+dz)
+                    except (ChunkNotPresent, ChunkMalformed):
+                        neighboringChunks[dir] = zeroChunk;
                 
                 
                 chunkLa = la[chunk.Blocks]+1;
