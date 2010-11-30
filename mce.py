@@ -438,9 +438,9 @@ class mce(object):
         blockCounts = zeros( (256,), 'uint64')
         sizeOnDisk = 0;
         
-        print "Analyzing {0} chunks...".format(len(self.level.presentChunks))
+        print "Analyzing {0} chunks...".format(len(self.level.allChunks))
         
-        for i, cPos in enumerate(self.level.presentChunks, 1):
+        for i, cPos in enumerate(self.level.allChunks, 1):
             ch = self.level.getChunk(*cPos);
             counts = bincount(ch.Blocks.ravel())
             blockCounts[:counts.shape[0]] += counts
@@ -585,7 +585,7 @@ class mce(object):
         print "Dumping signs..."
         signCount = 0;
         
-        for i, cPos in enumerate(self.level.presentChunks):
+        for i, cPos in enumerate(self.level.allChunks):
             try:
                 chunk = self.level.getChunk(*cPos);
             except mclevel.ChunkMalformed:
@@ -649,7 +649,7 @@ class mce(object):
             print "Removing all entities except Painting..."
             def match(entityID): return entityID != "Painting";
             
-        for cx,cz in self.level.presentChunks:
+        for cx,cz in self.level.allChunks:
             chunk = self.level.getChunk(cx,cz)
             entitiesRemoved = 0;
             
@@ -692,10 +692,9 @@ class mce(object):
         
         box = self.readBox(command)
         
-        oldChunkCount = len(self.level.presentChunks)
-        self.level.createChunksInBox(box)
+        chunksCreated = self.level.createChunksInBox(box)
         
-        print "Created {0} chunks." .format(len(self.level.presentChunks)-oldChunkCount)
+        print "Created {0} chunks." .format(len(chunksCreated))
         
         self.needsSave = True;
 
@@ -712,10 +711,9 @@ class mce(object):
         
         box = self.readBox(command)
         
-        oldChunkCount = len(self.level.presentChunks)
-        self.level.deleteChunksInBox(box)
+        deletedChunks = self.level.deleteChunksInBox(box)
         
-        print "Deleted {0} chunks." .format(oldChunkCount-len(self.level.presentChunks))
+        print "Deleted {0} chunks." .format(len(deletedChunks))
         
     def _prune(self, command):
         """
@@ -730,14 +728,13 @@ class mce(object):
         
         box = self.readBox(command)
         
-        oldChunkCount = len(self.level.presentChunks)
-        
-        
-        for cx,cz in self.level.presentChunks:
+        i=0;
+        for cx,cz in self.level.allChunks:
             if cx < box.mincx or cx >= box.maxcx or cz < box.mincz or cz >= box.maxcz:
                 self.level.deleteChunk(cx,cz)
+                i+=1;
                 
-        print "Pruned {0} chunks." .format(oldChunkCount-len(self.level.presentChunks))
+        print "Pruned {0} chunks." .format(i)
     
     def _relight(self, command):
         """
@@ -751,7 +748,7 @@ class mce(object):
             chunks = itertools.product(range(box.mincx, box.maxcx),range(box.mincz, box.maxcz))
         
         else:
-            chunks = self.level.presentChunks
+            chunks = self.level.allChunks
             
         self.level.generateLights(chunks)
         

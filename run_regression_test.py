@@ -169,6 +169,9 @@ def main(argv):
 
     with untared_content("regression_test/alpha.tar.gz") as directory:
         test_data = os.path.join(directory, "alpha")
+        passes = []
+        fails = []
+        
         for func, name, sha, args in alpha_tests:
             if any(fnmatch.fnmatch(name, x) for x in do_these_regressions):
                 if options.profile:
@@ -177,9 +180,15 @@ def main(argv):
                 try:
                     func(test_data, sha, args)
                 except RegressionError, e:
-                    print "Regression {0} failed: {1}".format(name, e)
+                    fails.append( "Regression {0} failed: {1}".format(name, e) )
+                    print fails[-1]
                 else:
-                    print "Regression {0!r} complete.".format(name)
+                    passes.append( "Regression {0!r} complete.".format(name) )
+                    print passes[-1]
+        
+        print "{0} tests passed.".format(len(passes))
+        for line in fails: print line;
+        
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

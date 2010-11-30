@@ -41,10 +41,13 @@ ourworld = mclevel.fromFile("C:\\Minecraft\\OurWorld");
 # Convenience method to load a numbered world from the saves folder.
 world1 = mclevel.loadWorldNumber(1);
 
-# Find out which chunks are present
-chunkPositions = world1.presentChunks
+# Find out which chunks are present. Doing this will scan the chunk folders the
+# first time it is used. If you already know where you want to be, skip to 
+# world1.getChunk(xPos, zPos)
 
-# presentChunks returns a list of tuples (xPos, zPos)
+chunkPositions = world1.allChunks
+
+# allChunks returns a list of tuples (xPos, zPos)
 xPos, zPos = chunkPositions[0];
 
 # retrieve an InfdevChunk object. getChunk is a special method;  
@@ -315,7 +318,7 @@ def unpack_first(func):
 class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
     including a common copyEntitiesFrom built on class-specific routines, and
-    a dummy getChunk/getPresentChunks for the finite levels.
+    a dummy getChunk/allChunks for the finite levels.
     
     MCLevel subclasses must have Width, Length, and Height attributes.  The first two are always zero for infinite levels.
     Subclasses must also have Blocks, and optionally Data and BlockLight.
@@ -337,6 +340,7 @@ class MCLevel(object):
     players = ["Player"]
     dimNo = 0;
     parentWorld = None
+    world = None
     @classmethod
     def isLevel(cls, filename):
         """Tries to find out whether the given filename can be loaded
@@ -422,14 +426,14 @@ class MCLevel(object):
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
         except Exception, e:
             error( u"Malformed NBT data in file: {0} ({1})".format(self.filename, e) )
-            self.world.malformedChunk(*self.chunkPosition);
+            if self.world: self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
             
         try:
             self.shapeChunkData()
         except KeyError:
             error( u"Incorrect chunk format in file: " + self.filename )
-            self.world.malformedChunk(*self.chunkPosition);
+            if self.world: self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
         
         self.dataIsPacked = True; 
@@ -442,18 +446,22 @@ class MCLevel(object):
         return None
     def addEntity(self, *args): pass
     def addTileEntity(self, *args): pass
-    
-    def loadChunk(self, cx, cz ):
-        pass;
-    
+
     @property
-    def presentChunks(self):
+    def loadedChunks(self):
         return itertools.product(xrange(0, self.Width+15>>4), xrange(0, self.Length+15>>4))
     
+    @property
+    def presentChunks(self): return self.allChunks #backward compatibility
+    
+    @property
+    def allChunks(self):
+        return self.loadedChunks
+        
     def getChunk(self, cx, cz):
         #if not hasattr(self, 'whiteLight'):
             #self.whiteLight = array([[[15] * self.Height] * 16] * 16, uint8);
-    
+            
         class FakeChunk:
             def load(self):pass
             def compress(self):pass
@@ -696,6 +704,9 @@ class MCLevel(object):
         '''
         info( u"Identifying " + filename )
         
+        class LoadingError(RuntimeError): pass
+        
+        
         if not filename:
             raise IOError, "File not found: "+filename
         if not os.path.exists(filename):
@@ -761,10 +772,13 @@ class MCLevel(object):
         except Exception, e:
             info( u"Error during NBT load: {0!r}".format(e) )
             info( u"Fallback: Detected compressed flat block array, yzx ordered " )
-            lev = MCJavaLevel(filename, data);
-            lev.compressed = compressed;
-            return lev;
-            
+            try:
+                lev = MCJavaLevel(filename, data);
+                lev.compressed = compressed;
+                return lev;
+            except Exception, e2:
+                raise LoadingError, ("Multiple errors encountered", e, e2)
+                 
         else:
             if(MCIndevLevel._isTagLevel(root_tag)):
                 info( u"Detected Indev .mclevel" )
@@ -1456,7 +1470,10 @@ class InfdevChunk(MCLevel):
         
         if create:
             self.create();
-    
+        else:
+            if not world.containsChunk(*chunkPosition):
+                raise ChunkNotPresent("File not found: {0}", self.filename)
+
     def compress(self):
         
         if not self.dirty: 
@@ -1804,14 +1821,14 @@ class MCInfdevOldLevel(MCLevel):
         return False
         
     def getWorldBounds(self):
-        if len(self.presentChunks) == 0:
+        if len(self.allChunks) == 0:
             return BoundingBox( (0,0,0), (0,0,0) )
             
-        presentChunksArray = array(self.presentChunks)
-        mincx = min(presentChunksArray[:,0])
-        maxcx = max(presentChunksArray[:,0])
-        mincz = min(presentChunksArray[:,1])
-        maxcz = max(presentChunksArray[:,1])
+        allChunksArray = array(list(self.allChunks), dtype='int32')
+        mincx = min(allChunksArray[:,0])
+        maxcx = max(allChunksArray[:,0])
+        mincz = min(allChunksArray[:,1])
+        maxcz = max(allChunksArray[:,1])
         
         origin = (mincx << 4, 0, mincz << 4)
         size = ((maxcx-mincx+1) << 4, 128, (maxcz-mincz+1) << 4)
@@ -1950,7 +1967,8 @@ class MCInfdevOldLevel(MCLevel):
         self.filename = os.path.join(self.worldDir, "level.dat")
                 
         #maps (cx,cz) pairs to InfdevChunks    
-        self._presentChunksDict = None;
+        self._loadedChunks = {}
+        self._allChunks = None
         self.dimensions = {};
         
         #used to limit memory usage
@@ -2008,7 +2026,7 @@ class MCInfdevOldLevel(MCLevel):
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
         worldDirs = os.listdir(self.worldDir);
-        self._presentChunksDict = {};
+        self._allChunks = set()
         
         for dirname in worldDirs:
             if(dirname in self.dirhashes):
@@ -2030,25 +2048,20 @@ class MCInfdevOldLevel(MCLevel):
                             except Exception, e:
                                 info( 'Skipped file {0} ({1})'.format('.'.join(c), e) )
                                 continue
-                            self._presentChunks[ (cx, cz) ] = InfdevChunk(self, (cx, cz));
                             
-        info( u"Found {0} chunks.".format(len(self._presentChunks)) )
-        
-                            #self._presentChunks.update(dict(zip(chunks, fullpaths)));
-##                        for filename, chunk in zip(fullpaths, chunks):
-##                            chunkfh = file(filename, 'rb')
-##                            self.compressedTags[chunk] = chunkfh.read();
-##                            chunkfh.close();
+                            self._allChunks.add( (cx,cz) )
                             
+                            #
+                            
+        info( u"Found {0} chunks.".format(len(self.allChunks)) )
 
-    
     def compressAllChunks(self):
-        for ch in self._presentChunks.itervalues():
+        for ch in self._loadedChunks.itervalues():
             ch.compress();
             
     def compressChunk(self, x, z):
-        if not (x,z) in self._presentChunks: return; #not an error
-        self._presentChunks[x,z].compress()
+        if not (x,z) in self._loadedChunks: return; #not an error
+        self._loadedChunks[x,z].compress()
     
     decompressedChunkLimit = 2048 # about 320 megabytes
     loadedChunkLimit = 8192 # from 8mb to 800mb depending on chunk contents
@@ -2088,7 +2101,7 @@ class MCInfdevOldLevel(MCLevel):
     def chunkFilenameAt(self, x, y, z):
         cx = x >> 4
         cz = z >> 4
-        return self._presentChunks.get( (cx, cz) ).filename
+        return self._loadedChunks.get( (cx, cz) ).filename
     
     base36alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
     def decbase36(self, s):
@@ -2253,51 +2266,64 @@ class MCInfdevOldLevel(MCLevel):
         #the heightmap is ordered differently because in minecraft it is a flat array
     
     @property
-    def presentChunks(self):
-        return self._presentChunks.keys();
-    
+    def loadedChunks(self):
+        return self._loadedChunks.keys();
+        
     @property
-    def _presentChunks(self): 
-        if self._presentChunksDict is None:
-            self.preloadChunkPaths();
-        return self._presentChunksDict
+    def allChunks(self):
+        if self._allChunks is None:
+            self.preloadChunkPaths()
+        return self._allChunks;
+    
     
     def getChunks(self, chunks = None):
         """ pass a list of chunk coordinate tuples to get a list of InfdevChunks. 
         pass nothing for a list of every chunk in the level. 
         the chunks are automatically loaded."""
-        if chunks is None: chunks = self.presentChunks;
-        return [self.getChunk(cx,cz) for (cx,cz) in chunks if (cx,cz) in self._presentChunks]
+        if chunks is None: chunks = self.allChunks;
+        return [self.getChunk(cx,cz) for (cx,cz) in chunks if self.containsChunk(cx,cz)]
             
+    
+    def _makeChunk(self, cx,cz):
+        """return the chunk object at the given position, creating it if necessary.
+        because loading the chunk is done later, accesses to chunk attributes may
+        raise ChunkMalformed"""
+        
+        if not self.containsChunk(cx,cz):
+            raise ChunkNotPresent, (cx,cz);
+                
+        if not (cx,cz) in self._loadedChunks: 
+            self._loadedChunks[cx,cz] = InfdevChunk(self, (cx, cz));
+        
+        return self._loadedChunks[cx,cz]
         
     def getChunk(self, cx, cz):
         """ read the chunk from disk, load it, and return it. 
         decompression and unpacking is done lazily."""
         
         
-        if not (cx,cz) in self._presentChunks: 
-            raise ChunkNotPresent, "Chunk {0} not present".format((cx,cz))
-        c = self._presentChunks[cx,cz]
+        c = self._makeChunk(cx,cz)
         c.load();
-        if not (cx,cz) in self._presentChunks:
+        if not (cx,cz) in self._loadedChunks:
             raise ChunkMalformed, "Chunk {0} malformed".format((cx,cz))
             self.world.malformedChunk(*self.chunkPosition);
             
         return c;
 
     def markDirtyChunk(self, cx, cz):
-        if not (cx,cz) in self._presentChunks: return
-        self._presentChunks[cx,cz].chunkChanged();
+        if not (cx,cz) in self._loadedChunks: return
+        self._loadedChunks[cx,cz].chunkChanged();
     
     def saveInPlace(self):
         for level in self.dimensions.itervalues():
             level.saveInPlace(True);
 
         dirtyChunkCount = 0;
-        for chunk in self._presentChunks.itervalues():
-            if chunk.dirty: 
-                dirtyChunkCount += 1;
-            chunk.save();
+        if self._loadedChunks:
+            for chunk in self._loadedChunks.itervalues():
+                if chunk.dirty: 
+                    dirtyChunkCount += 1;
+                chunk.save();
         
         
         self.root_tag.save(self.filename);
@@ -2311,11 +2337,12 @@ class MCInfdevOldLevel(MCLevel):
         startTime = datetime.now();
         
         if dirtyChunks is None:
-            dirtyChunks = filter(lambda x: x.needsLighting, self._presentChunks.values());
+            dirtyChunks = (ch for ch in self._loadedChunks.itervalues() if ch.needsLighting)
         else:
-            dirtyChunks = [self._presentChunks[c] for c in dirtyChunks if c in self._presentChunks];
-        
-        dirtyChunks = sorted(list(dirtyChunks), key=lambda x:x.chunkPosition) 
+            dirtyChunks = (self._makeChunk(*c) for c in dirtyChunks if self.containsChunk(*c))
+            
+        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
+         
         
         #at 150k per loaded chunk, 
         maxLightingChunks = 4000
@@ -2383,8 +2410,8 @@ class MCInfdevOldLevel(MCLevel):
             #relight all blocks in neighboring chunks in case their light source disappeared.
             cx,cz = ch.chunkPosition
             for dx,dz in itertools.product( (-1, 0, 1), (-1, 0, 1) ):
-                if (cx+dx,cz+dz) in self._presentChunks:
-                    dirtyChunks.add(self._presentChunks[(cx+dx,cz+dz)]);
+                if (cx+dx,cz+dz) in self._loadedChunks:
+                    dirtyChunks.add(self._loadedChunks[(cx+dx,cz+dz)]);
         
         dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition) 
                    
@@ -2453,14 +2480,14 @@ class MCInfdevOldLevel(MCLevel):
                     print "Chunk error during relight, chunk skipped: ", e
                     continue;
                     
-                for dir,dx,dy,dz in ( (FaceXDecreasing,-1,0,0), 
-                                      (FaceXIncreasing,1,0,0), 
-                                      (FaceZDecreasing,0,0, -1), 
-                                      (FaceZIncreasing,0,0, 1) ):
-                   try:
-                       neighboringChunks[dir] = self.getChunk(cx+dx,cz+dz)
-                   except (ChunkNotPresent, ChunkMalformed):
-                       neighboringChunks[dir] = zeroChunk;
+                for dir,dx,dz in ( (FaceXDecreasing,-1,0), 
+                                      (FaceXIncreasing,1,0), 
+                                      (FaceZDecreasing,0, -1), 
+                                      (FaceZIncreasing,0, 1) ):
+                    try:
+                        neighboringChunks[dir] = self.getChunk(cx+dx,cz+dz)
+                    except (ChunkNotPresent, ChunkMalformed):
+                        neighboringChunks[dir] = zeroChunk;
                 
                 
                 chunkLa = la[chunk.Blocks]+1;
@@ -2719,7 +2746,7 @@ class MCInfdevOldLevel(MCLevel):
             
     
     def getAllChunkSlices(self):
-        for cpos in self.presentChunks:    
+        for cpos in self.allChunks:    
             xPos, zPos = cpos
             try:
                 chunk = self.getChunk(xPos, zPos)
@@ -2917,7 +2944,7 @@ class MCInfdevOldLevel(MCLevel):
                 for dx, dz in itertools.product( (-1, 0, 1), (-1, 0, 1) ):
                     ncPos = (cx+dx, cz+dz);
                     if ncPos not in changedChunkPositions:
-                        ch = self._presentChunks.get((cx,cz), None);
+                        ch = self._loadedChunks.get((cx,cz), None);
                         if ch:
                             ch.needsLighting = True
                 
@@ -2957,17 +2984,21 @@ class MCInfdevOldLevel(MCLevel):
         return self.containsChunk(x>>4, z>>4)
     
     def containsChunk(self, cx, cz):
-        return (cx, cz) in self._presentChunks;
+        if self._allChunks is not None: return (cx, cz) in self._allChunks;
+        if (cx,cz) in self._loadedChunks: return True;
+        return os.path.exists(self.chunkFilename(cx,cz))
     
     def malformedChunk(self, cx, cz):
         debug( u"Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
-        if (cx,cz) in self._presentChunks:
-            del self._presentChunks[(cx,cz)]
+        if (cx,cz) in self._loadedChunks:
+            del self._loadedChunks[(cx,cz)]
             self._bounds = None
             
     def createChunk(self, cx, cz):
-        if (cx,cz) in self._presentChunks: raise ValueError, "{0}:Chunk {1} already present!".format(self, (cx,cz) )
-        self._presentChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
+        if (cx,cz) in self._loadedChunks: raise ValueError, "{0}:Chunk {1} already present!".format(self, (cx,cz) )
+        if self._allChunks is not None: self._allChunks.add( (cx,cz) )
+                
+        self._loadedChunks[cx,cz] = InfdevChunk(self, (cx,cz), create = True)
         self._bounds = None
     
     def createChunks(self, chunks):
@@ -2976,7 +3007,7 @@ class MCInfdevOldLevel(MCLevel):
         ret = [];
         for cx,cz in chunks:
             i+=1;
-            if not ((cx,cz) in self._presentChunks):
+            if not ((cx,cz) in self._loadedChunks):
                 ret.append( (cx,cz) )
                 self.createChunk(cx,cz);
                 self.compressChunk(cx,cz);
@@ -2993,20 +3024,25 @@ class MCInfdevOldLevel(MCLevel):
         return self.createChunks(box.chunkPositions);
         
     def deleteChunk(self, cx, cz):
-        if not (cx,cz) in self._presentChunks: return;
-        self._presentChunks[(cx,cz)].remove();
+        if not (cx,cz) in self._loadedChunks: return;
+        self._loadedChunks[(cx,cz)].remove();
+        if self._allChunks is not None: self._allChunks.discard( (cx,cz) )
         
-        del self._presentChunks[(cx,cz)]
+        del self._loadedChunks[(cx,cz)]
         self._bounds = None
         
     def deleteChunksInBox(self, box):
         info( u"Deleting {0} chunks in {1}".format((box.maxcx-box.mincx)*( box.maxcz-box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))) )
         i=0;
+        ret = [];
         for cx,cz in itertools.product(xrange(box.mincx,box.maxcx), xrange(box.mincz, box.maxcz)):
             i+=1;
-            if ((cx,cz) in self._presentChunks):
+            if self.containsChunk(cx,cz):
                 self.deleteChunk(cx,cz);
+                ret.append( (cx,cz) )
+                
             assert not self.containsChunk(cx,cz), "Just deleted {0} but it didn't take".format((cx,cz))
+            
             if i%100 == 0:
                 info( u"Chunk {0}...".format( i ) )
         
@@ -3137,7 +3173,8 @@ class ZipSchematic (MCInfdevOldLevel):
         
         zf = ZipFile(filename)
         self.zipfile = zf
-        self._presentChunksDict = None;
+        self._loadedChunks = {};
+        self._allChunks = None
         self.dimensions = {};
         self.loadLevelDat(False, 0, 0)
         
@@ -3172,9 +3209,12 @@ class ZipSchematic (MCInfdevOldLevel):
     def saveInPlace(self):
         raise NotImplementedError, "Cannot save zipfiles yet!"
     
+    def containsChunk(self, cx, cz):
+        return (cx,cz) in self.allChunks
+        
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
-        self._presentChunksDict = {}
+        self._allChunks = set()
         
         infos = self.zipfile.infolist()
         names = [i.filename.split('/') for i in infos]
@@ -3188,9 +3228,10 @@ class ZipSchematic (MCInfdevOldLevel):
                 except Exception, e:
                     info( 'Skipped file {0} ({1})'.format('.'.join(c), e) )
                     continue
-                self._presentChunksDict[ (cx, cz) ] = InfdevChunk(self, (cx, cz));
-            
-        info( u"Found {0} chunks.".format(len(self._presentChunksDict)) )
+                #self._loadedChunks[ (cx, cz) ] = InfdevChunk(self, (cx, cz));
+                self._allChunks.add( (cx,cz) )
+                
+        info( u"Found {0} chunks.".format(len(self._allChunks)) )
         
         
     def preloadDimensions(self):
@@ -3605,7 +3646,7 @@ def testAlphaLevels():
     indevlevel = MCLevel.fromFile("hell.mclevel")
     
     level = MCInfdevOldLevel(filename="d:\Testworld");
-    for ch in level.presentChunks: level.deleteChunk(*ch)
+    for ch in level.allChunks: level.deleteChunk(*ch)
     level.createChunksInBox( BoundingBox((0,0,0), (32, 0, 32)) )
     level.copyBlocksFrom(indevlevel, BoundingBox((0,0,0), (256, 128, 256)), (-0, 0, 0)) 
     assert all(level.getChunk(0,0).Blocks[0:16,0:16,0:indevlevel.Height] == indevlevel.conversionTableFromLevel(level)[indevlevel.Blocks[0:16,0:16,0:indevlevel.Height]]);
