@@ -704,6 +704,9 @@ class MCLevel(object):
         '''
         info( u"Identifying " + filename )
         
+        class LoadingError(RuntimeError): pass
+        
+        
         if not filename:
             raise IOError, "File not found: "+filename
         if not os.path.exists(filename):
@@ -769,10 +772,13 @@ class MCLevel(object):
         except Exception, e:
             info( u"Error during NBT load: {0!r}".format(e) )
             info( u"Fallback: Detected compressed flat block array, yzx ordered " )
-            lev = MCJavaLevel(filename, data);
-            lev.compressed = compressed;
-            return lev;
-            
+            try:
+                lev = MCJavaLevel(filename, data);
+                lev.compressed = compressed;
+                return lev;
+            except Exception, e2:
+                raise LoadingError, ("Multiple errors encountered", e, e2)
+                 
         else:
             if(MCIndevLevel._isTagLevel(root_tag)):
                 info( u"Detected Indev .mclevel" )
