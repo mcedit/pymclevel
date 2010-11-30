@@ -340,6 +340,7 @@ class MCLevel(object):
     players = ["Player"]
     dimNo = 0;
     parentWorld = None
+    world = None
     @classmethod
     def isLevel(cls, filename):
         """Tries to find out whether the given filename can be loaded
@@ -425,14 +426,14 @@ class MCLevel(object):
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
         except Exception, e:
             error( u"Malformed NBT data in file: {0} ({1})".format(self.filename, e) )
-            self.world.malformedChunk(*self.chunkPosition);
+            if self.world: self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
             
         try:
             self.shapeChunkData()
         except KeyError:
             error( u"Incorrect chunk format in file: " + self.filename )
-            self.world.malformedChunk(*self.chunkPosition);
+            if self.world: self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
         
         self.dataIsPacked = True; 
