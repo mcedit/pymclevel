@@ -1464,9 +1464,9 @@ class InfdevChunk(MCLevel):
         if create:
             self.create();
         else:
-            if not os.path.exists(self.filename):
+            if not world.containsChunk(*chunkPosition):
                 raise ChunkNotPresent("File not found: {0}", self.filename)
-    
+
     def compress(self):
         
         if not self.dirty: 
@@ -3197,6 +3197,9 @@ class ZipSchematic (MCInfdevOldLevel):
     def saveInPlace(self):
         raise NotImplementedError, "Cannot save zipfiles yet!"
     
+    def containsChunk(self, cx, cz):
+        return (cx,cz) in self.allChunks
+        
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
         self._allChunks = set()
