@@ -91,7 +91,7 @@ class BoundingBox (object):
     
     maximum = property(getMaximum, None, None, "The endpoint of the box; origin plus size.")
     
-    def getVolume(self): return reduce(int.__mul__, self.size)
+    def getVolume(self): return reduce(lambda a,b:a*b, self.size)
     volume = property(getVolume, None, None, "The volume of the box in blocks")
     
     @property
