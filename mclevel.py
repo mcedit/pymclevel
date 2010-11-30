@@ -2337,11 +2337,12 @@ class MCInfdevOldLevel(MCLevel):
         startTime = datetime.now();
         
         if dirtyChunks is None:
-            dirtyChunks = filter(lambda x: x.needsLighting, self._loadedChunks.values());
+            dirtyChunks = (ch for ch in self._loadedChunks.itervalues() if ch.needsLighting)
         else:
-            dirtyChunks = [self._loadedChunks[c] for c in dirtyChunks if c in self._loadedChunks];
-        
-        dirtyChunks = sorted(list(dirtyChunks), key=lambda x:x.chunkPosition) 
+            dirtyChunks = (self._makeChunk(*c) for c in dirtyChunks if self.containsChunk(*c))
+            
+        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
+         
         
         #at 150k per loaded chunk, 
         maxLightingChunks = 4000
