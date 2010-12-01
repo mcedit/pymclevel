@@ -1551,10 +1551,6 @@ class InfdevChunk(MCLevel):
         self.dirty = True;
         self.save();
     
-    def remove(self):
-        os.remove(self.filename)
-        self.root_tag = None
-                
     def save(self):
         """ does not recalculate any data or light """
         debug( u"Saving chunk: {0}".format(self) )
@@ -3024,11 +3020,15 @@ class MCInfdevOldLevel(MCLevel):
         return self.createChunks(box.chunkPositions);
         
     def deleteChunk(self, cx, cz):
-        if not (cx,cz) in self._loadedChunks: return;
-        self._loadedChunks[(cx,cz)].remove();
+        filename = self.chunkFilename(cx,cz)
+        if os.path.exists(filename):
+            os.remove(filename)
+        
         if self._allChunks is not None: self._allChunks.discard( (cx,cz) )
         
-        del self._loadedChunks[(cx,cz)]
+        if (cx,cz) in self._loadedChunks: 
+            del self._loadedChunks[(cx,cz)]
+            
         self._bounds = None
         
     def deleteChunksInBox(self, box):
