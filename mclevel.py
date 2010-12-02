@@ -2316,7 +2316,7 @@ class MCInfdevOldLevel(MCLevel):
 
         dirtyChunkCount = 0;
         if self._loadedChunks:
-            for chunk in self._loadedChunks.itervalues():
+            for chunk in self._loadedChunks.values():
                 if chunk.dirty: 
                     dirtyChunkCount += 1;
                 chunk.save();
