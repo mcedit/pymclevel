@@ -2292,6 +2292,13 @@ class MCInfdevOldLevel(MCLevel):
             self._loadedChunks[cx,cz] = InfdevChunk(self, (cx, cz));
         
         return self._loadedChunks[cx,cz]
+    
+    def chunkIsLoaded(self, cx, cz):
+        if (cx,cz) in self._loadedChunks:
+            if self._loadedChunks[(cx,cz)].root_tag is not None:
+                return True
+                
+        return False
         
     def getChunk(self, cx, cz):
         """ read the chunk from disk, load it, and return it. 
