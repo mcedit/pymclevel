@@ -494,7 +494,9 @@ class MCLevel(object):
         return (cx >=0 and cx < (self.Width+15 >> 4) and
                 cz >=0 and cz < (self.Length+15 >> 4))
 
-    
+    def chunkIsLoaded(self, cx, cz):
+        return self.containsChunk(cx,cz)
+        
     def lightsForChunk(self, cx, cz):
         return None;
     def skyLightForChunk(self, cx, cz):
