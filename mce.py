@@ -729,7 +729,7 @@ class mce(object):
         box = self.readBox(command)
         
         i=0;
-        for cx,cz in self.level.allChunks:
+        for cx,cz in list(self.level.allChunks):
             if cx < box.mincx or cx >= box.maxcx or cz < box.mincz or cz >= box.maxcz:
                 self.level.deleteChunk(cx,cz)
                 i+=1;
