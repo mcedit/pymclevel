@@ -2297,7 +2297,8 @@ class MCInfdevOldLevel(MCLevel):
     
     def chunkIsLoaded(self, cx, cz):
         if (cx,cz) in self._loadedChunks:
-            if self._loadedChunks[(cx,cz)].root_tag is not None:
+            if( self._loadedChunks[(cx,cz)].compressedTag is not None or 
+                self._loadedChunks[(cx,cz)].root_tag is not None):
                 return True
                 
         return False
