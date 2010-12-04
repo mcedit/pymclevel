@@ -3056,7 +3056,8 @@ class MCInfdevOldLevel(MCLevel):
             if i%100 == 0:
                 info( u"Chunk {0}...".format( i ) )
         
-        
+        return ret
+    
     def setPlayerSpawnPosition(self, pos):
         xyz = ["SpawnX", "SpawnY", "SpawnZ"]
         for name, val in zip(xyz, pos):
