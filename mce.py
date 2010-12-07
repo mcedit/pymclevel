@@ -1205,11 +1205,15 @@ class mce(object):
             while True:
                 try:
                     command = raw_input("{0}> ".format(self.level.displayName))
-                    if len(command) == 0: continue
+                    command = command.strip();
                     print
                     
+                    if len(command) == 0: continue
+                
+                    if command[0] == "#": continue
                     commandWords = command.split()
                     self.processCommand(commandWords)
+                    
                 except EOFError, e:
                     print "End of file. Saving automatically."
                     self._save([]);
