@@ -3014,7 +3014,7 @@ class MCInfdevOldLevel(MCLevel):
         ret = [];
         for cx,cz in chunks:
             i+=1;
-            if not ((cx,cz) in self._loadedChunks):
+            if not self.containsChunk(cx,cz):
                 ret.append( (cx,cz) )
                 self.createChunk(cx,cz);
                 self.compressChunk(cx,cz);
