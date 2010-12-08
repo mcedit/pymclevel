@@ -994,20 +994,20 @@ class mce(object):
             print "You probably want to change your spawn point. I suggest {0}".format( (spawnx, spawny, spawnz) )
             
     def _execute(self, command):
-		"""
+        """
     execute <filename>
     Execute all commands in a file and save.
     """
-		if len(command) == 0:
-			print "You must give the file with commands to execute"
-		else:
-			commandFile = open(command[0],"r")
-			commandsFromFile = commandFile.readlines()
-			for commandFromFile in commandsFromFile:
-				print commandFromFile
-				self.processCommand(commandFromFile.split())
-			self._save("")
-		
+        if len(command) == 0:
+            print "You must give the file with commands to execute"
+        else:
+            commandFile = open(command[0],"r")
+            commandsFromFile = commandFile.readlines()
+            for commandFromFile in commandsFromFile:
+                print commandFromFile
+                self.processCommand(commandFromFile)
+            self._save("")
+        
     def _quit(self, command):
         """
     quit [ yes | no ]
@@ -1025,7 +1025,7 @@ class mce(object):
             self._save(command);
 
         raise SystemExit
-		
+        
     def _exit(self, command):
         self._quit(command)
         
@@ -1193,7 +1193,7 @@ class mce(object):
         if len(sys.argv):
             #process one command from command line
             try:
-                self.processCommand(sys.argv)
+                self.processCommand(" ".join(sys.argv))
             except UsageError:
                 self.printUsageAndQuit();
             self._save([]);
@@ -1205,14 +1205,8 @@ class mce(object):
             while True:
                 try:
                     command = raw_input("{0}> ".format(self.level.displayName))
-                    command = command.strip();
                     print
-                    
-                    if len(command) == 0: continue
-                
-                    if command[0] == "#": continue
-                    commandWords = command.split()
-                    self.processCommand(commandWords)
+                    self.processCommand(command)
                     
                 except EOFError, e:
                     print "End of file. Saving automatically."
@@ -1228,7 +1222,15 @@ class mce(object):
                     
                 
     def processCommand(self, command):
-        keyword = command.pop(0).lower()
+        command = command.strip();
+                    
+        if len(command) == 0: return
+    
+        if command[0] == "#": return
+        
+        commandWords = command.split()
+        
+        keyword = commandWords.pop(0).lower()
         if not keyword in self.commands:
             matches = filter(lambda x:x.startswith(keyword), self.commands);
             if len(matches) == 1:
@@ -1244,7 +1246,7 @@ class mce(object):
         func = getattr(self, "_" + keyword)
         
         try:
-            func(command)
+            func(commandWords)
         except PlayerNotFound, e:
             print "Cannot find player {0}".format(e.args[0])
             self._player([])
