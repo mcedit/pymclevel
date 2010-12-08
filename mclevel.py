@@ -2180,8 +2180,10 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x&0xf;
         zInChunk = z&0xf;
         
-        self.lightsForChunk(xc,zc)[xInChunk,zInChunk,y] = newLight
-
+        ch = self.getChunk(xc,zc)
+        ch.BlockLight[xInChunk, zInChunk, y] = newLight
+        ch.chunkChanged(False)
+        
     def blockDataAt(self, x, y, z):
         if y < 0 or y >= self.Height: return 0
         zc=z>>4
@@ -2202,8 +2204,9 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x&0xf;
         zInChunk = z&0xf;
 
-        
-        self.blockDataForChunk(xc,zc)[xInChunk, zInChunk, y] = newdata
+        ch = self.getChunk(xc,zc)
+        ch.Data[xInChunk, zInChunk, y] = newdata
+        ch.chunkChanged(False)
         
     def blockAt(self, x, y, z):
         """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
@@ -2225,7 +2228,9 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x & 0xf;
         zInChunk = z & 0xf;
 
-        self.blocksForChunk(xc,zc)[xInChunk, zInChunk, y] = blockID
+        ch = self.getChunk(xc,zc)
+        ch.Blocks[xInChunk, zInChunk, y] = blockID
+        ch.chunkChanged(False)
 
     def skylightAt(self, x, y, z):
 
@@ -2248,11 +2253,14 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x & 0xf;
         zInChunk = z & 0xf;
 
-        skyLight = self.skyLightForChunk(xc,zc)
+        ch = self.getChunk(xc,zc)
+        skyLight = ch.SkyLight
         
         oldValue = skyLight[xInChunk, zInChunk, y]
             
-        if oldValue < lightValue: skyLight[xInChunk, zInChunk, y] = lightValue
+        ch.chunkChanged(False)
+        if oldValue < lightValue: 
+            skyLight[xInChunk, zInChunk, y] = lightValue
         return oldValue < lightValue
     
     def heightMapAt(self, x, z):
