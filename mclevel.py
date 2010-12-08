@@ -2328,6 +2328,10 @@ class MCInfdevOldLevel(MCLevel):
         if not (cx,cz) in self._loadedChunks: return
         self._loadedChunks[cx,cz].chunkChanged();
     
+    def markDirtyBox(self, box):
+        for cx,cz in box.chunkPositions:
+            self.markDirtyChunk(cx,cz)
+            
     def saveInPlace(self):
         for level in self.dimensions.itervalues():
             level.saveInPlace(True);
