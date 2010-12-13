@@ -963,7 +963,23 @@ class MCLevel(object):
         self.Entities.value[:] = newEnts
         
         return entsRemoved
-                
+        
+    def removeTileEntitiesInBox(self, box):
+        
+        if not hasattr(self, "TileEntities"): return;
+        newEnts = [];
+        for ent in self.TileEntities:
+            if map(lambda x:x.value, (ent[a] for a in "xyz")) in box: 
+                continue;
+            newEnts.append(ent);
+            
+        entsRemoved = len(self.TileEntities) - len(newEnts);
+        debug( "Removed {0} tile entities".format(entsRemoved))
+        
+        self.TileEntities.value[:] = newEnts
+        
+        return entsRemoved      
+              
     def generateLights(self, dirtyChunks = None):
         pass;
         
@@ -1707,6 +1723,10 @@ class InfdevChunk(MCLevel):
     def removeEntitiesInBox(self, box):
         self.dirty = True;
         return MCLevel.removeEntitiesInBox(self, box)
+        
+    def removeTileEntitiesInBox(self, box):
+        self.dirty = True;
+        return MCLevel.removeTileEntitiesInBox(self, box)
         
         
     @property
@@ -2701,6 +2721,14 @@ class MCInfdevOldLevel(MCLevel):
             count += chunk.removeEntitiesInBox(box);
             chunk.compress();
         info( "Removed {0} entities".format(count) )
+        return count;
+        
+    def removeTileEntitiesInBox(self, box):
+        count = 0;
+        for chunk, slices, point in self.getChunkSlices(box):
+            count += chunk.removeTileEntitiesInBox(box);
+            chunk.compress();
+        info( "Removed {0} tile entities".format(count) )
         return count;
             
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
