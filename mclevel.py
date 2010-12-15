@@ -474,6 +474,9 @@ class MCLevel(object):
         
         f.Blocks = self.blocksForChunk(cx, cz)
         
+        
+        f.Data = self.dataForChunk(cx, cz)
+        
         whiteLight = zeros_like(f.Blocks);
         whiteLight[:] = 15;
         
@@ -515,6 +518,16 @@ class MCLevel(object):
         #    b = resize(b, (16,16,h) )
         return b;
     
+    def dataForChunk(self, cx, cz):
+        cxOff = cx << 4
+        czOff = cz << 4
+        
+        if hasattr(self, "Data"):
+            return self.Data[cxOff:cxOff+16, czOff:czOff+16, 0:self.Height, ];
+            
+        else:
+            return zeros(shape=(16, 16, self.Height), dtype='uint8')
+            
     def skylightAt(self, *args):
         return 15
 
