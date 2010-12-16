@@ -217,7 +217,7 @@ materials.blockTextures = [
             ), (
                 (37, 37, 37, 37, 37, 37), "Obsidian",#49: 
             ), (
-                (80, 80, 80, 80, 80, 80), "Torch",#50: 
+                (0x50,)*6, "Torch",#50: 
             ), (
                 (0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,),   "Fire",#51:  XXXXX
             ), (
@@ -445,7 +445,7 @@ def texCoords(idx):
     
     return ( (idx & 0xf) << 4 , (idx & 0xf0) ) 
 
-materials.blockTextures = array([map(texCoords, faces) for (faces, name) in materials.blockTextures], dtype='uint8')
-classicMaterials.blockTextures = array([map(texCoords, faces) for (faces, name) in classicMaterials.blockTextures], dtype='uint8')
+materials.blockTextures = array([map(texCoords, faces) for (faces, name) in materials.blockTextures], dtype='float32')
+classicMaterials.blockTextures = array([map(texCoords, faces) for (faces, name) in classicMaterials.blockTextures], dtype='float32')
 
 alphaMaterials = materials;
