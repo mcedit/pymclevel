@@ -559,9 +559,13 @@ class MCLevel(object):
         return self.Blocks[x:x+w,z:z+l,y:y+h]
     
     def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
-        if box is None: box = self.bounds
+        if box is None: 
+            box = self.bounds
+        else:
+            box = box.intersect(self.bounds)
         
         info( u"Filling blocks in {0} with {1}, data={2} replacing{3}".format(box, blockType, blockData, blocksToReplace) )
+        
         slices = map(slice, box.origin, box.maximum)
         
         blocks = self.Blocks[slices[0],slices[2],slices[1]]
