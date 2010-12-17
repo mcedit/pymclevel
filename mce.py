@@ -936,12 +936,9 @@ class mce(object):
             imgobj = Image.open(filename)
             
             greyimg = imgobj.convert("L") #luminance
-            
-            imgarray = numpy.asarray(greyimg)
+            del imgobj
             
             width, height = greyimg.size
-            
-            imgarray = imgarray / 2; #scale to 0-127
             
             water_level = 64  
             
@@ -956,13 +953,17 @@ class mce(object):
                     except:
                         pass
                     c = self.level.getChunk(cx,cz)
+                    
+                    imgarray = numpy.asarray(greyimg.crop( (cx*16, cz*16, cx*16+16, cz*16+16) ))
+                    imgarray = imgarray / 2; #scale to 0-127
+            
                     for x in range(16):
                         for z in range(16):
                             if z+(cz*16) < width-1 and x+(cx*16) < height-1:
                                 #world dimension X goes north-south
                                 #first array axis goes up-down
                                 
-                                h = imgarray[x+(cx*16),z+(cz*16)]
+                                h = imgarray[x,z]
                                 
                                 c.Blocks[x,z,h+1:] = 0 #air
                                 c.Blocks[x,z,h:h+1] = 2 #grass
@@ -990,7 +991,7 @@ class mce(object):
             
             spawnz = width / 2
             spawnx = height / 2;
-            spawny = imgarray[spawnx, spawnz];
+            spawny = greyimg.getpixel((spawnx, spawnz))
             print "You probably want to change your spawn point. I suggest {0}".format( (spawnx, spawny, spawnz) )
             
     def _execute(self, command):
