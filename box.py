@@ -104,6 +104,27 @@ class BoundingBox (object):
     def isChunkAligned(self):
         return (self.origin[0] & 0xf == 0) and (self.origin[2] & 0xf == 0)
     
+    def intersect(self, box):
+        """ return a box containing the area self and box have in common"""
+        newbox = BoundingBox()
+        
+        if self.minx > box.maxx or self.maxx < box.minx: return BoundingBox()
+        newbox.minx = max(self.minx, box.minx)
+        newbox.maxx = min(self.maxx, box.maxx)
+        
+        if self.miny > box.maxy or self.maxy < box.miny: return BoundingBox()
+        newbox.miny = max(self.miny, box.miny)
+        newbox.maxy = min(self.maxy, box.maxy)
+        if self.minz > box.maxz or self.maxz < box.minz: return BoundingBox()
+        newbox.minz = max(self.minz, box.minz)
+        newbox.maxz = min(self.maxz, box.maxz)
+        
+        
+        
+        print "Intersect of {0} and {1}: {2}".format(self, box, newbox)
+        return newbox
+        
+    
     def __contains__(self, pos):
         x,y,z = pos;
         if x<self.minx or x>=self.maxx: return False
