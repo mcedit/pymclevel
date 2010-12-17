@@ -1049,11 +1049,11 @@ class MCLevel(object):
     def extractSchematic(self, box):
         p = self.adjustExtractionParameters(box);
         if p is None: return
-        box, destPoint = p
+        newbox, destPoint = p
         
         tempSchematic = MCSchematic(shape=box.size)
         tempSchematic.materials = self.materials
-        tempSchematic.copyBlocksFrom(self, box, destPoint)
+        tempSchematic.copyBlocksFrom(self, newbox, destPoint)
         
         return tempSchematic
     
