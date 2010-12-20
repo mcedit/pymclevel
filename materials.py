@@ -205,7 +205,7 @@ materials.blockTextures = [
             ), (
                 (5, 5, 6, 6, 5, 5), "Double stone stair step",#43: 
             ), (
-                (5, 5, 6, 6, 5, 5), "Single stone stair step",#44: 
+                (5, 5, 6, 6, 5, 5), "Single stone stair half step",#44: 
             ), (
                 (7, 7, 7, 7, 7, 7), "Red brick tile",#45: 
             ), (
