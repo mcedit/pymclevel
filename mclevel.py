@@ -1785,9 +1785,11 @@ class InfdevChunk(MCLevel):
         return self.root_tag[Level][TileEntities]
     
     @property
+    @decompress_first        
     def TerrainPopulated(self):
         return self.root_tag[Level]["TerrainPopulated"].value;
     @TerrainPopulated.setter
+    @decompress_first        
     def TerrainPopulated(self, val):
         """True or False. If False, the game will populate the chunk with 
         ores and vegetation on next load"""
