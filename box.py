@@ -124,7 +124,17 @@ class BoundingBox (object):
         print "Intersect of {0} and {1}: {2}".format(self, box, newbox)
         return newbox
         
-    
+    def union(self, box):
+        newbox = BoundingBox()
+        newbox.minx = min(self.minx, box.minx)
+        newbox.maxx = max(self.maxx, box.maxx)
+        
+        newbox.miny = min(self.miny, box.miny)
+        newbox.maxy = max(self.maxy, box.maxy)
+        newbox.minz = min(self.minz, box.minz)
+        newbox.maxz = max(self.maxz, box.maxz)
+        return newbox
+        
     def __contains__(self, pos):
         x,y,z = pos;
         if x<self.minx or x>=self.maxx: return False
