@@ -145,7 +145,7 @@ materials.blockTextures = [
             (
                 (NOTEX,)*6, "Air", #0: 
             ), (
-                (1, 1, 1, 1, 1, 1), "Rock", #1: 
+                (1, 1, 1, 1, 1, 1), "Stone", #1: 
             ), (
                 (3, 3, 0, 2, 3, 3), "Grass", #2:
             ), (
@@ -157,7 +157,7 @@ materials.blockTextures = [
             ), (
                 (15, 15, 15, 15, 15, 15), "Sapling",  #6: 
             ), (
-                (17, 17, 17, 17, 17, 17), "Adminium", #7: 
+                (17, 17, 17, 17, 17, 17), "Bedrock / Adminium", #7: 
             ), (
                 (0xdf, 0xdf, 0xdf, 0xdf, 0xdf, 0xdf), "Water", #8: 
             ), (
