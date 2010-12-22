@@ -810,7 +810,7 @@ class mce(object):
         
         self.level.fillBlocks(box,
                               self.level.materials.materialNamed("Air"),
-                              blocksToReplace=[self.level.materials.materialNamed("Adminium"),
+                              blocksToReplace=[7,
                                 self.level.materials.materialNamed("Obsidian"),
                                 self.level.materials.materialNamed("Fire"),
                                 self.level.materials.materialNamed("Lava"),
