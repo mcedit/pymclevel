@@ -687,6 +687,8 @@ class MCLevel(object):
             sourceBox.size[1] -=y+sourceBox.size[1]-self.Height
             y=self.Height-sourceBox.size[1]
         
+        #for infinite levels, don't clip along those dimensions because the 
+        #infinite copy func will just skip missing chunks
         if self.Width != 0:
             if x<0: 
                 sourceBox.origin[0] -=x
