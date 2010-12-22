@@ -2110,6 +2110,9 @@ class MCInfdevOldLevel(MCLevel):
                             
         info( u"Found {0} chunks.".format(len(self.allChunks)) )
 
+    def compress(self):
+        self.compressAllChunks();
+        
     def compressAllChunks(self):
         for ch in self._loadedChunks.itervalues():
             ch.compress();
