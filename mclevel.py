@@ -320,6 +320,11 @@ class MCLevel(object):
     including a common copyEntitiesFrom built on class-specific routines, and
     a dummy getChunk/allChunks for the finite levels.
     
+    MCLevel also provides compress and decompress methods that are used to load
+    NBT format levels, and expects subclasses to override shapeChunkData to 
+    assign a shape to the Blocks and other arrays. The resulting arrays after 
+    reshape must be indexed [x,z,y]
+    
     MCLevel subclasses must have Width, Length, and Height attributes.  The first two are always zero for infinite levels.
     Subclasses must also have Blocks, and optionally Data and BlockLight.
     """
@@ -382,6 +387,18 @@ class MCLevel(object):
     @property
     def bounds(self):
         return BoundingBox( (0,0,0), self.size )
+    
+    def packChunkData(self):
+        """called before compression"""
+        pass
+    def unpackChunkData(self):
+        """called when accessing attributes decorated with @unpack_first"""
+        pass
+        
+    def shapeChunkData(self):
+        """called during the default decompress(), should assign a shape to the
+        Blocks, Data, Light, SkyLight, HeightMap attributes if present """
+        pass
         
     def compressedSize(self):
         "return the size of the compressed data for this level, in bytes."
@@ -406,6 +423,7 @@ class MCLevel(object):
         self.root_tag = None
         
     def decompress(self):
+        """called when accessing attributes decorated with @decompress_first"""
         if self.root_tag != None: return
         if self.compressedTag is None: 
             if self.root_tag is None:
