@@ -1321,8 +1321,15 @@ class MCSchematic (MCLevel):
                 
                 entity[p][0].value = newX
                 entity[p][2].value = newZ
-            entity["Rotation"][0].value += 90.0
-        
+            entity["Rotation"][0].value -= 90.0
+            if entity["id"].value == "Painting":
+                x, z = entity["TileX"].value, entity["TileZ"].value
+                newx = z
+                newz = self.Length - x - 1
+                
+                entity["TileX"].value, entity["TileZ"].value = newx, newz
+                entity["Dir"].value = (entity["Dir"].value + 1) % 4
+                
         for tileEntity in self.TileEntities:
             newX = tileEntity["z"].value
             newZ = self.Length - tileEntity["x"].value - 1
