@@ -954,9 +954,9 @@ class mce(object):
                         pass
                     c = self.level.getChunk(cx,cz)
                     
-                    imgarray = numpy.asarray(greyimg.crop( (cx*16, cz*16, cx*16+16, cz*16+16) ))
+                    imgarray = numpy.asarray(greyimg.crop( (cz*16, cx*16, cz*16+16, cx*16+16) ))
                     imgarray = imgarray / 2; #scale to 0-127
-            
+                
                     for x in range(16):
                         for z in range(16):
                             if z+(cz*16) < width-1 and x+(cx*16) < height-1:
