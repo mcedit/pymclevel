@@ -490,10 +490,10 @@ class MCLevel(object):
         f = FakeChunk()
         f.world = self;
         
-        f.Blocks = self.blocksForChunk(cx, cz)
+        f.Blocks = self.fakeBlocksForChunk(cx, cz)
         
         
-        f.Data = self.dataForChunk(cx, cz)
+        f.Data = self.fakeDataForChunk(cx, cz)
         
         whiteLight = zeros_like(f.Blocks);
         whiteLight[:] = 15;
@@ -518,12 +518,8 @@ class MCLevel(object):
     def chunkIsLoaded(self, cx, cz):
         return self.containsChunk(cx,cz)
         
-    def lightsForChunk(self, cx, cz):
-        return None;
-    def skyLightForChunk(self, cx, cz):
-        return None;
     
-    def blocksForChunk(self, cx, cz):
+    def fakeBlocksForChunk(self, cx, cz):
         #return a 16x16xH block array for rendering.  Alpha levels can
         #just return the chunk data.  other levels need to reorder the
         #indices and return a slice of the blocks.
@@ -536,7 +532,8 @@ class MCLevel(object):
         #    b = resize(b, (16,16,h) )
         return b;
     
-    def dataForChunk(self, cx, cz):
+    def fakeDataForChunk(self, cx, cz):
+        #Data is emulated for flexibility
         cxOff = cx << 4
         czOff = cz << 4
         
@@ -2214,23 +2211,7 @@ class MCInfdevOldLevel(MCLevel):
     def chunkFilepath(self, cx, cz):
         return self.chunkFilename(cx,cz)
         #return os.path.join( self.worldDir, self.chunkFilename(cx, cz) )
-    
-    def blocksForChunk(self, cx, cz):
-        return self.getChunk(cx, cz).Blocks;
-        
-    def lightsForChunk(self, cx, cz):
-        return self.getChunk(cx, cz).BlockLight;
 
-    def heightMapForChunk(self, cx, cz):
-        return self.getChunk(cx, cz).HeightMap;
-    
-    def skyLightForChunk(self, cx, cz):
-        return self.getChunk(cx, cz).SkyLight;
-    
-    def blockDataForChunk(self, cx, cz):
-        return self.getChunk(cx, cz).Data;
-    
-        
     def blockLightAt(self, x, y, z):
         if y < 0 or y >= self.Height: return 0
         zc=z >> 4
@@ -2238,7 +2219,9 @@ class MCInfdevOldLevel(MCLevel):
         
         xInChunk = x&0xf;
         zInChunk = z&0xf;
-        return self.lightsForChunk(xc,zc)[xInChunk,zInChunk,y]
+        ch = self.getChunk(xc,zc)
+        
+        return ch.BlockLight[xInChunk,zInChunk,y]
         
         
     def setBlockLightAt(self, x, y, z, newLight):
@@ -2261,7 +2244,9 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x&0xf;
         zInChunk = z&0xf;
         
-        return self.blockDataForChunk(xc,zc)[xInChunk,zInChunk,y]
+        ch = self.getChunk(xc,zc)
+        
+        return ch.Data[xInChunk,zInChunk,y]
 
         
     def setBlockDataAt(self, x,y,z, newdata):
@@ -2286,7 +2271,8 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x & 0xf;
         zInChunk = z & 0xf;
 
-        return self.blocksForChunk(xc,zc)[xInChunk, zInChunk, y]
+        ch = self.getChunk(xc,zc)
+        return ch.Blocks[xInChunk, zInChunk, y]
         
     def setBlockAt(self, x, y, z, blockID):
         """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
@@ -2310,8 +2296,10 @@ class MCInfdevOldLevel(MCLevel):
 
         xInChunk = x & 0xf;
         zInChunk = z & 0xf
-
-        return self.skyLightForChunk(xc,zc)[xInChunk, zInChunk, y]
+        
+        ch = self.getChunk(xc,zc)
+        
+        return ch.SkyLight[xInChunk, zInChunk, y]
 
         
     def setSkylightAt(self, x, y, z, lightValue):
@@ -2336,8 +2324,11 @@ class MCInfdevOldLevel(MCLevel):
         zc=z>>4
         xc=x>>4
         
-        heightMap = self.heightMapForChunk(xc,zc)
-        return heightMap[z&0xf][x&0xf]; 
+        ch = self.getChunk(xc,zc)
+        
+        heightMap = ch.HeightMap
+
+        return heightMap[zc,xc]; 
         #the heightmap is ordered differently because in minecraft it is a flat array
     
     @property
@@ -2891,11 +2882,11 @@ class MCInfdevOldLevel(MCLevel):
                 newMinZ = localMinZ + (cz << 4) - box.minz
                 newMaxZ = localMaxZ + (cz << 4) - box.minz
                 try:
-                    blocks = level.blocksForChunk(cx, cz)
+                    ch = level.getChunk(cx, cz)
                 except ChunkNotPresent, e:
                     continue;
                 
-                yield           (level.getChunk(cx, cz),
+                yield           (ch,
                                 (slice(localMinX,localMaxX),slice(localMinZ,localMaxZ),slice(box.miny,box.maxy)),  
                                 (newMinX, 0, newMinZ))
                 
@@ -3353,14 +3344,8 @@ class ZipSchematic (MCInfdevOldLevel):
         
 class MCIndevLevel(MCLevel):
     
-    """ IMPORTANT: self.Blocks and self.Data are indexed with [y,z,x]
-    because that's how the array appears"""
-    #def neighborsAndBlock(self, x, y, z):
-##    def blocksForChunk(self, cx, cz):
-##        return self.Blocks[:,
-##                           cz*self.chunkSize:cz*self.chunkSize+self.chunkSize,
-##                           cx*self.chunkSize:cx*self.chunkSize+self.chunkSize]
-##
+    """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis 
+    swapping to be consistent with infinite levels."""
 
     def setPlayerSpawnPosition(self, pos):
         assert len(pos) == 3
@@ -3724,7 +3709,6 @@ def testJavaLevels():
     indevlevel = MCLevel.fromFile("hell.mclevel")
     
     creativelevel = MCLevel.fromFile("Dojo_64_64_128.dat");
-    creativelevel.blocksForChunk(0,0);
     creativelevel.copyBlocksFrom(indevlevel, BoundingBox((0,0,0), (64,64,64,)), (0,0,0) )
     assert(all(indevlevel.Blocks[0:64,0:64,0:64] == creativelevel.Blocks[0:64,0:64,0:64])) 
     
@@ -3736,7 +3720,6 @@ def testIndevLevels():
     
     srclevel = MCLevel.fromFile("hell.mclevel")
     indevlevel = MCLevel.fromFile("hueg.mclevel")
-    indevlevel.blocksForChunk(0,0);
     indevlevel.copyBlocksFrom(srclevel, BoundingBox((0,0,0), (64,64,64,)), (0,0,0) ) 
     assert(all(indevlevel.Blocks[0:64,0:64,0:64] == srclevel.Blocks[0:64,0:64,0:64])) 
     indevlevel.fillBlocks(BoundingBox((0,0,0), (64,64,64,)), 12, 0, [1,2])
