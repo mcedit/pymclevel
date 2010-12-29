@@ -2323,12 +2323,14 @@ class MCInfdevOldLevel(MCLevel):
     def heightMapAt(self, x, z):
         zc=z>>4
         xc=x>>4
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
         
         ch = self.getChunk(xc,zc)
         
         heightMap = ch.HeightMap
 
-        return heightMap[zc,xc]; 
+        return heightMap[zInChunk,xInChunk]; 
         #the heightmap is ordered differently because in minecraft it is a flat array
     
     @property
