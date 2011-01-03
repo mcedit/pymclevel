@@ -2107,7 +2107,7 @@ class MCInfdevOldLevel(MCLevel):
                             try:
                                 cx, cz = (self.decbase36(c[1]), self.decbase36(c[2]))
                             except Exception, e:
-                                info( 'Skipped file {0} ({1})'.format('.'.join(c), e) )
+                                info( u'Skipped file {0} ({1})'.format(u'.'.join(c), e) )
                                 continue
                             
                             self._allChunks.add( (cx,cz) )
