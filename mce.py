@@ -923,7 +923,7 @@ class mce(object):
             self.printUsage("heightmap")
             return
 
-        if raw_input(
+        if not sys.stdin.isatty() or raw_input(
      "This will destroy a large portion of the map and may take a long time.  Did you really want to do this?"
      ).lower() in ("yes", "y", "1", "true"):
          
