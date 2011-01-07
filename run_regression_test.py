@@ -152,6 +152,7 @@ alpha_tests = [
     (do_test,               'relight',  'e0cf60c62adfdb313f198af5314c31f89d158c12', ['relight']),
     (do_test,               'replace',  'd73767293e903b6d1c49c1838eb1849b69d83ad8', ['replace', 'Water', 'with', 'Lava']),
     (do_test,               'fill',     'f4f57c3d902b6894031d416cb9279232e7e24bd7', ['fill', 'Water']),
+    (do_test,               'heightmap',     '9e7460d39c8e0456789cf89fee45276db2719aaa', ['heightmap', 'regression_test/mars.png']),
 ]
 
 import optparse
