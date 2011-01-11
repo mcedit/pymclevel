@@ -484,7 +484,7 @@ class MCLevel(object):
             def load(self):pass
             def compress(self):pass
             def __init__(self):pass
-            
+            def chunkChanged(self):pass
             
             
         f = FakeChunk()
@@ -505,6 +505,70 @@ class MCLevel(object):
         
         return f
         
+    def getAllChunkSlices(self):
+        slices = ( slice(None),slice(None),slice(None), )
+        
+        for cpos in self.allChunks:    
+            xPos, zPos = cpos
+            try:
+                chunk = self.getChunk(xPos, zPos)
+            except (ChunkMalformed, ChunkNotPresent):
+                continue
+                
+            
+            yield ( chunk, slices, (xPos * 16, 0, zPos * 16) )
+            
+              
+    def getChunkSlices(self, box):
+        """ call this method to iterate through a large slice of the world by 
+            visiting each chunk and indexing its data with a subslice.
+        
+        this returns an iterator, which yields 3-tuples containing:
+        +  an InfdevChunk object, 
+        +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays, 
+        +  a x,y,z triplet representing the relative location of this subslice within the requested world slice.
+        
+        
+        """
+        level = self
+        
+        #offsets of the block selection into the chunks on the edge
+        minxoff, minzoff = box.minx-(box.mincx<<4), box.minz-(box.mincz<<4);
+        maxxoff, maxzoff = box.maxx-(box.maxcx<<4)+16, box.maxz-(box.maxcz<<4)+16;
+        
+    
+        for cx in range(box.mincx, box.maxcx):
+            localMinX=0
+            localMaxX=16
+            if cx==box.mincx: 
+                localMinX=minxoff
+    
+            if cx==box.maxcx-1:
+                localMaxX=maxxoff
+            newMinX = localMinX + (cx << 4) - box.minx
+            newMaxX = localMaxX + (cx << 4) - box.minx
+            
+                            
+            for cz in range(box.mincz, box.maxcz):
+                localMinZ=0
+                localMaxZ=16
+                if cz==box.mincz: 
+                    localMinZ=minzoff
+                if cz==box.maxcz-1:
+                    localMaxZ=maxzoff
+                newMinZ = localMinZ + (cz << 4) - box.minz
+                newMaxZ = localMaxZ + (cz << 4) - box.minz
+                try:
+                    ch = level.getChunk(cx, cz)
+                except ChunkNotPresent, e:
+                    continue;
+                
+                yield           (ch,
+                                (slice(localMinX,localMaxX),slice(localMinZ,localMaxZ),slice(box.miny,box.maxy)),  
+                                (newMinX, 0, newMinZ))
+                
+
+                
     def containsPoint(self, x, y, z):
         return (x >=0 and x < self.Width and
                 y >=0 and y < self.Height and
@@ -2833,67 +2897,7 @@ class MCInfdevOldLevel(MCLevel):
             info( u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced) )
             
     
-    def getAllChunkSlices(self):
-        for cpos in self.allChunks:    
-            xPos, zPos = cpos
-            try:
-                chunk = self.getChunk(xPos, zPos)
-            except (ChunkMalformed, ChunkNotPresent):
-                continue
-                
-            yield ( chunk, ( slice(0,16),slice(0,16),slice(0,128), ), (xPos * 16, 0, zPos * 16) )
-            
-              
-    def getChunkSlices(self, box):
-        """ call this method to iterate through a large slice of the world by 
-            visiting each chunk and indexing its data with a subslice.
-        
-        this returns an iterator, which yields 3-tuples containing:
-        +  an InfdevChunk object, 
-        +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays, 
-        +  a x,y,z triplet representing the relative location of this subslice within the requested world slice.
-        
-        
-        """
-        level = self
-        
-        #offsets of the block selection into the chunks on the edge
-        minxoff, minzoff = box.minx-(box.mincx<<4), box.minz-(box.mincz<<4);
-        maxxoff, maxzoff = box.maxx-(box.maxcx<<4)+16, box.maxz-(box.maxcz<<4)+16;
-        
-    
-        for cx in range(box.mincx, box.maxcx):
-            localMinX=0
-            localMaxX=16
-            if cx==box.mincx: 
-                localMinX=minxoff
-    
-            if cx==box.maxcx-1:
-                localMaxX=maxxoff
-            newMinX = localMinX + (cx << 4) - box.minx
-            newMaxX = localMaxX + (cx << 4) - box.minx
-            
-                            
-            for cz in range(box.mincz, box.maxcz):
-                localMinZ=0
-                localMaxZ=16
-                if cz==box.mincz: 
-                    localMinZ=minzoff
-                if cz==box.maxcz-1:
-                    localMaxZ=maxzoff
-                newMinZ = localMinZ + (cz << 4) - box.minz
-                newMaxZ = localMaxZ + (cz << 4) - box.minz
-                try:
-                    ch = level.getChunk(cx, cz)
-                except ChunkNotPresent, e:
-                    continue;
-                
-                yield           (ch,
-                                (slice(localMinX,localMaxX),slice(localMinZ,localMaxZ),slice(box.miny,box.maxy)),  
-                                (newMinX, 0, newMinZ))
-                
 
-        
     def copyBlocksFromFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         #assumes destination point and bounds have already been checked.
         (x,y,z) = destinationPoint;
