@@ -181,15 +181,25 @@ materials.blockTextures = [
             ), (
                 (0x35, 0x35, 0x35, 0x35, 0x35, 0x35), "Leaves",#18: 
             ), (
-                (48, 48, 48, 48, 48, 48), "Sponge",#19: 
+                (0x30,)*6, "Sponge",#19: 
             ), (
-                (49, 49, 49, 49, 49, 49), "Glass",#20: 
+                (0x31,)*6, "Glass",#20: 
+            ), (
+                (0xA0,)*6, "Lapis Lazuli Ore",#21: 
+            ), (
+                (0x90,)*6, "Lapis Lazuli Block",#22: 
+            ), (
+                (0x2E, 0x2E,  0x3E,  1, 0x2D, 0x2D), "Dispenser",#23: 
+            ), (
+                (0xC0, 0xC0, 0xB0, 0xD0, 0xC0, 0xC0), "Sandstone",#24: 
+            ), (
+                (0x4A,)*6, "Note Block",#25: 
             )
-            ] + list(((NOTEX,)*6, "Unusable {0} Cloth".format(clothColors[i])) for i in range(14)) + [ #21-34:"Old Cloth",
+            ] + list(((NOTEX,)*6, "Future Block!") for i in range(9)) + [ #26-34:"No Item",
             (
                 (64,)*6,        "White Wool Cloth"
             ), (
-                (NOTEX,)*6,     "Unusable White Cloth"
+                (NOTEX,)*6,     "Future Block"
             ), (
                 (13, 13, 13, 13, 13, 13), "Flower",#37: 
             ), (
