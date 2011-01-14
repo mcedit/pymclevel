@@ -83,6 +83,12 @@ class Furnace:
     North = 4
     South = 5
 genericFlipRotation(Furnace)
+
+class Dispenser(Furnace):
+    blocktypes = [
+        alphaMaterials.materialNamed("Dispenser"),
+    ]          
+genericFlipRotation(Dispenser)
     
 class Pumpkin:
     blocktypes = [
