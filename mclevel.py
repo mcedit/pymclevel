@@ -1352,7 +1352,9 @@ class MCSchematic (MCLevel):
     def packUnpack(self):
         self.root_tag[Blocks].value = swapaxes(self.root_tag[Blocks].value, 0, 2)#yzx to xzy
         self.root_tag[Data].value = swapaxes(self.root_tag[Data].value, 0, 2)#yzx to xzy
-    
+        if self.dataIsPacked:
+            self.root_tag[Data].value &= 0xF #discard high bits
+        
     def packChunkData(self):
         if not self.dataIsPacked:
             self.packUnpack()
@@ -1362,7 +1364,7 @@ class MCSchematic (MCLevel):
         if self.dataIsPacked:
             self.packUnpack()
             self.dataIsPacked = False;
-            
+     
     def rotateLeft(self):
         
         self.Blocks = swapaxes(self.Blocks, 1, 0)[:,::-1,:]; #x=z; z=-x
