@@ -253,11 +253,14 @@ class BlockRotation:
     
        
     
+def FlipNorthSouth(blocks, data):
+    data[:] = BlockRotation.flipNorthSouth[blocks, data]
+    
 def FlipEastWest(blocks, data):
-    pass
+    data[:] = BlockRotation.flipEastWest[blocks, data]
+
     
 def RotateLeft(blocks, data):
-    
     data[:] = BlockRotation.rotateLeft[blocks, data]
 
 

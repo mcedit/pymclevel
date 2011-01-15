@@ -676,6 +676,14 @@ class MCLevel(object):
         self.Blocks = self.Blocks[:,:,::-1]; #y=-y
         pass    
     
+    def flipNorthSouth(self):
+        self.Blocks = self.Blocks[::-1,:,:]; #x=-x
+        pass    
+    
+    def flipEastWest(self):
+        self.Blocks = self.Blocks[:,::-1,:]; #z=-z
+        pass    
+    
         
     def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         # assume destinationPoint is entirely within this level, and the size of sourceBox fits entirely within it.
@@ -1411,6 +1419,51 @@ class MCSchematic (MCLevel):
         self.Blocks = self.Blocks[:,:,::-1]; #y=-y
         self.Data = self.Data[:,:,::-1]; 
         
+    def flipNorthSouth(self):
+        " xxx flip entities "
+        blockrotation.FlipNorthSouth(self.Blocks, self.Data);
+        self.Blocks = self.Blocks[::-1,:,:]; #x=-x
+        self.Data = self.Data[::-1,:,:]; 
+        
+        northSouthPaintingMap = [0,3,2,1]
+        
+        info( u"N/S Flip: Relocating entities..." )
+        for entity in self.Entities:
+        
+            entity["Pos"][0].value = self.Width - entity["Pos"][0].value
+            entity["Motion"][0].value = -entity["Motion"][0].value
+            
+            entity["Rotation"][0].value -= 180.0
+            
+            if entity["id"].value == "Painting":
+                entity["TileX"].value = self.Width - entity["TileX"].value
+                entity["Dir"].value = northSouthPaintingMap[entity["Dir"].value]
+                
+        for tileEntity in self.TileEntities:
+            tileEntity["x"].value = self.Width - tileEntity["x"].value
+    
+    def flipEastWest(self):
+        " xxx flip entities "
+        blockrotation.FlipEastWest(self.Blocks, self.Data);
+        self.Blocks = self.Blocks[:,::-1,:]; #z=-z
+        self.Data = self.Data[:,::-1,:]; 
+        
+        eastWestPaintingMap = [2,1,0,3]
+        
+        info( u"E/W Flip: Relocating entities..." )
+        for entity in self.Entities:
+        
+            entity["Pos"][2].value = self.Length - entity["Pos"][2].value
+            entity["Motion"][2].value = -entity["Motion"][2].value
+            
+            entity["Rotation"][0].value -= 180.0
+            
+            if entity["id"].value == "Painting":
+                entity["TileZ"].value = self.Length - entity["TileZ"].value
+                entity["Dir"].value = eastWestPaintingMap[entity["Dir"].value]
+                
+        for tileEntity in self.TileEntities:
+            tileEntity["z"].value = self.Length - tileEntity["z"].value
     
                
     @decompress_first
