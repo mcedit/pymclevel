@@ -660,9 +660,42 @@ class MCLevel(object):
                 self.Data[slices[0],slices[2],slices[1]] = blockData;
                
         #self.saveInPlace();
+    classicWoolMask = zeros((256,), dtype='bool')
+    classicWoolMask[range(21, 37)] = True;
     
-    def conversionTableFromLevel(self, level):
-        return level.materials.conversionTables[self.materials]
+    classicToAlphaWoolTypes = range(21)+[
+        0xE, #"Red", (21)
+        0x1, #"Orange",
+        0x4, #"Yellow",
+        0x5, #"Light Green",
+        0xD, #"Green",
+        0x9, #"Aqua",
+        0x3, #"Cyan",
+        0xB, #"Blue",
+        0xA, #"Purple",
+        0xA, #"Indigo",
+        0x2, #"Violet",
+        0x2, #"Magenta",
+        0x6, #"Pink",
+        0x7, #"Black",
+        0x8, #"Gray",
+        0x0, #"White",
+    ]
+    classicToAlphaWoolTypes = array(classicToAlphaWoolTypes, dtype='uint8')
+    
+    def convertBlocksFromLevel(self, sourceLevel, blocks, blockData):
+        convertedBlocks = sourceLevel.materials.conversionTables[self.materials][blocks]
+        if blockData is None:
+            blockData = zeros_like(convertedBlocks)
+        
+        convertedBlockData = array(blockData)
+
+        if sourceLevel.materials is classicMaterials and self.materials is alphaMaterials:
+            woolMask = self.classicWoolMask[blocks]
+            woolBlocks = blocks[woolMask]
+            convertedBlockData[woolMask] = self.classicToAlphaWoolTypes[woolBlocks]
+        
+        return convertedBlocks, convertedBlockData
             
     def rotateLeft(self):
         self.Blocks = swapaxes(self.Blocks, 1, 0)[:,::-1,:]; #x=z; z=-x
@@ -684,6 +717,7 @@ class MCLevel(object):
         self.Blocks = self.Blocks[:,::-1,:]; #z=-z
         pass    
     
+    
         
     def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         # assume destinationPoint is entirely within this level, and the size of sourceBox fits entirely within it.
@@ -691,9 +725,14 @@ class MCLevel(object):
         destCorner2 = map(lambda a,b:a+b, sourceBox.size, destinationPoint)
         destx, desty, destz = map(slice, destinationPoint, destCorner2)
         
-        convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[sourceLevel.Blocks[sourcex, sourcez, sourcey]]
+        sourceData = None
+        if hasattr(sourceLevel, 'Data'):
+            sourceData = sourceLevel.Data[sourcex, sourcez, sourcey]
+        convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceLevel.Blocks[sourcex, sourcez, sourcey], sourceData)
+         
         
         blocks = self.Blocks[destx, destz, desty]
+            
         mask = slice(None, None)
         
         if not (blocksToCopy is None):
@@ -702,6 +741,9 @@ class MCLevel(object):
             mask = typemask[convertedSourceBlocks]
             
         blocks[mask] = convertedSourceBlocks[mask]
+        if hasattr(self, 'Data'):
+            data = self.Data[destx, destz, desty]
+            data[mask] = convertedSourceData[mask]
         
         
     def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
@@ -718,7 +760,8 @@ class MCLevel(object):
             point = point[0], point[2], point[1]
             mask = slice(None, None)
             
-            convertedSourceBlocks = self.conversionTableFromLevel(sourceLevel)[chunk.Blocks[slices]]
+            convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, chunk.Blocks[slices], chunk.Data[slices])
+            
             
             destSlices = [slice(p, p+s.stop-s.start) for p,s in zip(point,slices) ]
             
@@ -729,7 +772,12 @@ class MCLevel(object):
                 
             blocks[mask] = convertedSourceBlocks[mask]
             
-            self.Data[ destSlices ][mask] = chunk.Data[slices][mask]
+            if hasattr(self, 'Data'):
+                data = self.Data[ destSlices ];
+                data[mask] = convertedSourceData[mask]
+            
+                #self.Data[ destSlices ][mask] = chunk.Data[slices][mask]
+                
             
             chunk.compress();
             
@@ -1276,6 +1324,16 @@ class MCSchematic (MCLevel):
     def TileEntities(self):
         return self.root_tag[TileEntities]
     
+    @property
+    @decompress_first     
+    def Materials(self):
+        return self.root_tag[Materials].value
+        
+    @Materials.setter
+    @decompress_first     
+    def Materials(self, val):
+        self.root_tag[Materials].value = val
+    
     @classmethod
     def _isTagLevel(cls, root_tag):
         return "Schematic" == root_tag.name
@@ -1325,9 +1383,11 @@ class MCSchematic (MCLevel):
             #self.Entities = root_tag[Entities];
             #self.TileEntities = root_tag[TileEntities];
                
-            if Materials in root_tag:
-                self.materials = namedMaterials[root_tag[Materials].value]
             self.root_tag = root_tag;
+            if Materials in root_tag:
+                self.materials = namedMaterials[self.Materials]
+            else:
+                root_tag[Materials] = materialNames[self.materials]
             self.shapeChunkData();
             
         else:
@@ -1494,7 +1554,7 @@ class MCSchematic (MCLevel):
         #root_tag[Data] = nbt.TAG_Byte_Array(swapaxes(self.Data.reshape(self.Width,self.Length,self.Height), 0, 2))
         #root_tag[Entities] = self.Entities;
         #root_tag[TileEntities] = self.TileEntities;
-        self.root_tag[Materials] = nbt.TAG_String(materialNames[self.materials])
+        self.Materials = materialNames[self.materials]
         
         #self.packChunkData();
         self.compress();
@@ -2958,7 +3018,7 @@ class MCInfdevOldLevel(MCLevel):
         (x,y,z) = destinationPoint;
         (sx, sy, sz) = sourceBox.origin
         
-        filterTable = self.conversionTableFromLevel(sourceLevel);
+        #filterTable = self.conversionTableFromLevel(sourceLevel);
         
         start = datetime.now();
         
@@ -2987,7 +3047,7 @@ class MCInfdevOldLevel(MCLevel):
             sourceBlocks = sourceLevel.Blocks[sx+point[0]:localSourceCorner2[0],
                                               sz+point[2]:localSourceCorner2[2],
                                               sy:localSourceCorner2[1]]
-            sourceBlocks = filterTable[sourceBlocks]
+            #sourceBlocks = filterTable[sourceBlocks]
             
             #for small level slices, reduce the destination area
             x,z,y = sourceBlocks.shape
@@ -2995,8 +3055,7 @@ class MCInfdevOldLevel(MCLevel):
             if blocksToCopy is not None:
                 mask = typemask[sourceBlocks]
 
-            blocks[mask] = sourceBlocks[mask]
-                        
+            sourceData = None            
             if hasattr(sourceLevel, 'Data'):
                 #indev or schematic
                 sourceData = sourceLevel.Data[sx+point[0]:localSourceCorner2[0],
@@ -3004,10 +3063,15 @@ class MCInfdevOldLevel(MCLevel):
                                               sy:localSourceCorner2[1]]
                 data = chunk.Data[slices][0:x,0:z,0:y]
                 
-                data[mask] = (sourceData[:,:,:] & 0xf)[mask]
                 
                 
-                    
+            convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
+                
+            blocks[mask] = convertedSourceBlocks[mask]
+            if sourceData is not None:
+                data[mask] = (convertedSourceData[:,:,:])[mask]
+                data[mask] &= 0xf;
+                   
             chunk.chunkChanged();
             chunk.compress();
         
@@ -3791,16 +3855,19 @@ def testAlphaLevels():
     indevlevel = MCLevel.fromFile("hell.mclevel")
     
     level = MCInfdevOldLevel(filename="d:\Testworld");
-    for ch in level.allChunks: level.deleteChunk(*ch)
+    for ch in list(level.allChunks): level.deleteChunk(*ch)
     level.createChunksInBox( BoundingBox((0,0,0), (32, 0, 32)) )
     level.copyBlocksFrom(indevlevel, BoundingBox((0,0,0), (256, 128, 256)), (-0, 0, 0)) 
-    assert all(level.getChunk(0,0).Blocks[0:16,0:16,0:indevlevel.Height] == indevlevel.conversionTableFromLevel(level)[indevlevel.Blocks[0:16,0:16,0:indevlevel.Height]]);
+    
+    convertedSourceBlocks, convertedSourceData = indevlevel.convertBlocksFromLevel(level, indevlevel.Blocks[0:16,0:16,0:indevlevel.Height], indevlevel.Data[0:16,0:16,0:indevlevel.Height])
+    assert all(level.getChunk(0,0).Blocks[0:16,0:16,0:indevlevel.Height] == convertedSourceBlocks)
     
     schem = MCLevel.fromFile(os.path.expandvars("schematics\\CreativeInABox.schematic"));
     level.copyBlocksFrom(schem, BoundingBox((0,0,0), (1,1,3)), (0, 64, 0));
     schem = MCSchematic( shape=(1,1,3) )
     schem.copyBlocksFrom(level, BoundingBox((0, 64, 0), (1, 1, 3)), (0,0,0));
-    assert all(level.getChunk(0,0).Blocks[0:1,0:3,64:65] == schem.conversionTableFromLevel(level)[schem.Blocks])
+    convertedSourceBlocks, convertedSourceData = schem.convertBlocksFromLevel(level, schem.Blocks, schem.Data)
+    assert all(level.getChunk(0,0).Blocks[0:1,0:3,64:65] == convertedSourceBlocks)
     
     try:
         for x,z in itertools.product(xrange(-1,3),xrange(-1,2)):
