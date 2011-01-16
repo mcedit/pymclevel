@@ -1500,7 +1500,7 @@ class MCSchematic (MCLevel):
                 entity["Dir"].value = northSouthPaintingMap[entity["Dir"].value]
                 
         for tileEntity in self.TileEntities:
-            tileEntity["x"].value = self.Width - tileEntity["x"].value
+            tileEntity["x"].value = self.Width - tileEntity["x"].value - 1
     
     def flipEastWest(self):
         " xxx flip entities "
@@ -1523,7 +1523,7 @@ class MCSchematic (MCLevel):
                 entity["Dir"].value = eastWestPaintingMap[entity["Dir"].value]
                 
         for tileEntity in self.TileEntities:
-            tileEntity["z"].value = self.Length - tileEntity["z"].value
+            tileEntity["z"].value = self.Length - tileEntity["z"].value - 1
     
                
     @decompress_first
