@@ -310,6 +310,8 @@ materials.blockTextures = [
                 (NOTEX,)*6, "Nether Portal" #90
             ), (
                 (0x78, 0x76, 0x66, 0x76, 0x76, 0x76), "Glowing Pumpkin" #91
+            ),(
+                (0x7A, 0x7A, 0x79, 0x7C, 0x7A, 0x7A), "Cake" #92
             ),
              
             
