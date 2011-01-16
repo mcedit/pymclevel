@@ -85,9 +85,9 @@ classicMaterials.blockTextures = [
             ), (
                 (28,)*6, "Red mushroom",#40: 
             ), (
-                (39, 39, 23, 55, 39, 39), "Solid Gold Block",#41: 
+                (0x17,)*6, "Solid Gold Block",#41: 
             ), (
-                (38, 38, 22, 54, 38, 38), "Solid Iron Block",#42: 
+                (0x16,)*6, "Solid Iron Block",#42: 
             ), (
                 (5, 5, 6, 6, 5, 5), "Double stone stair step",#43: 
             ), (
@@ -117,7 +117,7 @@ classicMaterials.blockTextures = [
             ), (
                 (50, 50, 50, 50, 50, 50), "Diamond Ore",#56: 
             ), (
-                (40, 40, 24, 56, 40, 40), "Solid Diamond Block",#57: 
+                (0x18,)*6, "Solid Diamond Block",#57: 
             ), (
                 (59, 59, 43, 20, 60, 60), "Crafting Table",#58: 
             ), (
