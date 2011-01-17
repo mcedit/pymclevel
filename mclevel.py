@@ -3061,14 +3061,15 @@ class MCInfdevOldLevel(MCLevel):
                 sourceData = sourceLevel.Data[sx+point[0]:localSourceCorner2[0],
                                               sz+point[2]:localSourceCorner2[2],
                                               sy:localSourceCorner2[1]]
-                data = chunk.Data[slices][0:x,0:z,0:y]
+            
+            data = chunk.Data[slices][0:x,0:z,0:y]
                 
                 
                 
             convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
                 
             blocks[mask] = convertedSourceBlocks[mask]
-            if sourceData is not None:
+            if convertedSourceData is not None:
                 data[mask] = (convertedSourceData[:,:,:])[mask]
                 data[mask] &= 0xf;
                    
