@@ -3015,7 +3015,6 @@ class MCInfdevOldLevel(MCLevel):
 
     def copyBlocksFromFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         #assumes destination point and bounds have already been checked.
-        (x,y,z) = destinationPoint;
         (sx, sy, sz) = sourceBox.origin
         
         #filterTable = self.conversionTableFromLevel(sourceLevel);
@@ -3545,10 +3544,6 @@ class MCIndevLevel(MCLevel):
             
             self.Blocks = swapaxes(mapTag[Blocks].value, 0, 2)
             
-            #self.Blocks.shape = (self.Width, self.Length, self.Height,  )
-            #self.oldBlockStrides = self.Blocks.strides
-            #self.Blocks.strides = (1, self.Width, self.Width * self.Length)
-
             mapTag[Data].value.shape = (self.Height, self.Length, self.Width)
             
             self.Data = swapaxes(mapTag[Data].value, 0, 2)
@@ -3556,10 +3551,6 @@ class MCIndevLevel(MCLevel):
             self.BlockLight = self.Data & 0xf
             
             self.Data >>= 4
-            
-            #self.Data.shape = (self.Width, self.Length, self.Height,  )
-            #self.oldDataStrides = self.Data.strides
-            #self.Data.strides = (1, self.Width, self.Width * self.Length)
             
             self.Spawn = [mapTag[Spawn][i].value for i in range(3)];
             
