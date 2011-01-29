@@ -2,6 +2,7 @@
 import mclevel
 import sys
 import os
+import os.path
 from box import BoundingBox
 import numpy
 from numpy import zeros, bincount
@@ -1137,6 +1138,7 @@ class mce(object):
         try:
             worldNum = int(world)
         except ValueError:
+            world = os.path.expanduser(world)
             self.level = mclevel.fromFile(world)
             
             self.filename = self.level.filename
