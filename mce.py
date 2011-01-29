@@ -11,7 +11,7 @@ import itertools
 import traceback
 import shlex
 import operator
-from math import floor
+from math import floor, sqrt
 try:
     import readline
 except:
@@ -35,6 +35,7 @@ class mce(object):
        
        {commandPrefix}createChest <point> <item> [ <count> ]
        {commandPrefix}analyze
+       {commandPrefix}dungeons
        
     Player commands:
        {commandPrefix}player [ <player> [ <point> ] ]
@@ -123,6 +124,7 @@ class mce(object):
         "help",
         "blocks",
         "analyze",
+        "dungeons",
         
         "debug",
         "log",
@@ -458,6 +460,56 @@ class mce(object):
         self.level.SizeOnDisk = sizeOnDisk
         self.needsSave = True
             
+    def _dungeons(self, command):
+        """
+    dungeons
+    
+    Takes the searching out of farming Mob Spawners.
+    """
+        dungeons = []
+        for chunk, slices, (gx,gy,gz) in self.level.getAllChunkSlices():
+            for te in chunk.TileEntities:
+                if te['id'].value == "MobSpawner":
+                    x = te['x'].value
+                    y = te['y'].value
+                    z = te['z'].value
+                    typ = te['EntityId'].value
+                    dungeons.append( (-y, x**2+z**2, (x,y,z), typ) )
+                    if y > 51:
+                        sys.stdout.write('!')
+                    else:
+                        sys.stdout.write('.')
+                    sys.stdout.flush()
+        print
+        dungeons.sort()
+        print "Dungeons: (prioritized shallowest then closest to spawn)"
+        print
+        for a, b, (x,y,z), bd in dungeons:
+            print "  %s south, %s west, %s from bedrock (%s)" % (x,z,y,bd)
+        print
+
+        print "Top 30 Close Dungeon Pairs:"
+        pairs = []
+        for a, b, (ax, ay, az), abd in dungeons:
+            for a, b, (bx, by, bz), bbd in dungeons:
+                if ax == bx and ay == by and az == bz: # skip self
+                    continue
+                if (ax,ay,az) > (bx,by,bz): # don't generate two matches
+                    continue
+                dist = sqrt( (bx-ax) ** 2 + (bz - az) **2 )
+                if dist > 31:
+                    # spawners only work within 16 blocks of you horizontally
+                    # (i.e. in the x-z plane), so any further and you can't
+                    # build a dual spawner farm (which is presumably why
+                    # you're looking for a spawner pair, no?)
+                    continue
+                sd = sqrt(ax**2 + az **2)
+                pairs.append( (sd,dist,(ax,ay,az),abd,(bx,by,bz),bbd) )
+        pairs.sort()
+        for sd,dist,(ax,ay,az), abd, (bx,by,bz), bbd in pairs[:30]:
+            print "  %dm apart, %dm from spawn, %s,%s,%s/%s and %s,%s,%s/%s" % \
+                  (dist,sd,ax,ay,az,abd,bx,by,bz,bbd)
+
     def _export(self, command):
         """
     export <filename> <sourceBox>
