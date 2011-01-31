@@ -10,7 +10,7 @@ class MCMaterials(object):
         
     def materialNamed(self, name):
         return self.names.index(name);
-
+    
 clothColors = [
     "Red",
     "Orange",
@@ -153,31 +153,31 @@ materials.blockTextures = [
             ), (
                 (16, 16, 16, 16, 16, 16), "Cobblestone", #4: 
             ), (
-                (4, 4, 4, 4, 4, 4), "Wood", #5: 
+                (4, 4, 4, 4, 4, 4), "Wooden Planks", #5: 
             ), (
                 (15, 15, 15, 15, 15, 15), "Sapling",  #6: 
             ), (
-                (17, 17, 17, 17, 17, 17), "Bedrock / Adminium", #7: 
+                (17, 17, 17, 17, 17, 17), "Bedrock", #7: 
             ), (
-                (0xdf, 0xdf, 0xdf, 0xdf, 0xdf, 0xdf), "Water", #8: 
+                (0xdf, 0xdf, 0xdf, 0xdf, 0xdf, 0xdf), "Water (active)", #8: 
             ), (
-                (0xdf, 0xdf, 0xdf, 0xdf, 0xdf, 0xdf), "Stationary water", #9: 
+                (0xdf, 0xdf, 0xdf, 0xdf, 0xdf, 0xdf), "Water (still)", #9: 
             ), (
-                (0xff, 0xff, 0xff, 0xff, 0xff, 0xff), "Lava", #10: 
+                (0xff, 0xff, 0xff, 0xff, 0xff, 0xff), "Lava (active)", #10: 
             ), (
-                (0xff, 0xff, 0xff, 0xff, 0xff, 0xff), "Stationary lava", #11: 
+                (0xff, 0xff, 0xff, 0xff, 0xff, 0xff), "Lava (still)", #11: 
             ), (
                 (18, 18, 18, 18, 18, 18),  "Sand", #12:
             ), (
                 (19, 19, 19, 19, 19, 19),  "Gravel", #13:
             ), (
-                (32, 32, 32, 32, 32, 32), "Gold ore", #14: 
+                (32, 32, 32, 32, 32, 32), "Gold Ore", #14: 
             ), (
-                (33, 33, 33, 33, 33, 33), "Iron ore",#15: 
+                (33, 33, 33, 33, 33, 33), "Iron Ore",#15: 
             ), (
-                (34, 34, 34, 34, 34, 34), "Coal ore",#16: 
+                (34, 34, 34, 34, 34, 34), "Coal Ore",#16: 
             ), (
-                (20, 20, 21, 21, 20, 20), "Tree trunk",#17: 
+                (20, 20, 21, 21, 20, 20), "Wood",#17: 
             ), (
                 (0x35, 0x35, 0x35, 0x35, 0x35, 0x35), "Leaves",#18: 
             ), (
@@ -197,9 +197,9 @@ materials.blockTextures = [
             )
             ] + list(((NOTEX,)*6, "Future Block!") for i in range(9)) + [ #26-34:"No Item",
             (
-                (64,)*6,        "White Wool Cloth"
+                (64,)*6,        "Wool"
             ), (
-                (NOTEX,)*6,     "Future Block"
+                (NOTEX,)*6,     "Future Block!"
             ), (
                 (13, 13, 13, 13, 13, 13), "Flower",#37: 
             ), (
