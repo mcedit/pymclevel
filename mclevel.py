@@ -3674,12 +3674,18 @@ class MCIndevLevel(MCLevel):
         self.Data <<= 4;
         self.Data |= (self.BlockLight & 0xf)
         
+        self.Blocks = swapaxes(self.Blocks, 0, 2)
+        self.Data = swapaxes(self.Data, 0, 2)
+            
         mapTag = nbt.TAG_Compound( name=Map );
         mapTag[Width] = nbt.TAG_Short(self.Width);
         mapTag[Height] = nbt.TAG_Short(self.Height);
         mapTag[Length] = nbt.TAG_Short(self.Length);
         mapTag[Blocks] = nbt.TAG_Byte_Array(self.Blocks);
         mapTag[Data]   = nbt.TAG_Byte_Array(self.Data);
+        
+        self.Blocks = swapaxes(self.Blocks, 0, 2)
+        self.Data = swapaxes(self.Data, 0, 2)
         
         mapTag[Spawn]  = nbt.TAG_List([nbt.TAG_Short(i) for i in self.Spawn])
 
