@@ -2577,7 +2577,7 @@ class MCInfdevOldLevel(MCLevel):
     def allChunks(self):
         if self._allChunks is None:
             self.preloadChunkPaths()
-        return self._allChunks;
+        return self._allChunks.__iter__();
     
     
     def getChunks(self, chunks = None):
