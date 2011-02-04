@@ -229,7 +229,7 @@ if sys.platform == "win32":
         minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
     except Exception, e:
         print "WScript error {0!r}".format(e)
-        minecraftDir = os.path.expandvars("%APPDATA%\\.minecraft\\saves")
+        minecraftDir = os.path.expandvars("%APPDATA%\\.minecraft")
         minecraftDir = minecraftDir.decode(sys.getfilesystemencoding());
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
