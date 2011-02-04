@@ -45,42 +45,99 @@ world1 = mclevel.loadWorldNumber(1);
 # first time it is used. If you already know where you want to be, skip to 
 # world1.getChunk(xPos, zPos)
 
-chunkPositions = world1.allChunks
+chunkPositions = list(world1.allChunks)
 
-# allChunks returns a list of tuples (xPos, zPos)
+# allChunks returns an iterator that yields a (xPos, zPos) tuple for each chunk
 xPos, zPos = chunkPositions[0];
 
-# retrieve an InfdevChunk object. getChunk is a special method;  
-# it will load the chunk from disk, decompress it, inflate the NBT structures, and unpack the data arrays for you.
-aChunk = world1.getChunk(xPos, zPos)
+# retrieve an InfdevChunk object. this object will load and decompress 
+# the chunk as needed, and remember whether it needs to be saved or relighted
+
+chunk = world1.getChunk(xPos, zPos)
 
 ### Access the data arrays of the chunk like so:
+# Take note that the array is indexed x, z, y.  The last index corresponds to 
+# height or altitude.
 
-# Fire to Leaves.
-aChunk.Blocks[aChunk.Blocks==world.materials.materialNamed("Fire")] = world.materials.materialNamed("Leaves")
+blockType = chunk.Blocks[0,0,64]
+chunk.Blocks[0,0,64] = 1
 
-# Generate Flatgrass in this chunk
+# Access the chunk's Entities and TileEntities as arrays of TAG_Compound as 
+# they appear in the save format. 
 
-# Set all BlockData from height 64 up to 0.
-# Take note that the array is indexed x, z, y.  The last index corresponds to height or altitude.  
-# Also take note that the Data, BlockLight, and SkyLight arrays have been unpacked from 4-bit arrays to numpy uint8 arrays, 
-# by the call to getChunk. This makes them much easier to work with.
-aChunk.Data[:,:,64:] = 0;
+# Entities usually have Pos, Health, and id
+# TileEntities usually have tileX, tileY, tileZ, and id
+# For more information, google "Chunk File Format"
 
-# The chunk doesn't know you've changed any of that data.  Call chunkChanged() to let it know.
-# This will mark the chunk for lighting calculation, recompression, and writing to disk.
-# It will also immediately recalculate the chunk's HeightMap and fill the SkyLight only with light falling straight down. 
+for entity in chunk.Entities:
+    if entity["id"].value == "Spider":
+        entity["Health"].value = 50
+
+
+# Accessing one byte at a time from the Blocks array is very slow in Python. 
+# To get around this, we have methods to access multiple bytes at once.
+# The first technique is slicing. You can use slicing to restrict your access
+# to certain depth levels, or to extract a column or a larger section from the
+# array. Standard python slice notation is used.
+
+# Set the top half of the array to 0. The : says to use the entire array along
+# that dimension. The syntax []= indicates we are overwriting part of the array
+chunk.Blocks[:,:,64:] = 0
+
+# Using [] without =  creates a 'view' on part of the array.  This is not a 
+# copy, it is a reference to a portion of the original array.
+midBlocks = chunk.Blocks[:,:,32:64]
+
+# Here's a gotcha:  You can't just write 'midBlocks = 0' since it will replace
+# the 'midBlocks' reference itself instead of accessing the array. Instead, do
+# this to access and overwrite the array using []= syntax.
+midBlocks[:] = 0
+ 
+
+# The second is masking.  Using a comparison operator ( <, >, ==, etc ) 
+# against the Blocks array will return a 'mask' that we can use to specify
+# positions in the array.
+ 
+# Create the mask from the result of the equality test.
+fireBlocks = ( chunk.Blocks==world.materials.materialNamed("Fire") )
+
+# Access Blocks using the mask to set elements. The syntax is the same as 
+# using []= with slices
+chunk.Blocks[fireBlocks] = world.materials.materialNamed("Leaves")
+
+# You can also combine mask arrays using logical operations (&, |, ^) and use
+# the mask to access any other array of the same shape.
+# Here we turn all trees into birch trees.
+
+# Extract a mask from the Blocks array to find the locations of tree trunks.
+# Or | it with another mask to find the locations of leaves.
+# Use the combined mask to access the Data array and set those locations to birch
+
+# Note that the Data, BlockLight, and SkyLight arrays have been 
+# unpacked from 4-bit arrays to numpy uint8 arrays. This makes them much easier
+# to work with.
+
+treeBlocks = ( chunk.Blocks == world.materials.materialNamed("Wood") )
+treeBlocks |= ( chunk.Blocks == world.materials.materialNamed("Leaves") )
+chunk.Data[treeBlocks] = 2 # birch
+
+
+# The chunk doesn't know you've changed any of that data.  Call chunkChanged()
+# to let it know. This will mark the chunk for lighting calculation, 
+# recompression, and writing to disk. It will also immediately recalculate the 
+# chunk's HeightMap and fill the SkyLight only with light falling straight down. 
 # These are relatively fast and were added here to aid MCEdit.
-aChunk.chunkChanged();
 
-# Don't call aChunk.save() unless you have a really good reason.  In fact, forget I mentioned it.
+chunk.chunkChanged();
 
 # To recalculate all of the dirty lights in the world, call generateLights
 world.generateLights();
 
+
 # Move the player and his spawn
 world.setPlayerPosition( (0, 67, 0) ) # add 3 to make sure his head isn't in the ground.
 world.setPlayerSpawnPosition( (0, 64, 0) )
+
 
 # Save the level.dat and any chunks that have been marked for writing to disk
 # This also compresses any chunks marked for recompression.
