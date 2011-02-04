@@ -226,7 +226,7 @@ Door.flipEastWest[8:16] = Door.flipEastWest[0:8] | 0x8
 Door.flipNorthSouth = arange(16, dtype='uint8')
 Door.flipNorthSouth[Door.Northeast] = Door.Southeast
 Door.flipNorthSouth[Door.Northwest] = Door.Southwest
-Door.flipNorthSouth[Door.Southwest] = Door.Southwest
+Door.flipNorthSouth[Door.Southwest] = Door.Northwest
 Door.flipNorthSouth[Door.Southeast] = Door.Northeast
 Door.flipNorthSouth[4:8] = Door.flipNorthSouth[0:4]
 Door.flipNorthSouth[0:4] = Door.flipNorthSouth[4:8] | 0x4
