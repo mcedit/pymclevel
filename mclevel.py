@@ -2118,7 +2118,7 @@ class MCInfdevOldLevel(MCLevel):
         return False
         
     def getWorldBounds(self):
-        if len(self.allChunks) == 0:
+        if len(self._allChunks) == 0:
             return BoundingBox( (0,0,0), (0,0,0) )
             
         allChunksArray = array(list(self.allChunks), dtype='int32')
@@ -2350,7 +2350,7 @@ class MCInfdevOldLevel(MCLevel):
                             
                             #
                             
-        info( u"Found {0} chunks.".format(len(self.allChunks)) )
+        info( u"Found {0} chunks.".format(len(self._allChunks)) )
 
     def compress(self):
         self.compressAllChunks();
