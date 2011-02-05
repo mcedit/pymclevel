@@ -49,13 +49,13 @@ classicMaterials.blockTextures = [
             ), (
                 (17, 17, 17, 17, 17, 17), "Adminium", #7: 
             ), (
-                (14, 14, 14, 14, 14, 14), "Water", #8: 
+                (14, 14, 14, 14, 14, 14), "Water (active)", #8: 
             ), (
-                (14, 14, 14, 14, 14, 14), "Stationary water", #9: 
+                (14, 14, 14, 14, 14, 14), "Water (still)", #9: 
             ), (
-                (30, 30, 30, 30, 30, 30), "Lava", #10: 
+                (30, 30, 30, 30, 30, 30), "Lava (active)", #10: 
             ), (
-                (30, 30, 30, 30, 30, 30), "Stationary lava", #11: 
+                (30, 30, 30, 30, 30, 30), "Lava (still)", #11: 
             ), (
                 (18, 18, 18, 18, 18, 18),  "Sand", #12:
             ), (
@@ -153,7 +153,7 @@ materials.blockTextures = [
             ), (
                 (16, 16, 16, 16, 16, 16), "Cobblestone", #4: 
             ), (
-                (4, 4, 4, 4, 4, 4), "Wooden Planks", #5: 
+                (4, 4, 4, 4, 4, 4), "Wood Planks", #5: 
             ), (
                 (15, 15, 15, 15, 15, 15), "Sapling",  #6: 
             ), (
@@ -205,25 +205,25 @@ materials.blockTextures = [
             ), (
                 (12, 12, 12, 12, 12, 12), "Rose",#38: 
             ), (
-                (29,)*6, "Brown mushroom",#39: 
+                (29,)*6, "Brown Mushroom",#39: 
             ), (
-                (28,)*6, "Red mushroom",#40: 
+                (28,)*6, "Red Mushroom",#40: 
             ), (
-                (0x17,)*6, "Solid Gold Block",#41: 
+                (0x17,)*6, "Block of Gold",#41: 
             ), (
-                (0x16,)*6, "Solid Iron Block",#42: 
+                (0x16,)*6, "Block of Iron",#42: 
             ), (
-                (5, 5, 6, 6, 5, 5), "Double stone stair step",#43: 
+                (5, 5, 6, 6, 5, 5), "Double Stone Slab",#43: 
             ), (
-                (5, 5, 6, 6, 5, 5), "Single stone stair half step",#44: 
+                (5, 5, 6, 6, 5, 5), "Stone Slab",#44: 
             ), (
-                (7, 7, 7, 7, 7, 7), "Red brick tile",#45: 
+                (7, 7, 7, 7, 7, 7), "Brick",#45: 
             ), (
                 (8, 8, 9, 10, 8, 8), "TNT", #46: 
             ), (
                 (35, 35, 4, 4, 35, 35), "Bookshelf",#47: 
             ), (
-                (36, 36, 36, 36, 36, 36), "Moss covered cobblestone",#48: 
+                (36, 36, 36, 36, 36, 36), "Moss Stone",#48: 
             ), (
                 (37, 37, 37, 37, 37, 37), "Obsidian",#49: 
             ), (
@@ -231,9 +231,9 @@ materials.blockTextures = [
             ), (
                 (0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,),   "Fire",#51:  XXXXX
             ), (
-                (0x41,0x41,0x41,0x41,0x41,0x41,),   "Mob Spawner",#52: 
+                (0x41,0x41,0x41,0x41,0x41,0x41,),   "Monster Spawner",#52: 
             ), (
-                (0x4,0x4,0x4,0x4,0x4,0x4,), "Wooden Stair",#53: 
+                (0x4,0x4,0x4,0x4,0x4,0x4,), "Wooden Stairs",#53: 
             ), (
                 (26, 26, 26, 27, 25, 25), "Chest",#54: 
             ), (
@@ -241,7 +241,7 @@ materials.blockTextures = [
             ), (
                 (50, 50, 50, 50, 50, 50), "Diamond Ore",#56: 
             ), (
-                (0x18,)*6, "Solid Diamond Block",#57: 
+                (0x18,)*6, "Block of Diamond",#57: 
             ), (
                 (59, 59, 43, 20, 60, 60), "Crafting Table",#58: 
             ), (
@@ -281,9 +281,9 @@ materials.blockTextures = [
             ), (
                 (0x63,)*6,      "Redstone Torch (on)" #76
             ), (
-                (NOTEX,)*6,     "Stone Button", #77
+                (NOTEX,)*6,     "Button", #77
             ), (
-                (0x42,)*6,      "Snow" #78
+                (0x42,)*6,      "Snow Layer" #78
             ), (
                 (0x43,)*6,      "Ice" #79
             ), (
@@ -293,7 +293,7 @@ materials.blockTextures = [
             ), (
                 (0x48, 0x48, 0x48, 0x48, 0x48, 0x48), "Clay" #82
             ), (
-                (0x49, 0x49, 0x49, 0x49, 0x49, 0x49), "Reeds" #83
+                (0x49, 0x49, 0x49, 0x49, 0x49, 0x49), "Sugar Cane" #83
             ), (
                 (0x4A, 0x4A, 0x4A, 0x4B, 0x4A, 0x4A), "Jukebox" #84
             ), (
@@ -301,15 +301,15 @@ materials.blockTextures = [
             ), (
                 (0x77, 0x76, 0x66, 0x76, 0x76, 0x76), "Pumpkin" #86
             ), (
-                (0x67,)*6, "Bloodstone" #87
+                (0x67,)*6, "Netherrack" #87
             ), (
-                (0x68,)*6, "Slow sand" #88
+                (0x68,)*6, "Soul sand" #88
             ), (
-                (0x69,)*6, "Lightstone" #89
+                (0x69,)*6, "Glowstone" #89
             ), (
                 (NOTEX,)*6, "Nether Portal" #90
             ), (
-                (0x78, 0x76, 0x66, 0x76, 0x76, 0x76), "Glowing Pumpkin" #91
+                (0x78, 0x76, 0x66, 0x76, 0x76, 0x76), "Jack-o'-Lantern" #91
             ),(
                 (0x7A, 0x7A, 0x79, 0x7C, 0x7A, 0x7A), "Cake" #92
             ),
@@ -396,8 +396,8 @@ le = materials.lightEmission
 le[bn("Torch")] = 14
 le[bn("Lit Furnace")] = 14
 le[bn("Fire")] = 15
-le[bn("Lava")] = 15
-le[bn("Stationary lava")] = 15
+le[bn("Lava (active)")] = 15
+le[bn("Lava (still)")] = 15
 le[bn("Redstone Torch (on)")] = 7
 le[bn("Redstone Ore (glowing)")] = 9
 le[bn("Brown mushroom")] = 1
