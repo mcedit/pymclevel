@@ -2589,8 +2589,8 @@ class MCInfdevOldLevel(MCLevel):
             
     
     def _makeChunk(self, cx,cz):
-        """return the chunk object at the given position, creating it if necessary.
-        because loading the chunk is done later, accesses to chunk attributes may
+        """return the InfdevChunk object at the given position. because loading
+        the chunk is done later, accesses to chunk attributes may 
         raise ChunkMalformed"""
         
         if not self.containsChunk(cx,cz):
