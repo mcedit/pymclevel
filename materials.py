@@ -261,7 +261,7 @@ materials.blockTextures = [
             ), (
                 (0x80,)*6,      "Rail" #66
             ), (
-                (0x10,)*6,      "Stone Stair" #67
+                (0x10,)*6,      "Stone Stairs" #67
             ), (
                 (NOTEX,)*6,     "Wall Sign" #68
             ), (
@@ -400,10 +400,10 @@ le[bn("Lava (active)")] = 15
 le[bn("Lava (still)")] = 15
 le[bn("Redstone Torch (on)")] = 7
 le[bn("Redstone Ore (glowing)")] = 9
-le[bn("Brown mushroom")] = 1
-le[bn("Lightstone")] = 15
+le[bn("Brown Mushroom")] = 1
+le[bn("Glowstone")] = 15
 le[bn("Nether Portal")] = 11
-le[bn("Glowing Pumpkin")] = 15
+le[bn("Jack-o'-Lantern")] = 15
 
 
 classicMaterials.lightEmission = materials.lightEmission

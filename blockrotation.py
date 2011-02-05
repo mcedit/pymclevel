@@ -54,8 +54,8 @@ genericFlipRotation(Ladder)
 
 class Stair:
     blocktypes = [
-        alphaMaterials.materialNamed("Wooden Stair"),
-        alphaMaterials.materialNamed("Stone Stair"),
+        alphaMaterials.materialNamed("Wooden Stairs"),
+        alphaMaterials.materialNamed("Stone Stairs"),
     ]
     
     South = 0
@@ -93,7 +93,7 @@ genericFlipRotation(Dispenser)
 class Pumpkin:
     blocktypes = [
         alphaMaterials.materialNamed("Pumpkin"),
-        alphaMaterials.materialNamed("Glowing Pumpkin"),
+        alphaMaterials.materialNamed("Jack-o'-Lantern"),
     ]
     
     East = 0
@@ -161,7 +161,7 @@ applyThrownBit(Lever.flipNorthSouth)
 rotationClasses.append(Lever)
 
 class Button:
-    blocktypes = [alphaMaterials.materialNamed("Stone Button")]
+    blocktypes = [alphaMaterials.materialNamed("Button")]
     PressedBit = 0x8
     South = 1
     North = 2
