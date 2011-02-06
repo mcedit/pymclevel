@@ -813,8 +813,8 @@ class mce(object):
                               blocksToReplace=[7,
                                 self.level.materials.materialNamed("Obsidian"),
                                 self.level.materials.materialNamed("Fire"),
-                                self.level.materials.materialNamed("Lava"),
-                                self.level.materials.materialNamed("Stationary lava"),
+                                self.level.materials.materialNamed("Lava (active)"),
+                                self.level.materials.materialNamed("Lava (still)"),
                                 ]
                               )
         self.needsSave = True;
