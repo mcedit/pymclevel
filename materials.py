@@ -2,442 +2,730 @@
 from materials import classicMaterials, materials
 '''
 from numpy import *
-NOTEX = 184
-#wow, punching this map in would have been much easier in hex
+NOTEX = 0xB8
+
+class Block(object):
+    def __init__(self, materials, blockID, **kw):
+        object.__init__(self)
+        self.materials = materials
+        materials._objects[blockID] = self;
+        materials.names[blockID] = kw.pop('name', materials.defaultName)
+        materials.lightEmission[blockID] = kw.pop('brightness', materials.defaultBrightness)
+        materials.lightAbsorption[blockID] = kw.pop('opacity', materials.defaultOpacity)
+        materials.aka[blockID] = kw.pop('aka', "")
+        
+        texture = kw.pop('texture')
+        if isinstance(texture, int):
+            texture = (texture, )*6
+        
+        
+        materials.blockTextures[blockID] = texture
+        
+        self.ID = blockID
+
 class MCMaterials(object):
+    defaultBrightness = 0
+    defaultOpacity = 15
+    
+    def __init__(self, defaultTexture, defaultName):
+        object.__init__(self)
+        self.defaultName = defaultName
+        
+        self._objects = [None] * 256;
+        self.blockTextures = zeros((256, 6), dtype='uint8')
+        self.blockTextures[:] = defaultTexture
+        self.names = [defaultName] * 256
+        self.aka = [""] * 256
+        
+        self.lightEmission = zeros(256, dtype='uint8')
+        self.lightAbsorption = zeros(256, dtype='uint8')
+        self.lightAbsorption[:] = self.defaultOpacity
+        
     def __repr__(self):
         return "<MCMaterials ({0})>".format(self.name)
         
     def materialNamed(self, name):
         return self.names.index(name);
     
-clothColors = [
-    "Red",
-    "Orange",
-    "Yellow",
-    "Light Green",
-    "Green",
-    "Aqua",
-    "Cyan",
-    "Blue",
-    "Purple",
-    "Indigo",
-    "Violet",
-    "Magenta",
-    "Pink",
-    "Black",
-    "Gray",
-    "White",
-    ]
-classicMaterials = MCMaterials();
+    def Block(self, blockID, **kw):
+        return Block(self, blockID, **kw)
+
+classicMaterials = MCMaterials(defaultTexture=NOTEX,
+                               defaultName = "Not present in Classic");
 classicMaterials.name = "Classic"
-classicMaterials.blockTextures = [
-            (
-                (NOTEX,)*6, "Air",
-            ), (
-                (1, 1, 1, 1, 1, 1), "Rock", #1: 
-            ), (
-                (3, 3, 0, 2, 3, 3), "Grass", #2:
-            ), (
-                (2, 2, 2, 2, 2, 2), "Dirt", #3: 
-            ), (
-                (16, 16, 16, 16, 16, 16), "Cobblestone", #4: 
-            ), (
-                (4, 4, 4, 4, 4, 4), "Wood", #5: 
-            ), (
-                (15, 15, 15, 15, 15, 15), "Sapling",  #6: 
-            ), (
-                (17, 17, 17, 17, 17, 17), "Adminium", #7: 
-            ), (
-                (14, 14, 14, 14, 14, 14), "Water (active)", #8: 
-            ), (
-                (14, 14, 14, 14, 14, 14), "Water (still)", #9: 
-            ), (
-                (30, 30, 30, 30, 30, 30), "Lava (active)", #10: 
-            ), (
-                (30, 30, 30, 30, 30, 30), "Lava (still)", #11: 
-            ), (
-                (18, 18, 18, 18, 18, 18),  "Sand", #12:
-            ), (
-                (19, 19, 19, 19, 19, 19),  "Gravel", #13:
-            ), (
-                (32, 32, 32, 32, 32, 32), "Gold ore", #14: 
-            ), (
-                (33, 33, 33, 33, 33, 33), "Iron ore",#15: 
-            ), (
-                (34, 34, 34, 34, 34, 34), "Coal ore",#16: 
-            ), (
-                (20, 20, 21, 21, 20, 20), "Tree trunk",#17: 
-            ), (
-                (52, 52, 52, 52, 52, 52), "Leaves",#18: 
-            ), (
-                (48, 48, 48, 48, 48, 48), "Sponge",#19: 
-            ), (
-                (49, 49, 49, 49, 49, 49), "Glass",#20: 
-            )
-            ] + list(((64+i,)*6, "{0} Cloth".format(clothColors[i])) for i in range(16)) + [ #21-36:"Cloth",
-            (
-                (13, 13, 13, 13, 13, 13), "Flower",#37: 
-            ), (
-                (12, 12, 12, 12, 12, 12), "Rose",#38: 
-            ), (
-                (29,)*6, "Brown mushroom",#39: 
-            ), (
-                (28,)*6, "Red mushroom",#40: 
-            ), (
-                (39, 39, 23, 55, 39, 39), "Solid Gold Block",#41: 
-            ), (
-                (38, 38, 22, 54, 38, 38), "Solid Iron Block",#42: 
-            ), (
-                (5, 5, 6, 6, 5, 5), "Double stone stair step",#43: 
-            ), (
-                (5, 5, 6, 6, 5, 5), "Single stone stair step",#44: 
-            ), (
-                (7, 7, 7, 7, 7, 7), "Red brick tile",#45: 
-            ), (
-                (8, 8, 9, 10, 8, 8), "TNT", #46: 
-            ), (
-                (35, 35, 4, 4, 35, 35), "Bookshelf",#47: 
-            ), (
-                (36, 36, 36, 36, 36, 36), "Moss covered cobblestone",#48: 
-            ), (
-                (37, 37, 37, 37, 37, 37), "Obsidian",#49: 
-            ), (
-                (80, 80, 80, 80, 80, 80), "Torch",#50: 
-            ), (
-                (63, 63, 63, 63, 63, 63), "Fire",#51:  XXXXX
-            ), (
-                (14, 14, 14, 14, 14, 14), "Infinite water source",#52: 
-            ), (
-                (30, 30, 30, 30, 30, 30), "Infinite lava source",#53: 
-            ), (
-                (26, 26, 26, 27, 25, 25), "Chest",#54: 
-            ), (
-                (63, 63, 63, 63, 63, 63), "Cog",#55: 
-            ), (
-                (50, 50, 50, 50, 50, 50), "Diamond Ore",#56: 
-            ), (
-                (40, 40, 24, 56, 40, 40), "Solid Diamond Block",#57: 
-            ), (
-                (59, 59, 43, 20, 60, 60), "Crafting Table",#58: 
-            ), (
-                (95, 95, 95, 95, 95, 95), "Crops",#59: 
-            ), (
-                (86, 86, 86, 86, 86, 86), "Farmland",#60: 
-            ), (
-                (45, 45,  1,  1, 44, 44), "Furnace",#61: 
-            ), (
-                (45, 45,  1,  1, 61, 61), "Lit Furnace",#62: 
-            )] + [((NOTEX,)*6, "Not present in Creative") , #63-255: "Bugs",
-            ] * 200 #create extras, then cut them off on the next line
+cm = classicMaterials
+cm.Air = cm.Block(0, 
+    name="Air",
+    texture=0xB8,
+    )
+cm.Rock = cm.Block(1, 
+    name="Rock",
+    texture=0x01,
+    )
+cm.Grass = cm.Block(2, 
+    name="Grass",
+    texture=(0x03, 0x03, 0x00, 0x02, 0x03, 0x03),
+    )
+cm.Dirt = cm.Block(3, 
+    name="Dirt",
+    texture=0x02,
+    )
+cm.Cobblestone = cm.Block(4, 
+    name="Cobblestone",
+    texture=0x10,
+    )
+cm.WoodPlanks = cm.Block(5, 
+    name="Wood Planks",
+    texture=0x04,
+    )
+cm.Sapling = cm.Block(6, 
+    name="Sapling",
+    texture=0x0F,
+    )
+cm.Adminium = cm.Block(7, 
+    name="Adminium",
+    texture=0x11,
+    )
+cm.WaterActive = cm.Block(8, 
+    name="Water (active)",
+    texture=0x0E,
+    )
+cm.WaterStill = cm.Block(9, 
+    name="Water (still)",
+    texture=0x0E,
+    )
+cm.LavaActive = cm.Block(10, 
+    name="Lava (active)",
+    texture=0x1E,
+    )
+cm.LavaStill = cm.Block(11, 
+    name="Lava (still)",
+    texture=0x1E,
+    )
+cm.Sand = cm.Block(12, 
+    name="Sand",
+    texture=0x12,
+    )
+cm.Gravel = cm.Block(13, 
+    name="Gravel",
+    texture=0x13,
+    )
+cm.GoldOre = cm.Block(14, 
+    name="Gold Ore",
+    texture=0x20,
+    )
+cm.IronOre = cm.Block(15, 
+    name="Iron Ore",
+    texture=0x21,
+    )
+cm.CoalOre = cm.Block(16, 
+    name="Coal Ore",
+    texture=0x22,
+    )
+cm.Wood = cm.Block(17, 
+    name="Wood",
+    texture=(0x14, 0x14, 0x15, 0x15, 0x14, 0x14),
+    )
+cm.Leaves = cm.Block(18, 
+    name="Leaves",
+    texture=0x34,
+    )
+cm.Sponge = cm.Block(19, 
+    name="Sponge",
+    texture=0x30,
+    )
+cm.Glass = cm.Block(20, 
+    name="Glass",
+    texture=0x31,
+    )
+cm.RedCloth = cm.Block(21, 
+    name="Red Cloth",
+    texture=0x40,
+    )
+cm.OrangeCloth = cm.Block(22, 
+    name="Orange Cloth",
+    texture=0x41,
+    )
+cm.YellowCloth = cm.Block(23, 
+    name="Yellow Cloth",
+    texture=0x42,
+    )
+cm.LightGreenCloth = cm.Block(24, 
+    name="Light Green Cloth",
+    texture=0x43,
+    )
+cm.GreenCloth = cm.Block(25, 
+    name="Green Cloth",
+    texture=0x44,
+    )
+cm.AquaCloth = cm.Block(26, 
+    name="Aqua Cloth",
+    texture=0x45,
+    )
+cm.CyanCloth = cm.Block(27, 
+    name="Cyan Cloth",
+    texture=0x46,
+    )
+cm.BlueCloth = cm.Block(28, 
+    name="Blue Cloth",
+    texture=0x47,
+    )
+cm.PurpleCloth = cm.Block(29, 
+    name="Purple Cloth",
+    texture=0x48,
+    )
+cm.IndigoCloth = cm.Block(30, 
+    name="Indigo Cloth",
+    texture=0x49,
+    )
+cm.VioletCloth = cm.Block(31, 
+    name="Violet Cloth",
+    texture=0x4A,
+    )
+cm.MagentaCloth = cm.Block(32, 
+    name="Magenta Cloth",
+    texture=0x4B,
+    )
+cm.PinkCloth = cm.Block(33, 
+    name="Pink Cloth",
+    texture=0x4C,
+    )
+cm.BlackCloth = cm.Block(34, 
+    name="Black Cloth",
+    texture=0x4D,
+    )
+cm.GrayCloth = cm.Block(35, 
+    name="Gray Cloth",
+    texture=0x4E,
+    )
+cm.WhiteCloth = cm.Block(36, 
+    name="White Cloth",
+    texture=0x4F,
+    )
+cm.Flower = cm.Block(37, 
+    name="Flower",
+    texture=0x0D,
+    )
+cm.Rose = cm.Block(38, 
+    name="Rose",
+    texture=0x0C,
+    )
+cm.BrownMushroom = cm.Block(39, 
+    name="Brown Mushroom",
+    texture=0x1D,
+    )
+cm.RedMushroom = cm.Block(40, 
+    name="Red Mushroom",
+    texture=0x1C,
+    )
+cm.BlockOfGold = cm.Block(41, 
+    name="Block of Gold",
+    texture=(0x27, 0x27, 0x17, 0x37, 0x27, 0x27),
+    )
+cm.BlockOfIron = cm.Block(42, 
+    name="Block of Iron",
+    texture=(0x26, 0x26, 0x16, 0x36, 0x26, 0x26),
+    )
+cm.DoubleStoneSlab = cm.Block(43, 
+    name="Double Stone Slab",
+    texture=(0x05, 0x05, 0x06, 0x06, 0x05, 0x05),
+    )
+cm.SingleStoneSlab = cm.Block(44, 
+    name="Stone Slab",
+    texture=(0x05, 0x05, 0x06, 0x06, 0x05, 0x05),
+    )
+cm.Brick = cm.Block(45, 
+    name="Brick",
+    texture=0x07,
+    )
+cm.TNT = cm.Block(46, 
+    name="TNT",
+    texture=(0x08, 0x08, 0x09, 0x0A, 0x08, 0x08),
+    )
+cm.Bookshelf = cm.Block(47, 
+    name="Bookshelf",
+    texture=(0x23, 0x23, 0x04, 0x04, 0x23, 0x23),
+    )
+cm.MossStone = cm.Block(48, 
+    name="Moss Stone",
+    texture=0x24,
+    )
+cm.Obsidian = cm.Block(49, 
+    name="Obsidian",
+    texture=0x25,
+    )
+cm.Torch = cm.Block(50, 
+    name="Torch",
+    texture=0x50,
+    )
+cm.Fire = cm.Block(51, 
+    name="Fire",
+    texture=0x3F,
+    )
+cm.InfiniteWaterSource = cm.Block(52, 
+    name="Infinite water source",
+    texture=0x0E,
+    )
+cm.InfiniteLavaSource = cm.Block(53, 
+    name="Infinite lava source",
+    texture=0x1E,
+    )
+cm.Chest = cm.Block(54, 
+    name="Chest",
+    texture=(0x1A, 0x1A, 0x1A, 0x1B, 0x19, 0x19),
+    )
+cm.Cog = cm.Block(55, 
+    name="Cog",
+    texture=0x3F,
+    )
+cm.DiamondOre = cm.Block(56, 
+    name="Diamond Ore",
+    texture=0x32,
+    )
+cm.BlockOfDiamond = cm.Block(57, 
+    name="Block Of Diamond",
+    texture=(0x28, 0x28, 0x18, 0x38, 0x28, 0x28),
+    )
+cm.CraftingTable = cm.Block(58, 
+    name="Crafting Table",
+    texture=(0x3B, 0x3B, 0x2B, 0x14, 0x3C, 0x3C),
+    )
+cm.Crops = cm.Block(59, 
+    name="Crops",
+    texture=0x5F,
+    )
+cm.Farmland = cm.Block(60, 
+    name="Farmland",
+    texture=0x56,
+    )
+cm.Furnace = cm.Block(61, 
+    name="Furnace",
+    texture=(0x2D, 0x2D, 0x01, 0x01, 0x2C, 0x2C),
+    )
+cm.LitFurnace = cm.Block(62, 
+    name="Lit Furnace",
+    texture=(0x2D, 0x2D, 0x01, 0x01, 0x3D, 0x3D),
+    )
 
-classicMaterials.blockTextures = classicMaterials.blockTextures[:256]
+###
+### MATERIALS for the latest version of the game ###
+###
 
-classicMaterials.names = [name for (faces, name) in classicMaterials.blockTextures]
-
-
-classicMaterials.lightEmission = zeros( (256,) );
-
-
-materials = MCMaterials();
+materials = MCMaterials(defaultTexture = NOTEX,
+                        defaultName = "Future Block!");
 materials.name = "Alpha"
-materials.blockTextures = [
-            (
-                (NOTEX,)*6, "Air", #0: 
-            ), (
-                (1, 1, 1, 1, 1, 1), "Stone", #1: 
-            ), (
-                (3, 3, 0, 2, 3, 3), "Grass", #2:
-            ), (
-                (2, 2, 2, 2, 2, 2), "Dirt", #3: 
-            ), (
-                (16, 16, 16, 16, 16, 16), "Cobblestone", #4: 
-            ), (
-                (4, 4, 4, 4, 4, 4), "Wood Planks", #5: 
-            ), (
-                (15, 15, 15, 15, 15, 15), "Sapling",  #6: 
-            ), (
-                (17, 17, 17, 17, 17, 17), "Bedrock", #7: 
-            ), (
-                (0xdf, 0xdf, 0xdf, 0xdf, 0xdf, 0xdf), "Water (active)", #8: 
-            ), (
-                (0xdf, 0xdf, 0xdf, 0xdf, 0xdf, 0xdf), "Water (still)", #9: 
-            ), (
-                (0xff, 0xff, 0xff, 0xff, 0xff, 0xff), "Lava (active)", #10: 
-            ), (
-                (0xff, 0xff, 0xff, 0xff, 0xff, 0xff), "Lava (still)", #11: 
-            ), (
-                (18, 18, 18, 18, 18, 18),  "Sand", #12:
-            ), (
-                (19, 19, 19, 19, 19, 19),  "Gravel", #13:
-            ), (
-                (32, 32, 32, 32, 32, 32), "Gold Ore", #14: 
-            ), (
-                (33, 33, 33, 33, 33, 33), "Iron Ore",#15: 
-            ), (
-                (34, 34, 34, 34, 34, 34), "Coal Ore",#16: 
-            ), (
-                (20, 20, 21, 21, 20, 20), "Wood",#17: 
-            ), (
-                (0x35, 0x35, 0x35, 0x35, 0x35, 0x35), "Leaves",#18: 
-            ), (
-                (0x30,)*6, "Sponge",#19: 
-            ), (
-                (0x31,)*6, "Glass",#20: 
-            ), (
-                (0xA0,)*6, "Lapis Lazuli Ore",#21: 
-            ), (
-                (0x90,)*6, "Lapis Lazuli Block",#22: 
-            ), (
-                (0x2E, 0x2E,  0x3E,  1, 0x2D, 0x2D), "Dispenser",#23: 
-            ), (
-                (0xC0, 0xC0, 0xB0, 0xD0, 0xC0, 0xC0), "Sandstone",#24: 
-            ), (
-                (0x4A,)*6, "Note Block",#25: 
-            )
-            ] + list(((NOTEX,)*6, "Future Block!") for i in range(9)) + [ #26-34:"No Item",
-            (
-                (64,)*6,        "Wool"
-            ), (
-                (NOTEX,)*6,     "Future Block!"
-            ), (
-                (13, 13, 13, 13, 13, 13), "Flower",#37: 
-            ), (
-                (12, 12, 12, 12, 12, 12), "Rose",#38: 
-            ), (
-                (29,)*6, "Brown Mushroom",#39: 
-            ), (
-                (28,)*6, "Red Mushroom",#40: 
-            ), (
-                (0x17,)*6, "Block of Gold",#41: 
-            ), (
-                (0x16,)*6, "Block of Iron",#42: 
-            ), (
-                (5, 5, 6, 6, 5, 5), "Double Stone Slab",#43: 
-            ), (
-                (5, 5, 6, 6, 5, 5), "Stone Slab",#44: 
-            ), (
-                (7, 7, 7, 7, 7, 7), "Brick",#45: 
-            ), (
-                (8, 8, 9, 10, 8, 8), "TNT", #46: 
-            ), (
-                (35, 35, 4, 4, 35, 35), "Bookshelf",#47: 
-            ), (
-                (36, 36, 36, 36, 36, 36), "Moss Stone",#48: 
-            ), (
-                (37, 37, 37, 37, 37, 37), "Obsidian",#49: 
-            ), (
-                (0x50,)*6, "Torch",#50: 
-            ), (
-                (0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,),   "Fire",#51:  XXXXX
-            ), (
-                (0x41,0x41,0x41,0x41,0x41,0x41,),   "Monster Spawner",#52: 
-            ), (
-                (0x4,0x4,0x4,0x4,0x4,0x4,), "Wooden Stairs",#53: 
-            ), (
-                (26, 26, 26, 27, 25, 25), "Chest",#54: 
-            ), (
-                (0x64,)*6, "Redstone Wire",#55: 
-            ), (
-                (50, 50, 50, 50, 50, 50), "Diamond Ore",#56: 
-            ), (
-                (0x18,)*6, "Block of Diamond",#57: 
-            ), (
-                (59, 59, 43, 20, 60, 60), "Crafting Table",#58: 
-            ), (
-                (95, 95, 95, 95, 95, 95), "Crops",#59: 
-            ), (
-                (86, 86, 86, 86, 86, 86), "Farmland",#60: 
-            ), (
-                (45, 45,  1,  1, 44, 44), "Furnace",#61: 
-            ), (
-                (45, 45,  1,  1, 61, 61), "Lit Furnace",#62:
-            ), (
-                (NOTEX,)*6,     "Sign", #63
-            ), (
-                (0x51,)*6,      "Wooden Door" #64
-            ), (
-                (0x53,)*6,      "Ladder" #65
-            ), (
-                (0x80,)*6,      "Rail" #66
-            ), (
-                (0x10,)*6,      "Stone Stairs" #67
-            ), (
-                (NOTEX,)*6,     "Wall Sign" #68
-            ), (
-                (NOTEX,)*6,     "Lever" #69
-            ), (
-                (NOTEX,)*6,     "Stone Floor Plate" #70
-            ), (
-                (0x52,)*6,      "Iron Door" #71
-            ), (
-                (NOTEX,)*6,     "Wood Floor Plate" #72
-            ), (
-                (0x33,)*6,      "Redstone Ore" #73:
-            ), (
-                (0x33,)*6,      "Redstone Ore (glowing)" #74
-            ), (
-                (0x73,)*6,      "Redstone Torch (off)" #75
-            ), (
-                (0x63,)*6,      "Redstone Torch (on)" #76
-            ), (
-                (NOTEX,)*6,     "Button", #77
-            ), (
-                (0x42,)*6,      "Snow Layer" #78
-            ), (
-                (0x43,)*6,      "Ice" #79
-            ), (
-                (0x42,)*6,      "Snow Block" #80  
-            ), (
-                (0x46, 0x46, 0x47, 0x45, 0x46, 0x46), "Cactus" #81
-            ), (
-                (0x48, 0x48, 0x48, 0x48, 0x48, 0x48), "Clay" #82
-            ), (
-                (0x49, 0x49, 0x49, 0x49, 0x49, 0x49), "Sugar Cane" #83
-            ), (
-                (0x4A, 0x4A, 0x4A, 0x4B, 0x4A, 0x4A), "Jukebox" #84
-            ), (
-                (NOTEX,)*6, "Fence" #85
-            ), (
-                (0x77, 0x76, 0x66, 0x76, 0x76, 0x76), "Pumpkin" #86
-            ), (
-                (0x67,)*6, "Netherrack" #87
-            ), (
-                (0x68,)*6, "Soul sand" #88
-            ), (
-                (0x69,)*6, "Glowstone" #89
-            ), (
-                (NOTEX,)*6, "Nether Portal" #90
-            ), (
-                (0x78, 0x76, 0x66, 0x76, 0x76, 0x76), "Jack-o'-Lantern" #91
-            ),(
-                (0x7A, 0x7A, 0x79, 0x7C, 0x7A, 0x7A), "Cake" #92
-            ),
-             
-            
-            ] + [((NOTEX,)*6, "Future Block!") , ] * 200 #create extras, then cut them off on the next line
+am = materials
+am.Air = am.Block(0, 
+    name="Air",
+    texture=0xB8,
+    opacity=0,
+    )
+am.Stone = am.Block(1, 
+    name="Stone",
+    texture=0x01,
+    )
+am.Grass = am.Block(2, 
+    name="Grass",
+    texture=(0x03, 0x03, 0x00, 0x02, 0x03, 0x03),
+    )
+am.Dirt = am.Block(3, 
+    name="Dirt",
+    texture=0x02,
+    )
+am.Cobblestone = am.Block(4, 
+    name="Cobblestone",
+    texture=0x10,
+    )
+am.WoodPlanks = am.Block(5, 
+    name="Wood Planks",
+    texture=0x04,
+    )
+am.Sapling = am.Block(6, 
+    name="Sapling",
+    texture=0x0F,
+    opacity=0,
+    )
+am.Bedrock = am.Block(7, 
+    name="Bedrock",
+    texture=0x11,
+    )
+am.WaterActive = am.Block(8, 
+    name="Water (active)",
+    texture=0xDF,
+    opacity=3,
+    )
+am.WaterStill = am.Block(9, 
+    name="Water (still)",
+    texture=0xDF,
+    opacity=3,
+    )
+am.LavaActive = am.Block(10, 
+    name="Lava (active)",
+    texture=0xFF,
+    brightness=15,
+    )
+am.LavaStill = am.Block(11, 
+    name="Lava (still)",
+    texture=0xFF,
+    brightness=15,
+    )
+am.Sand = am.Block(12, 
+    name="Sand",
+    texture=0x12,
+    )
+am.Gravel = am.Block(13, 
+    name="Gravel",
+    texture=0x13,
+    )
+am.GoldOre = am.Block(14, 
+    name="Gold Ore",
+    texture=0x20,
+    )
+am.IronOre = am.Block(15, 
+    name="Iron Ore",
+    texture=0x21,
+    )
+am.CoalOre = am.Block(16, 
+    name="Coal Ore",
+    texture=0x22,
+    )
+am.Wood = am.Block(17, 
+    name="Wood",
+    texture=(0x14, 0x14, 0x15, 0x15, 0x14, 0x14),
+    )
+am.Leaves = am.Block(18, 
+    name="Leaves",
+    texture=0x35,
+    opacity=1,
+    )
+am.Sponge = am.Block(19, 
+    name="Sponge",
+    texture=0x30,
+    )
+am.Glass = am.Block(20, 
+    name="Glass",
+    texture=0x31,
+    opacity=0,
+    )
+am.LapisLazuliOre = am.Block(21, 
+    name="Lapis Lazuli Ore",
+    texture=0xA0,
+    )
+am.LapisLazuliBlock = am.Block(22, 
+    name="Lapis Lazuli Block",
+    texture=0x90,
+    )
+am.Dispenser = am.Block(23, 
+    name="Dispenser",
+    texture=(0x2E, 0x2E, 0x3E, 0x01, 0x2D, 0x2D),
+    )
+am.Sandstone = am.Block(24, 
+    name="Sandstone",
+    texture=(0xC0, 0xC0, 0xB0, 0xD0, 0xC0, 0xC0),
+    )
+am.NoteBlock = am.Block(25, 
+    name="Note Block",
+    texture=0x4A,
+    )
+am.Wool = am.Block(35, 
+    name="Wool",
+    texture=0x40,
+    )
+am.Flower = am.Block(37, 
+    name="Flower",
+    texture=0x0D,
+    opacity=0,
+    )
+am.Rose = am.Block(38, 
+    name="Rose",
+    texture=0x0C,
+    opacity=0,
+    )
+am.BrownMushroom = am.Block(39, 
+    name="Brown Mushroom",
+    texture=0x1D,
+    opacity=0,
+    brightness=1,
+    )
+am.RedMushroom = am.Block(40, 
+    name="Red Mushroom",
+    texture=0x1C,
+    opacity=0,
+    )
+am.BlockofGold = am.Block(41, 
+    name="Block of Gold",
+    texture=0x17,
+    )
+am.BlockofIron = am.Block(42, 
+    name="Block of Iron",
+    texture=0x16,
+    )
+am.DoubleStoneSlab = am.Block(43, 
+    name="Double Stone Slab",
+    texture=(0x05, 0x05, 0x06, 0x06, 0x05, 0x05),
+    )
+am.StoneSlab = am.Block(44, 
+    name="Stone Slab",
+    texture=(0x05, 0x05, 0x06, 0x06, 0x05, 0x05),
+    )
+am.Brick = am.Block(45, 
+    name="Brick",
+    texture=0x07,
+    )
+am.TNT = am.Block(46, 
+    name="TNT",
+    texture=(0x08, 0x08, 0x09, 0x0A, 0x08, 0x08),
+    )
+am.Bookshelf = am.Block(47, 
+    name="Bookshelf",
+    texture=(0x23, 0x23, 0x04, 0x04, 0x23, 0x23),
+    )
+am.MossStone = am.Block(48, 
+    name="Moss Stone",
+    texture=0x24,
+    )
+am.Obsidian = am.Block(49, 
+    name="Obsidian",
+    texture=0x25,
+    )
+am.Torch = am.Block(50, 
+    name="Torch",
+    texture=0x50,
+    brightness=14,
+    opacity=0,
+    )
+am.Fire = am.Block(51, 
+    name="Fire",
+    texture=0x1F,
+    brightness=15,
+    )
+am.MonsterSpawner = am.Block(52, 
+    name="Monster Spawner",
+    texture=0x41,
+    opacity=0,
+    )
+am.WoodenStairs = am.Block(53, 
+    name="Wooden Stairs",
+    texture=0x04,
+    opacity=0,
+    )
+am.Chest = am.Block(54, 
+    name="Chest",
+    texture=(0x1A, 0x1A, 0x1A, 0x1B, 0x19, 0x19),
+    )
+am.RedstoneWire = am.Block(55, 
+    name="Redstone Wire",
+    texture=0x64,
+    opacity=0,
+    )
+am.DiamondOre = am.Block(56, 
+    name="Diamond Ore",
+    texture=0x32,
+    )
+am.BlockofDiamond = am.Block(57, 
+    name="Block of Diamond",
+    texture=0x18,
+    )
+am.CraftingTable = am.Block(58, 
+    name="Crafting Table",
+    texture=(0x3B, 0x3B, 0x2B, 0x14, 0x3C, 0x3C),
+    )
+am.Crops = am.Block(59, 
+    name="Crops",
+    texture=0x5F,
+    opacity=0,
+    )
+am.Farmland = am.Block(60, 
+    name="Farmland",
+    texture=0x56,
+    )
+am.Furnace = am.Block(61, 
+    name="Furnace",
+    texture=(0x2D, 0x2D, 0x01, 0x01, 0x2C, 0x2C),
+    )
+am.LitFurnace = am.Block(62, 
+    name="Lit Furnace",
+    texture=(0x2D, 0x2D, 0x01, 0x01, 0x3D, 0x3D),
+    brightness=14,
+    )
+am.Sign = am.Block(63, 
+    name="Sign",
+    texture=0xB8,
+    opacity=0,
+    )
+am.WoodenDoor = am.Block(64, 
+    name="Wooden Door",
+    texture=0x51,
+    opacity=0,
+    )
+am.Ladder = am.Block(65, 
+    name="Ladder",
+    texture=0x53,
+    opacity=0,
+    )
+am.Rail = am.Block(66, 
+    name="Rail",
+    texture=0x80,
+    opacity=0,
+    )
+am.StoneStairs = am.Block(67, 
+    name="Stone Stairs",
+    texture=0x10,
+    opacity=0,
+    )
+am.WallSign = am.Block(68, 
+    name="Wall Sign",
+    texture=0xB8,
+    opacity=0,
+    )
+am.Lever = am.Block(69, 
+    name="Lever",
+    texture=0xB8,
+    opacity=0,
+    )
+am.StoneFloorPlate = am.Block(70, 
+    name="Stone Floor Plate",
+    texture=0xB8,
+    opacity=0,
+    )
+am.IronDoor = am.Block(71, 
+    name="Iron Door",
+    texture=0x52,
+    opacity=0,
+    )
+am.WoodFloorPlate = am.Block(72, 
+    name="Wood Floor Plate",
+    texture=0xB8,
+    opacity=0,
+    )
+am.RedstoneOre = am.Block(73, 
+    name="Redstone Ore",
+    texture=0x33,
+    )
+am.RedstoneOreGlowing = am.Block(74, 
+    name="Redstone Ore (glowing)",
+    texture=0x33,
+    brightness=9,
+    )
+am.RedstoneTorchOff = am.Block(75, 
+    name="Redstone Torch (off)",
+    texture=0x73,
+    opacity=0,
+    )
+am.RedstoneTorchOn = am.Block(76, 
+    name="Redstone Torch (on)",
+    texture=0x63,
+    opacity=0,
+    brightness=7,
+    )
+am.Button = am.Block(77, 
+    name="Button",
+    texture=0xB8,
+    opacity=0,
+    )
+am.SnowLayer = am.Block(78, 
+    name="Snow Layer",
+    texture=0x42,
+    opacity=0,
+    )
+am.Ice = am.Block(79, 
+    name="Ice",
+    texture=0x43,
+    opacity=3,
+    )
+am.Snow = am.Block(80, 
+    name="Snow",
+    texture=0x42,
+    )
+am.Cactus = am.Block(81, 
+    name="Cactus",
+    texture=(0x46, 0x46, 0x47, 0x45, 0x46, 0x46),
+    )
+am.Clay = am.Block(82, 
+    name="Clay",
+    texture=0x48,
+    )
+am.SugarCane = am.Block(83, 
+    name="Sugar Cane",
+    texture=0x49,
+    opacity=0,
+    )
+am.Jukebox = am.Block(84, 
+    name="Jukebox",
+    texture=(0x4A, 0x4A, 0x4A, 0x4B, 0x4A, 0x4A),
+    )
+am.Fence = am.Block(85, 
+    name="Fence",
+    texture=0xB8,
+    opacity=0,
+    )
+am.Pumpkin = am.Block(86, 
+    name="Pumpkin",
+    texture=(0x77, 0x76, 0x66, 0x76, 0x76, 0x76),
+    )
+am.Netherrack = am.Block(87, 
+    name="Netherrack",
+    texture=0x67,
+    )
+am.SoulSand = am.Block(88, 
+    name="Soul Sand",
+    texture=0x68,
+    )
+am.Glowstone = am.Block(89, 
+    name="Glowstone",
+    texture=0x69,
+    brightness=15,
+    )
+am.NetherPortal = am.Block(90, 
+    name="Nether Portal",
+    texture=0xB8,
+    opacity=0,
+    brightness=11,
+    )
+am.JackOLantern = am.Block(91, 
+    name="Jack-o'-Lantern",
+    texture=(0x78, 0x76, 0x66, 0x76, 0x76, 0x76),
+    brightness=15,
+    )
+am.Cake = am.Block(92, 
+    name="Cake",
+    texture=(0x7A, 0x7A, 0x79, 0x7C, 0x7A, 0x7A),
+    )
 
-materials.blockTextures = materials.blockTextures[:256]
+del am
 
-
-
-materials.freebieBlocks = set( ( 6, #sapling
-                               18, #leaves
-                               37, #flower
-                               38, #rose
-                               39, #red shroom
-                               40, #brown shroom
-                               50, #torch
-                               52, #mob spawner
-                               55, #redstone wire
-                               59, #crops
-                               65, #ladder
-                               66, #rail
-                               75, #redstone torch dark
-                               76, #redstone torch
-                               ) );
-    
-materials.freebieBlocks = array( [ (x in materials.freebieBlocks) for x in range(256) ], dtype='bool');
-classicMaterials.freebieBlocks = materials.freebieBlocks;
-
-materials.names = [name for (faces, name) in materials.blockTextures]
-
-materials.lightAbsorption = array([15,15,15,15]*64, uint8); 
-#all blocks are solid by default
-materials.transparentBlocks = {
-                             0:0, #air
-                             6:0, #sapling
-                             8:3, #water
-                             9:3, #stat. water
-                             #10:15, #lava
-                             #11:15, #stat. lava
-                             18:1, #leaves
-                             20:0, #glass
-                             37:0, #flower
-                             38:0, #rose
-                             39:0, #red shroom
-                             40:0, #brown shroom
-                             50:0, #torch
-                             52:0, #mob spawner
-                             53:0, #wood stairs
-                             55:0, #redstone wire
-                             59:0, #crops
-                             63:0, #sign
-                             64:0, #wooden door
-                             65:0, #ladder
-                             66:0, #rail
-                             67:0, #stone stairs
-                             68:0, #wall sign
-                             69:0, #lever
-                             70:0, #stone floor plate
-                             71:0, #iron door
-                             72:0, #wood floor plate
-                             75:0, #redstone torch, dark
-                             76:0, #redstone torch
-                             77:0, #stone button
-                             78:0, #snow
-                             79:3, #ice
-                             83:0, #reeds
-                             85:0, #fence
-                             90:0, #nether portal
-                             };
-bn = materials.materialNamed
-la = materials.lightAbsorption
-la[0] = 0;
-for i in materials.transparentBlocks:
-    la[i] = materials.transparentBlocks[i];
-materials.transparentBlocks = materials.lightAbsorption < 15
-classicMaterials.transparentBlocks = materials.transparentBlocks
 classicMaterials.lightAbsorption = materials.lightAbsorption
-
-
-materials.lightEmission = zeros(256, uint8)
-le = materials.lightEmission 
-le[bn("Torch")] = 14
-le[bn("Lit Furnace")] = 14
-le[bn("Fire")] = 15
-le[bn("Lava (active)")] = 15
-le[bn("Lava (still)")] = 15
-le[bn("Redstone Torch (on)")] = 7
-le[bn("Redstone Ore (glowing)")] = 9
-le[bn("Brown Mushroom")] = 1
-le[bn("Glowstone")] = 15
-le[bn("Nether Portal")] = 11
-le[bn("Jack-o'-Lantern")] = 15
-
 
 classicMaterials.lightEmission = materials.lightEmission
 
 
-namedMaterials = {
-    'Classic':classicMaterials,
-    'Alpha':materials,
-}
+namedMaterials = dict( (i.name, i) for i in (materials, classicMaterials) )
+
 
 materialNames = dict( (k,v) for v,k in namedMaterials.iteritems() )
 
 
 #filters certain block types in old maps to types available in /game/
-blockFilterClassicToAlpha = array(range(len(materials.blockTextures)), uint8)
+blockFilterClassicToAlpha = arange(256, dtype=uint8)
+
 b = blockFilterClassicToAlpha
 b[8]=9; #water to still water
 b[10]=11; #lava to still lava
 b[36]=35; # the new white cloth
-#b[19]=35; # sponge - unavailable
-b[55]=35; # cog - 55 is now red wire
 b[52]=9; # infinite water source - now mob spawner
 b[53]=11; # infinite lava source - now wooden stair
+b[55]=35; # cog - 55 is now red wire
+del b;
 
 for i in range(21, 35): blockFilterClassicToAlpha[i] = 35; # recolor all cloth to white
 
-blockFilterAlphaToClassic = array(range(len(materials.blockTextures)), uint8)
-b = blockFilterAlphaToClassic
-b[50:255] = 36 # change all blocks from torch (50) on up to grey cloth
+blockFilterAlphaToClassic = arange(256, dtype=uint8)
+blockFilterAlphaToClassic[50:255] = 36 # change all blocks from torch (50) on up to grey cloth
 
-del b;
+
 ### xxx add filter tables for indev blocks
 
-nullConversionTable = array(range(256), uint8) 
+nullConversionTable = arange(256, dtype=uint8) 
 
 materials.conversionTables = {
         materials:  nullConversionTable,
@@ -450,14 +738,12 @@ classicMaterials.conversionTables = {
         
     };
 
-     
-
 #precalculate coords
 def texCoords(idx):
     
     return ( (idx & 0xf) << 4 , (idx & 0xf0) ) 
 
-materials.blockTextures = array([map(texCoords, faces) for (faces, name) in materials.blockTextures], dtype='float32')
-classicMaterials.blockTextures = array([map(texCoords, faces) for (faces, name) in classicMaterials.blockTextures], dtype='float32')
+materials.blockTextures = array([map(texCoords, faces) for (faces) in materials.blockTextures], dtype='float32')
+classicMaterials.blockTextures = array([map(texCoords, faces) for (faces) in classicMaterials.blockTextures], dtype='float32')
 
 alphaMaterials = materials;

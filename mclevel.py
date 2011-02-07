@@ -99,11 +99,11 @@ midBlocks[:] = 0
 # positions in the array.
  
 # Create the mask from the result of the equality test.
-fireBlocks = ( chunk.Blocks==world.materials.materialNamed("Fire") )
+fireBlocks = ( chunk.Blocks==world.materials.Fire.ID )
 
 # Access Blocks using the mask to set elements. The syntax is the same as 
 # using []= with slices
-chunk.Blocks[fireBlocks] = world.materials.materialNamed("Leaves")
+chunk.Blocks[fireBlocks] = world.materials.Leaves.ID
 
 # You can also combine mask arrays using logical operations (&, |, ^) and use
 # the mask to access any other array of the same shape.
@@ -117,8 +117,8 @@ chunk.Blocks[fireBlocks] = world.materials.materialNamed("Leaves")
 # unpacked from 4-bit arrays to numpy uint8 arrays. This makes them much easier
 # to work with.
 
-treeBlocks = ( chunk.Blocks == world.materials.materialNamed("Wood") )
-treeBlocks |= ( chunk.Blocks == world.materials.materialNamed("Leaves") )
+treeBlocks = ( chunk.Blocks == world.materials.Wood.ID )
+treeBlocks |= ( chunk.Blocks == world.materials.Leaves.ID )
 chunk.Data[treeBlocks] = 2 # birch
 
 
@@ -3604,6 +3604,8 @@ class MCIndevLevel(MCLevel):
             mapTag[Data].value.shape = (self.Height, self.Length, self.Width)
             
             self.Data = swapaxes(mapTag[Data].value, 0, 2)
+            
+
             
             self.BlockLight = self.Data & 0xf
             
