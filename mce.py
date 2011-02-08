@@ -982,17 +982,17 @@ class mce(object):
                     #the quick lighting from chunkChanged has already lit this simple terrain completely
                     c.needsLighting = False 
                     
-                    print "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cz)
+                    logging.info( "%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"),cx,cz) )
 
-            print "Done with mapping!"
+            logging.info( "Done with mapping!" )
             self.needsSave = True;
             stop = datetime.datetime.now()
-            print "Took %s." % str(stop-start)
+            logging.info( "Took %s." % str(stop-start) )
             
             spawnz = width / 2
             spawnx = height / 2;
             spawny = greyimg.getpixel((spawnx, spawnz))
-            print "You probably want to change your spawn point. I suggest {0}".format( (spawnx, spawny, spawnz) )
+            logging.info( "You probably want to change your spawn point. I suggest {0}".format( (spawnx, spawny, spawnz) ) )
             
     def _execute(self, command):
         """
