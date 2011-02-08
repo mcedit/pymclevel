@@ -527,15 +527,20 @@ class MCLevel(object):
         return itertools.product(xrange(0, self.Width+15>>4), xrange(0, self.Length+15>>4))
     
     @property
-    def presentChunks(self): return self.allChunks #backward compatibility
+    def presentChunks(self):
+        """Returns self.allChunks for compatibility""" 
+        return self.allChunks #backward compatibility
     
     @property
     def allChunks(self):
+        """Returns a synthetic list of chunk positions (xPos, zPos), to fake 
+        being a chunked level format."""
         return self.loadedChunks
         
     def getChunk(self, cx, cz):
-        #if not hasattr(self, 'whiteLight'):
-            #self.whiteLight = array([[[15] * self.Height] * 16] * 16, uint8);
+        """Synthesize a FakeChunk object representing the chunk at the given
+        position. Subclasses override fakeBlocksForChunk and fakeDataForChunk
+        to fill in the chunk arrays"""
             
         class FakeChunk:
             def load(self):pass
@@ -585,11 +590,15 @@ class MCLevel(object):
         +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays, 
         +  a x,y,z triplet representing the relative location of this subslice within the requested world slice.
         
-        
+        Note the different order of the coordinates between the 'slices' triplet
+        and the 'offset' triplet. x,z,y ordering is used only
+        to index arrays, since it reflects the order of the blocks in memory.
+        In all other places, including an entity's 'Pos', the order is x,y,z. 
         """
         level = self
         
-        #offsets of the block selection into the chunks on the edge
+        #when yielding slices of chunks on the edge of the box, adjust the 
+        #slices by an offset
         minxoff, minzoff = box.minx-(box.mincx<<4), box.minz-(box.mincz<<4);
         maxxoff, maxzoff = box.maxx-(box.maxcx<<4)+16, box.maxz-(box.maxcz<<4)+16;
         
@@ -2575,6 +2584,8 @@ class MCInfdevOldLevel(MCLevel):
         
     @property
     def allChunks(self):
+        """Iterates over (xPos, zPos) tuples, one for each chunk in the level.
+        May initiate a costly chunk scan."""
         if self._allChunks is None:
             self.preloadChunkPaths()
         return self._allChunks.__iter__();
