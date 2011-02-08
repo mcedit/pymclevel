@@ -2125,9 +2125,9 @@ class MCInfdevOldLevel(MCLevel):
             return True;
             
         return False
-        
+    
     def getWorldBounds(self):
-        if len(self._allChunks) == 0:
+        if self.chunkCount == 0:
             return BoundingBox( (0,0,0), (0,0,0) )
             
         allChunksArray = array(list(self.allChunks), dtype='int32')
@@ -2581,7 +2581,15 @@ class MCInfdevOldLevel(MCLevel):
     @property
     def loadedChunks(self):
         return self._loadedChunks.keys();
-        
+    
+    @property
+    def chunkCount(self):
+        """Returns the number of chunks in the level. May initiate a costly
+        chunk scan."""
+        if self._allChunks is None:
+            self.preloadChunkPaths()
+        return len(self._allChunks)
+           
     @property
     def allChunks(self):
         """Iterates over (xPos, zPos) tuples, one for each chunk in the level.

@@ -438,7 +438,7 @@ class mce(object):
         blockCounts = zeros( (256,), 'uint64')
         sizeOnDisk = 0;
         
-        print "Analyzing {0} chunks...".format(len(self.level.allChunks))
+        print "Analyzing {0} chunks...".format(self.level.chunkCount)
         
         for i, cPos in enumerate(self.level.allChunks, 1):
             ch = self.level.getChunk(*cPos);
