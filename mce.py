@@ -1047,7 +1047,7 @@ class mce(object):
         self.loadWorld(command[0])
         
     def _reload(self, command):
-        self.level = mclevel.fromFile(self.filename);
+        self.level = mclevel.fromFile(self.level.filename);
     
     def _dimension(self, command):
         """
@@ -1136,19 +1136,13 @@ class mce(object):
     def loadWorld(self, world):
         try:
             worldNum = int(world)
+            if str(worldNum) == world:
+                self.level = mclevel.loadWorldNumber(worldNum)
+                
         except ValueError:
             self.level = mclevel.fromFile(world)
             
-            self.filename = self.level.filename
-            
-            
-            
-        else:
-            if str(worldNum) == world:
-                if worldNum > 0 and worldNum <= 5:
-                    self.level = mclevel.loadWorldNumber(worldNum)
-                    self.filename = self.level.filename
-                    
+                   
                     
                 
         
