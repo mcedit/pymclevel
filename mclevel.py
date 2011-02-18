@@ -3185,6 +3185,11 @@ class MCInfdevOldLevel(MCLevel):
             print "Copying with chunk alignment!"
             cxoffset = destBox.mincx - sourceBox.mincx
             czoffset = destBox.mincz - sourceBox.mincz
+            
+            typemask = zeros( (256,), dtype='bool')
+            if blocksToCopy:
+                typemask[blocksToCopy] = True
+                
             changedChunks = deque();
             i=0;
             for cx,cz in sourceBox.chunkPositions:
@@ -3208,13 +3213,17 @@ class MCInfdevOldLevel(MCLevel):
                         slices = (slice(0, width), slice(0, length), slice(None, None));
                     else:
                         slices = (slice(None, None))
+                    
+                    mask = slice(None, None)
+                    if blocksToCopy:
+                        mask = typemask[sourceChunk.Blocks[slices]]
                         
-                    destChunk.Blocks[slices] = sourceChunk.Blocks[slices]
-                    destChunk.Data[slices] = sourceChunk.Data[slices]
-                    destChunk.BlockLight[slices] = sourceChunk.BlockLight[slices]
-                    destChunk.SkyLight[slices] = sourceChunk.SkyLight[slices]
-                    destChunk.HeightMap[slices] = sourceChunk.HeightMap[slices]
+                    destChunk.Blocks[slices][mask] = sourceChunk.Blocks[slices][mask]
+                    destChunk.Data[slices][mask] = sourceChunk.Data[slices][mask]
+                    destChunk.BlockLight[slices][mask] = sourceChunk.BlockLight[slices][mask]
+                    destChunk.SkyLight[slices][mask] = sourceChunk.SkyLight[slices][mask]
                     destChunk.copyEntitiesFrom(sourceChunk, sourceBox, destinationPoint);
+                    generateHeightMap(destChunk)
                     
                     changedChunks.append(destChunk);
                     
@@ -3240,7 +3249,7 @@ class MCInfdevOldLevel(MCLevel):
             for box, destPoint in iterateSubsections():
                 info( "Subsection {0} at {1}".format(i, destPoint) )
                 temp = sourceLevel.extractSchematic(box);
-                self.copyBlocksFrom(temp, BoundingBox( (0,0,0), box.size ), destPoint);
+                self.copyBlocksFrom(temp, BoundingBox( (0,0,0), box.size ), destPoint, blocksToCopy);
                 i+= 1;
             
                     
