@@ -506,8 +506,8 @@ class MCLevel(object):
             
         try:
             self.shapeChunkData()
-        except KeyError:
-            error( u"Incorrect chunk format in file: " + self.filename )
+        except KeyError, e:
+            error( u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e) )
             if self.world: self.world.malformedChunk(*self.chunkPosition);
             raise ChunkMalformed, self.filename
         
