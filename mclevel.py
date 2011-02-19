@@ -1756,7 +1756,7 @@ class ZeroChunk(object):
             
     
 class InfdevChunk(MCLevel):
-    """ This is a 16,16,128 chunk in an (infinite) world.
+    """ This is a 16x16xH chunk in an (infinite) world.
     The properties Blocks, Data, SkyLight, BlockLight, and Heightmap 
     are ndarrays containing the respective blocks in the chunk file.
     Each array is indexed [x,z,y].  The Data, Skylight, and BlockLight 
@@ -1810,16 +1810,16 @@ class InfdevChunk(MCLevel):
         levelTag[LastUpdate] = TAG_Long(0);
         
         levelTag[BlockLight] = TAG_Byte_Array()
-        levelTag[BlockLight].value = zeros(16*16*64, uint8)
+        levelTag[BlockLight].value = zeros(16*16*self.world.Height/2, uint8)
         
         levelTag[Blocks] = TAG_Byte_Array()
-        levelTag[Blocks].value = zeros(16*16*128, uint8)
+        levelTag[Blocks].value = zeros(16*16*self.world.Height, uint8)
         
         levelTag[Data] = TAG_Byte_Array()
-        levelTag[Data].value = zeros(16*16*64, uint8)
+        levelTag[Data].value = zeros(16*16*self.world.Height/2, uint8)
 
         levelTag[SkyLight] = TAG_Byte_Array()
-        levelTag[SkyLight].value = zeros(16*16*64, uint8)
+        levelTag[SkyLight].value = zeros(16*16*self.world.Height/2, uint8)
         levelTag[SkyLight].value[:] = 255
 
         levelTag[HeightMap] = TAG_Byte_Array()
@@ -1945,7 +1945,7 @@ class InfdevChunk(MCLevel):
         
         for x,z in itertools.product(xrange(16), xrange(16)):
             
-            skylight[x,z,heightmap[z,x]:128] = 15 
+            skylight[x,z,heightmap[z,x]:self.world.Height] = 15 
             lv = 15;
             for y in reversed(range(heightmap[z,x])):
                 lv -= (la[blocks[x,z,y]] or 1)
@@ -1961,7 +1961,7 @@ class InfdevChunk(MCLevel):
         """ for internal use.  call getChunk and compressChunk to load, compress, and unpack chunks automatically """
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
-            assert dataArray.shape[2] == 64;
+            assert dataArray.shape[2] == self.world.Height/2;
             unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)  
             
             #unpack data
@@ -1970,7 +1970,7 @@ class InfdevChunk(MCLevel):
             #unpackedData[...,1] &= 0x0f   
             
             
-            self.root_tag[Level][key].value=unpackedData.reshape(16,16,128)
+            self.root_tag[Level][key].value=unpackedData.reshape(16,16,self.world.Height)
             self.dataIsPacked = False;
             
     def packChunkData(self):
@@ -1981,9 +1981,9 @@ class InfdevChunk(MCLevel):
             return;
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
-            assert dataArray.shape[2] == 128;
+            assert dataArray.shape[2] == self.world.Height;
             
-            unpackedData = self.root_tag[Level][key].value.reshape(16,16,64,2)
+            unpackedData = self.root_tag[Level][key].value.reshape(16,16,self.world.Height/2,2)
             unpackedData[...,1] <<=4
             unpackedData[...,1] |= unpackedData[...,0]
             self.root_tag[Level][key].value=array(unpackedData[:,:,:,1])
@@ -1996,11 +1996,11 @@ class InfdevChunk(MCLevel):
         chunkTag = self.root_tag
         
         chunkSize = 16
-        chunkTag[Level][Blocks].value.shape=(chunkSize, chunkSize, 128)
+        chunkTag[Level][Blocks].value.shape=(chunkSize, chunkSize, self.world.Height)
         chunkTag[Level][HeightMap].value.shape=(chunkSize, chunkSize);            
-        chunkTag[Level][SkyLight].value.shape = (chunkSize, chunkSize, 64)
-        chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, 64)
-        chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, 64)
+        chunkTag[Level][SkyLight].value.shape = (chunkSize, chunkSize, self.world.Height/2)
+        chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, self.world.Height/2)
+        chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, self.world.Height/2)
         if not TileEntities in chunkTag[Level]:
             chunkTag[Level][TileEntities] = TAG_List();
         if not Entities in chunkTag[Level]:
@@ -2137,7 +2137,7 @@ class MCInfdevOldLevel(MCLevel):
         maxcz = max(allChunksArray[:,1])
         
         origin = (mincx << 4, 0, mincz << 4)
-        size = ((maxcx-mincx+1) << 4, 128, (maxcz-mincz+1) << 4)
+        size = ((maxcx-mincx+1) << 4, self.Height, (maxcz-mincz+1) << 4)
         
         return BoundingBox(origin, size)
         
@@ -2282,7 +2282,13 @@ class MCInfdevOldLevel(MCLevel):
         self.decompressedChunkQueue = dequeset()
         
         self.loadLevelDat(create, random_seed, last_played);
-                    
+        
+        #attempt to support yMod
+        try:
+            self.Height = self.root_tag["Data"]["YLimit"].value
+        except:
+            pass
+            
         self.playersDir = os.path.join(self.worldDir, "players");
         
         if os.path.isdir(self.playersDir):
@@ -2765,7 +2771,7 @@ class MCInfdevOldLevel(MCLevel):
             if conserveMemory:
                 chunk.compress();
             
-        zeroChunk = ZeroChunk(128)
+        zeroChunk = ZeroChunk(self.Height)
         zeroChunk.BlockLight[:] = 0;
         zeroChunk.SkyLight[:] = 0;
         
@@ -2773,9 +2779,9 @@ class MCInfdevOldLevel(MCLevel):
         la[18] = 0; #for normal light dispersal, leaves absorb the same as empty air.
         startingDirtyChunks = dirtyChunks
         
-        oldLeftEdge = zeros( (1, 16, 128), 'uint8');
-        oldBottomEdge = zeros( (16, 1, 128), 'uint8');
-        oldChunk = zeros( (16, 16, 128), 'uint8');
+        oldLeftEdge = zeros( (1, 16, self.Height), 'uint8');
+        oldBottomEdge = zeros( (16, 1, self.Height), 'uint8');
+        oldChunk = zeros( (16, 16, self.Height), 'uint8');
           
         info( u"Dispersing light..." )
         for light in ("BlockLight", "SkyLight"):
@@ -2832,85 +2838,85 @@ class MCInfdevOldLevel(MCLevel):
                 
                 nc = neighboringChunks[FaceXDecreasing]
                 ncLight = getattr(nc,light);
-                oldLeftEdge[:] = ncLight[15:16,:,0:128] #save the old left edge 
+                oldLeftEdge[:] = ncLight[15:16,:,0:self.Height] #save the old left edge 
                 
                 #left edge
-                newlight = (chunkLight[0:1,:,:128]-la[nc.Blocks[15:16,:,0:128]])-1
+                newlight = (chunkLight[0:1,:,:self.Height]-la[nc.Blocks[15:16,:,0:self.Height]])-1
                 newlight[newlight>15]=0;
                 
-                ncLight[15:16,:,0:128] = maximum(ncLight[15:16,:,0:128], newlight)
+                ncLight[15:16,:,0:self.Height] = maximum(ncLight[15:16,:,0:self.Height], newlight)
                 
                 #chunk body
-                newlight = (chunkLight[1:16,:,0:128]-chunkLa[0:15,:,0:128])
+                newlight = (chunkLight[1:16,:,0:self.Height]-chunkLa[0:15,:,0:self.Height])
                 newlight[newlight>15]=0; #light went negative;
                 
-                chunkLight[0:15,:,0:128] = maximum(chunkLight[0:15,:,0:128], newlight)
+                chunkLight[0:15,:,0:self.Height] = maximum(chunkLight[0:15,:,0:self.Height], newlight)
                 
                 #right edge
                 nc = neighboringChunks[FaceXIncreasing]
                 ncLight = getattr(nc,light);
                 
-                newlight = ncLight[0:1,:,:128]-chunkLa[15:16,:,0:128]
+                newlight = ncLight[0:1,:,:self.Height]-chunkLa[15:16,:,0:self.Height]
                 newlight[newlight>15]=0;
                 
-                chunkLight[15:16,:,0:128] = maximum(chunkLight[15:16,:,0:128], newlight)
+                chunkLight[15:16,:,0:self.Height] = maximum(chunkLight[15:16,:,0:self.Height], newlight)
                 
             
                 #right edge
                 nc = neighboringChunks[FaceXIncreasing]
                 ncLight = getattr(nc,light);
                 
-                newlight = (chunkLight[15:16,:,0:128]-la[nc.Blocks[0:1,:,0:128]])-1
+                newlight = (chunkLight[15:16,:,0:self.Height]-la[nc.Blocks[0:1,:,0:self.Height]])-1
                 newlight[newlight>15]=0;
                 
-                ncLight[0:1,:,0:128] = maximum(ncLight[0:1,:,0:128], newlight)
+                ncLight[0:1,:,0:self.Height] = maximum(ncLight[0:1,:,0:self.Height], newlight)
                 
                 #chunk body
-                newlight = (chunkLight[0:15,:,0:128]-chunkLa[1:16,:,0:128])
+                newlight = (chunkLight[0:15,:,0:self.Height]-chunkLa[1:16,:,0:self.Height])
                 newlight[newlight>15]=0;
                 
-                chunkLight[1:16,:,0:128] = maximum(chunkLight[1:16,:,0:128], newlight)
+                chunkLight[1:16,:,0:self.Height] = maximum(chunkLight[1:16,:,0:self.Height], newlight)
                 
                 #left edge
                 nc = neighboringChunks[FaceXDecreasing]
                 ncLight = getattr(nc,light);
                 
-                newlight = ncLight[15:16,:,:128]-chunkLa[0:1,:,0:128]
+                newlight = ncLight[15:16,:,:self.Height]-chunkLa[0:1,:,0:self.Height]
                 newlight[newlight>15]=0;
                 
-                chunkLight[0:1,:,0:128] = maximum(chunkLight[0:1,:,0:128], newlight)
+                chunkLight[0:1,:,0:self.Height] = maximum(chunkLight[0:1,:,0:self.Height], newlight)
                
                 zerochunkLight[:] = 0;
                 
                 #check if the left edge changed and dirty or compress the chunk appropriately
-                if (oldLeftEdge != ncLight[15:16,:,:128]).any():
+                if (oldLeftEdge != ncLight[15:16,:,:self.Height]).any():
                     #chunk is dirty
                     newDirtyChunks.append(nc)
                 
                 #bottom edge
                 nc = neighboringChunks[FaceZDecreasing]
                 ncLight = getattr(nc,light);
-                oldBottomEdge[:] = ncLight[:,15:16,:128] # save the old bottom edge
+                oldBottomEdge[:] = ncLight[:,15:16,:self.Height] # save the old bottom edge
                 
-                newlight = (chunkLight[:,0:1,:128]-la[nc.Blocks[:,15:16,:128]])-1
+                newlight = (chunkLight[:,0:1,:self.Height]-la[nc.Blocks[:,15:16,:self.Height]])-1
                 newlight[newlight>15]=0;
                 
-                ncLight[:,15:16,:128] = maximum(ncLight[:,15:16,:128], newlight)
+                ncLight[:,15:16,:self.Height] = maximum(ncLight[:,15:16,:self.Height], newlight)
                 
                 #chunk body
-                newlight = (chunkLight[:,1:16,:128]-chunkLa[:,0:15,:128])
+                newlight = (chunkLight[:,1:16,:self.Height]-chunkLa[:,0:15,:self.Height])
                 newlight[newlight>15]=0;
                 
-                chunkLight[:,0:15,:128] = maximum(chunkLight[:,0:15,:128], newlight)
+                chunkLight[:,0:15,:self.Height] = maximum(chunkLight[:,0:15,:self.Height], newlight)
                 
                 #top edge
                 nc = neighboringChunks[FaceZIncreasing]
                 ncLight = getattr(nc,light);
                 
-                newlight = ncLight[:,0:1,:128]-chunkLa[:,15:16,0:128]
+                newlight = ncLight[:,0:1,:self.Height]-chunkLa[:,15:16,0:self.Height]
                 newlight[newlight>15]=0;
                 
-                chunkLight[:,15:16,0:128] = maximum(chunkLight[:,15:16,0:128], newlight)
+                chunkLight[:,15:16,0:self.Height] = maximum(chunkLight[:,15:16,0:self.Height], newlight)
                
                    
                 #top edge  
@@ -2918,38 +2924,38 @@ class MCInfdevOldLevel(MCLevel):
                 
                 ncLight = getattr(nc,light);
                 
-                newlight = (chunkLight[:,15:16,:128]-la[nc.Blocks[:,0:1,:128]])-1
+                newlight = (chunkLight[:,15:16,:self.Height]-la[nc.Blocks[:,0:1,:self.Height]])-1
                 newlight[newlight>15]=0;
                 
-                ncLight[:,0:1,:128] = maximum(ncLight[:,0:1,:128], newlight)
+                ncLight[:,0:1,:self.Height] = maximum(ncLight[:,0:1,:self.Height], newlight)
                 
                 #chunk body
-                newlight = (chunkLight[:,0:15,:128]-chunkLa[:,1:16,:128])
+                newlight = (chunkLight[:,0:15,:self.Height]-chunkLa[:,1:16,:self.Height])
                 newlight[newlight>15]=0;
                 
-                chunkLight[:,1:16,:128] = maximum(chunkLight[:,1:16,:128], newlight)
+                chunkLight[:,1:16,:self.Height] = maximum(chunkLight[:,1:16,:self.Height], newlight)
                 
                 #bottom edge
                 nc = neighboringChunks[FaceZDecreasing]
                 ncLight = getattr(nc,light);
                
-                newlight = ncLight[:,15:16,:128]-chunkLa[:,0:1,0:128]
+                newlight = ncLight[:,15:16,:self.Height]-chunkLa[:,0:1,0:self.Height]
                 newlight[newlight>15]=0;
                 
-                chunkLight[:,0:1,0:128] = maximum(chunkLight[:,0:1,0:128], newlight)
+                chunkLight[:,0:1,0:self.Height] = maximum(chunkLight[:,0:1,0:self.Height], newlight)
                
                 zerochunkLight[:] = 0;
                 
-                if (oldBottomEdge != ncLight[:,15:16,:128]).any():
+                if (oldBottomEdge != ncLight[:,15:16,:self.Height]).any():
                     newDirtyChunks.append(nc)
                         
-                newlight = (chunkLight[:,:,0:127]-chunkLa[:,:,1:128])
+                newlight = (chunkLight[:,:,0:self.Height-1]-chunkLa[:,:,1:self.Height])
                 newlight[newlight>15]=0;
-                chunkLight[:,:,1:128] = maximum(chunkLight[:,:,1:128], newlight)
+                chunkLight[:,:,1:self.Height] = maximum(chunkLight[:,:,1:self.Height], newlight)
                 
-                newlight = (chunkLight[:,:,1:128]-chunkLa[:,:,0:127])
+                newlight = (chunkLight[:,:,1:self.Height]-chunkLa[:,:,0:self.Height-1])
                 newlight[newlight>15]=0;
-                chunkLight[:,:,0:127] = maximum(chunkLight[:,:,0:127], newlight)
+                chunkLight[:,:,0:self.Height-1] = maximum(chunkLight[:,:,0:self.Height-1], newlight)
                 zerochunkLight[:] = 0;
                 
                 if (oldChunk != chunkLight).any():
