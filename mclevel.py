@@ -1901,13 +1901,13 @@ class InfdevChunk(MCLevel):
         
     
     def unload(self):
-        """ Frees the chunk's memory. Saves the chunk to disk if needed.
-        The chunk remembers if it is marked for relighting. """
+        """ Frees the chunk's memory. Will not save to disk. Unloads completely
+        if the chunk does not need to be saved."""
         self.compress();
-        self.save();
             
-        self.compressedTag = None;
-        self.world.chunkDidUnload(self)
+        if not self.dirty:
+            self.compressedTag = None;
+            self.world.chunkDidUnload(self)
         
     def isLoaded(self):
         #we're loaded if we have our tag data in ram 
