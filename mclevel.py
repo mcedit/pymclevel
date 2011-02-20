@@ -2323,17 +2323,23 @@ class MCInfdevOldLevel(MCLevel):
         
         for dirname in worldDirs :
             if dirname.startswith("DIM"):
-                dimNo = int(dirname[3:]);
-                info( "Found dimension {0}".format(dirname))
-                dim = MCAlphaDimension(filename = os.path.join(self.worldDir, dirname));
-                dim.parentWorld = self;
-                dim.dimNo = dimNo
-                dim.root_tag = self.root_tag;
-                dim.filename = self.filename
-                dim.playersDir = self.playersDir;
-                dim.players = self.players
+                try:
+                    dimNo = int(dirname[3:]);
+                    info( "Found dimension {0}".format(dirname))
+                    dim = MCAlphaDimension(filename = os.path.join(self.worldDir, dirname));
+                    dim.parentWorld = self;
+                    dim.Height = self.Height
+                    dim.dimNo = dimNo
+                    dim.root_tag = self.root_tag;
+                    dim.filename = self.filename
+                    dim.playersDir = self.playersDir;
+                    dim.players = self.players
+                    
+                    self.dimensions[dimNo] = dim;
+                except Exception, e:
+                    error( u"Error loading dimension {0}: {1}".format(dirname, e))
                 
-                self.dimensions[dimNo] = dim;
+                    
                 
     def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
