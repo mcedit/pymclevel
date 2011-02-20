@@ -3854,6 +3854,7 @@ class MCJavaLevel(MCLevel):
         if r and len(r.groups()) == 3:
             (w, l, h) = map(int, r.groups())
             if w*l*h > data.shape[0]:
+                info( "Not enough blocks for size " + str( (w,l,h) ) )
                 w,l,h = self.guessSize(data);
         else:
             w,l,h = self.guessSize(data);
