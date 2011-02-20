@@ -170,6 +170,28 @@ class TAG_Byte_Array(TAG_Value):
         valuestr = self.value.tostring()
         buf.write(struct.pack(self.fmt % (len(valuestr),), len(valuestr), valuestr))
      
+class TAG_Int_Array(TAG_Byte_Array):
+    """An array of ints"""
+    tag = 11;
+    def dataType(self, value):
+        return array(value, 'uint32')
+    
+    def __init__(self, value=zeros(0, "uint32"), name=None, data=""):
+        self.name = name
+        if(data == ""):
+            self.value = value;
+        else:
+            (string_len,) = struct.unpack_from(">i", data);
+            self.value = fromstring(data[4:string_len * 4 + 4], 'uint32').newbyteorder();
+           
+            
+    def nbt_length(self) :
+        return len(self.value) * 4 + 4;
+    
+    def write_value(self, buf):
+        #print self.value
+        valuestr = self.value.tostring()
+        buf.write(struct.pack(self.fmt % (len(valuestr),), len(valuestr)/4, valuestr))
        
 class TAG_String(TAG_Value):
     "String in UTF-8"
