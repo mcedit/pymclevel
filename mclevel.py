@@ -214,7 +214,6 @@ MaxDirections = 6
 
 
 minecraftDirs = {
-    #'win32':os.path.expandvars("%APPDATA%\\.minecraft\\saves"),
     'darwin':os.path.expanduser("~/Library/Application Support/minecraft"),
 }
 minecraftDir = minecraftDirs.get(sys.platform, os.path.expanduser("~/.minecraft")); #default to Linux save location 
@@ -3959,7 +3958,7 @@ def testAlphaLevels():
     convertedSourceBlocks, convertedSourceData = indevlevel.convertBlocksFromLevel(level, indevlevel.Blocks[0:16,0:16,0:indevlevel.Height], indevlevel.Data[0:16,0:16,0:indevlevel.Height])
     assert all(level.getChunk(0,0).Blocks[0:16,0:16,0:indevlevel.Height] == convertedSourceBlocks)
     
-    schem = MCLevel.fromFile(os.path.expandvars("schematics\\CreativeInABox.schematic"));
+    schem = MCLevel.fromFile("schematics\\CreativeInABox.schematic");
     level.copyBlocksFrom(schem, BoundingBox((0,0,0), (1,1,3)), (0, 64, 0));
     schem = MCSchematic( shape=(1,1,3) )
     schem.copyBlocksFrom(level, BoundingBox((0, 64, 0), (1, 1, 3)), (0,0,0));
@@ -4019,12 +4018,12 @@ def testSchematics():
     
     schematic.saveInPlace();
     
-    schem = MCLevel.fromFile(os.path.expandvars("schematics\CreativeInABox.schematic"));
+    schem = MCLevel.fromFile("schematics\CreativeInABox.schematic");
     tempSchematic = MCSchematic(shape=(1,1,3))
     tempSchematic.copyBlocksFrom(schem, BoundingBox((0,0,0), (1,1,3)), (0,0,0))
     
     print "Schematic from alpha"
-    level = MCLevel.fromFile(os.path.expandvars("%APPDATA%\.minecraft\saves\World1\level.dat"));
+    level = MCLevel.loadWorldNumber(1)
     for cx,cz in itertools.product(xrange(0, 4), xrange(0, 4) ):
         try:
             level.createChunk(cx,cz)
