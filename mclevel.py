@@ -1611,26 +1611,14 @@ class MCSchematic (MCLevel):
             warn( u"Attempted to save an unnamed schematic in place" )
             return; #you fool!
 
-        #root_tag = nbt.TAG_Compound(name="Schematic")
-        #root_tag[Height] = nbt.TAG_Short(self.Height)
-        #root_tag[Length] = nbt.TAG_Short(self.Length)
-        #root_tag[Width] = nbt.TAG_Short(self.Width)
-        #root_tag[Blocks] = nbt.TAG_Byte_Array(swapaxes(self.Blocks.reshape(self.Width,self.Length,self.Height), 0, 2)) #xxx hardcoded
-        #root_tag[Data] = nbt.TAG_Byte_Array(swapaxes(self.Data.reshape(self.Width,self.Length,self.Height), 0, 2))
-        #root_tag[Entities] = self.Entities;
-        #root_tag[TileEntities] = self.TileEntities;
         self.Materials = materialNames[self.materials]
         
-        #self.packChunkData();
         self.compress();
 
         with open(filename, 'wb') as chunkfh:
             chunkfh.write(self.compressedTag)
         
-        #self.root_tag.saveGzipped(filename);
-        #self.unpackChunkData();
-        
-
+       
     def setBlockDataAt(self, x,y,z, newdata):
         if x<0 or y<0 or z<0: return 0
         if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
