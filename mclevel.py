@@ -1797,16 +1797,16 @@ class InfdevChunk(MCLevel):
         levelTag[LastUpdate] = TAG_Long(0);
         
         levelTag[BlockLight] = TAG_Byte_Array()
-        levelTag[BlockLight].value = zeros(16*16*self.world.Height/2, uint8)
+        levelTag[BlockLight].value = zeros(16*16*self.world.ChunkHeight/2, uint8)
         
         levelTag[Blocks] = TAG_Byte_Array()
-        levelTag[Blocks].value = zeros(16*16*self.world.Height, uint8)
+        levelTag[Blocks].value = zeros(16*16*self.world.ChunkHeight, uint8)
         
         levelTag[Data] = TAG_Byte_Array()
-        levelTag[Data].value = zeros(16*16*self.world.Height/2, uint8)
+        levelTag[Data].value = zeros(16*16*self.world.ChunkHeight/2, uint8)
 
         levelTag[SkyLight] = TAG_Byte_Array()
-        levelTag[SkyLight].value = zeros(16*16*self.world.Height/2, uint8)
+        levelTag[SkyLight].value = zeros(16*16*self.world.ChunkHeight/2, uint8)
         levelTag[SkyLight].value[:] = 255
 
         levelTag[HeightMap] = TAG_Byte_Array()
@@ -1948,7 +1948,7 @@ class InfdevChunk(MCLevel):
         """ for internal use.  call getChunk and compressChunk to load, compress, and unpack chunks automatically """
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
-            assert dataArray.shape[2] == self.world.Height/2;
+            assert dataArray.shape[2] == self.world.ChunkHeight/2;
             unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)  
             
             #unpack data
@@ -1957,7 +1957,7 @@ class InfdevChunk(MCLevel):
             #unpackedData[...,1] &= 0x0f   
             
             
-            self.root_tag[Level][key].value=unpackedData.reshape(16,16,self.world.Height)
+            self.root_tag[Level][key].value=unpackedData.reshape(16,16,self.world.ChunkHeight)
             self.dataIsPacked = False;
             
     def packChunkData(self):
@@ -1968,9 +1968,9 @@ class InfdevChunk(MCLevel):
             return;
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
-            assert dataArray.shape[2] == self.world.Height;
+            assert dataArray.shape[2] == self.world.ChunkHeight;
             
-            unpackedData = self.root_tag[Level][key].value.reshape(16,16,self.world.Height/2,2)
+            unpackedData = self.root_tag[Level][key].value.reshape(16,16,self.world.ChunkHeight/2,2)
             unpackedData[...,1] <<=4
             unpackedData[...,1] |= unpackedData[...,0]
             self.root_tag[Level][key].value=array(unpackedData[:,:,:,1])
@@ -1983,11 +1983,11 @@ class InfdevChunk(MCLevel):
         chunkTag = self.root_tag
         
         chunkSize = 16
-        chunkTag[Level][Blocks].value.shape=(chunkSize, chunkSize, self.world.Height)
+        chunkTag[Level][Blocks].value.shape=(chunkSize, chunkSize, self.world.ChunkHeight)
         chunkTag[Level][HeightMap].value.shape=(chunkSize, chunkSize);            
-        chunkTag[Level][SkyLight].value.shape = (chunkSize, chunkSize, self.world.Height/2)
-        chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, self.world.Height/2)
-        chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, self.world.Height/2)
+        chunkTag[Level][SkyLight].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight/2)
+        chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight/2)
+        chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight/2)
         if not TileEntities in chunkTag[Level]:
             chunkTag[Level][TileEntities] = TAG_List();
         if not Entities in chunkTag[Level]:
@@ -2093,6 +2093,7 @@ class MCInfdevOldLevel(MCLevel):
     hasEntities = True;
     parentWorld = None;
     dimNo = 0;
+    ChunkHeight = 128
     
     @property
     def displayName(self):
@@ -2272,7 +2273,8 @@ class MCInfdevOldLevel(MCLevel):
         
         #attempt to support yMod
         try:
-            self.Height = self.root_tag["Data"]["YLimit"].value
+            self.ChunkHeight = self.root_tag["Data"]["YLimit"].value
+            self.Height = self.ChunkHeight
         except:
             pass
             
@@ -2315,7 +2317,6 @@ class MCInfdevOldLevel(MCLevel):
                     info( "Found dimension {0}".format(dirname))
                     dim = MCAlphaDimension(filename = os.path.join(self.worldDir, dirname));
                     dim.parentWorld = self;
-                    dim.Height = self.Height
                     dim.dimNo = dimNo
                     dim.root_tag = self.root_tag;
                     dim.filename = self.filename
