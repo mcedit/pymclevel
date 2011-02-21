@@ -3486,7 +3486,7 @@ class ZipSchematic (MCInfdevOldLevel):
         
         try:
             schematicDat = os.path.join(tempdir, "schematic.dat")
-            with closing(self.zipfile.open("level.dat")) as f:
+            with closing(self.zipfile.open("schematic.dat")) as f:
                 with closing(gzip.GzipFile(fileobj=StringIO.StringIO(f.read()))) as g:
                     schematicDat = nbt.load(buf=g.read())
                 
