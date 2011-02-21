@@ -1739,7 +1739,6 @@ class ZeroChunk(object):
         self.BlockLight = whiteLight
         self.SkyLight = whiteLight
         self.Data = zeroChunk
-        HeightMap = zeros((16,16),uint8)
             
     
 class InfdevChunk(MCLevel):
@@ -1809,9 +1808,14 @@ class InfdevChunk(MCLevel):
         levelTag[SkyLight].value = zeros(16*16*self.world.ChunkHeight/2, uint8)
         levelTag[SkyLight].value[:] = 255
 
-        levelTag[HeightMap] = TAG_Byte_Array()
-        levelTag[HeightMap].value = zeros(16*16, uint8)
+        if self.world.ChunkHeight <= 128:
+            levelTag[HeightMap] = TAG_Byte_Array()
+            levelTag[HeightMap].value = zeros(16*16, uint8)
+        else:
+            levelTag[HeightMap] = TAG_Int_Array()
+            levelTag[HeightMap].value = zeros(16*16, uint32).newbyteorder()
 
+            
         levelTag[Entities] = TAG_List() 
         levelTag[TileEntities] = TAG_List()
         
@@ -1932,7 +1936,7 @@ class InfdevChunk(MCLevel):
         
         for x,z in itertools.product(xrange(16), xrange(16)):
             
-            skylight[x,z,heightmap[z,x]:self.world.Height] = 15 
+            skylight[x,z,heightmap[z,x]:] = 15 
             lv = 15;
             for y in reversed(range(heightmap[z,x])):
                 lv -= (la[blocks[x,z,y]] or 1)
