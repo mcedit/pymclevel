@@ -174,15 +174,15 @@ class TAG_Int_Array(TAG_Byte_Array):
     """An array of ints"""
     tag = 11;
     def dataType(self, value):
-        return array(value, 'uint32')
+        return array(value, '>u4')
     
-    def __init__(self, value=zeros(0, "uint32"), name=None, data=""):
+    def __init__(self, value=zeros(0, ">u4"), name=None, data=""):
         self.name = name
         if(data == ""):
             self.value = value;
         else:
             (string_len,) = struct.unpack_from(">i", data);
-            self.value = fromstring(data[4:string_len * 4 + 4], 'uint32').newbyteorder();
+            self.value = fromstring(data[4:string_len * 4 + 4], '>u4')
            
             
     def nbt_length(self) :
