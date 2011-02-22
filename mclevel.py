@@ -2105,12 +2105,21 @@ class dequeset(object):
         return self.deque[idx];
 
 class MCRegionFile(object):
+    holdFileOpen = False
+    @property
+    def file(self):
+        if self.holdFileOpen:
+            return self._file
+        else:
+            return file(self.path, "rb+")
+            
     def __init__(self, path):
         self.path = path
         if not os.path.exists(path):
             file(path, "w").close()
-            
-        self.file = file(path, "rb+")
+        
+        if self.holdFileOpen:
+            self._file = file(path, "rb+")
         
         f = self.file
         
@@ -2247,8 +2256,9 @@ class MCRegionFile(object):
     
     def setOffset(self, cx, cz, offset):
         self.offsets[cx+cz*32] = offset
-        self.file.seek(0)
-        self.file.write(self.offsets.tostring())
+        f = self.file
+        f.seek(0)
+        f.write(self.offsets.tostring())
                 
             
             
