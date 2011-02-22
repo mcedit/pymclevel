@@ -159,7 +159,7 @@ class TAG_Byte_Array(TAG_Value):
         if(data == ""):
             self.value = value;
         else:
-            (string_len,) = struct.unpack_from(">i", data);
+            (string_len,) = struct.unpack_from(">I", data);
             self.value = fromstring(data[4:string_len + 4], 'uint8');
             
     def nbt_length(self) :
@@ -181,7 +181,7 @@ class TAG_Int_Array(TAG_Byte_Array):
         if(data == ""):
             self.value = value;
         else:
-            (string_len,) = struct.unpack_from(">i", data);
+            (string_len,) = struct.unpack_from(">I", data);
             self.value = fromstring(data[4:string_len * 4 + 4], '>u4')
            
             
@@ -205,7 +205,7 @@ class TAG_String(TAG_Value):
         if(data == ""):
             self.value = value;
         else:
-            (string_len,) = struct.unpack_from(">h", data);
+            (string_len,) = struct.unpack_from(">H", data);
             self.value = data[2:string_len + 2].tostring();
 
     def nbt_length(self) :
