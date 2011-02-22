@@ -3760,7 +3760,9 @@ class ZipSchematic (MCInfdevOldLevel):
         return is_zipfile(filename)
     
     def _loadChunk(self, chunk):
-        return self.zipfile.read(chunk.filename)
+        data = self.zipfile.read(chunk.chunkFilename)
+        with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
+            return gz.read()
         
     def _saveChunk(self, chunk, data):
         raise NotImplementedError, "Cannot save zipfiles yet!"
