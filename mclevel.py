@@ -1760,6 +1760,7 @@ class InfdevChunk(MCLevel):
     def __init__(self, world, chunkPosition, create = False):
         self.world = world;
         self.chunkPosition = chunkPosition;
+        self.chunkFilename = world.chunkFilename(*chunkPosition)
         #self.filename = "UNUSED" + world.chunkFilename(*chunkPosition);
         #self.filename = "REGION FILE (chunk {0})".format(chunkPosition)
         self.compressedTag = None
@@ -2644,6 +2645,7 @@ class MCInfdevOldLevel(MCLevel):
                 oldestChunk.unload(); #calls chunkDidUnload
     
     def _loadChunk(self, chunk):
+        # xxx changed to return the decompressed data
         cx,cz = chunk.chunkPosition
         regionFile = self.getRegionForChunk(cx,cz)
         data = regionFile.readChunk(cx,cz)
