@@ -2209,7 +2209,8 @@ class MCRegionFile(object):
                 sectorNumber = runStart
                 self.setOffset(cx,cz, sectorNumber << 8 | sectorsNeeded)
                 self.writeSector(sectorNumber, data)
-            
+                self.freeSectors[sectorNumber:sectorNumber+sectorsNeeded] = [False]*sectorsNeeded
+                
             else:
                 # no free space large enough found -- we need to grow the
                 # file
@@ -2222,6 +2223,7 @@ class MCRegionFile(object):
                 
                 filesize += sectorsNeeded * self.SECTOR_BYTES
                 f.truncate(filesize)
+                sectorNumber = len(self.freeSectors)
                 self.freeSectors += [False]*sectorsNeeded
                 
                 self.setOffset(cx,cz, sectorNumber << 8 | sectorsNeeded)
