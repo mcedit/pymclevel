@@ -3578,15 +3578,14 @@ class MCInfdevOldLevel(MCLevel):
         return self.createChunks(box.chunkPositions);
         
     def deleteChunk(self, cx, cz):
-        filename = self.chunkFilename(cx,cz)
-        if os.path.exists(filename):
-            os.remove(filename)
         
         if self._allChunks is not None: self._allChunks.discard( (cx,cz) )
         
         if (cx,cz) in self._loadedChunks: 
             del self._loadedChunks[(cx,cz)]
-            
+        
+        self.regionFiles[cx>>5,cz>>5].setOffset(cx&0x1f , cz&0x1f, 0)
+        
         self._bounds = None
         
     def deleteChunksInBox(self, box):
