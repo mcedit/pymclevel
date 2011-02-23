@@ -461,6 +461,9 @@ class MCLevel(object):
         self.compress();
         if self.compressedTag is None: return 0
         return len(self.compressedTag)
+    
+    def close(self):
+        pass
         
     def compress(self):
         #if self.root_tag is not None, then our compressed data must be stale and we need to recompress.
@@ -2116,6 +2119,10 @@ class MCRegionFile(object):
             return self._file
         else:
             return file(self.path, "rb+")
+    
+    def close(self):
+        if self.holdFileOpen:
+            self._file.close()
             
     def __init__(self, path):
         self.path = path
@@ -2410,6 +2417,13 @@ class MCInfdevOldLevel(MCLevel):
     @property
     def size(self):
         return self.bounds.size
+    
+    def close(self):
+        if hasattr(self, 'regionFiles'):
+            for rf in (self.regionFiles or {}).values():
+                rf.close();
+            
+            self.regionFiles = None
         
     def create(self, filename, random_seed, last_played):
         
