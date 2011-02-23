@@ -1892,18 +1892,13 @@ class InfdevChunk(MCLevel):
                 if data is None: raise ChunkNotPresent
                 self.root_tag = nbt.load(buf=data)
                 self.dataIsPacked = True; 
-                try:
-                    self.shapeChunkData()
-                    self.unpackChunkData()
+                self.shapeChunkData()
+                self.unpackChunkData()
                 
-                except KeyError, e:
-                    error( u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e) )
-                    if self.world: self.world.malformedChunk(*self.chunkPosition);
-                    raise ChunkMalformed, self.filename
-                
-            except IOError, e:
-                
-                raise ChunkNotPresent, "{0}".format(e)
+            except Exception, e:
+                error( u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e) )
+                if self.world: self.world.malformedChunk(*self.chunkPosition);
+                raise ChunkMalformed, self.filename
             
             self.world.chunkDidLoad(self) 
     
