@@ -1726,6 +1726,7 @@ class INVEditChest(MCSchematic):
    
 class PlayerNotFound(Exception): pass     
 class ChunkNotPresent(Exception): pass
+class RegionMalformed(Exception): pass
 class ChunkMalformed(ChunkNotPresent): pass
 
 class ZeroChunk(object):
@@ -2143,6 +2144,19 @@ class MCRegionFile(object):
         
         self.offsets = fromstring(offsetsData, dtype='>u4')
         self.modTimes = fromstring(modTimesData, dtype='>u4')
+        
+        
+        for offset in self.offsets:
+            sector = offset >> 8
+            count = offset & 0xff
+            
+            for i in xrange(sector, sector+count):
+                if i >= len(self.freeSectors): raise MalformedRegion, "Region file offset table points to sector {0} (past the end of the file)".format(i)
+                
+                self.freeSectors[i] = False
+            
+        info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
+             file=os.path.basename(path), used=len(self.freeSectors)-sum(self.freeSectors), total=len(self.freeSectors), chunks=sum(self.offsets>0)))
         
     def readChunk(self, cx, cz):
         cx &= 0x1f
