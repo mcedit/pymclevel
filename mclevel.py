@@ -1317,7 +1317,11 @@ def zipdir(basedir, archivename):
                             
 fromFile = MCLevel.fromFile
 
-                
+ 
+def loadWorld(name):
+    filename = os.path.join(saveFileDir, name)
+    return fromFile(filename)
+               
 def loadWorldNumber(i):
     filename = u"{0}{1}{2}{3}{1}".format(saveFileDir, os.sep, u"World", i)
     return fromFile(filename)
