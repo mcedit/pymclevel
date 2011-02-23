@@ -2422,7 +2422,7 @@ class MCInfdevOldLevel(MCLevel):
         root_tag[Data][SpawnZ] = TAG_Int(0)
         
         if last_played is None:
-            last_played = time.time()
+            last_played = long(time.time()*1000)
         if random_seed is None:
             random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
@@ -2464,7 +2464,7 @@ class MCInfdevOldLevel(MCLevel):
         a level.dat or a folder containing one. If create is True, it will
         also create the world using the random_seed and last_played arguments.
         If they are none, a random 64-bit seed will be selected for RandomSeed
-        and time.time() will be used for LastPlayed.
+        and long(time.time()*1000) will be used for LastPlayed.
         
         If you try to create an existing world, its level.dat will be replaced.
         """
