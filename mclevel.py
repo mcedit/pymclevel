@@ -3613,7 +3613,9 @@ class MCInfdevOldLevel(MCLevel):
         if (cx,cz) in self._loadedChunks: 
             del self._loadedChunks[(cx,cz)]
         
-        self.regionFiles[cx>>5,cz>>5].setOffset(cx&0x1f , cz&0x1f, 0)
+        r = cx>>5,cz>>5
+        if r in self.regionFiles:
+            self.regionFiles[r].setOffset(cx&0x1f , cz&0x1f, 0)
         
         self._bounds = None
         
