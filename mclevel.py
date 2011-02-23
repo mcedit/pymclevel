@@ -170,6 +170,12 @@ def fillBlocks(self, box, blockType, blockData = 0):
 Copyright 2010 David Rio Vierra
 """
 
+try:
+    import psyco
+    psyco.full()
+except:
+    pass
+    
 import nbt
 import operator
 import functools
