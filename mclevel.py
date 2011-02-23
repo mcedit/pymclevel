@@ -2431,6 +2431,8 @@ class MCInfdevOldLevel(MCLevel):
         root_tag[Data]['SizeOnDisk'] = TAG_Long(long(0))
         root_tag[Data]['Time'] = TAG_Long(1)
         
+        root_tag[Data]['version'] = TAG_Int(19132)
+        root_tag[Data]['LevelName'] = TAG_String(os.path.basename(self.worldDir))
         ### if singleplayer:
         root_tag[Data][Player] = TAG_Compound()
         
