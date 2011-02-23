@@ -1776,7 +1776,10 @@ class InfdevChunk(MCLevel):
 
     def compress(self):
         
-        if not self.dirty: 
+        
+        if not self.dirty and self.compressedTag != None: 
+            #if we are not dirty and we have compressed data, just throw the 
+            #uncompressed tag structure away
             self.root_tag = None
         else:
             self.packChunkData()
