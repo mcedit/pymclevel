@@ -2183,7 +2183,7 @@ class MCRegionFile(object):
         format = struct.unpack_from("B", data, 4)[0]
         data = data[5:length+5]
         if format == self.VERSION_GZIP:
-            with gzip.open(fileobj=StringIO.StringIO(data)) as gz:
+            with gzip.GzipFile(fileobj=StringIO.StringIO(data)) as gz:
                 return gz.read()
         if format == self.VERSION_DEFLATE:
             return inflate(data)
@@ -2320,7 +2320,7 @@ class MCInfdevOldLevel(MCLevel):
     
     def decompressTag(self, data):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
-            with gzip.open(fileobj=StringIO.StringIO(data)) as gz:
+            with gzip.GzipFile(fileobj=StringIO.StringIO(data)) as gz:
                 return nbt.load(buf=gz.read())
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
             return nbt.load(buf=inflate(data))
