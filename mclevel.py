@@ -2491,7 +2491,8 @@ class MCInfdevOldLevel(MCLevel):
             
         self.filename = os.path.join(self.worldDir, "level.dat")
         self.regionDir = os.path.join(self.worldDir, "region")
-        
+        if not os.path.exists(self.regionDir):
+            os.mkdir(self.regionDir)
                 
         #maps (cx,cz) pairs to InfdevChunks    
         self._loadedChunks = {}
