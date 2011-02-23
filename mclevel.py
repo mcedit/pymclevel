@@ -2520,6 +2520,7 @@ class MCInfdevOldLevel(MCLevel):
          
         
         self.preloadDimensions();
+        self.preloadRegions();
        
     def loadLevelDat(self, create, random_seed, last_played):
         
