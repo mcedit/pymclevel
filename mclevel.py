@@ -2169,8 +2169,9 @@ class MCRegionFile(object):
             count = offset & 0xff
             
             for i in xrange(sector, sector+count):
-                if i >= len(self.freeSectors): raise MalformedRegion, "Region file offset table points to sector {0} (past the end of the file)".format(i)
-                
+                if i >= len(self.freeSectors): raise RegionMalformed, "Region file offset table points to sector {0} (past the end of the file)".format(i)
+                if self.freeSectors[i] is False:
+                    raise RegionMalformed, "Region file has overlapping chunks!".format(path)
                 self.freeSectors[i] = False
             
         info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
