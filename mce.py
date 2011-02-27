@@ -618,19 +618,18 @@ class mce(object):
     With no filename, saves signs to <worldname>.chests
     
     Output is newline-delimited. 5 lines per sign. Coordinates are 
-    on the first line, followed by a line by item slot For example:
+    on the first line, followed by a line by inventory slot For example:
     
-        [229, 118, -15]
-        64 Cobblestone
-        32 Glass
-        Empty
-        [...]
-        Empty
+        [222, 51, 22]
+        2 String
+        3 String
+        3 Iron bar
         
     Coordinates are ordered the same as point inputs: 
         [North/South, Down/Up, East/West]
         
     """
+        from items import items
         if len(command):
             filename = command[0]
         else:
@@ -650,12 +649,10 @@ class mce(object):
             for tileEntity in chunk.TileEntities:
                 if tileEntity["id"].value == "Chest":
                     chestCount += 1;
-                    
+                               
                     outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n");
-#                    for i in range(26):
-#                        outFile.write(tileEntity["Text{0}".format(i+1)].value + "\n");
                     for Item in tileEntity["Items"]:
-                      outFile.write(str(Item["Count"].value) + " " + str(Item["id"].value) + "\n");
+                      outFile.write(str(Item["Count"].value) + " " + items.itemtypes[Item["id"].value].name + "\n");
                     
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
