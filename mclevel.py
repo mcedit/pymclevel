@@ -3660,9 +3660,14 @@ class MCInfdevOldLevel(MCLevel):
             del self._loadedChunks[(cx,cz)]
         
         r = cx>>5,cz>>5
-        if r in self.regionFiles:
-            self.regionFiles[r].setOffset(cx&0x1f , cz&0x1f, 0)
-        
+        rf = self.regionFiles.get(r)
+        if rf:
+            rf.setOffset(cx&0x1f , cz&0x1f, 0)
+            if (rf.offsets == 0).all():
+                rf.close()
+                os.unlink(rf.path)
+                del self.regionFiles[r]
+                
         self._bounds = None
         
     def deleteChunksInBox(self, box):
