@@ -1921,7 +1921,8 @@ class InfdevChunk(MCLevel):
                 raise ChunkMalformed, self.filename
             
             self.world.chunkDidLoad(self) 
-    
+            self.world.chunkDidDecompress(self);
+                
     def unload(self):
         """ Frees the chunk's memory. Will not save to disk. Unloads completely
         if the chunk does not need to be saved."""
