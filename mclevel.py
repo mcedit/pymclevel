@@ -2632,18 +2632,24 @@ class MCInfdevOldLevel(MCLevel):
             
             regionFile = MCRegionFile(os.path.join(regionDir, filename))
             
-            self.regionFiles[rx,rz] = regionFile
+            if regionFile.offsets.any():
+                self.regionFiles[rx,rz] = regionFile
+                
+                for index, offset in enumerate(regionFile.offsets):
+                    if offset:
+                        cx = index & 0x1f
+                        cz = index >> 5
+                        
+                        cx += rx << 5
+                        cz += rz << 5
+                        
+                        self._allChunks.add( (cx,cz) )
+            else:
+                info( u"Removing empty region file {0}".format(filename) )
+                regionFile.close()
+                os.unlink(regionFile.path)
             
-            for index, offset in enumerate(regionFile.offsets):
-                if offset:
-                    cx = index & 0x1f
-                    cz = index >> 5
-                    
-                    cx += rx << 5
-                    cz += rz << 5
-                    
-                    self._allChunks.add( (cx,cz) )
-                    
+            
             
 #    def preloadChunkPaths(self):
 #        
@@ -4217,23 +4223,13 @@ class MCJavaLevel(MCLevel):
 
             
     def saveInPlace(self):
-        #f = file(self.filename, 'rb')
-        #filedata = f.read()
-        #f.close();
-        
-##        
-##        blockstr = self.Blocks.tostring()
-##        firstdata = filedata[0:self.blockOffset]
-##        lastdata = filedata[self.blockOffset+len(blockstr):];
 
         s = StringIO.StringIO()
         if self.compressed:
             g = gzip.GzipFile(fileobj=s, mode='wb');
         else:
             g = s;
-##            g.write(firstdata);
-##            g.write(blockstr);
-##            g.write(lastdata);
+
         g.write(self.filedata.tostring());
         g.flush();
         g.close()
