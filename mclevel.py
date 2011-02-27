@@ -641,7 +641,8 @@ class MCLevel(object):
                                 (slice(localMinX,localMaxX),slice(localMinZ,localMaxZ),slice(box.miny,box.maxy)),  
                                 (newMinX, 0, newMinZ))
                 
-
+                ch.compress()
+                
                 
     def containsPoint(self, x, y, z):
         return (x >=0 and x < self.Width and
