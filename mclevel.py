@@ -2306,9 +2306,9 @@ class MCRegionFile(object):
     
     def setOffset(self, cx, cz, offset):
         self.offsets[cx+cz*32] = offset
-        f = self.file
-        f.seek(0)
-        f.write(self.offsets.tostring())
+        with self.file as f:
+            f.seek(0)
+            f.write(self.offsets.tostring())
             
             
             
