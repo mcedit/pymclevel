@@ -2122,47 +2122,57 @@ class dequeset(object):
     def __getitem__(self, idx):
         return self.deque[idx];
 
+from contextlib import contextmanager
+
+@contextmanager
+def notclosing(f):
+    yield f;
+
 class MCRegionFile(object):
-    holdFileOpen = False
+    holdFileOpen = False #if False, reopens and recloses the file on each access
+    
+            
     @property
     def file(self):
-        if self.holdFileOpen:
-            return self._file
+        openfile = lambda:file(self.path, "rb+")
+        if MCRegionFile.holdFileOpen:
+            if self._file is None:
+                self._file = openfile()
+            return notclosing(self._file)
         else:
-            return file(self.path, "rb+")
+            return openfile()
     
     def close(self):
-        if self.holdFileOpen:
+        if MCRegionFile.holdFileOpen:
             self._file.close()
+            self._file = None
             
     def __init__(self, path):
         self.path = path
+        self._file = None
         if not os.path.exists(path):
             file(path, "w").close()
         
-        if self.holdFileOpen:
-            self._file = file(path, "rb+")
-        
-        f = self.file
-        
-        filesize = os.path.getsize(path)
-        if filesize & 0xfff:
-            filesize = (filesize | 0xfff)+1
-            f.truncate(filesize)
-        
-        if filesize == 0:
-            f.truncate(self.SECTOR_BYTES*2)
-        
-        f.seek(0)
-        offsetsData = f.read(self.SECTOR_BYTES)
-        modTimesData = f.read(self.SECTOR_BYTES)
-        
-        self.freeSectors = [True] * (filesize / self.SECTOR_BYTES)
-        self.freeSectors[0:2] = False,False
-        
-        self.offsets = fromstring(offsetsData, dtype='>u4')
-        self.modTimes = fromstring(modTimesData, dtype='>u4')
-        
+        with self.file as f:
+            
+            filesize = os.path.getsize(path)
+            if filesize & 0xfff:
+                filesize = (filesize | 0xfff)+1
+                f.truncate(filesize)
+            
+            if filesize == 0:
+                f.truncate(self.SECTOR_BYTES*2)
+            
+            f.seek(0)
+            offsetsData = f.read(self.SECTOR_BYTES)
+            modTimesData = f.read(self.SECTOR_BYTES)
+            
+            self.freeSectors = [True] * (filesize / self.SECTOR_BYTES)
+            self.freeSectors[0:2] = False,False
+            
+            self.offsets = fromstring(offsetsData, dtype='>u4')
+            self.modTimes = fromstring(modTimesData, dtype='>u4')
+            
         
         for offset in self.offsets:
             sector = offset >> 8
@@ -2190,11 +2200,11 @@ class MCRegionFile(object):
         if sectorStart + numSectors > len(self.freeSectors):
             return None
         
-        f = self.file
-        f.seek(sectorStart * self.SECTOR_BYTES)
-        data = f.read(numSectors * self.SECTOR_BYTES)
+        with self.file as f:
+            f.seek(sectorStart * self.SECTOR_BYTES)
+            data = f.read(numSectors * self.SECTOR_BYTES)
         assert(len(data) > 0)
-        debug("REGION LOAD {0},{1} sector {2}".format(cx, cz, sectorStart))
+        #debug("REGION LOAD {0},{1} sector {2}".format(cx, cz, sectorStart))
             
         return self.decompressSectors(data)
         
@@ -2263,13 +2273,17 @@ class MCRegionFile(object):
                 
                 debug("REGION SAVE {0},{1}, growing by {2}b".format(cx, cz, len(data)))
                 
-                f = self.file
-                f.seek(0, 2)
-                filesize = f.tell()
-                
-                filesize += sectorsNeeded * self.SECTOR_BYTES
-                f.truncate(filesize)
-                sectorNumber = len(self.freeSectors)
+                with self.file as f:
+                    f.seek(0, 2)
+                    filesize = f.tell()
+                    
+                    sectorNumber = len(self.freeSectors)
+                    
+                    assert sectorNumber * self.SECTOR_BYTES == filesize
+                    
+                    filesize += sectorsNeeded * self.SECTOR_BYTES
+                    f.truncate(filesize)
+
                 self.freeSectors += [False]*sectorsNeeded
                 
                 self.setOffset(cx,cz, sectorNumber << 8 | sectorsNeeded)
@@ -2277,14 +2291,14 @@ class MCRegionFile(object):
                  
             
     def writeSector(self, sectorNumber, data):
-        f = self.file
-        debug("REGION: Writing sector {0}".format(sectorNumber) )
+        with self.file as f:
+            debug("REGION: Writing sector {0}".format(sectorNumber) )
         
-        f.seek( sectorNumber * self.SECTOR_BYTES )
-        f.write(struct.pack(">I", len(data)+1));# // chunk length
-        f.write(struct.pack("B", self.VERSION_DEFLATE));# // chunk version number
-        f.write(data);# // chunk data
-        f.flush()
+            f.seek( sectorNumber * self.SECTOR_BYTES )
+            f.write(struct.pack(">I", len(data)+1));# // chunk length
+            f.write(struct.pack("B", self.VERSION_DEFLATE));# // chunk version number
+            f.write(data);# // chunk data
+            #f.flush()
     
              
     def getOffset(self, cx, cz):
@@ -2295,7 +2309,7 @@ class MCRegionFile(object):
         f = self.file
         f.seek(0)
         f.write(self.offsets.tostring())
-                
+            
             
             
     SECTOR_BYTES = 4096
