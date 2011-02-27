@@ -1770,7 +1770,12 @@ class InfdevChunk(MCLevel):
         cx,cz = self.chunkPosition
         rx,rz = cx>>5,cz>>5
         rf = self.world.regionFiles[rx,rz]
-        return "{region} sector {sector}".format(region=self.world.regionFilename(rx,rz), sector=rf.getOffset(cx&0x1f,cz&0x1f)>>8)
+        offset = rf.getOffset(cx&0x1f,cz&0x1f)
+        return u"{region} index {index} offset {offset} sector {sector}".format(
+            region=os.path.basename(self.world.regionFilename(rx,rz)), 
+            sector=offset>>8, 
+            index=4*((cx&0x1f)+((cz&0x1f)*32)), 
+            offset=offset)
         
     def __init__(self, world, chunkPosition, create = False):
         self.world = world;
