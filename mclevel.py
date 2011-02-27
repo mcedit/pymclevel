@@ -2149,8 +2149,9 @@ class MCRegionFile(object):
             self._file.close()
             self._file = None
             
-    def __init__(self, path):
+    def __init__(self, path, regionCoords):
         self.path = path
+        self.regionCoords = regionCoords
         self._file = None
         if not os.path.exists(path):
             file(path, "w").close()
@@ -2175,6 +2176,7 @@ class MCRegionFile(object):
             self.offsets = fromstring(offsetsData, dtype='>u4')
             self.modTimes = fromstring(modTimesData, dtype='>u4')
             
+        needsRepair = False
         
         for offset in self.offsets:
             sector = offset >> 8
@@ -2183,13 +2185,74 @@ class MCRegionFile(object):
             for i in xrange(sector, sector+count):
                 if i >= len(self.freeSectors): raise RegionMalformed, "Region file offset table points to sector {0} (past the end of the file)".format(i)
                 if self.freeSectors[i] is False:
-                    raise RegionMalformed, "Region file has overlapping chunks!".format(path)
+                    needsRepair = True
                 self.freeSectors[i] = False
+        
+        if needsRepair:
+            self.repair()
             
         info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
              file=os.path.basename(path), used=len(self.freeSectors)-sum(self.freeSectors), total=len(self.freeSectors), chunks=sum(self.offsets>0)))
+    
+    def repair(self):
+        lostAndFound = {}
+        _freeSectors = [True] * len(self.freeSectors)
+        _freeSectors[0] = _freeSectors[1] = False 
+        deleted = 0
+        recovered = 0
         
-    def readChunk(self, cx, cz):
+        rx,rz = self.regionCoords
+        for index, offset in enumerate(self.offsets):
+            if offset:
+                cx = index & 0x1f
+                cz = index >> 5
+                cx += rx << 5
+                cz += rz << 5
+                sectorStart = offset >> 8
+                sectorCount = offset & 0xff
+                
+                try:
+                    compressedData = self._readChunk(cx,cz)
+                    if compressedData is None: 
+                        raise RegionMalformed, "Failed to read chunk data for {0}".format((cx,cz))
+                    
+                    chunkTag = nbt.load(buf=self.decompressSectors(compressedData))
+                    lev = chunkTag["Level"]
+                    xPos = lev["xPos"].value
+                    zPos = lev["zPos"].value
+                    overlaps = False
+                    
+                    for i in xrange(sectorStart, sectorStart+sectorCount):
+                        if _freeSectors[i] is False:
+                            overlaps = True
+                        _freeSectors[i] = False
+                        
+                        
+                    if xPos != cx or zPos != cz or overlaps:
+                        lostAndFound[xPos,zPos] = compressedData[5:] # chop off header
+                        
+                        if (xPos, zPos) != (cx,cz):
+                            raise RegionMalformed, "Chunk {found} was found in the slot reserved for {expected}".format(found=(xPos, zPos), expected=(cx,cz))
+                        else:
+                            raise RegionMalformed, "Chunk {found} (in slot {expected}) has overlapping sectors with another chunk!".format(found=(xPos, zPos), expected=(cx,cz))
+                        
+                    
+                         
+                except Exception, e:
+                    info("Unexpected chunk data at sector {sector} ({exc})".format(sector=sectorStart, exc=e))
+                    self.setOffset(cx, cz, 0)
+                    deleted += 1
+                    
+        for cPos, foundData in lostAndFound.iteritems():
+            cx,cz = cPos
+            if self.getOffset(cx,cz) == 0:
+                info("Found chunk {found} and its slot is empty, recovering it".format(found=cPos))
+                self.writeChunk(cx,cz, foundData)
+                recovered += 1
+                
+        info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered-deleted))
+                        
+    def _readChunk(self, cx, cz):
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx,cz)
@@ -2207,9 +2270,11 @@ class MCRegionFile(object):
             data = f.read(numSectors * self.SECTOR_BYTES)
         assert(len(data) > 0)
         #debug("REGION LOAD {0},{1} sector {2}".format(cx, cz, sectorStart))
-            
-        return self.decompressSectors(data)
+        return data
         
+    def readChunk(self, cx, cz):
+        return self.decompressSectors(self._readChunk(cx,cz))
+    
     def decompressSectors(self, data):
         length = struct.unpack_from(">I", data)[0]
         format = struct.unpack_from("B", data, 4)[0]
@@ -2224,6 +2289,7 @@ class MCRegionFile(object):
 
             
     def writeChunk(self, cx, cz, data):
+        #data must be already compressed by world.compressTag
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx,cz)
@@ -2304,9 +2370,13 @@ class MCRegionFile(object):
     
              
     def getOffset(self, cx, cz):
+        cx&=0x1f;
+        cz&=0x1f
         return self.offsets[cx+cz*32]
     
     def setOffset(self, cx, cz, offset):
+        cx &= 0x1f;
+        cz &= 0x1f
         self.offsets[cx+cz*32] = offset
         with self.file as f:
             f.seek(0)
@@ -2612,7 +2682,7 @@ class MCInfdevOldLevel(MCLevel):
         rz = cz >> 5
         rf = self.regionFiles.get( (rx,rz) )
         if rf: return rf
-        rf = MCRegionFile(self.regionFilename(rx, rz))
+        rf = MCRegionFile(self.regionFilename(rx, rz), (rx,rz))
         self.regionFiles[rx,rz] = rf;
         return rf
 
@@ -2634,7 +2704,7 @@ class MCInfdevOldLevel(MCLevel):
             except ValueError:
                 continue
             
-            regionFile = MCRegionFile(os.path.join(regionDir, filename))
+            regionFile = MCRegionFile(os.path.join(regionDir, filename), (rx,rz))
             
             if regionFile.offsets.any():
                 self.regionFiles[rx,rz] = regionFile
