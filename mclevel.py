@@ -4192,7 +4192,9 @@ class MCJavaLevel(MCLevel):
         info( u"MCJavaLevel created for potential level of size " + str( (w,l,h) ) )
             
         blockCount = h*l*w
-        if blockCount > data.shape[0]: raise ValueError, "Level file does not contain enough blocks!"
+        if blockCount > data.shape[0]: 
+            raise ValueError,  "Level file does not contain enough blocks! Try putting the size into the filename, e.g. server_level_{w}_{l}_{h}.dat".format(w=w,l=l,h=h);
+        
         
         blockOffset = data.shape[0]-blockCount
         blocks = data[blockOffset:blockOffset+blockCount]
