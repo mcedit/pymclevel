@@ -42,6 +42,7 @@ class mce(object):
     Entity commands:
        {commandPrefix}removeEntities [ <EntityID> ]
        {commandPrefix}dumpSigns [ <filename> ]
+       {commandPrefix}dumpChests [ <filename> ]
        
     Chunk commands:
        {commandPrefix}createChunks <box>
@@ -98,6 +99,7 @@ class mce(object):
         
         "removeentities",
         "dumpsigns",
+        "dumpchests",
         
         "createchunks",
         "deletechunks",
@@ -607,7 +609,63 @@ class mce(object):
         print "Dumped {0} signs to {1}".format(signCount, filename);
         
         outFile.close();
+     
+    def _dumpchests(self, command):
+        """
+    dumpChests [ <filename> ]
+    
+    Saves the content and location of every chest in the world to a text file. 
+    With no filename, saves signs to <worldname>.chests
+    
+    Output is newline-delimited. 5 lines per sign. Coordinates are 
+    on the first line, followed by a line by item slot For example:
+    
+        [229, 118, -15]
+        64 Cobblestone
+        32 Glass
+        Empty
+        [...]
+        Empty
         
+    Coordinates are ordered the same as point inputs: 
+        [North/South, Down/Up, East/West]
+        
+    """
+        if len(command):
+            filename = command[0]
+        else:
+            filename = self.level.displayName + ".chests"
+        
+        outFile = file(filename, "w");
+        
+        print "Dumping chests..."
+        chestCount = 0;
+        
+        for i, cPos in enumerate(self.level.allChunks):
+            try:
+                chunk = self.level.getChunk(*cPos);
+            except mclevel.ChunkMalformed:
+                continue;
+                
+            for tileEntity in chunk.TileEntities:
+                if tileEntity["id"].value == "Chest":
+                    chestCount += 1;
+                    
+                    outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n");
+#                    for i in range(26):
+#                        outFile.write(tileEntity["Text{0}".format(i+1)].value + "\n");
+                    for Item in tileEntity["Items"]:
+                      outFile.write(str(Item["Count"].value) + " " + str(Item["id"].value) + "\n");
+                    
+            if i % 100 == 0:
+                print "Chunk {0}...".format(i)
+            
+            chunk.unload();
+        
+        print "Dumped {0} signs to {1}".format(chestCount, filename);
+        
+        outFile.close();
+    
     def _removeentities(self, command):
         """
     removeEntities [ [except] [ <EntityID> [ <EntityID> ... ] ] ]
