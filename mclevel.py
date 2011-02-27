@@ -2627,7 +2627,7 @@ class MCInfdevOldLevel(MCLevel):
             bits = filename.split('.')
             if len(bits) < 4 or bits[0] != 'r' or bits[3] != "mcr": continue
                 
-            rx, rz = map(self.decbase36, bits[1:3])
+            rx, rz = map(int, bits[1:3])
             
             regionFile = MCRegionFile(os.path.join(regionDir, filename))
             
