@@ -2130,7 +2130,7 @@ def notclosing(f):
     yield f;
 
 class MCRegionFile(object):
-    holdFileOpen = False #if False, reopens and recloses the file on each access
+    holdFileOpen = True #if False, reopens and recloses the file on each access
     
             
     @property
