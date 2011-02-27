@@ -2702,7 +2702,7 @@ class MCInfdevOldLevel(MCLevel):
         try:
             data = regionFile.readChunk(cx,cz)
         except Exception, e:
-            raise ChunkMalformed, "Chunk {0} had an error: {1}".format(chunk.chunkPosition, e)
+            raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e)
         if data is None:
             raise ChunkMalformed, "Chunk {0} not found".format(chunk.chunkPosition)
         return data
