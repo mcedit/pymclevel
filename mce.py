@@ -652,14 +652,19 @@ class mce(object):
                                
                     outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n");
                     for Item in tileEntity["Items"]:
-                      outFile.write(str(Item["Count"].value) + " " + items.itemtypes[Item["id"].value].name + "\n");
+                      try:
+                        itemname=items.itemtypes[Item["id"].value].name
+                      except KeyError:
+                        itemname="Unknown Item {0}".format(Item["id"].value)
+                      outFile.write("{0} {1}\n".format(Item["Count"].value,itemname));
+
                     
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
             
             chunk.unload();
         
-        print "Dumped {0} signs to {1}".format(chestCount, filename);
+        print "Dumped {0} chests to {1}".format(chestCount, filename);
         
         outFile.close();
     
