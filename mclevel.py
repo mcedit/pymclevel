@@ -2445,11 +2445,10 @@ class MCInfdevOldLevel(MCLevel):
         return self.bounds.size
     
     def close(self):
-        if hasattr(self, 'regionFiles'):
-            for rf in (self.regionFiles or {}).values():
+        for rf in (self.regionFiles or {}).values():
                 rf.close();
             
-            self.regionFiles = None
+        self.regionFiles = {}
         
     def create(self, filename, random_seed, last_played):
         
