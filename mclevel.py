@@ -2627,8 +2627,11 @@ class MCInfdevOldLevel(MCLevel):
         for filename in regionFiles:
             bits = filename.split('.')
             if len(bits) < 4 or bits[0] != 'r' or bits[3] != "mcr": continue
-                
-            rx, rz = map(int, bits[1:3])
+            
+            try:
+                rx, rz = map(int, bits[1:3])
+            except ValueError:
+                continue
             
             regionFile = MCRegionFile(os.path.join(regionDir, filename))
             
@@ -2784,7 +2787,7 @@ class MCInfdevOldLevel(MCLevel):
     
     def regionFilename(self, rx, rz):
         s= os.path.join(self.regionDir,
-                                     "r.%s.%s.mcr" % (self.base36(rx), self.base36(rz)));
+                                     "r.%s.%s.mcr" % ((rx), (rz)));
         return s;
     
     def chunkFilename(self, x, z):
