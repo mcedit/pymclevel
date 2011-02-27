@@ -2273,7 +2273,9 @@ class MCRegionFile(object):
         return data
         
     def readChunk(self, cx, cz):
-        return self.decompressSectors(self._readChunk(cx,cz))
+        data = self._readChunk(cx,cz)
+        if data is None: return data
+        return self.decompressSectors(data)
     
     def decompressSectors(self, data):
         length = struct.unpack_from(">I", data)[0]
