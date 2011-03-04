@@ -1134,13 +1134,12 @@ class mce(object):
         raise UsageError;
     
     def loadWorld(self, world):
-        try:
-            worldNum = int(world)
-            if str(worldNum) == world:
-                self.level = mclevel.loadWorldNumber(worldNum)
-                
-        except ValueError:
-            self.level = mclevel.fromFile(world)
+
+        worldpath = os.path.expanduser(world)
+        if os.path.exists(worldpath):
+            self.level = mclevel.fromFile(worldpath)
+        else:
+            self.level = mclevel.loadWorld(world)
             
                    
                     
@@ -1170,9 +1169,10 @@ class mce(object):
         else:
             self.batchMode = True;
             self.printUsage();
+            
             while True:
                 try:
-                    world = raw_input("Please enter world number or path to world folder: ")
+                    world = raw_input("Please enter world name or path to world folder: ")
                     self.loadWorld(world)
                 except EOFError, e:
                     print "End of input."
