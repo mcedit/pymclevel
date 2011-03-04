@@ -22,8 +22,6 @@ class PlayerNotFound(RuntimeError): pass
 
 class mce(object):
     """
-    Usage:
-    
     Block commands:
        {commandPrefix}clone <sourceBox> <destPoint> [noair] [nowater]
        {commandPrefix}fill <blockType> [ <box> ]
@@ -1131,7 +1129,7 @@ class mce(object):
         
     def printUsageAndQuit(self):
         self.printUsage();
-        raise UsageError;
+        raise SystemExit;
     
     def loadWorld(self, world):
 
@@ -1158,6 +1156,10 @@ class mce(object):
         
         if len(sys.argv):
             world = sys.argv.pop(0)
+            
+            if world.lower() in ("-h", "--help"):
+                self.printUsageAndQuit()
+                
             if len(sys.argv) and sys.argv[0].lower() == "create":
                 #accept the syntax, "mce world3 create"
                 self._create([world]);
