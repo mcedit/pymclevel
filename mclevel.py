@@ -1637,12 +1637,12 @@ class MCSchematic (MCLevel):
     def setBlockDataAt(self, x,y,z, newdata):
         if x<0 or y<0 or z<0: return 0
         if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        self.Data[x,z,y] |= (newdata & 0xf) << 4;        
+        self.Data[x,z,y] = (newdata & 0xf);        
 
     def blockDataAt(self, x, y, z):
         if x<0 or y<0 or z<0: return 0
         if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        return (self.Data[x,z,y] & 0xf0) >> 4;
+        return self.Data[x,z,y];
 
     def entitiesAt(self, x, y, z):
         entities = [];
