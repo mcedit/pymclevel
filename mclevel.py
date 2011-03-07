@@ -462,12 +462,6 @@ class MCLevel(object):
         Blocks, Data, Light, SkyLight, HeightMap attributes if present """
         pass
         
-    def compressedSize(self):
-        "return the size of the compressed data for this level, in bytes."
-        self.compress();
-        if self.compressedTag is None: return 0
-        return len(self.compressedTag)
-    
     def close(self):
         pass
     
@@ -1749,7 +1743,14 @@ class InfdevChunk(MCLevel):
         else:
             if not world.containsChunk(*chunkPosition):
                 raise ChunkNotPresent("Chunk {0} not found", self.chunkPosition)
-
+    
+    def compressedSize(self):
+        "return the size of the compressed data for this level, in bytes."
+        self.compress();
+        if self.compressedTag is None: return 0
+        return len(self.compressedTag)
+    
+    
     def compress(self):
         
         
