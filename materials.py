@@ -6,6 +6,15 @@ NOTEX = 0xB8
 
 class Block(object):
     def __init__(self, materials, blockID, **kw):
+        """
+        Defines a blocktype.
+        Keyword parameters:
+            name: Human-readable name of the block
+            brightness: 0-15 (default 0)
+            opacity: 0-15 (default 15)
+            aka: Additional keywords to use for searching
+            color: (r, g, b) tuple. 0-255.  default (0x77, 0x77, 0x77)
+        """
         object.__init__(self)
         self.materials = materials
         materials._objects[blockID] = self;
@@ -13,7 +22,10 @@ class Block(object):
         materials.lightEmission[blockID] = kw.pop('brightness', materials.defaultBrightness)
         materials.lightAbsorption[blockID] = kw.pop('opacity', materials.defaultOpacity)
         materials.aka[blockID] = kw.pop('aka', "")
-        
+        color = kw.pop('color', None)
+        if color:
+            materials.flatColors[blockID] = color
+            
         texture = kw.pop('texture')
         if isinstance(texture, int):
             texture = (texture, )*6
@@ -22,7 +34,8 @@ class Block(object):
         materials.blockTextures[blockID] = texture
         
         self.ID = blockID
-
+        
+        
 class MCMaterials(object):
     defaultBrightness = 0
     defaultOpacity = 15
@@ -40,6 +53,97 @@ class MCMaterials(object):
         self.lightEmission = zeros(256, dtype='uint8')
         self.lightAbsorption = zeros(256, dtype='uint8')
         self.lightAbsorption[:] = self.defaultOpacity
+        self.flatColors = zeros((256, 4), dtype='uint8')
+        self.flatColors[:] = (0x77, 0x77, 0x77, 0x255)
+         
+        #flat colors borrowed from c10t.  https://github.com/udoprog/c10t
+        defaultColors = array([
+            (255,255,255,0),
+            (128,128,128,255),
+            (120,172,70,255),
+            (134,96,67,255),
+            (100,100,100,255),
+            (157,128,79,255),
+            (120,120,120,0),
+            (84,84,84,255),
+            (56,68,127,64),
+            (56,68,127,64),
+            (255,90,0,255),
+            (255,90,0,255),
+            (218,210,158,255),
+            (136,126,126,255),
+            (143,140,125,255),
+            (136,130,127,255),
+            (115,115,115,255),
+            (102,81,51,255),
+            (0x4a,0x83,0x42,0x80),
+            (0xc3,0xc3,0x32,0xff),
+            (255,255,255,48),
+            (102,112,134,255),
+            (29,71,165,255),
+            (107,107,107,255),
+            (218,210,158,255),
+            (100,67,50,255),
+            (255,255,0,255),
+            (255,0,0,255),
+            (0x00, 0x00, 0x00, 0x00),
+            (0x00, 0x00, 0x00, 0x00),
+            (0xff, 0xed, 0x8c, 0xff),
+            (0xd9, 0xd9, 0xd9, 0xff),
+            (200,200,200,255),
+            (200,200,200,255),
+            (0x56, 0x23, 0x17, 0xff),
+            (0xff, 0x0, 0x0, 0xff),
+            (0xbf, 0xa9, 0x74, 0xff),
+            (0x7f, 0xae, 0x7d, 0xff),
+            (0x11, 0x0d, 0x1a, 0xff),
+            (0xff, 0xe1, 0x60,0xd0),
+            (0xe0, 0xae, 0x15, 0xff),
+            (0xff, 0xff, 0xff, 0x00),
+            (0xbf, 0xa9, 0x74, 0xff),
+            (0xbf, 0x87, 0x02, 0xff),
+            (0x6f, 0x01, 0x01, 0xff),
+            (129,140,143,255),
+            (45,166,152,255),
+            (0xa9, 0x6b, 0x00, 0xff),
+            (0x90, 0xbc, 0x27, 0xff),
+            (134,96,67,255),
+            (0xbc, 0xbc, 0xbc, 0xff),
+            (0xdd, 0xdd, 0xdd, 0xff),
+            (0x0, 0x0, 0x0, 0x0),
+            (0x0, 0x0, 0x0, 0x0),
+            (0xff, 0xc8, 0x8c, 0),
+            (120, 120, 120, 128),
+            (120, 120, 120, 128),
+            (0x0, 0x0, 0x0, 0x0),
+            (0x0, 0x0, 0x0, 0x0),
+            (120,120,120,255),
+            (0x0, 0x0, 0x0, 0x0),
+            (0x0, 0x0, 0x0, 0x0),
+            (143,125,125,0xff),
+            (163,145,145,0xff),
+            (181,140,64,32),
+            (255,0,0,0xb0),
+            (0x0, 0x0, 0x0, 0x0),
+            (255, 255, 255, 255),
+            (120, 120, 255, 120),
+            (255, 255, 255, 255),
+            (85,107,47,255),
+            (0x90, 0x98, 0xa8, 0xff),
+            (193,234,150,255),
+            (0x7d, 0x42, 0x2c, 0xff),
+            (0x58, 0x36, 0x16, 200),
+            (0xe3, 0x90, 0x1d, 0xff),
+            (0xc2, 0x73, 0x73, 0xff),
+            (0x79, 0x61, 0x52, 0xff),
+            (0xff, 0xbc, 0x5e, 0xff),
+            (0x3c, 0x0d, 0x6a, 0x7f),
+            (0x3c, 0x0d, 0x6a, 0x7f),
+            (228,205,206,255),
+            (50,89,45,128),
+            (94,167,84,128),
+        ])
+        self.flatColors[:len(defaultColors)] = defaultColors
         
     def __repr__(self):
         return "<MCMaterials ({0})>".format(self.name)
