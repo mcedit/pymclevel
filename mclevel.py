@@ -1717,16 +1717,18 @@ class InfdevChunk(MCLevel):
     
     @property
     def filename(self):
-        cx,cz = self.chunkPosition
-        rx,rz = cx>>5,cz>>5
-        rf = self.world.regionFiles[rx,rz]
-        offset = rf.getOffset(cx&0x1f,cz&0x1f)
-        return u"{region} index {index} offset {offset} sector {sector}".format(
-            region=os.path.basename(self.world.regionFilename(rx,rz)), 
-            sector=offset>>8, 
-            index=4*((cx&0x1f)+((cz&0x1f)*32)), 
-            offset=offset)
-        
+        if self.world.version:
+            cx,cz = self.chunkPosition
+            rx,rz = cx>>5,cz>>5
+            rf = self.world.regionFiles[rx,rz]
+            offset = rf.getOffset(cx&0x1f,cz&0x1f)
+            return u"{region} index {index} offset {offset} sector {sector}".format(
+                region=os.path.basename(self.world.regionFilename(rx,rz)), 
+                sector=offset>>8, 
+                index=4*((cx&0x1f)+((cz&0x1f)*32)), 
+                offset=offset)
+        else:
+            return self.chunkFilename
     def __init__(self, world, chunkPosition, create = False):
         self.world = world;
         self.chunkPosition = chunkPosition;
@@ -1755,8 +1757,8 @@ class InfdevChunk(MCLevel):
         
         
         if not self.dirty: 
-            #if we are not dirty and we have compressed data, just throw the 
-            #uncompressed tag structure away
+            #if we are not dirty, just throw the 
+            #uncompressed tag structure away. rely on the OS disk cache.
             self.root_tag = None
         else:
             self.packChunkData()
@@ -1853,20 +1855,19 @@ class InfdevChunk(MCLevel):
         
         if self.dirty:
             debug( u"Saving chunk: {0}".format(self) )
-            self.world._saveChunk(self, self.compressedTag)
+            self.world._saveChunk(self)
                 
             debug( u"Saved chunk {0}".format( self ) )
             
             self.dirty = False;
             
     def load(self):
-        """ If the chunk is unloaded, reads the chunk from the region file, 
-        immediately decompressing it."""
+        """ If the chunk is unloaded, calls world._loadChunk to set root_tag and 
+        compressedTag, then unpacks the chunk fully"""
+        
         if self.root_tag is None and self.compressedTag is None:
             try:
-                data = self.world._loadChunk(self)
-                if data is None: raise ChunkNotPresent
-                self.root_tag = nbt.load(buf=data)
+                self.world._loadChunk(self)
                 self.dataIsPacked = True; 
                 self.shapeChunkData()
                 self.unpackChunkData()
@@ -2228,31 +2229,39 @@ class MCRegionFile(object):
         #debug("REGION LOAD {0},{1} sector {2}".format(cx, cz, sectorStart))
         return data
         
-    def readChunk(self, cx, cz):
+    def loadChunk(self, chunk):
+        cx,cz = chunk.chunkPosition
+        
         data = self._readChunk(cx,cz)
-        if data is None: return data
-        return self.decompressSectors(data)
+        if data is None: raise ChunkNotPresent, (cx, cz, self)
+        chunk.compressedTag = data[5:]
+        
+        chunk.root_tag = nbt.load(buf=self.decompressSectors(data))
     
     def decompressSectors(self, data):
         length = struct.unpack_from(">I", data)[0]
         format = struct.unpack_from("B", data, 4)[0]
         data = data[5:length+5]
         if format == self.VERSION_GZIP:
-            with gzip.GzipFile(fileobj=StringIO.StringIO(data)) as gz:
+            with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
                 return gz.read()
         if format == self.VERSION_DEFLATE:
             return inflate(data)
         
         raise IOError, "Unknown compress format: {0}".format(format)
 
-            
-    def writeChunk(self, cx, cz, data):
-        #data must be already compressed by world.compressTag
+        
+    def saveChunk(self, chunk):
+        cx,cz = chunk.chunkPosition
+        
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx,cz)
         sectorNumber = offset >> 8
         sectorsAllocated = offset & 0xff
+        
+        data = chunk.compressedTag
+        
         sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1;
         if sectorsNeeded >= 256: return
         
@@ -2369,6 +2378,14 @@ class MCInfdevOldLevel(MCLevel):
     ChunkHeight = 128
     
     compressMode = MCRegionFile.VERSION_DEFLATE
+    
+    @property
+    def compressMode(self):
+        if self.version:
+            return MCRegionFile.VERSION_DEFLATE
+        else:
+            return MCRegionFile.VERSION_GZIP
+            
     def compressTag(self, root_tag):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
             buf = StringIO.StringIO()
@@ -2384,7 +2401,7 @@ class MCInfdevOldLevel(MCLevel):
     
     def decompressTag(self, data):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
-            with gzip.GzipFile(fileobj=StringIO.StringIO(data)) as gz:
+            with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
                 return nbt.load(buf=gz.read())
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
             return nbt.load(buf=inflate(data))
@@ -2593,7 +2610,7 @@ class MCInfdevOldLevel(MCLevel):
          
         
         self.preloadDimensions();
-        self.preloadRegions();
+        #self.preloadChunkPositions();
        
     def loadLevelDat(self, create, random_seed, last_played):
         
@@ -2644,6 +2661,12 @@ class MCInfdevOldLevel(MCLevel):
         self.regionFiles[rx,rz] = rf;
         return rf
 
+    def preloadChunkPositions(self):
+        if self.version == 19132:
+            self.preloadRegions()
+        else:
+            self.preloadChunkPaths()
+        
     def preloadRegions(self):
         info( u"Scanning for regions..." )
         self._allChunks = set()
@@ -2683,40 +2706,40 @@ class MCInfdevOldLevel(MCLevel):
             
             
             
-#    def preloadChunkPaths(self):
-#        
-#        
-#        
-#        info( u"Scanning for chunks..." )
-#        worldDirs = os.listdir(self.worldDir);
-#        self._allChunks = set()
-#            
-#        for dirname in worldDirs:
-#            if(dirname in self.dirhashes):
-#                subdirs = os.listdir(os.path.join(self.worldDir, dirname));
-#                for subdirname in subdirs:
-#                    if(subdirname in self.dirhashes):
-#                        filenames = os.listdir(os.path.join(self.worldDir, dirname, subdirname));
-#                        #def fullname(filename):
-#                            #return os.path.join(self.worldDir, dirname, subdirname, filename);
-#                        
-#                        #fullpaths = map(fullname, filenames);
-#                        bits = map(lambda x:x.split('.'), filenames);
-#
-#                        chunkfilenames = filter(lambda x:(len(x) == 4 and x[0].lower() == 'c' and x[3].lower() == 'dat'), bits)
-#                        
-#                        for c in chunkfilenames:
-#                            try:
-#                                cx, cz = (self.decbase36(c[1]), self.decbase36(c[2]))
-#                            except Exception, e:
-#                                info( u'Skipped file {0} ({1})'.format(u'.'.join(c), e) )
-#                                continue
-#                            
-#                            self._allChunks.add( (cx,cz) )
-#                            
-#                            #
-#                            
-#        info( u"Found {0} chunks.".format(len(self._allChunks)) )
+    def preloadChunkPaths(self):
+        
+        
+        
+        info( u"Scanning for chunks..." )
+        worldDirs = os.listdir(self.worldDir);
+        self._allChunks = set()
+            
+        for dirname in worldDirs:
+            if(dirname in self.dirhashes):
+                subdirs = os.listdir(os.path.join(self.worldDir, dirname));
+                for subdirname in subdirs:
+                    if(subdirname in self.dirhashes):
+                        filenames = os.listdir(os.path.join(self.worldDir, dirname, subdirname));
+                        #def fullname(filename):
+                            #return os.path.join(self.worldDir, dirname, subdirname, filename);
+                        
+                        #fullpaths = map(fullname, filenames);
+                        bits = map(lambda x:x.split('.'), filenames);
+
+                        chunkfilenames = filter(lambda x:(len(x) == 4 and x[0].lower() == 'c' and x[3].lower() == 'dat'), bits)
+                        
+                        for c in chunkfilenames:
+                            try:
+                                cx, cz = (self.decbase36(c[1]), self.decbase36(c[2]))
+                            except Exception, e:
+                                info( u'Skipped file {0} ({1})'.format(u'.'.join(c), e) )
+                                continue
+                            
+                            self._allChunks.add( (cx,cz) )
+                            
+                            #
+                            
+        info( u"Found {0} chunks.".format(len(self._allChunks)) )
 
     def compress(self):
         self.compressAllChunks();
@@ -2753,23 +2776,55 @@ class MCInfdevOldLevel(MCLevel):
                 oldestChunk = self.loadedChunkQueue[0];
                 oldestChunk.unload(); #calls chunkDidUnload
     
+    @property
+    @decompress_first
+    def version(self):
+        if 'version' in self.root_tag['Data']:
+            return self.root_tag['Data']['version'].value
+        else:
+            return None
+            
+    
     def _loadChunk(self, chunk):
-        # xxx changed to return the decompressed data
+        """ load the chunk data from disk, and set the chunk's compressedTag
+         and root_tag"""
+        
         cx,cz = chunk.chunkPosition
-        regionFile = self.getRegionForChunk(cx,cz)
         try:
-            data = regionFile.readChunk(cx,cz)
+            if self.version:
+                regionFile = self.getRegionForChunk(cx,cz)
+                regionFile.loadChunk(chunk)
+                
+            else:
+                with file(chunk.filename, 'rb') as f:
+                    cdata = f.read()
+                    chunk.compressedTag = cdata
+                    with closing(gzip.GzipFile(fileobj=StringIO.StringIO(cdata))) as gz:
+                        data = gz.read()
+                        chunk.root_tag = nbt.load(buf=data)
+                
         except Exception, e:
             raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e)
-        if data is None:
-            raise ChunkMalformed, "Chunk {0} not found".format(chunk.chunkPosition)
-        return data
         
     
-    def _saveChunk(self, chunk, data):
+    def _saveChunk(self, chunk):
         cx,cz = chunk.chunkPosition
-        regionFile = self.getRegionForChunk(cx,cz)
-        regionFile.writeChunk(cx,cz, data)
+        if self.version:
+            regionFile = self.getRegionForChunk(cx,cz)
+            
+            regionFile.saveChunk(chunk)
+        else:
+            dir1 = os.path.dirname(chunk.filename)
+            dir2 = os.path.dirname(dir1)
+            
+            if not os.path.exists(dir2):
+                os.mkdir(dir2)
+            if not os.path.exists(dir1):
+                os.mkdir(dir1)
+            
+            chunk.compress()
+            with file(chunk.filename, 'wb') as f:
+                f.write(chunk.compressedTag)
             
     def discardAllChunks(self):
         """ clear lots of memory, fast. """
@@ -2958,7 +3013,7 @@ class MCInfdevOldLevel(MCLevel):
         """Returns the number of chunks in the level. May initiate a costly
         chunk scan."""
         if self._allChunks is None:
-            self.preloadRegions()
+            self.preloadChunkPositions()
         return len(self._allChunks)
            
     @property
@@ -2966,7 +3021,7 @@ class MCInfdevOldLevel(MCLevel):
         """Iterates over (xPos, zPos) tuples, one for each chunk in the level.
         May initiate a costly chunk scan."""
         if self._allChunks is None:
-            self.preloadRegions()
+            self.preloadChunkPositions()
         return self._allChunks.__iter__();
     
     
@@ -3698,15 +3753,18 @@ class MCInfdevOldLevel(MCLevel):
         if (cx,cz) in self._loadedChunks: 
             del self._loadedChunks[(cx,cz)]
         
-        r = cx>>5,cz>>5
-        rf = self.regionFiles.get(r)
-        if rf:
-            rf.setOffset(cx&0x1f , cz&0x1f, 0)
-            if (rf.offsets == 0).all():
-                rf.close()
-                os.unlink(rf.path)
-                del self.regionFiles[r]
-                
+        if self.version:
+            r = cx>>5,cz>>5
+            rf = self.regionFiles.get(r)
+            if rf:
+                rf.setOffset(cx&0x1f , cz&0x1f, 0)
+                if (rf.offsets == 0).all():
+                    rf.close()
+                    os.unlink(rf.path)
+                    del self.regionFiles[r]
+        else:
+            os.unlink(self.chunkFilename(cx,cz))
+            
         self._bounds = None
         
     def deleteChunksInBox(self, box):
@@ -3843,19 +3901,13 @@ class MCAlphaDimension (MCInfdevOldLevel):
 class ZipSchematic (MCInfdevOldLevel):
     def __init__(self, filename):
         tempdir = tempfile.mktemp("schematic")
-        self.filename = filename
-        self.worldDir = tempdir
-        
-        #used to limit memory usage
-        self.loadedChunkQueue = dequeset()
-        self.decompressedChunkQueue = dequeset()
-        
         zf = ZipFile(filename)
         self.zipfile = zf
-        self._loadedChunks = {};
-        self._allChunks = None
-        self.dimensions = {};
-        self.loadLevelDat(False, 0, 0)
+        zf.extract("level.dat", tempdir)
+        
+        MCInfdevOldLevel.__init__(self, tempdir)
+        
+        self.filename = filename
         
         try:
             schematicDat = os.path.join(tempdir, "schematic.dat")
@@ -3880,11 +3932,13 @@ class ZipSchematic (MCInfdevOldLevel):
         return is_zipfile(filename)
     
     def _loadChunk(self, chunk):
-        data = self.zipfile.read(chunk.chunkFilename)
-        with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
-            return gz.read()
+        if self.version:
+            return MCInfdevOldLevel._loadChunk(self, chunk)
+        else:
+            cdata = self.zipfile.read(chunk.chunkFilename)
+            chunk.compressedTag = cdata
         
-    def _saveChunk(self, chunk, data):
+    def _saveChunk(self, chunk):
         raise NotImplementedError, "Cannot save zipfiles yet!"
         
     def saveInPlace(self):
@@ -3892,8 +3946,14 @@ class ZipSchematic (MCInfdevOldLevel):
     
     def containsChunk(self, cx, cz):
         return (cx,cz) in self.allChunks
-        
+    
     def preloadRegions(self):
+        self.zipfile.extractall(self.worldDir)
+        self.regionFiles = {}
+        
+        MCInfdevOldLevel.preloadRegions(self)
+        
+    def preloadChunkPaths(self):
         info( u"Scanning for chunks..." )
         self._allChunks = set()
         
