@@ -1105,7 +1105,7 @@ class MCLevel(object):
         
     def removeEntitiesInBox(self, box):
         
-        if not hasattr(self, "Entities"): return;
+        if not self.hasEntities: return 0;
         newEnts = [];
         for ent in self.Entities:
             if map(lambda x:x.value, ent["Pos"]) in box: 
@@ -1689,6 +1689,7 @@ class InfdevChunk(MCLevel):
     arrays are automatically unpacked from nibble arrays into byte arrays 
     for better handling.
     """
+    hasEntities = True
     
     @property
     def filename(self):
@@ -3966,7 +3967,8 @@ class MCIndevLevel(MCLevel):
     
     """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis 
     swapping to be consistent with infinite levels."""
-
+    hasEntities = True
+        
     def setPlayerSpawnPosition(self, pos):
         assert len(pos) == 3
         self.Spawn = array(pos);
