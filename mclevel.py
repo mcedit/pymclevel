@@ -1101,31 +1101,7 @@ class MCLevel(object):
                 except ChunkNotPresent:
                     pass
             info( u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied) )
-            
-            """'''
-            copyOffset = map(lambda x,y:x-y, destinationPoint, sourcePoint0)
-            if sourceLevel.hasEntities:
-                for sx in range(sourcePoint0[0], sourcePoint1[0]):
-                    for sy in range(sourcePoint0[1], sourcePoint1[1]):
-                        for sz in range(sourcePoint0[2], sourcePoint1[2]):
-                            destX, destZ, destY = copyOffset[0]+sx, copyOffset[2]+sz, copyOffset[1]+sy
-                            entities = sourceLevel.entitiesAt(sx,sy,sz);
-                            tileentities = sourceLevel.tileEntitiesAt(sx,sy,sz);
-                            if entities:
-                                for eTag in entities:
-                                    eTag = deepcopy(eTag)
-                                    #adjust the entity tag's position, making sure to keep its position within the block
-                                    eFloatOffsets = map(lambda pos:pos.value-int(pos.value), eTag[Pos])
-                                    eTag[Pos] = nbt.TAG_List(map(lambda dest, off: nbt.TAG_Double(dest+off), (destX, destY, destZ), eFloatOffsets))
-                                    self.addEntity(eTag);
-            
-                            if tileentities:
-                                for eTag in tileentities:
-                                    eTag = deepcopy(eTag)
-                                    vals = map(lambda dest: nbt.TAG_Int(dest), (destX, destY, destZ))
-                                    for i,v in zip('xyz',vals): eTag[i]=v;
-                                    self.addTileEntity(eTag);'''"""
-                
+
         
     def removeEntitiesInBox(self, box):
         
@@ -1509,7 +1485,6 @@ class MCSchematic (MCLevel):
         self.Data = self.Data[:,:,::-1]; 
         
     def flipNorthSouth(self):
-        " xxx flip entities "
         blockrotation.FlipNorthSouth(self.Blocks, self.Data);
         self.Blocks = self.Blocks[::-1,:,:]; #x=-x
         self.Data = self.Data[::-1,:,:]; 
@@ -2879,10 +2854,6 @@ class MCInfdevOldLevel(MCLevel):
                                      "c.%s.%s.dat" % (self.base36(x), self.base36(z)));
         return s;
                  
-    def chunkFilepath(self, cx, cz):
-        return self.chunkFilename(cx,cz)
-        #return os.path.join( self.worldDir, self.chunkFilename(cx, cz) )
-
     def blockLightAt(self, x, y, z):
         if y < 0 or y >= self.Height: return 0
         zc=z >> 4
