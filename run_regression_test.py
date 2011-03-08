@@ -174,6 +174,8 @@ def main(argv):
         fails = []
         
         for func, name, sha, args in alpha_tests:
+            print "Starting regression {0} ({1})".format( name, args )
+            
             if any(fnmatch.fnmatch(name, x) for x in do_these_regressions):
                 if options.profile:
                     print >>sys.stderr, "Starting to profile to %s.profile" % name
