@@ -3939,6 +3939,7 @@ class ZipSchematic (MCInfdevOldLevel):
         else:
             cdata = self.zipfile.read(chunk.chunkFilename)
             chunk.compressedTag = cdata
+            chunk.decompress()
         
     def _saveChunk(self, chunk):
         raise NotImplementedError, "Cannot save zipfiles yet!"
