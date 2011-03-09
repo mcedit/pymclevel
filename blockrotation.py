@@ -31,9 +31,9 @@ def genericFlipRotation(cls):
 
 class Torch:
     blocktypes = [
-        alphaMaterials.materialNamed("Torch"),
-        alphaMaterials.materialNamed("Redstone Torch (on)"),
-        alphaMaterials.materialNamed("Redstone Torch (off)"),
+        alphaMaterials.Torch.ID,
+        alphaMaterials.RedstoneTorchOn.ID,
+        alphaMaterials.RedstoneTorchOff.ID,
     ]
                           
     South = 1
@@ -44,7 +44,7 @@ class Torch:
 genericFlipRotation(Torch)
 
 class Ladder:
-    blocktypes = [alphaMaterials.materialNamed("Ladder")]
+    blocktypes = [alphaMaterials.Ladder.ID]
     
     East = 2
     West = 3
@@ -54,8 +54,8 @@ genericFlipRotation(Ladder)
 
 class Stair:
     blocktypes = [
-        alphaMaterials.materialNamed("Wooden Stairs"),
-        alphaMaterials.materialNamed("Stone Stairs"),
+        alphaMaterials.WoodenStairs.ID,
+        alphaMaterials.StoneStairs.ID,
     ]
     
     South = 0
@@ -65,7 +65,7 @@ class Stair:
 genericFlipRotation(Stair)
 
 class WallSign:
-    blocktypes = [alphaMaterials.materialNamed("Wall Sign")]
+    blocktypes = [alphaMaterials.WallSign.ID]
     
     East = 2
     West = 3
@@ -75,8 +75,8 @@ genericFlipRotation(WallSign)
    
 class Furnace:
     blocktypes = [
-        alphaMaterials.materialNamed("Furnace"),
-        alphaMaterials.materialNamed("Lit Furnace"),
+        alphaMaterials.Furnace.ID,
+        alphaMaterials.LitFurnace.ID,
     ]
     East = 2
     West = 3
@@ -86,14 +86,14 @@ genericFlipRotation(Furnace)
 
 class Dispenser(Furnace):
     blocktypes = [
-        alphaMaterials.materialNamed("Dispenser"),
+        alphaMaterials.Dispenser.ID,
     ]          
 genericFlipRotation(Dispenser)
     
 class Pumpkin:
     blocktypes = [
-        alphaMaterials.materialNamed("Pumpkin"),
-        alphaMaterials.materialNamed("Jack-o'-Lantern"),
+        alphaMaterials.Pumpkin.ID,
+        alphaMaterials.JackOLantern.ID,
     ]
     
     East = 0
@@ -103,7 +103,7 @@ class Pumpkin:
 genericFlipRotation(Pumpkin)
 
 class Rail:
-    blocktypes = [alphaMaterials.materialNamed("Rail")]
+    blocktypes = [alphaMaterials.Rail.ID]
     
     EastWest = 0
     NorthSouth = 1
@@ -142,7 +142,7 @@ def applyThrownBit(array):
     array[8:16] = array[0:8] | 0x8
     
 class Lever:
-    blocktypes = [alphaMaterials.materialNamed("Lever")]
+    blocktypes = [alphaMaterials.Lever.ID]
     ThrownBit = 0x8
     South = 1
     North = 2
@@ -161,7 +161,7 @@ applyThrownBit(Lever.flipNorthSouth)
 rotationClasses.append(Lever)
 
 class Button:
-    blocktypes = [alphaMaterials.materialNamed("Button")]
+    blocktypes = [alphaMaterials.Button.ID]
     PressedBit = 0x8
     South = 1
     North = 2
@@ -176,7 +176,7 @@ applyThrownBit(Button.flipNorthSouth)
 rotationClasses.append(Button)
 
 class SignPost:
-    blocktypes = [alphaMaterials.materialNamed("Sign")]
+    blocktypes = [alphaMaterials.Sign.ID]
     #west is 0, increasing clockwise
     
     rotateLeft = arange(16, dtype='uint8')
@@ -191,8 +191,8 @@ rotationClasses.append(SignPost)
 
 class Door:
     blocktypes = [
-        alphaMaterials.materialNamed("Iron Door"),
-        alphaMaterials.materialNamed("Wooden Door"),
+        alphaMaterials.IronDoor.ID,
+        alphaMaterials.WoodenDoor.ID,
     ]
     TopHalfBit = 0x8
     SwungCCWBit = 0x4
