@@ -29,7 +29,7 @@ level = mclevel.fromFile("server_level.dat");
 blocks = level.Blocks
 
 # Sand to glass.
-blocks[blocks == level.materials.materialNamed("Sand")] = level.materials.materialNamed("Glass")
+blocks[blocks == level.materials.Sand.ID] = level.materials.Glass.ID
 
 # Save the file with another name.  This only works for non-Alpha levels.
 level.saveToFile("server_level_glassy.dat");
@@ -661,27 +661,45 @@ class MCLevel(object):
 #        end = tuple([o+s for o,s in zip(origin,size)])
         return self.Blocks[x:x+w,z:z+l,y:y+h]
     
-    def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
+    def blockReplaceTable(self, blocksToReplace):
+        blocktable = zeros( (256, 16), dtype='bool')
+        for b in blocksToReplace:
+            if b.hasAlternate:
+                blocktable[b.ID,b.blockData] = True
+            else:
+                blocktable[b.ID] = True
+                
+        return blocktable
+        
+    def fillBlocks(self, box, blockInfo, blocksToReplace = None):
+        
         if box is None: 
             box = self.bounds
         else:
             box = box.intersect(self.bounds)
         
-        info( u"Filling blocks in {0} with {1}, data={2} replacing{3}".format(box, blockType, blockData, blocksToReplace) )
+        info( u"Filling blocks in {0} with {1}, replacing{2}".format(box, blockInfo, blocksToReplace) )
         
         slices = map(slice, box.origin, box.maximum)
         
         blocks = self.Blocks[slices[0],slices[2],slices[1]]
         if blocksToReplace != None:
-            mask = functools.reduce(operator.or_, (blocks==x for x in blocksToReplace))
-                
-            blocks[mask] = blockType;
+            blocktable = self.blockReplaceTable(blocksToReplace)
+            
             if hasattr(self, "Data"):
-                self.Data[slices[0],slices[2],slices[1]][mask] = blockData;
+                data = self.Data[slices[0],slices[2],slices[1]]
+                mask = blocktable[blocks,data]
+            
+                data[mask] = blockInfo.blockData;
+            else:
+                mask = blocktable[blocks,0]
+            
+            blocks[mask] = blockInfo.ID;
+            
         else:
-            blocks[:] = blockType;
+            blocks[:] = blockInfo.ID;
             if hasattr(self, "Data"):
-                self.Data[slices[0],slices[2],slices[1]] = blockData;
+                self.Data[slices[0],slices[2],slices[1]] = blockInfo.blockData;
                
         #self.saveInPlace();
     classicWoolMask = zeros((256,), dtype='bool')
@@ -1617,7 +1635,7 @@ class INVEditChest(MCSchematic):
     Width = 1
     Height = 1
     Length = 1
-    Blocks = array([[[materials.materialNamed("Chest")]]], 'uint8');
+    Blocks = array([[[materials.Chest.ID]]], 'uint8');
     Data = array([[[0]]], 'uint8');
     Entities = TAG_List();
     
@@ -3426,23 +3444,32 @@ class MCInfdevOldLevel(MCLevel):
         info( "Removed {0} tile entities".format(count) )
         return count;
             
-    def fillBlocks(self, box, blockType, blockData = 0, blocksToReplace = None):
+    def fillBlocks(self, box, blockInfo, blocksToReplace = []):
         if box is None:
             chunkIterator = self.getAllChunkSlices() 
         else:
             chunkIterator = self.getChunkSlices(box)
-            
+        
+        #shouldRetainData = (not blockInfo.hasAlternate and not any([b.hasAlternate for b in blocksToReplace]))
+        #if shouldRetainData:
+        #    info( "Preserving data bytes" )
+        shouldRetainData = False #xxx old behavior overwrote blockdata with 0 when e.g. replacing water with lava
+        
+        info("Replacing {0} with {1}".format(blocksToReplace, blockInfo))
+        
         changesLighting = True
             
         if blocksToReplace != None:
-            newAbsorption = self.materials.lightAbsorption[blockType]
-            oldAbsorptions = map(self.materials.lightAbsorption.__getitem__, blocksToReplace)
+            blocktable = self.blockReplaceTable(blocksToReplace)
+            
+            newAbsorption = self.materials.lightAbsorption[blockInfo.ID]
+            oldAbsorptions = [self.materials.lightAbsorption[b.ID] for b in blocksToReplace]
             changesLighting = False
             for a in oldAbsorptions:
                 if a != newAbsorption: changesLighting = True;
                 
-            newEmission = self.materials.lightEmission[blockType]
-            oldEmissions = map(self.materials.lightEmission.__getitem__, blocksToReplace)
+            newEmission = self.materials.lightEmission[blockInfo.ID]
+            oldEmissions = [self.materials.lightEmission[b.ID] for b in blocksToReplace]
             for a in oldEmissions:
                 if a != newEmission: changesLighting = True;
         
@@ -3457,27 +3484,30 @@ class MCInfdevOldLevel(MCLevel):
                 info( u"Chunk {0}...".format(i) )
                 
             blocks = chunk.Blocks[slices] 
-            mask = None
+            data = chunk.Data[slices]
+            mask = slice(None)
             
             needsLighting = changesLighting;
               
             if blocksToReplace != None:
-                mask = functools.reduce(operator.or_, (blocks==x for x in blocksToReplace))
-                
+                mask = blocktable[blocks,data]
+            
                 blockCount = mask.sum()
                 replaced += blockCount;
                 
                 #don't waste time relighting and copying if the mask is empty
                 if blockCount:
-                    blocks[:][mask] = blockType
-                    chunk.Data[slices][mask] = blockData
+                    blocks[:][mask] = blockInfo.ID
+                    if not shouldRetainData:
+                        data[mask] = blockInfo.blockData
                 else:
                     skipped += 1;
                     needsLighting = False;
                 
             else:
-                blocks[:] = blockType
-                chunk.Data[slices] = blockData
+                blocks[:] = blockInfo.ID
+                if not shouldRetainData:
+                    data[:] = blockInfo.blockData
                 
             chunk.chunkChanged(needsLighting);
             chunk.compress();
@@ -4102,7 +4132,7 @@ class MCIndevLevel(MCLevel):
                                
                                8, 9, 10, 11, 12, 13, 14, 15]);
                                
-        torchIndexes = (self.Blocks == self.materials.materialNamed("Torch"))
+        torchIndexes = (self.Blocks == self.materials.Torch.ID)
         info( u"Rotating torches: {0}".format( len(torchIndexes.nonzero()[0]) ) )
         self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
         
@@ -4337,7 +4367,7 @@ def testIndevLevels():
     indevlevel = MCLevel.fromFile("hueg.mclevel")
     indevlevel.copyBlocksFrom(srclevel, BoundingBox((0,0,0), (64,64,64,)), (0,0,0) ) 
     assert(all(indevlevel.Blocks[0:64,0:64,0:64] == srclevel.Blocks[0:64,0:64,0:64])) 
-    indevlevel.fillBlocks(BoundingBox((0,0,0), (64,64,64,)), 12, 0, [1,2])
+    indevlevel.fillBlocks(BoundingBox((0,0,0), (64,64,64,)), indevlevel.materials.Sand, [indevlevel.materials.Stone, indevlevel.materials.Dirt])
     indevlevel.saveInPlace()
     
 def testAlphaLevels():
@@ -4366,10 +4396,10 @@ def testAlphaLevels():
     except Exception, e:
         traceback.print_exc();
         print e;
-    level.fillBlocks( BoundingBox((-11, 0, -7), (38, 128, 25)) , 5);
+    level.fillBlocks( BoundingBox((-11, 0, -7), (38, 128, 25)) , indevlevel.materials.WoodPlanks);
     c = level.getChunk( 0, 0)
     assert all(c.Blocks == 5)
-    level.fillBlocks( BoundingBox((-11, 0, -7), (38, 128, 25)) , 5, 0, [2,3]);
+    level.fillBlocks( BoundingBox((-11, 0, -7), (38, 128, 25)) , indevlevel.materials.WoodPlanks, [indevlevel.materials.Dirt, indevlevel.materials.Grass]);
     #print b.shape
     #raise SystemExit
     cx, cz = -3,-1;
