@@ -822,11 +822,42 @@ am.DoubleStoneSlab = am.Block(43,
     texture=((0x50,0x00), (0x50,0x00), (0x60,0x00), (0x60,0x00), (0x50,0x00), (0x50,0x00)),
     )
 
+am.DoubleSandstoneSlab = am.Block(43, blockData=1,
+    name="Double Sandstone Slab",
+    texture=((0x00,0xC0), (0x00,0xC0), (0x00,0xB0), (0x00,0xD0), (0x00,0xC0), (0x00,0xC0)),
+    )
+
+am.DoubleWoodenSlab = am.Block(43, blockData=2,
+    name="Double Wooden Slab",
+    texture=(0x40,0x00),
+    )
+    
+am.DoubleCobblestoneSlab = am.Block(43, blockData=3,
+    name="Double Cobblestone Slab",
+    texture=(0x00,0x10),
+    )    
+
 am.StoneSlab = am.Block(44, 
     name="Stone Slab",
     texture=((0x50,0x00), (0x50,0x00), (0x60,0x00), (0x60,0x00), (0x50,0x00), (0x50,0x00)),
     )
 
+am.SandstoneSlab = am.Block(44, blockData=1,
+    name="Sandstone Slab",
+    texture=((0x00,0xC0), (0x00,0xC0), (0x00,0xB0), (0x00,0xD0), (0x00,0xC0), (0x00,0xC0)),
+    )
+
+am.WoodenSlab = am.Block(44, blockData=2,
+    name="Wooden Slab",
+    texture=(0x40,0x00),
+    )
+    
+am.CobblestoneSlab = am.Block(44, blockData=3,
+    name="Cobblestone Slab",
+    texture=(0x00,0x10),
+    )    
+    
+    
 am.Brick = am.Block(45, 
     name="Brick",
     texture=(0x70,0x00),
