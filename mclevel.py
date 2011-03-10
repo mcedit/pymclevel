@@ -671,7 +671,7 @@ class MCLevel(object):
                 
         return blocktable
         
-    def fillBlocks(self, box, blockInfo, blocksToReplace = None):
+    def fillBlocks(self, box, blockInfo, blocksToReplace = []):
         
         if box is None: 
             box = self.bounds
@@ -683,7 +683,7 @@ class MCLevel(object):
         slices = map(slice, box.origin, box.maximum)
         
         blocks = self.Blocks[slices[0],slices[2],slices[1]]
-        if blocksToReplace != None:
+        if len(blocksToReplace):
             blocktable = self.blockReplaceTable(blocksToReplace)
             
             if hasattr(self, "Data"):
@@ -3516,7 +3516,7 @@ class MCInfdevOldLevel(MCLevel):
         
         changesLighting = True
             
-        if blocksToReplace != None:
+        if len(blocksToReplace):
             blocktable = self.blockReplaceTable(blocksToReplace)
             
             newAbsorption = self.materials.lightAbsorption[blockInfo.ID]
@@ -3546,7 +3546,7 @@ class MCInfdevOldLevel(MCLevel):
             
             needsLighting = changesLighting;
               
-            if blocksToReplace != None:
+            if len(blocksToReplace):
                 mask = blocktable[blocks,data]
             
                 blockCount = mask.sum()
@@ -3569,7 +3569,7 @@ class MCInfdevOldLevel(MCLevel):
             chunk.chunkChanged(needsLighting);
             chunk.compress();
         
-        if blocksToReplace != None:
+        if len(blocksToReplace):
             info( u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced) )
             
     
