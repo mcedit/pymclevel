@@ -2151,7 +2151,7 @@ class MCRegionFile(object):
         _freeSectors[0] = _freeSectors[1] = False 
         deleted = 0
         recovered = 0
-        
+        info("Beginning repairs on {file} ({chunks} chunks)".format(file=os.path.basename(self.path), chunks=sum(self.offsets>0)))
         rx,rz = self.regionCoords
         for index, offset in enumerate(self.offsets):
             if offset:

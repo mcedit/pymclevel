@@ -113,6 +113,7 @@ class mce(object):
         "load",
         "reload",
         "dimension",
+        "repair",
         
         "quit",
         "exit",
@@ -601,7 +602,27 @@ class mce(object):
         print "Dumped {0} signs to {1}".format(signCount, filename);
         
         outFile.close();
+    
+    def _repair(self, command):
+        """
+    repair
+    
+    Attempt to repair inconsistent region files. 
+    MAKE A BACKUP. WILL DELETE YOUR DATA.
+    
+    Scans for and repairs errors in region files:
+        Deletes chunks whose sectors overlap with another chunk
+        Rearranges chunks that are in the wrong slot in the offset table
+        Deletes completely unreadable chunks
         
+    Only usable with region-format saves.
+    """
+        if self.level.version:
+            self.level.preloadRegions()
+            for rf in self.level.regionFiles.itervalues():
+                rf.repair()
+                
+            
     def _removeentities(self, command):
         """
     removeEntities [ [except] [ <EntityID> [ <EntityID> ... ] ] ]
