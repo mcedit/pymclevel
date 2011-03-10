@@ -1297,7 +1297,59 @@ class MCSchematic (MCLevel):
     
     def __str__(self):
         return u"MCSchematic(shape={0}, filename=\"{1}\")".format( self.size, self.filename or u"")
+    
+    def compress(self):
+        #if self.root_tag is not None, then our compressed data must be stale and we need to recompress.
         
+        if self.root_tag is None:
+            return;
+        else:
+            self.packChunkData();
+            
+            buf = StringIO.StringIO()
+            with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
+                self.root_tag.save(buf=gzipper)
+            
+            self.compressedTag = buf.getvalue()
+            
+        self.root_tag = None
+        
+    def decompress(self):
+        """called when accessing attributes decorated with @decompress_first"""
+        if self.root_tag != None: return
+        if self.compressedTag is None: 
+            if self.root_tag is None:
+                self.load();
+            else:
+                return;
+        
+        with closing(gzip.GzipFile(fileobj=StringIO.StringIO(self.compressedTag))) as gzipper:
+            try:
+                data = gzipper.read();
+                if data == None: return;
+            except Exception, e:
+                #error( u"Error reading compressed data, assuming uncompressed: {0}".format(e) )
+                data = self.compressedTag
+            
+
+        try:       
+            self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
+        except Exception, e:
+            error( u"Malformed NBT data in file: {0} ({1})".format(self.filename, e) )
+            if self.world: self.world.malformedChunk(*self.chunkPosition);
+            raise ChunkMalformed, self.filename
+            
+        try:
+            self.shapeChunkData()
+        except KeyError, e:
+            error( u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e) )
+            if self.world: self.world.malformedChunk(*self.chunkPosition);
+            raise ChunkMalformed, self.filename
+        pass
+         
+        self.dataIsPacked = True; 
+    
+     
     #these refer to the blocks array instead of the file's height because rotation swaps the axes
     # this will have an impact later on when editing schematics instead of just importing/exporting
     @property
