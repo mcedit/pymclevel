@@ -1132,6 +1132,16 @@ am.Cake = am.Block(92,
     texture=((0xA0,0x70), (0xA0,0x70), (0x90,0x70), (0xC0,0x70), (0xA0,0x70), (0xA0,0x70)),
     )
 
+am.RedstoneRepeaterOff = am.Block(93, 
+    name="Redstone Repeater (Off)",
+    texture=(0x30, 0x80),
+    )
+
+am.RedstoneRepeaterOn = am.Block(94, 
+    name="Redstone Repeater (On)",
+    texture=(0x30, 0x90),
+    )
+
 del am
 
 classicMaterials.lightAbsorption = materials.lightAbsorption

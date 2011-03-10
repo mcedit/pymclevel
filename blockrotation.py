@@ -234,7 +234,32 @@ Door.flipNorthSouth[8:16] = Door.flipNorthSouth[0:8] | 0x8
 
 rotationClasses.append(Door)
 
+
+class RedstoneRepeater:
+    blocktypes = [
+        alphaMaterials.RedstoneRepeaterOff.ID,
+        alphaMaterials.RedstoneRepeaterOn.ID,
+        
+    ]
     
+    East = 0
+    South = 1
+    West = 2
+    North = 3
+    
+genericFlipRotation(RedstoneRepeater)
+
+#high bits of the repeater indicate repeater delay, and should be preserved
+RedstoneRepeater.rotateLeft[4:8] = RedstoneRepeater.rotateLeft[0:4] | 0x4
+RedstoneRepeater.rotateLeft[8:16] = RedstoneRepeater.rotateLeft[0:8] | 0x8
+
+RedstoneRepeater.flipEastWest[4:8] = RedstoneRepeater.flipEastWest[0:4] | 0x4
+RedstoneRepeater.flipEastWest[8:16] = RedstoneRepeater.flipEastWest[0:8] | 0x8
+
+RedstoneRepeater.flipNorthSouth[4:8] = RedstoneRepeater.flipNorthSouth[0:4] | 0x4
+RedstoneRepeater.flipNorthSouth[8:16] = RedstoneRepeater.flipNorthSouth[0:8] | 0x8
+
+      
 def masterRotationTable(rotationFunc):
     # compute a 256x16 table mapping each possible blocktype/data combination to 
     # the resulting data when the block is rotated
