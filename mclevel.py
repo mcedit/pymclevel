@@ -1987,16 +1987,21 @@ class InfdevChunk(MCLevel):
         """ for internal use.  call getChunk and compressChunk to load, compress, and unpack chunks automatically """
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
-            assert dataArray.shape[2] == self.world.ChunkHeight/2;
-            unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)  
+            s = dataArray.shape
+            assert s[2] == self.world.ChunkHeight/2;
+            #unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)  
             
-            #unpack data
-            unpackedData[...,0] = unpackedData[...,1]&0xf
-            unpackedData[...,1] >>=4  
-            #unpackedData[...,1] &= 0x0f   
+            unpackedData = zeros( (s[0], s[1], s[2]*2), dtype='uint8')
+            
+            unpackedData[:,:,::2] = dataArray
+            unpackedData[:,:,::2] &= 0xf
+            unpackedData[:,:,1::2] = dataArray
+            unpackedData[:,:,1::2] >>= 4
             
             
-            self.root_tag[Level][key].value=unpackedData.reshape(16,16,self.world.ChunkHeight)
+            
+            
+            self.root_tag[Level][key].value=unpackedData
             self.dataIsPacked = False;
             
     def packChunkData(self):
