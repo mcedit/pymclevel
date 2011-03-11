@@ -3985,7 +3985,8 @@ class ZipSchematic (MCInfdevOldLevel):
             
     def __del__(self):
         self.zipfile.close()
-    
+        MCInfdevOldLevel.__del__(self)
+        
     @classmethod
     def _isLevel(cls, filename):
         return is_zipfile(filename)
