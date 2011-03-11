@@ -1106,11 +1106,13 @@ am.Pumpkin = am.Block(86,
 
 am.Netherrack = am.Block(87, 
     name="Netherrack",
+    aka="Bloodstone",
     texture=(0x70,0x60),
     )
 
 am.SoulSand = am.Block(88, 
     name="Soul Sand",
+    aka="Slow Sand",
     texture=(0x80,0x60),
     )
 
