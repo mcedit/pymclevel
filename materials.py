@@ -155,7 +155,7 @@ class MCMaterials(object):
         return "<MCMaterials ({0})>".format(self.name)
         
     def blocksMatching(self, name):
-        return [self.blocksByName[k] for k in self.blocksByName if name in k]
+        return [v for (k,v) in self.blocksByName.itervalues() if name in k or name in v.aka]
     
     def blockWithID(self, id, data = 0):
         if (id,data) in self.blocksByID:
