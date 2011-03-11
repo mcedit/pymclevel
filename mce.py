@@ -1094,10 +1094,10 @@ class mce(object):
                 return;
         
         if self.level.parentWorld:
-            print "Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName);
+            print u"Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName);
             
         if len(self.level.dimensions):
-            print "Dimensions in {0}:".format(self.level.displayName)
+            print u"Dimensions in {0}:".format(self.level.displayName)
             for k in self.level.dimensions:
                 print "{0}: {1}".format(k, mclevel.MCAlphaDimension.dimensionNames.get(k, "Unknown"));
         
@@ -1221,7 +1221,7 @@ class mce(object):
             self.batchMode = True;
             while True:
                 try:
-                    command = raw_input("{0}> ".format(self.level.displayName))
+                    command = raw_input(u"{0}> ".format(self.level.displayName))
                     print
                     self.processCommand(command)
                     
