@@ -161,10 +161,8 @@ class MCMaterials(object):
         if (id,data) in self.blocksByID:
             return self.blocksByID[id,data]
         else:
-            block = self.Block(id, blockData=data)
-            self.blocksByID[id,data] = block
-            return block
-        
+            return Block(self, id, blockData=data)
+            
     def Block(self, blockID, blockData = 0, **kw):
         block = Block(self, blockID, blockData, **kw)
         
