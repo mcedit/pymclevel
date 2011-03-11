@@ -566,6 +566,7 @@ am.Sapling = am.Block(6,
 
 am.Bedrock = am.Block(7, 
     name="Bedrock",
+    aka="Adminium",
     texture=(0x10,0x10),
     )
 
@@ -626,6 +627,7 @@ am.Wood = am.Block(17,
 
 am.Ironwood = am.Block(17, blockData=1, 
     name="Ironwood",
+    aka="Redwood",
     texture=((0x40,0x70), (0x40,0x70), (0x50,0x10), (0x50,0x10), (0x40,0x70), (0x40,0x70)),
     )
     
@@ -875,6 +877,7 @@ am.Bookshelf = am.Block(47,
 
 am.MossStone = am.Block(48, 
     name="Moss Stone",
+    aka="Mossy Cobblestone",
     texture=(0x40,0x20),
     )
 
@@ -898,6 +901,7 @@ am.Fire = am.Block(51,
 
 am.MonsterSpawner = am.Block(52, 
     name="Monster Spawner",
+    aka="Mob Cage",
     texture=(0x10,0x40),
     opacity=0,
     )
@@ -931,17 +935,20 @@ am.BlockofDiamond = am.Block(57,
 
 am.CraftingTable = am.Block(58, 
     name="Crafting Table",
+    aka="Workbench",
     texture=((0xB0,0x30), (0xB0,0x30), (0xB0,0x20), (0x40,0x10), (0xC0,0x30), (0xC0,0x30)),
     )
 
 am.Crops = am.Block(59, 
     name="Crops",
+    aka="Wheat",
     texture=(0xF0,0x50),
     opacity=0,
     )
 
 am.Farmland = am.Block(60, 
     name="Farmland",
+    aka="Soil",
     texture=(0x60,0x50),
     )
 
@@ -976,6 +983,7 @@ am.Ladder = am.Block(65,
 
 am.Rail = am.Block(66, 
     name="Rail",
+    aka="Minecart Track",
     texture=(0x00,0x80),
     opacity=0,
     )
@@ -994,6 +1002,7 @@ am.WallSign = am.Block(68,
 
 am.Lever = am.Block(69, 
     name="Lever",
+    aka="Switch",
     texture=(0x80,0xB0),
     opacity=0,
     )
@@ -1075,6 +1084,7 @@ am.Clay = am.Block(82,
 
 am.SugarCane = am.Block(83, 
     name="Sugar Cane",
+    aka="Reeds, Papyrus",
     texture=(0x90,0x40),
     opacity=0,
     )
