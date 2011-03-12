@@ -1407,6 +1407,8 @@ class MCSchematic (MCLevel):
     @Materials.setter
     @decompress_first     
     def Materials(self, val):
+        if not Materials in self.root_tag:
+            self.root_tag[Materials] = TAG_String()
         self.root_tag[Materials].value = val
     
     @classmethod
