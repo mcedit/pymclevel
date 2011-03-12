@@ -2257,7 +2257,7 @@ class MCRegionFile(object):
             cx,cz = cPos
             if self.getOffset(cx,cz) == 0:
                 info("Found chunk {found} and its slot is empty, recovering it".format(found=cPos))
-                self.writeChunk(cx,cz, foundData)
+                self._saveChunk(cx,cz, foundData)
                 recovered += 1
                 
         info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered-deleted))
@@ -2306,14 +2306,16 @@ class MCRegionFile(object):
         
     def saveChunk(self, chunk):
         cx,cz = chunk.chunkPosition
+        data = chunk.compressedTag
+        self._saveChunk(cx, cz, data)
         
+    def _saveChunk(self, cx, cz, data):
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx,cz)
         sectorNumber = offset >> 8
         sectorsAllocated = offset & 0xff
         
-        data = chunk.compressedTag
         
         sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1;
         if sectorsNeeded >= 256: return
