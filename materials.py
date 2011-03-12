@@ -22,7 +22,7 @@ class Block(object):
         """
         object.__init__(self)
         self.materials = materials
-        self.name = kw.pop('name', materials.names[blockID][0])
+        self.name = kw.pop('name', materials.names[blockID][blockData])
          
              
         self.brightness  = kw.pop('brightness', materials.defaultBrightness)
@@ -40,7 +40,12 @@ class Block(object):
     def __repr__(self):
         return str(self)  
     hasAlternate = False
-      
+    wildcard = False
+    
+    def anySubtype(self):
+        bl = Block( self.materials, self.ID, self.blockData )
+        bl.wildcard = True
+        return bl
 class MCMaterials(object):
     defaultBrightness = 0
     defaultOpacity = 15
@@ -161,7 +166,9 @@ class MCMaterials(object):
         if (id,data) in self.blocksByID:
             return self.blocksByID[id,data]
         else:
-            return Block(self, id, blockData=data)
+            bl = Block(self, id, blockData=data)
+            bl.hasAlternate = True
+            return bl
             
     def Block(self, blockID, blockData = 0, **kw):
         block = Block(self, blockID, blockData, **kw)
