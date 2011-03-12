@@ -3767,7 +3767,15 @@ class MCInfdevOldLevel(MCLevel):
     def containsChunk(self, cx, cz):
         if self._allChunks is not None: return (cx, cz) in self._allChunks;
         if (cx,cz) in self._loadedChunks: return True;
-        return os.path.exists(self.regionFilename(cx>>5, cz>>5))
+        if self.version:
+            r = (cx>>5, cz>>5)
+            if r in self.regionFiles:
+                if self.regionFiles[r].getOffset(cx,cz):
+                    return True
+                    
+            return False
+        else:
+            return os.path.exists(self.chunkFilename(cx, cz))
     
     def malformedChunk(self, cx, cz):
         debug( u"Forgetting malformed chunk {0} ({1})".format((cx,cz), self.chunkFilename(cx,cz)) )
