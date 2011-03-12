@@ -301,7 +301,7 @@ cm.Wood = cm.Block(17,
 
 cm.Leaves = cm.Block(18, 
     name="Leaves",
-    texture=(0x40,0x30),
+    texture=(0x50,0x30),
     )
 
 cm.Sponge = cm.Block(19, 
