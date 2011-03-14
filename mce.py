@@ -1127,18 +1127,16 @@ class mce(object):
                 print "{0:3}: {1}".format(searchNumber, self.level.materials.names[searchNumber])
                 return
         
-        matches = []     
-        for name,b in self.level.materials.blocksByName.iteritems():
-            if name is self.level.materials.defaultName: return;
-            if searchName:
-                if not (searchName.lower() in name.lower()):
-                #don't print blocks that don't match the given name or number
-                    continue
-            
-            matches.append(b)    
+            matches = self.level.materials.blocksMatching(searchName)
+        else:
+            matches = self.level.materials.allBlocks
         
+        print "{id:9} : {name} {aka}".format(id="(ID:data)", name="Block name", aka="[Other names]")
         for b in sorted(matches):
-            print "{ID:3}:{data:<2}  : \"{name}\"".format(ID=b.ID, data=b.blockData, name=b.name)
+            idstring = "({ID}:{data})".format(ID=b.ID, data=b.blockData)
+            aka = b.aka and " [{aka}]".format(aka=b.aka) or ""
+            
+            print "{idstring:9} : {name} {aka}".format(idstring=idstring, name=b.name, aka=aka)
             
     def printUsage(self, command = ""):
         if command.lower() in self.commands:

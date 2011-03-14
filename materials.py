@@ -58,7 +58,7 @@ class MCMaterials(object):
         self.blockTextures[:] = self.defaultTexture
         self.names = [[defaultName] * 16 for i in range(256)]
         self.aka = [""] * 256
-        self.blocksByName = {}
+        self.allBlocks = []
         self.blocksByID = {}
         
         self.lightEmission = zeros(256, dtype='uint8')
@@ -171,7 +171,8 @@ class MCMaterials(object):
         return "<MCMaterials ({0})>".format(self.name)
         
     def blocksMatching(self, name):
-        return [v for (k,v) in self.blocksByName.itervalues() if name in k or name in v.aka]
+        name = name.lower()
+        return [v for v in self.allBlocks if name in v.name.lower() or name in v.aka.lower()]
     
     def blockWithID(self, id, data = 0):
         if (id,data) in self.blocksByID:
@@ -202,7 +203,7 @@ class MCMaterials(object):
             self.names[blockID][blockData] = block.name
         
         if block.name is not self.defaultName:
-            self.blocksByName[block.name] = block
+            self.allBlocks.append(block)
             
         
         if (blockID, 0) in self.blocksByID:
