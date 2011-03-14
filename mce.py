@@ -430,24 +430,45 @@ class mce(object):
     Also updates the level's 'SizeOnDisk' field, correcting its size in the
     world select menu.  
     """
-        blockCounts = zeros( (256,), 'uint64')
+        blockCounts = zeros( (4096,), 'uint64')
         sizeOnDisk = 0;
         
         print "Analyzing {0} chunks...".format(self.level.chunkCount)
+        #for input to bincount, create an array of uint16s by 
+        #shifting the data left and adding the blocks
+        
         
         for i, cPos in enumerate(self.level.allChunks, 1):
             ch = self.level.getChunk(*cPos);
-            counts = bincount(ch.Blocks.ravel())
+            btypes = numpy.array(ch.Data.ravel(), dtype='uint16')
+            btypes <<= 8
+            btypes += ch.Blocks.ravel()
+            counts = bincount(btypes)
+            
             blockCounts[:counts.shape[0]] += counts
             sizeOnDisk += ch.compressedSize();
             ch.unload();
             if i % 100 == 0:
-                print "Chunk {0}...".format( i )
+                logging.info( "Chunk {0}...".format( i ) )
             
-        for i in range(256):
-            if blockCounts[i]:
-                print "{0:30}: {1:10}".format(self.level.materials.names[i], blockCounts[i]);
-        
+        for blockID in range(256):
+            block = self.level.materials.blockWithID(blockID, 0)
+            if block.hasAlternate:
+                for data in range(16):
+                    i = (data << 8) + blockID
+                    if blockCounts[i]:
+                        idstring = "({id}:{data})".format(id=blockID, data=data)
+                        
+                        print "{idstring:9} {name:30}: {count:<10}".format(
+                            idstring=idstring, name=self.level.materials.blockWithID(blockID, data).name, count=blockCounts[i]);
+            
+            else:
+                count = int(sum( blockCounts[(d<<8)+blockID] for d in range(16) ))
+                if count:
+                    idstring = "({id})".format(id=blockID)
+                    print "{idstring:9} {name:30}: {count:<10}".format(
+                          idstring=idstring, name=self.level.materials.blockWithID(blockID, 0).name, count=count);
+            
         print "Size on disk: {0:.3}MB".format(sizeOnDisk / 1048576.0)
         self.level.SizeOnDisk = sizeOnDisk
         self.needsSave = True
