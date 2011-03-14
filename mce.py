@@ -1136,7 +1136,6 @@ class mce(object):
     With nothing, prints a list of all blocks.
     """
     
-        print "ID : Block name"
         searchName = None
         if len(command):
             searchName = " ".join(command)
