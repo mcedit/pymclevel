@@ -29,6 +29,8 @@ class Block(object):
         self.opacity = kw.pop('opacity', materials.defaultOpacity)
         self.aka = kw.pop('aka', "")
         
+        self.color = kw.pop('color', materials.flatColors[blockID,blockData])
+            
         self.ID = blockID
         self.blockData = blockData
         
@@ -189,9 +191,7 @@ class MCMaterials(object):
         self.lightAbsorption[blockID] = block.opacity
         self.aka[blockID] = block.aka
         
-        color = kw.pop('color', None)
-        if color:
-            self.flatColors[blockID, (blockData or slice(None))] = color
+        self.flatColors[blockID, (blockData or slice(None))] = block.color
             
         texture = kw.pop('texture', None)
         if texture:
@@ -525,11 +525,13 @@ am.DoubleStoneSlab = am.Block(43,
 am.DoubleSandstoneSlab = am.Block(43, blockData=1,
     name="Double Sandstone Slab",
     texture=((0x00,0xC0), (0x00,0xC0), (0x00,0xB0), (0x00,0xD0), (0x00,0xC0), (0x00,0xC0)),
+    color=am.Sandstone.color,
     )
 
 am.DoubleWoodenSlab = am.Block(43, blockData=2,
     name="Double Wooden Slab",
     texture=(0x40,0x00),
+    color=am.WoodPlanks.color
     )
     
 am.DoubleCobblestoneSlab = am.Block(43, blockData=3,
@@ -545,11 +547,13 @@ am.StoneSlab = am.Block(44,
 am.SandstoneSlab = am.Block(44, blockData=1,
     name="Sandstone Slab",
     texture=((0x00,0xC0), (0x00,0xC0), (0x00,0xB0), (0x00,0xD0), (0x00,0xC0), (0x00,0xC0)),
+    color=am.Sandstone.color,
     )
 
 am.WoodenSlab = am.Block(44, blockData=2,
     name="Wooden Slab",
     texture=(0x40,0x00),
+    color=am.WoodPlanks.color
     )
     
 am.CobblestoneSlab = am.Block(44, blockData=3,
@@ -888,6 +892,7 @@ blockFilterAlphaToClassic[50:255] = 36 # change all blocks from torch (50) on up
 ### xxx add filter tables for indev blocks
 
 nullConversionTable = arange(256, dtype=uint8) 
+
 
 materials.conversionTables = {
         materials:  nullConversionTable,
