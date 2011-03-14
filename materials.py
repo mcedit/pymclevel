@@ -65,7 +65,7 @@ class MCMaterials(object):
         self.lightAbsorption = zeros(256, dtype='uint8')
         self.lightAbsorption[:] = self.defaultOpacity
         self.flatColors = zeros((256, 16, 4), dtype='uint8')
-        self.flatColors[:] = (0xc9, 0x77, 0xf0, 0x255)
+        self.flatColors[:] = (0xc9, 0x77, 0xf0, 0xff)
          
         #flat colors borrowed from c10t.  https://github.com/udoprog/c10t
         defaultColors = array([
