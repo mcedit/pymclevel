@@ -1,1 +1,1 @@
-from mclevel import *
+from .mclevel import *

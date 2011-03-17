@@ -868,7 +868,7 @@ classicMaterials.lightEmission = materials.lightEmission
 namedMaterials = dict( (i.name, i) for i in (materials, classicMaterials) )
 
 
-materialNames = dict( (k,v) for v,k in namedMaterials.iteritems() )
+materialNames = dict( (k,v) for v,k in list(namedMaterials.items()) )
 
 
 #filters certain block types in old maps to types available in /game/

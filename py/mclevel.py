@@ -227,15 +227,16 @@ minecraftDir = minecraftDir.decode(sys.getfilesystemencoding());
 
 if sys.platform == "win32":
     #not sure why win32com is needed if the %APPDATA% var is available
-    try:      
-        import win32com.client
-        
-        objShell = win32com.client.Dispatch("WScript.Shell")
-        minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
-    except Exception, e:
-        print "WScript error {0!r}".format(e)
-        appdata = os.environ['APPDATA'].decode(sys.getfilesystemencoding());
-        minecraftDir = os.path.join(appdata, ".minecraft")
+    #IT's NOT needed and Python 2.7 @ Win7, XP doesn't have it "WScript error ImportError('No module named win32com.client',)"
+    #try:
+    #    import win32com.client
+    #
+    #    objShell = win32com.client.Dispatch("WScript.Shell")
+    #    minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
+    #except Exception, e:
+    #    print "WScript error {0!r}".format(e)
+    appdata = os.environ['APPDATA'].decode(sys.getfilesystemencoding());
+    minecraftDir = os.path.join(appdata, ".minecraft")
         
 saveFileDir = os.path.join(minecraftDir, u"saves")
  

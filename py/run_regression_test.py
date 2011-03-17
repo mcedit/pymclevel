@@ -71,22 +71,22 @@ def untared_content(src):
         f.extractall(dest)
         yield dest
 
-def launch_subprocess(directory, arguments, env = {}):
+def launch_subprocess(script,directory, arguments, env = {}):
     #my python breaks with an empty environ, i think it wants PATH
     #if sys.platform == "win32":
     newenv = {}
     newenv.update(os.environ)
     newenv.update(env);
     
-    proc = subprocess.Popen((["python.exe"] if sys.platform == "win32" else []) + [
-            "./mce.py",
+    proc = subprocess.Popen(([sys.executable] if sys.platform == "win32" else []) + [
+            script,
             directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=newenv)
             
     return proc
 
 class RegressionError(Exception): pass
 
-def do_test(test_data, result_check, arguments=[]):
+def do_test(script,test_data, result_check, arguments=[]):
     """Run a regression test on the given world.
 
     result_check - sha1 of the recursive tree generated
@@ -103,7 +103,7 @@ def do_test(test_data, result_check, arguments=[]):
         env['MCE_PROFILE'] = os.environ['MCE_PROFILE']
 
     with directory_clone(test_data) as directory:
-        proc = launch_subprocess(directory, arguments, env)
+        proc = launch_subprocess(script,directory, arguments, env)
         proc.stdin.close()
         proc.wait()
 
@@ -116,7 +116,7 @@ def do_test(test_data, result_check, arguments=[]):
     print "[OK] (sha1sum of result is {0!r}, as expected)".format(result_check)
 
 
-def do_test_match_output(test_data, result_check, arguments=[]):
+def do_test_match_output(script,test_data, result_check, arguments=[]):
     result_check = result_check.lower()
 
     env = {
@@ -125,7 +125,7 @@ def do_test_match_output(test_data, result_check, arguments=[]):
     }
 
     with directory_clone(test_data) as directory:
-        proc = launch_subprocess(directory, arguments, env)
+        proc = launch_subprocess(script,directory, arguments, env)
         proc.stdin.close()
         output = proc.stdout.read()
         proc.wait()
@@ -159,9 +159,14 @@ import optparse
 
 parser = optparse.OptionParser()
 parser.add_option("--profile", help="Perform profiling on regression tests", action="store_true")
+parser.add_option("--script", help="Path to script", action="store", type="str", nargs=1, dest="script")
 
 def main(argv):
     options, args = parser.parse_args(argv)
+
+    script="./mce.py"
+    if options.script:
+        script = options.script
 
     if len(args) <= 1:
         do_these_regressions = ['*']
@@ -181,7 +186,7 @@ def main(argv):
                     print >>sys.stderr, "Starting to profile to %s.profile" % name
                     os.environ['MCE_PROFILE'] = '%s.profile' % name
                 try:
-                    func(test_data, sha, args)
+                    func(script,test_data, sha, args)
                 except RegressionError, e:
                     fails.append( "Regression {0} failed: {1}".format(name, e) )
                     print fails[-1]

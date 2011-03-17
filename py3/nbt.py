@@ -22,7 +22,7 @@ import collections
 import itertools
 import struct
 import gzip
-import StringIO;
+import io;
 import os;
 from contextlib import closing
 from numpy import array, zeros, uint8, fromstring
@@ -82,10 +82,10 @@ class TAG_Value(object):
         self.write_value(buf)
 
     def saveGzipped(self, filename, compresslevel=1):
-        sio = StringIO.StringIO();
+        sio = io.BytesIO();
         #atomic write
         try: os.rename(filename, filename + ".old");
-        except Exception, e:
+        except Exception as e:
             #print "Atomic Save: No existing file to rename"
             pass
     
@@ -100,12 +100,12 @@ class TAG_Value(object):
         except:
             try:
                 os.rename(filename + ".old", filename,);
-            except Exception, e:
-                print e;
+            except Exception as e:
+                print(e);
                 return
             
         try: os.remove(filename + ".old");
-        except Exception, e:
+        except Exception as e:
             #print "Atomic Save: No old file to remove"
             pass;
     
@@ -127,7 +127,7 @@ class TAG_Int(TAG_Value):
 class TAG_Long(TAG_Value):
     tag = 4;
     fmt = ">q";
-    dataType = long
+    dataType = int
 
 class TAG_Float(TAG_Value):
     tag = 5;
@@ -167,7 +167,7 @@ class TAG_Byte_Array(TAG_Value):
              
     def write_value(self, buf):
         #print self.value
-        valuestr = self.value.tostring()
+        valuestr = self.value.tostring();
         buf.write(struct.pack(self.fmt % (len(valuestr),), len(valuestr), valuestr))
      
 class TAG_Int_Array(TAG_Byte_Array):
@@ -190,7 +190,7 @@ class TAG_Int_Array(TAG_Byte_Array):
     
     def write_value(self, buf):
         #print self.value
-        valuestr = self.value.tostring()
+        valuestr = self.value.tostring().decode();
         buf.write(struct.pack(self.fmt % (len(valuestr),), len(valuestr)/4, valuestr))
        
 class TAG_String(TAG_Value):
@@ -206,13 +206,16 @@ class TAG_String(TAG_Value):
             self.value = value;
         else:
             (string_len,) = struct.unpack_from(">H", data);
-            self.value = data[2:string_len + 2].tostring();
+            if isinstance(data,bytes):
+                self.value = data[2:string_len + 2].decode();
+            else:
+                self.value = data[2:string_len + 2].tostring().decode();
 
     def nbt_length(self) :
         return len(self.value) + 2;
 
     def write_value(self, buf):
-        buf.write(struct.pack(self.fmt % (len(self.value),), len(self.value), self.value))
+        buf.write(struct.pack(self.fmt % (len(self.value),), len(self.value), self.value.encode()))
         
 
 
@@ -266,7 +269,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
     def write_value(self, buf):
         for i in self.value:
             i.save(buf=buf)
-        buf.write("\x00")
+        buf.write(b'\x00')
         
     "collection functions"
     def __getitem__(self, k):
@@ -276,15 +279,15 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
                 if key.name == k: return key
         raise KeyError("Key {0} not found".format(k));
     
-    def __iter__(self):             return itertools.imap(lambda x:x.name, self.value);
-    def __contains__(self, k):return k in map(lambda x:x.name, self.value);
+    def __iter__(self):             return [x.name for x in self.value];
+    def __contains__(self, k):return k in [x.name for x in self.value];
     def __len__(self):                return self.value.__len__()
     
 
     def __setitem__(self, k, v):
-        if not (v.__class__ in tag_handlers.values()): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
+        if not (v.__class__ in list(tag_handlers.values())): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
         """remove any items already named "k".    """
-        olditems = filter(lambda x:x.name == k, self.value)
+        olditems = [x for x in self.value if x.name == k]
         for i in olditems: self.value.remove(i)
         self.value.append(v);
         v.name = k;
@@ -327,7 +330,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         if(data == None):
             if(len(value)):
                 self.list_type = value[0].tag;
-                value = filter(lambda x:x.__class__ == value[0].__class__, value)
+                value = [x for x in value if x.__class__ == value[0].__class__]
                 
             self.value = value
 
@@ -408,7 +411,7 @@ def loadFile(filename):
     try:
         data = inputGz.read();
     except IOError:
-        print "File %s not zipped" % filename
+        print(("File %s not zipped" % filename))
         data = file(filename, "rb").read();
     finally:
         return load(buf=fromstring(data, 'uint8'));
@@ -427,18 +430,18 @@ def load(filename="", buf=None):
     root TAG_Compound object. Argument can be a string containing a 
     filename or an array of integers containing TAG_Compound data. """
     
-    if filename and isinstance(filename, (str, unicode)):
+    if filename and isinstance(filename, str):
         return loadFile(filename)
     if isinstance(buf, str): buf = fromstring(buf, uint8)
     data = buf;
     #if buf != None: data = buf
     if not len(buf):
-        raise IOError, "Asked to load root tag of zero length"
+        raise IOError("Asked to load root tag of zero length")
 
     data_cursor = 0;
     tag_type = data[data_cursor];
     if tag_type != 10:
-        raise IOError, 'Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type);
+        raise IOError('Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type));
     data_cursor += 1;
 
     data_cursor, tag = load_named(data, data_cursor, tag_type)
@@ -452,15 +455,15 @@ def loadtest():
     level = load("hell.mclevel");
 
     """The root tag must have a name, and so must any tag within a TAG_Compound"""
-    print level.name
+    print((level.name))
 
     """Use the [] operator to look up subtags of a TAG_Compound."""
-    print level["Environment"]["SurroundingGroundHeight"].value;
+    print((level["Environment"]["SurroundingGroundHeight"].value));
     
     
     """Numeric, string, and bytearray types have a value 
     that can be accessed and changed. """
-    print level["Map"]["Blocks"].value
+    print((level["Map"]["Blocks"].value))
     
     return level;
 
@@ -547,12 +550,12 @@ def abusetest():
     
     level = createtest();
     level["Map"]["Spawn"][0].name = "Torg Potter"
-    sio = StringIO.StringIO()
+    sio = io.StringIO()
     level.save(buf=sio)
     newlevel = load(buf=sio.getvalue())
 
     n = newlevel["Map"]["Spawn"][0].name
-    if(n): print "Named list element failed: %s" % n;
+    if(n): print(("Named list element failed: %s" % n));
 
     """
     attempt to delete non-existent TAG_Compound elements
