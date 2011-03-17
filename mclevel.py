@@ -3772,12 +3772,7 @@ class MCInfdevOldLevel(MCLevel):
         if self._allChunks is not None: return (cx, cz) in self._allChunks;
         if (cx,cz) in self._loadedChunks: return True;
         if self.version:
-            r = (cx>>5, cz>>5)
-            if r in self.regionFiles:
-                if self.regionFiles[r].getOffset(cx,cz):
-                    return True
-                    
-            return False
+            return (cx,cz) in self.allChunks
         else:
             return os.path.exists(self.chunkFilename(cx, cz))
     
