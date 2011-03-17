@@ -279,7 +279,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
                 if key.name == k: return key
         raise KeyError("Key {0} not found".format(k));
     
-    def __iter__(self):             return [x.name for x in self.value];
+    def __iter__(self):             return (x.name for x in self.value);
     def __contains__(self, k):return k in [x.name for x in self.value];
     def __len__(self):                return self.value.__len__()
     
