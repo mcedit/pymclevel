@@ -10,7 +10,7 @@ def main(argv):
 	options, args = parser.parse_args(argv)
 		
 	if (sys.version_info[0] >= 3):
-		dir="py3k/";
+		dir="py3/";
 	else:
 		dir="py/";
 		
