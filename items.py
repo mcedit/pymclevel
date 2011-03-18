@@ -1,3 +1,4 @@
+from wpy import wprint
 
 items_txt = """
 
@@ -229,7 +230,7 @@ class Items (object):
             except Exception as e:
                 print("Error reading line:" + str(e))
                 print("Line: " + str(line))
-                print()
+                wprint()
                 
         self.names = dict((item.name, item.id) for item in list(self.itemtypes.values()))
 

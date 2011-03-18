@@ -170,6 +170,8 @@ def fillBlocks(self, box, blockType, blockData = 0):
 Copyright 2010 David Rio Vierra
 """
 
+from wpy import wdecompress
+
 try:
     import psyco
     psyco.full()
@@ -952,7 +954,7 @@ class MCLevel(object):
         compressed = True
         unzippedData = None;
         try:
-            unzippedData = gzip.decompress(rawdata)
+            unzippedData = wdecompress(rawdata)
         except Exception as e:
             info( "Exception during Gzip operation, assuming {0} uncompressed: {1}".format(filename, e) )
             if unzippedData is None:

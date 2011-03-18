@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from wpy import winput, wprint
 import mclevel
 import sys
 import os
@@ -965,7 +966,7 @@ class mce(object):
         if not sys.stdin.isatty():
             cont=1
         else:
-            imp = input("This will destroy a large portion of the map and may take a long time.  Did you really want to do this?").lower()
+            imp = winput("This will destroy a large portion of the map and may take a long time.  Did you really want to do this?").lower()
             if imp[-1:] == '\r':
                 imp = imp[:-1]
 
@@ -1063,7 +1064,7 @@ class mce(object):
     In batch mode, an end of file automatically saves the level.
     """
         if len(command) == 0 or not (command[0].lower() in ("yes", "no")): 
-            imp = input("Save before exit? ").lower();
+            imp = winput("Save before exit? ").lower();
             if imp[-1:] == '\r':
                         imp = imp[:-1]
             if imp in ("yes", "y", "1", "true"):
@@ -1223,7 +1224,7 @@ class mce(object):
             
             while True:
                 try:
-                    world = str(input("Please enter world name or path to world folder: "))
+                    world = str(winput("Please enter world name or path to world folder: "))
                     if world[-1:] == '\r':
                         world = world[:-1]
                     self.loadWorld(world)
@@ -1252,10 +1253,10 @@ class mce(object):
             self.batchMode = True;
             while True:
                 try:
-                    command = str(input("{0}> ".format(self.level.displayName)))
+                    command = str(winput("{0}> ".format(self.level.displayName)))
                     if command[-1:] == '\r':
                         command = command[:-1]
-                    print()
+                    wprint()
                     self.processCommand(command)
                     
                 except EOFError as e:
