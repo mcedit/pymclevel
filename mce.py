@@ -987,8 +987,8 @@ class mce(object):
             
             water_level = 64  
             
-            xchunks = floor((height+15)/16)
-            zchunks = floor((width+15)/16)
+            xchunks = int((height+15)/16)
+            zchunks = int((width+15)/16)
 
             start = datetime.datetime.now()
             for cx in range(xchunks):

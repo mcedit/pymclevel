@@ -17,6 +17,12 @@ def wprint():
 	else:
 		print
 
+def wprint(param1,param2):
+	if PY_VERSION >= 3:
+		eval("print(param1, file=param2)")
+	else:
+		print >>param2, param1
+
 def wdecompress(param):
 	if PY_VERSION >= 3:
 		return gzip.decompress(param)

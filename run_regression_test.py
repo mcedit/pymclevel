@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from wpy import wprint
 import tempfile
 import sys
 import subprocess
@@ -183,7 +184,7 @@ def main(argv):
             
             if any(fnmatch.fnmatch(name, x) for x in do_these_regressions):
                 if options.profile:
-                    print("Starting to profile to %s.profile" % name, file=sys.stderr)
+                    wprint("Starting to profile to %s.profile" % name, sys.stderr)
                     os.environ['MCE_PROFILE'] = '%s.profile' % name
                 try:
                     func(script, test_data, sha, args)
