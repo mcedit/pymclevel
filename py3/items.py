@@ -202,7 +202,7 @@ class Items (object):
                 with open(filename) as f:
                     items_txt = f.read()
             except Exception as e:
-                print(("Error reading items.txt: ", e));
+                print("Error reading items.txt: " + str(e));
                 print("Using internal data.")
                 items_txt = self.items_txt
             
@@ -227,8 +227,8 @@ class Items (object):
                     
                     self.itemtypes[id] = ItemType(id, name, imagefile, imagecoords, maxdamage)
             except Exception as e:
-                print(("Error reading line:", e))
-                print(("Line: ", line))
+                print("Error reading line:" + str(e))
+                print("Line: " + str(line))
                 print()
                 
         self.names = dict((item.name, item.id) for item in list(self.itemtypes.values()))

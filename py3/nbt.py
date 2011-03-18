@@ -411,7 +411,7 @@ def loadFile(filename):
     try:
         data = inputGz.read();
     except IOError:
-        print(("File %s not zipped" % filename))
+        print("File %s not zipped" % filename)
         data = file(filename, "rb").read();
     finally:
         return load(buf=fromstring(data, 'uint8'));
@@ -455,15 +455,15 @@ def loadtest():
     level = load("hell.mclevel");
 
     """The root tag must have a name, and so must any tag within a TAG_Compound"""
-    print((level.name))
+    print(level.name)
 
     """Use the [] operator to look up subtags of a TAG_Compound."""
-    print((level["Environment"]["SurroundingGroundHeight"].value));
+    print(level["Environment"]["SurroundingGroundHeight"].value);
     
     
     """Numeric, string, and bytearray types have a value 
     that can be accessed and changed. """
-    print((level["Map"]["Blocks"].value))
+    print(level["Map"]["Blocks"].value)
     
     return level;
 
@@ -555,7 +555,7 @@ def abusetest():
     newlevel = load(buf=sio.getvalue())
 
     n = newlevel["Map"]["Spawn"][0].name
-    if(n): print(("Named list element failed: %s" % n));
+    if(n): print("Named list element failed: %s" % n);
 
     """
     attempt to delete non-existent TAG_Compound elements

@@ -246,7 +246,7 @@ class mce(object):
                     print("Matches: ")
                     for m in matches:
                         if m == self.level.materials.defaultName: continue
-                        print(("{0:3}:{1:<2} : {2}".format(m.ID, m.blockData, m.name)))
+                        print("{0:3}:{1:<2} : {2}".format(m.ID, m.blockData, m.name))
                 else:
                     print("No blocks matched.")
                 raise BlockMatchError
@@ -303,7 +303,7 @@ class mce(object):
         raise UsageError;
     def _debug(self, command):
         self.debug = not self.debug
-        print(("Debug " +("disabled", "enabled")[self.debug]))
+        print("Debug " + ("disabled", "enabled")[self.debug])
 
     def _log(self, command):
         """
@@ -317,7 +317,7 @@ class mce(object):
             except ValueError:
                 raise UsageError("Cannot understand numeric input.")
         else:
-            print(("Log level: {0}".format(logging.getLogger().level)))
+            print("Log level: {0}".format(logging.getLogger().level))
             
     
     def _clone(self, command):
@@ -365,13 +365,13 @@ class mce(object):
         else:
             box = None
                     
-        print(("Filling with {0}".format(blockInfo.name)))
+        print("Filling with {0}".format(blockInfo.name))
         
         self.level.fillBlocks(box, blockInfo)
         
         
         self.needsSave = True;
-        print(("Filled {0} blocks.".format("all" if box is None else box.volume)))
+        print("Filled {0} blocks.".format("all" if box is None else box.volume))
     
     def _replace(self, command):
         """
@@ -399,7 +399,7 @@ class mce(object):
             box = None
 
     
-        print(("Replacing {0} with {1}".format(blockInfo.name, newBlockInfo.name)))
+        print("Replacing {0} with {1}".format(blockInfo.name, newBlockInfo.name))
         
         self.level.fillBlocks(box, newBlockInfo, blocksToReplace = [blockInfo])
         
@@ -492,7 +492,7 @@ class mce(object):
         
         tempSchematic.saveToFile(filename)
         
-        print(("Exported {0} blocks.".format(tempSchematic.bounds.volume)))
+        print("Exported {0} blocks.".format(tempSchematic.bounds.volume))
     
     def _import(self, command):
         """
@@ -525,7 +525,7 @@ class mce(object):
         
         
         self.needsSave = True;
-        print(("Imported {0} blocks.".format(importLevel.bounds.volume)))
+        print("Imported {0} blocks.".format(importLevel.bounds.volume))
     
     def _player(self, command):
         """
@@ -540,19 +540,19 @@ class mce(object):
         if len(command) == 0:
             print("Players: ")
             for player in self.level.players:
-                print(("    {0}: {1}".format(player, self.level.getPlayerPosition(player))))
+                print("    {0}: {1}".format(player, self.level.getPlayerPosition(player)))
             return;
             
         player = command.pop(0)
         if len(command) == 0:
-            print(("Player {0}: {1}".format(player, self.level.getPlayerPosition(player))))
+            print("Player {0}: {1}".format(player, self.level.getPlayerPosition(player)))
             return;
             
         point = self.readPoint(command)
         self.level.setPlayerPosition(point, player)
         
         self.needsSave = True;
-        print(("Moved player {0} to {1}".format(player, point)))
+        print("Moved player {0} to {1}".format(player, point))
     
     def _spawn(self, command):
         """
@@ -617,11 +617,11 @@ class mce(object):
                         outFile.write(tileEntity["Text{0}".format(i+1)].value + "\n");
                     
             if i % 100 == 0:
-                print(("Chunk {0}...".format(i)))
+                print("Chunk {0}...".format(i))
             
             chunk.unload();
         
-        print(("Dumped {0} signs to {1}".format(signCount, filename)));
+        print("Dumped {0} signs to {1}".format(signCount, filename));
         
         outFile.close();
     
@@ -675,7 +675,7 @@ class mce(object):
                 def match(entityID):
                     return not (entityID.lower() in matchWords)
             else:
-                print(("Removing {0}...".format(", ".join(command))))
+                print("Removing {0}...".format(", ".join(command)))
                 def match(entityID):
                     return entityID.lower() in matchWords
 
@@ -711,7 +711,7 @@ class mce(object):
         else:
             print("Removed entities:")
             for entityID in sorted(removedEntities.keys()):
-                print(("  {0}: {1:6}".format(entityID, removedEntities[entityID])));
+                print("  {0}: {1:6}".format(entityID, removedEntities[entityID]));
         
         self.needsSave = True;
     
@@ -731,7 +731,7 @@ class mce(object):
         
         chunksCreated = self.level.createChunksInBox(box)
         
-        print(("Created {0} chunks." .format(len(chunksCreated))))
+        print("Created {0} chunks." .format(len(chunksCreated)))
         
         self.needsSave = True;
 
@@ -750,7 +750,7 @@ class mce(object):
         
         deletedChunks = self.level.deleteChunksInBox(box)
         
-        print(("Deleted {0} chunks." .format(len(deletedChunks))))
+        print("Deleted {0} chunks." .format(len(deletedChunks)))
         
     def _prune(self, command):
         """
@@ -771,7 +771,7 @@ class mce(object):
                 self.level.deleteChunk(cx,cz)
                 i+=1;
                 
-        print(("Pruned {0} chunks." .format(i)))
+        print("Pruned {0} chunks." .format(i))
     
     def _relight(self, command):
         """
@@ -843,7 +843,7 @@ class mce(object):
             except ValueError:
                 pass
                 
-        print(("Removing grief matter and surface lava above height {0}...".format(box.miny)))
+        print("Removing grief matter and surface lava above height {0}...".format(box.miny))
         
         self.level.fillBlocks(box,
                               self.level.materials.Air,
@@ -876,7 +876,7 @@ class mce(object):
             
             minutes = (timeOfDay % 1000) / 60;
             
-            print(("It is {0}:{1:02} {2} on Day {3}".format(round(clockHours%12 or 12), round(minutes), ampm, days)))
+            print("It is {0}:{1:02} {2} on Day {3}".format(round(clockHours%12 or 12), round(minutes), ampm, days))
         else:
             times = { "morning":6, "noon":12, "evening":18, "midnight":24 }
             word = command[0];
@@ -903,7 +903,7 @@ class mce(object):
             if ticks < 0: ticks += 18000
             
             ampm = ("AM", "PM")[hours > 11 and hours < 24]
-            print(("Changed time to {0}:{1:02} {2}".format(hours%12 or 12, minutes, ampm)))
+            print("Changed time to {0}:{1:02} {2}".format(hours%12 or 12, minutes, ampm))
             self.level.Time = ticks
             self.needsSave = True;
     
@@ -934,11 +934,11 @@ class mce(object):
     """
         bounds = self.level.bounds;
         if isinstance(self.level, mclevel.MCInfdevOldLevel):
-            print(("\nWorld size: \n  {0[0]:7} north to south\n  {0[2]:7} east to west\n".format(bounds.size)));
-            print(("Smallest and largest points: ({0[0]},{0[2]}), ({1[0]},{1[2]})".format(bounds.origin, bounds.maximum)));
+            print("\nWorld size: \n  {0[0]:7} north to south\n  {0[2]:7} east to west\n".format(bounds.size));
+            print("Smallest and largest points: ({0[0]},{0[2]}), ({1[0]},{1[2]})".format(bounds.origin, bounds.maximum));
             
         else:
-            print(("\nWorld size: \n  {0[0]:7} wide\n  {0[1]:7} tall\n  {0[2]:7} long\n".format(bounds.size)));
+            print("\nWorld size: \n  {0[0]:7} wide\n  {0[1]:7} tall\n  {0[2]:7} long\n".format(bounds.size));
             
     def _heightmap(self,command):
         """
@@ -1126,12 +1126,12 @@ class mce(object):
                 return;
         
         if self.level.parentWorld:
-            print(("Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName)));
+            print("Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName));
             
         if len(self.level.dimensions):
-            print(("Dimensions in {0}:".format(self.level.displayName)))
+            print("Dimensions in {0}:".format(self.level.displayName))
             for k in self.level.dimensions:
-                print(("{0}: {1}".format(k, mclevel.MCAlphaDimension.dimensionNames.get(k, "Unknown"))));
+                print("{0}: {1}".format(k, mclevel.MCAlphaDimension.dimensionNames.get(k, "Unknown")));
         
     def _help(self, command):
         if len(command):
@@ -1155,25 +1155,25 @@ class mce(object):
             except ValueError: 
                 searchNumber = None
             else:
-                print(("{0:3}: {1}".format(searchNumber, self.level.materials.names[searchNumber])))
+                print("{0:3}: {1}".format(searchNumber, self.level.materials.names[searchNumber]))
                 return
         
             matches = self.level.materials.blocksMatching(searchName)
         else:
             matches = self.level.materials.allBlocks
         
-        print(("{id:9} : {name} {aka}".format(id="(ID:data)", name="Block name", aka="[Other names]")))
+        print("{id:9} : {name} {aka}".format(id="(ID:data)", name="Block name", aka="[Other names]"))
         for b in sorted(matches,key=attrgetter("ID")):
             idstring = "({ID}:{data})".format(ID=b.ID, data=b.blockData)
             aka = b.aka and " [{aka}]".format(aka=b.aka) or ""
             
-            print(("{idstring:9} : {name} {aka}".format(idstring=idstring, name=b.name, aka=aka)))
+            print("{idstring:9} : {name} {aka}".format(idstring=idstring, name=b.name, aka=aka))
             
     def printUsage(self, command = ""):
         if command.lower() in self.commands:
-            print(("Usage: " + self.commandUsage(command.lower())));
+            print("Usage: " + self.commandUsage(command.lower()));
         else:
-            print((self.__doc__.format(commandPrefix=("","mce.py <world> ")[not self.batchMode])));
+            print(self.__doc__.format(commandPrefix=("","mce.py <world> ")[not self.batchMode]));
         
         
     def printUsageAndQuit(self):
@@ -1212,7 +1212,7 @@ class mce(object):
             if len(sys.argv) and sys.argv[0].lower() == "create":
                 #accept the syntax, "mce world3 create"
                 self._create([world]);
-                print(("Created world {0}".format(world)));
+                print("Created world {0}".format(world));
                 
                 sys.exit(0)
             else:
@@ -1231,7 +1231,7 @@ class mce(object):
                     print("End of input.")
                     raise SystemExit;
                 except Exception as e:
-                    print(("Cannot open {0}: {1}".format(world, e)));
+                    print("Cannot open {0}: {1}".format(world, e));
                 else:
                     break;
         
@@ -1265,7 +1265,7 @@ class mce(object):
                 except Exception as e:
                     if self.debug:
                         traceback.print_exc();
-                    print(('Exception during command: {0!r}'.format(e)));
+                    print('Exception during command: {0!r}'.format(e));
                     print("Use 'debug' to enable tracebacks.")
                     
                     #self.printUsage();
@@ -1298,7 +1298,7 @@ class mce(object):
         try:
             func(commandWords)
         except PlayerNotFound as e:
-            print(("Cannot find player {0}".format(e.args[0])))
+            print("Cannot find player {0}".format(e.args[0]))
             self._player([])
 
         except UsageError as e:

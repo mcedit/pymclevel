@@ -3292,7 +3292,7 @@ class MCInfdevOldLevel(MCLevel):
                 try:
                     chunk.load();
                 except (ChunkNotPresent, ChunkMalformed) as e:
-                    print(("Chunk error during relight, chunk skipped: ", e))
+                    print("Chunk error during relight, chunk skipped: " + str(e))
                     continue;
                     
                 for dir,dx,dz in ( (FaceXDecreasing,-1,0), 
@@ -3988,7 +3988,7 @@ class ZipSchematic (MCInfdevOldLevel):
                 self.Height = schematicDat['Height'].value;
                 self.Length = schematicDat['Length'].value;
         except Exception as e:
-            print(("Exception reading schematic.dat, skipping: {0!r}".format(e)))
+            print("Exception reading schematic.dat, skipping: {0!r}".format(e))
             self.Width = 0
             self.Height = 128
             self.Length = 0

@@ -122,7 +122,7 @@ class BoundingBox (object):
         
         
         
-        print(("Intersect of {0} and {1}: {2}".format(self, box, newbox)))
+        print("Intersect of {0} and {1}: {2}".format(self, box, newbox))
         return newbox
         
     def union(self, box):
