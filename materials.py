@@ -347,6 +347,29 @@ am.PineLeaves = am.Block(18, blockData=1,
     opacity=1,
     )
 
+am.BirchLeaves = am.Block(18, blockData=2, 
+    name="Birch Leaves",
+    texture=(0x50,0x30),
+    opacity=1,
+    )
+
+am.LeavesDecaying = am.Block(18, blockData=0 | 4, 
+    name="Leaves (Decaying)",
+    texture=(0x50,0x30),
+    opacity=1,
+    )
+
+am.PineLeavesDecaying = am.Block(18, blockData=1 | 4, 
+    name="Pine Leaves (Decaying)",
+    texture=(0x50,0x80),
+    opacity=1,
+    )
+
+am.BirchLeavesDecaying = am.Block(18, blockData=2 | 4, 
+    name="Birch Leaves (Decaying)",
+    texture=(0x50,0x30),
+    opacity=1,
+    )    
 
 am.Sponge = am.Block(19, 
     name="Sponge",
@@ -382,6 +405,10 @@ am.Sandstone = am.Block(24,
 am.NoteBlock = am.Block(25, 
     name="Note Block",
     texture=(0xA0,0x40),
+    )
+
+am.Bed = am.Block(26, 
+    name="Bed",
     )
 
 
