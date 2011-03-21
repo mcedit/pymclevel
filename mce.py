@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from wpy import winput, wprint
+from wpy import winput, wprint, wprint2
 import mclevel
 import sys
 import os
@@ -1256,7 +1256,7 @@ class mce(object):
                     command = str(winput("{0}> ".format(self.level.displayName)))
                     if command[-1:] == '\r':
                         command = command[:-1]
-                    wprint()
+                    wprint2()
                     self.processCommand(command)
                     
                 except EOFError as e:

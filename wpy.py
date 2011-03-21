@@ -11,7 +11,7 @@ def winput(param):
 	else:
 		return raw_input(param)
 
-def wprint():
+def wprint2():
 	if PY_VERSION >= 3:
 		print()
 	else:
