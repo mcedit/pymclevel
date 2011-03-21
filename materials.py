@@ -871,16 +871,19 @@ am.JackOLantern = am.Block(91,
 am.Cake = am.Block(92, 
     name="Cake",
     texture=((0xA0,0x70), (0xA0,0x70), (0x90,0x70), (0xC0,0x70), (0xA0,0x70), (0xA0,0x70)),
+    opacity=0,
     )
 
 am.RedstoneRepeaterOff = am.Block(93, 
     name="Redstone Repeater (Off)",
     texture=(0x30, 0x80),
+    opacity=0,
     )
 
 am.RedstoneRepeaterOn = am.Block(94, 
     name="Redstone Repeater (On)",
     texture=(0x30, 0x90),
+    opacity=0,
     )
 
 del am
