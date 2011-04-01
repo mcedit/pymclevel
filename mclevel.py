@@ -2539,6 +2539,17 @@ class MCInfdevOldLevel(MCLevel):
     def LastPlayed(self, val):
         self.root_tag[Data]['LastPlayed'].value = val
     
+    @property 
+    def LevelName(self):
+        if 'LevelName' not in self.root_tag[Data]: 
+            return self.displayName
+         
+        return self.root_tag[Data]['LevelName'].value
+    
+    @LevelName.setter
+    def LevelName(self, val):
+        self.root_tag[Data]['LevelName'] = TAG_String(val)
+    
     _bounds = None
     @property
     def bounds(self):

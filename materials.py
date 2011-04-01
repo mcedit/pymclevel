@@ -339,18 +339,21 @@ am.Leaves = am.Block(18,
     name="Leaves",
     texture=(0x50,0x30),
     opacity=1,
+    color=(99, 188, 76, 128),
     )
 
 am.PineLeaves = am.Block(18, blockData=1, 
     name="Pine Leaves",
     texture=(0x50,0x80),
     opacity=1,
+    color=(74, 131, 66, 128),
     )
 
 am.BirchLeaves = am.Block(18, blockData=2, 
     name="Birch Leaves",
     texture=(0x50,0x30),
     opacity=1,
+    color=(89, 151, 76, 128),
     )
 
 am.LeavesDecaying = am.Block(18, blockData=0 | 4, 
@@ -363,12 +366,14 @@ am.PineLeavesDecaying = am.Block(18, blockData=1 | 4,
     name="Pine Leaves (Decaying)",
     texture=(0x50,0x80),
     opacity=1,
+    color=am.PineLeaves.color
     )
 
 am.BirchLeavesDecaying = am.Block(18, blockData=2 | 4, 
     name="Birch Leaves (Decaying)",
     texture=(0x50,0x30),
     opacity=1,
+    color=am.BirchLeaves.color
     )    
 
 am.Sponge = am.Block(19, 
