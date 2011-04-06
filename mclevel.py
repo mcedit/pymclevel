@@ -2965,7 +2965,27 @@ class MCInfdevOldLevel(MCLevel):
         s= os.path.join(self.worldDir, self.dirhash(x), self.dirhash(z),
                                      "c.%s.%s.dat" % (self.base36(x), self.base36(z)));
         return s;
-                 
+    
+    def extractChunksInBox(self, box, parentFolder):
+        for cx,cz in box.chunkPositions:
+            if self.containsChunk(cx,cz):
+                self.extractChunk(cx,cz, parentFolder)
+                
+    def extractChunk(self, cx, cz, parentFolder):
+        if not os.path.exists(parentFolder):
+            os.mkdir(parentFolder)
+        
+        chunkFilename = self.chunkFilename(cx,cz)
+        outputFile = os.path.join(parentFolder, os.path.basename(chunkFilename))
+        
+        chunk = self.getChunk(cx,cz)
+        chunk.decompress()
+        data = self.compressTagGzip(chunk.root_tag)
+           
+        with file(outputFile, "wb") as f:
+            f.write(data)
+            
+        
     def blockLightAt(self, x, y, z):
         if y < 0 or y >= self.Height: return 0
         zc=z >> 4
