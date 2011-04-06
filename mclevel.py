@@ -2478,7 +2478,7 @@ class MCInfdevOldLevel(MCLevel):
         
     def decompressTag(self, data):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
-            return self.compressTagGzip(data)
+            return self.decompressTagGzip(data)
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
             return self.decompressTagDeflate(data)
             
