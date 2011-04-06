@@ -1028,6 +1028,8 @@ class MCLevel(object):
     def getTileEntitiesInRange(self, sourceBox, tileEntities):
         entsInRange = [];
         for tileEntity in tileEntities:
+            if not 'x' in tileEntity: continue
+            
             x,y,z = tileEntity['x'].value, tileEntity['y'].value, tileEntity['z'].value  
             if not (x,y,z) in sourceBox: continue
             entsInRange.append(tileEntity)
@@ -1075,6 +1077,8 @@ class MCLevel(object):
                 self.addEntity(eTag);
                 
             for tileEntity in chunk.TileEntities:
+                if not 'x' in tileEntity: continue
+            
                 x,y,z = tileEntity['x'].value, tileEntity['y'].value, tileEntity['z'].value  
                 if x-wx<slices[0].start or x-wx>=slices[0].stop: continue
                 if y<slices[2].start or y>=slices[2].stop: continue
@@ -1107,6 +1111,8 @@ class MCLevel(object):
                     
                 
             for entity in sourceLevel.getTileEntitiesInRange(sourceBox, sourceLevel.TileEntities):
+                if not 'x' in entity: continue
+            
                 x,y,z = entity['x'].value, entity['y'].value, entity['z'].value  
                 
                 eTag = deepcopy(entity)
@@ -1539,6 +1545,8 @@ class MCSchematic (MCLevel):
                 entity["Dir"].value = (entity["Dir"].value + 1) % 4
                 
         for tileEntity in self.TileEntities:
+            if not 'x' in tileEntity: continue
+            
             newX = tileEntity["z"].value
             newZ = self.Length - tileEntity["x"].value - 1
             
@@ -1576,6 +1584,8 @@ class MCSchematic (MCLevel):
                 entity["Dir"].value = northSouthPaintingMap[entity["Dir"].value]
                 
         for tileEntity in self.TileEntities:
+            if not 'x' in tileEntity: continue
+            
             tileEntity["x"].value = self.Width - tileEntity["x"].value - 1
     
     def flipEastWest(self):
@@ -3482,6 +3492,8 @@ class MCInfdevOldLevel(MCLevel):
 
     def addTileEntity(self, entity):
         assert isinstance(entity, TAG_Compound)
+        if not 'x' in entity: return
+        
         x = int(entity['x'].value)
         y = int(entity['y'].value)
         z = int(entity['z'].value)
@@ -3492,7 +3504,7 @@ class MCInfdevOldLevel(MCLevel):
             return 
             # raise Error, can't find a chunk?
         def samePosition(a):
-            return (a['x'].value == x and a['y'].value == y and a['z'].value == z)
+            return ('x' in a and (a['x'].value == x and a['y'].value == y and a['z'].value == z))
             
         try:     
             chunk.TileEntities.remove(filter(samePosition, chunk.TileEntities));
