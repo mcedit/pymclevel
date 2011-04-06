@@ -2450,26 +2450,37 @@ class MCInfdevOldLevel(MCLevel):
             return MCRegionFile.VERSION_DEFLATE
         else:
             return MCRegionFile.VERSION_GZIP
-            
+    
+    def compressTagGzip(self, root_tag):
+        buf = StringIO.StringIO()
+        with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
+            root_tag.save(buf=gzipper)
+        
+        return buf.getvalue()    
+    
+    def compressTagDeflate(self, root_tag):
+        buf = StringIO.StringIO()
+        root_tag.save(buf=buf)
+        return deflate(buf.getvalue())
+        
     def compressTag(self, root_tag):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
-            buf = StringIO.StringIO()
-            with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
-                root_tag.save(buf=gzipper)
-            
-            return buf.getvalue()
-            
+            return self.compressTagGzip(root_tag)
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
-            buf = StringIO.StringIO()
-            root_tag.save(buf=buf)
-            return deflate(buf.getvalue())
-    
+            return self.compressTagDeflate(root_tag)
+           
+    def decompressTagGzip(self, data):
+        with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
+            return nbt.load(buf=gz.read())
+            
+    def decompressTagDeflate(self, data):
+        return nbt.load(buf=inflate(data))
+        
     def decompressTag(self, data):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
-            with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
-                return nbt.load(buf=gz.read())
+            return self.compressTagGzip(data)
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
-            return nbt.load(buf=inflate(data))
+            return self.decompressTagDeflate(data)
             
         
     @property
