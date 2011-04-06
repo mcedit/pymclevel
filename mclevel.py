@@ -180,9 +180,10 @@ import nbt
 import operator
 import functools
 from nbt import *
+import struct
 import gzip
 import StringIO
-from numpy import array, zeros, uint8, zeros_like
+from numpy import *
 import itertools
 import traceback
 import os;
@@ -194,7 +195,7 @@ from zipfile import ZipFile, ZIP_STORED, is_zipfile
 from collections import deque;
 
 import blockrotation
-from materials import *
+from materials import classicMaterials, alphaMaterials, namedMaterials, MCMaterials, materialNames
 
 from copy import deepcopy
 import time
@@ -1297,7 +1298,7 @@ def loadWorldNumber(i):
 ##            self.id = "Unknown Entity"
 
 class MCSchematic (MCLevel):
-    materials = materials
+    materials = alphaMaterials
     hasEntities = True;
     
     
@@ -1459,7 +1460,7 @@ class MCSchematic (MCLevel):
         if mats in namedMaterials:
             self.materials = namedMaterials[mats];
         else:
-            assert(isinstance(materials, MCMaterials))
+            assert(isinstance(mats, MCMaterials))
             self.materials = mats
  
         if root_tag:
@@ -1699,7 +1700,7 @@ class INVEditChest(MCSchematic):
     Width = 1
     Height = 1
     Length = 1
-    Blocks = array([[[materials.Chest.ID]]], 'uint8');
+    Blocks = array([[[alphaMaterials.Chest.ID]]], 'uint8');
     Data = array([[[0]]], 'uint8');
     Entities = TAG_List();
     
@@ -2436,7 +2437,7 @@ def inflate(data):
     
              
 class MCInfdevOldLevel(MCLevel):
-    materials = materials;
+    materials = alphaMaterials;
     hasEntities = True;
     parentWorld = None;
     dimNo = 0;

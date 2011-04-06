@@ -578,6 +578,6 @@ def runtests():
 if(__name__ == "__main__") :
     runtests()
 
-    
+__all__ = [a.__name__ for a in tag_handlers.itervalues()] + ["loadFile"]
     
     
