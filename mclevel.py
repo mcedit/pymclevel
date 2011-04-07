@@ -4143,22 +4143,22 @@ class MCIndevLevel(MCLevel):
     def playerSpawnPosition(self):
         return self.Spawn;
         
-    def setPlayerPosition(self, pos):
+    def setPlayerPosition(self, pos, player = "Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 x["Pos"] = nbt.TAG_List([nbt.TAG_Float(p) for p in pos])
     
-    def getPlayerPosition(self):
+    def getPlayerPosition(self, player = "Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 return array(map(lambda x:x.value, x["Pos"]));
                 
-    def setPlayerOrientation(self, yp):
+    def setPlayerOrientation(self, yp, player = "Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 x["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
 
-    def playerOrientation(self):
+    def playerOrientation(self, player = "Ignored"):
         """ returns (yaw, pitch) """
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
