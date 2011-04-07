@@ -3543,7 +3543,8 @@ class MCInfdevOldLevel(MCLevel):
         except ValueError:
             pass;
         chunk.TileEntities.append(entity);
-    
+        chunk.dirty = True
+        
     def removeEntitiesInBox(self, box):
         count = 0;
         for chunk, slices, point in self.getChunkSlices(box):
