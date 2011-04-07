@@ -3019,8 +3019,11 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x&0xf;
         zInChunk = z&0xf;
         
-        ch = self.getChunk(xc,zc)
-        
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         return ch.Data[xInChunk,zInChunk,y]
 
         
@@ -3033,7 +3036,11 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x&0xf;
         zInChunk = z&0xf;
 
-        ch = self.getChunk(xc,zc)
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         ch.Data[xInChunk, zInChunk, y] = newdata
         ch.chunkChanged(False)
         
@@ -3045,8 +3052,12 @@ class MCInfdevOldLevel(MCLevel):
         xc=x>>4
         xInChunk = x & 0xf;
         zInChunk = z & 0xf;
-
-        ch = self.getChunk(xc,zc)
+        
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         return ch.Blocks[xInChunk, zInChunk, y]
         
     def setBlockAt(self, x, y, z, blockID):
@@ -3058,7 +3069,11 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x & 0xf;
         zInChunk = z & 0xf;
 
-        ch = self.getChunk(xc,zc)
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         ch.Blocks[xInChunk, zInChunk, y] = blockID
         ch.chunkChanged(False)
 
