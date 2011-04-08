@@ -183,9 +183,10 @@ import nbt
 import operator
 import functools
 from nbt import *
+import struct
 import gzip
 import io
-from numpy import array, zeros, uint8, zeros_like
+from numpy import *
 import itertools
 import traceback
 import os;
@@ -197,7 +198,7 @@ from zipfile import ZipFile, ZIP_STORED, is_zipfile
 from collections import deque;
 
 import blockrotation
-from materials import *
+from materials import classicMaterials, alphaMaterials, namedMaterials, MCMaterials, materialNames
 
 from copy import deepcopy
 import time
@@ -1031,6 +1032,8 @@ class MCLevel(object):
     def getTileEntitiesInRange(self, sourceBox, tileEntities):
         entsInRange = [];
         for tileEntity in tileEntities:
+            if not 'x' in tileEntity: continue
+            
             x,y,z = tileEntity['x'].value, tileEntity['y'].value, tileEntity['z'].value  
             if not (x,y,z) in sourceBox: continue
             entsInRange.append(tileEntity)
@@ -1078,6 +1081,8 @@ class MCLevel(object):
                 self.addEntity(eTag);
                 
             for tileEntity in chunk.TileEntities:
+                if not 'x' in tileEntity: continue
+            
                 x,y,z = tileEntity['x'].value, tileEntity['y'].value, tileEntity['z'].value  
                 if x-wx<slices[0].start or x-wx>=slices[0].stop: continue
                 if y<slices[2].start or y>=slices[2].stop: continue
@@ -1110,6 +1115,8 @@ class MCLevel(object):
                     
                 
             for entity in sourceLevel.getTileEntitiesInRange(sourceBox, sourceLevel.TileEntities):
+                if not 'x' in entity: continue
+            
                 x,y,z = entity['x'].value, entity['y'].value, entity['z'].value  
                 
                 eTag = deepcopy(entity)
@@ -1294,7 +1301,7 @@ def loadWorldNumber(i):
 ##            self.id = "Unknown Entity"
 
 class MCSchematic (MCLevel):
-    materials = materials
+    materials = alphaMaterials
     hasEntities = True;
     
     
@@ -1456,7 +1463,7 @@ class MCSchematic (MCLevel):
         if mats in namedMaterials:
             self.materials = namedMaterials[mats];
         else:
-            assert(isinstance(materials, MCMaterials))
+            assert(isinstance(mats, MCMaterials))
             self.materials = mats
  
         if root_tag:
@@ -1542,6 +1549,8 @@ class MCSchematic (MCLevel):
                 entity["Dir"].value = (entity["Dir"].value + 1) % 4
                 
         for tileEntity in self.TileEntities:
+            if not 'x' in tileEntity: continue
+            
             newX = tileEntity["z"].value
             newZ = self.Length - tileEntity["x"].value - 1
             
@@ -1579,6 +1588,8 @@ class MCSchematic (MCLevel):
                 entity["Dir"].value = northSouthPaintingMap[entity["Dir"].value]
                 
         for tileEntity in self.TileEntities:
+            if not 'x' in tileEntity: continue
+            
             tileEntity["x"].value = self.Width - tileEntity["x"].value - 1
     
     def flipEastWest(self):
@@ -1692,7 +1703,7 @@ class INVEditChest(MCSchematic):
     Width = 1
     Height = 1
     Length = 1
-    Blocks = array([[[materials.Chest.ID]]], 'uint8');
+    Blocks = array([[[alphaMaterials.Chest.ID]]], 'uint8');
     Data = array([[[0]]], 'uint8');
     Entities = TAG_List();
     
@@ -2429,7 +2440,7 @@ def inflate(data):
     
              
 class MCInfdevOldLevel(MCLevel):
-    materials = materials;
+    materials = alphaMaterials;
     hasEntities = True;
     parentWorld = None;
     dimNo = 0;
@@ -2443,26 +2454,37 @@ class MCInfdevOldLevel(MCLevel):
             return MCRegionFile.VERSION_DEFLATE
         else:
             return MCRegionFile.VERSION_GZIP
-            
+    
+    def compressTagGzip(self, root_tag):
+        buf = StringIO.StringIO()
+        with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
+            root_tag.save(buf=gzipper)
+        
+        return buf.getvalue()    
+    
+    def compressTagDeflate(self, root_tag):
+        buf = io.BytesIO()
+        root_tag.save(buf=buf)
+        return deflate(buf.getvalue())
+        
     def compressTag(self, root_tag):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
-            buf = io.BytesIO()
-            with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
-                root_tag.save(buf=gzipper)
-            
-            return buf.getvalue()
-            
+            return self.compressTagGzip(root_tag)
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
-            buf = io.BytesIO()
-            root_tag.save(buf=buf)
-            return deflate(buf.getvalue())
-    
+            return self.compressTagDeflate(root_tag)
+           
+    def decompressTagGzip(self, data):
+        with closing(gzip.GzipFile(fileobj=io.BytesIO(data))) as gz:
+            return nbt.load(buf=gz.read())
+            
+    def decompressTagDeflate(self, data):
+        return nbt.load(buf=inflate(data))
+        
     def decompressTag(self, data):
         if self.compressMode == MCRegionFile.VERSION_GZIP:
-            with closing(gzip.GzipFile(fileobj=io.BytesIO(data))) as gz:
-                return nbt.load(buf=gz.read())
+            return self.decompressTagGzip(data)
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
-            return nbt.load(buf=inflate(data))
+            return self.decompressTagDeflate(data)
             
         
     @property
@@ -2949,7 +2971,27 @@ class MCInfdevOldLevel(MCLevel):
         s= os.path.join(self.worldDir, self.dirhash(x), self.dirhash(z),
                                      "c.%s.%s.dat" % (self.base36(x), self.base36(z)));
         return s;
-                 
+    
+    def extractChunksInBox(self, box, parentFolder):
+        for cx,cz in box.chunkPositions:
+            if self.containsChunk(cx,cz):
+                self.extractChunk(cx,cz, parentFolder)
+                
+    def extractChunk(self, cx, cz, parentFolder):
+        if not os.path.exists(parentFolder):
+            os.mkdir(parentFolder)
+        
+        chunkFilename = self.chunkFilename(cx,cz)
+        outputFile = os.path.join(parentFolder, os.path.basename(chunkFilename))
+        
+        chunk = self.getChunk(cx,cz)
+        chunk.decompress()
+        data = self.compressTagGzip(chunk.root_tag)
+           
+        with file(outputFile, "wb") as f:
+            f.write(data)
+            
+        
     def blockLightAt(self, x, y, z):
         if y < 0 or y >= self.Height: return 0
         zc=z >> 4
@@ -2982,8 +3024,11 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x&0xf;
         zInChunk = z&0xf;
         
-        ch = self.getChunk(xc,zc)
-        
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         return ch.Data[xInChunk,zInChunk,y]
 
         
@@ -2996,7 +3041,11 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x&0xf;
         zInChunk = z&0xf;
 
-        ch = self.getChunk(xc,zc)
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         ch.Data[xInChunk, zInChunk, y] = newdata
         ch.chunkChanged(False)
         
@@ -3008,8 +3057,12 @@ class MCInfdevOldLevel(MCLevel):
         xc=x>>4
         xInChunk = x & 0xf;
         zInChunk = z & 0xf;
-
-        ch = self.getChunk(xc,zc)
+        
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         return ch.Blocks[xInChunk, zInChunk, y]
         
     def setBlockAt(self, x, y, z, blockID):
@@ -3021,7 +3074,11 @@ class MCInfdevOldLevel(MCLevel):
         xInChunk = x & 0xf;
         zInChunk = z & 0xf;
 
-        ch = self.getChunk(xc,zc)
+        try:
+            ch = self.getChunk(xc,zc)
+        except ChunkNotPresent:
+            return 0
+            
         ch.Blocks[xInChunk, zInChunk, y] = blockID
         ch.chunkChanged(False)
 
@@ -3487,6 +3544,8 @@ class MCInfdevOldLevel(MCLevel):
 
     def addTileEntity(self, entity):
         assert isinstance(entity, TAG_Compound)
+        if not 'x' in entity: return
+        
         x = int(entity['x'].value)
         y = int(entity['y'].value)
         z = int(entity['z'].value)
@@ -3497,14 +3556,15 @@ class MCInfdevOldLevel(MCLevel):
             return 
             # raise Error, can't find a chunk?
         def samePosition(a):
-            return (a['x'].value == x and a['y'].value == y and a['z'].value == z)
+            return ('x' in a and (a['x'].value == x and a['y'].value == y and a['z'].value == z))
             
         try:     
             chunk.TileEntities.remove(list(filter(samePosition, chunk.TileEntities)));
         except ValueError:
             pass;
         chunk.TileEntities.append(entity);
-    
+        chunk.dirty = True
+        
     def removeEntitiesInBox(self, box):
         count = 0;
         for chunk, slices, point in self.getChunkSlices(box):
@@ -4088,22 +4148,22 @@ class MCIndevLevel(MCLevel):
     def playerSpawnPosition(self):
         return self.Spawn;
         
-    def setPlayerPosition(self, pos):
+    def setPlayerPosition(self, pos, player = "Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 x["Pos"] = nbt.TAG_List([nbt.TAG_Float(p) for p in pos])
     
-    def getPlayerPosition(self):
+    def getPlayerPosition(self, player = "Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 return array([x.value for x in x["Pos"]]);
                 
-    def setPlayerOrientation(self, yp):
+    def setPlayerOrientation(self, yp, player = "Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 x["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
 
-    def playerOrientation(self):
+    def playerOrientation(self, player = "Ignored"):
         """ returns (yaw, pitch) """
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":

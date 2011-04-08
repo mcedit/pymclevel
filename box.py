@@ -79,9 +79,9 @@ class BoundingBox (object):
     def getHeight(self): return self._size[1];
     def getLength(self): return self._size[2];
     
-    def setWidth(self, w): self.size[0] = int(w);
-    def setHeight(self, h): self.size[1] = int(h);
-    def setLength(self, l): self.size[2] = int(l);
+    def setWidth(self, w): self.size[0] = max(0, int(w))
+    def setHeight(self, h): self.size[1] = max(0, int(h))
+    def setLength(self, l): self.size[2] = max(0, int(l))
     
     width = property(getWidth, setWidth, None, "The dimension along the X axis");
     height = property(getHeight, setHeight, None, "The dimension along the Y axis");

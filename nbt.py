@@ -28,6 +28,8 @@ from contextlib import closing
 from numpy import array, zeros, uint8, fromstring
 TAGfmt = ">b"
 
+class NBTFormatError(RuntimeError): pass
+
 class TAG_Value(object):
     """Simple values. Subclasses override fmt to change the type and size. 
     Subclasses may set dataType instead of overriding setValue for automatic data type coercion"""
@@ -436,12 +438,12 @@ def load(filename="", buf=None):
     data = buf;
     #if buf != None: data = buf
     if not len(buf):
-        raise IOError("Asked to load root tag of zero length")
+        raise NBTFormatError("Asked to load root tag of zero length")
 
     data_cursor = 0;
     tag_type = data[data_cursor];
     if tag_type != 10:
-        raise IOError('Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type));
+        raise NBTFormatError('Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type));
     data_cursor += 1;
 
     data_cursor, tag = load_named(data, data_cursor, tag_type)
@@ -581,6 +583,6 @@ def runtests():
 if(__name__ == "__main__") :
     runtests()
 
-    
+__all__ = [a.__name__ for a in tag_handlers.itervalues()] + ["loadFile"]
     
     
