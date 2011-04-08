@@ -676,7 +676,7 @@ class mce(object):
         
         outFile = file(filename, "w");
         
-        print "Dumping chests..."
+        print("Dumping chests...")
         chestCount = 0;
         
         for i, cPos in enumerate(self.level.allChunks):
@@ -699,11 +699,11 @@ class mce(object):
 
                     
             if i % 100 == 0:
-                print "Chunk {0}...".format(i)
+                print("Chunk {0}...".format(i))
             
             chunk.unload();
         
-        print "Dumped {0} chests to {1}".format(chestCount, filename);
+        print("Dumped {0} chests to {1}".format(chestCount, filename));
         
         outFile.close();
     
