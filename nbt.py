@@ -205,16 +205,16 @@ class TAG_String(TAG_Value):
     def __init__(self, value="", name=None, data=""):
         self.name = name
         if(data == ""):
-            self.value = value;
+            self.value = value.decode('utf-8');
         else:
             (string_len,) = struct.unpack_from(">H", data);
-            self.value = data[2:string_len + 2].tostring();
+            self.value = data[2:string_len + 2].tostring().decode('utf-8');
 
     def nbt_length(self) :
         return len(self.value) + 2;
 
     def write_value(self, buf):
-        buf.write(struct.pack(self.fmt % (len(self.value),), len(self.value), self.value))
+        buf.write(struct.pack(self.fmt % (len(self.value),), len(self.value), self.value.encode('utf-8')))
         
 
 
