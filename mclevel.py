@@ -2726,6 +2726,8 @@ class MCInfdevOldLevel(MCLevel):
                     info( "level.dat restored from backup." )
                     self.saveInPlace();
                 except Exception, e:
+                    traceback.print_exc()
+                    print repr(e)
                     info( "Error loading level.dat_old. Initializing with defaults." );
                     self.create(self.filename, random_seed, last_played);
     
