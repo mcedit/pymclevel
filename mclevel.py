@@ -2188,7 +2188,9 @@ class MCRegionFile(object):
                 f.truncate(filesize)
             
             if filesize == 0:
-                f.truncate(self.SECTOR_BYTES*2)
+                filesize = self.SECTOR_BYTES*2
+                f.truncate(filesize)
+                
             
             f.seek(0)
             offsetsData = f.read(self.SECTOR_BYTES)
@@ -2205,9 +2207,13 @@ class MCRegionFile(object):
         for offset in self.offsets:
             sector = offset >> 8
             count = offset & 0xff
-            
+
             for i in range(sector, sector+count):
-                if i >= len(self.freeSectors): raise RegionMalformed("Region file offset table points to sector {0} (past the end of the file)".format(i))
+                if i >= len(self.freeSectors):
+                    #raise RegionMalformed("Region file offset table points to sector {0} (past the end of the file)".format(i))
+                    print("Region file offset table points to sector {0} (past the end of the file)".format(i))
+                    needsRepair = True
+                    break
                 if self.freeSectors[i] is False:
                     needsRepair = True
                 self.freeSectors[i] = False
@@ -2234,8 +2240,12 @@ class MCRegionFile(object):
                 cz += rz << 5
                 sectorStart = offset >> 8
                 sectorCount = offset & 0xff
-                
                 try:
+                
+                    if sectorStart + sectorCount > len(self.freeSectors):
+                        raise RegionMalformed,  "Offset {start}:{end} ({offset}) at index {index} pointed outside of the file".format(
+                            start=sectorStart, end=sectorStart+sectorCount, index=index, offset=offset)
+                        
                     compressedData = self._readChunk(cx,cz)
                     if compressedData is None: 
                         raise RegionMalformed("Failed to read chunk data for {0}".format((cx,cz)))

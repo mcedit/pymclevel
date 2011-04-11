@@ -4,7 +4,11 @@ from functools import reduce
 class BoundingBox (object):
     
     def __init__(self, origin = (0,0,0), size = (0,0,0)):
-        self._origin, self._size = list(map(int, origin)),list(map(int, size))
+        if isinstance(origin, BoundingBox):
+            self._origin = list(origin._origin)
+            self._size = list(origin._size)
+        else:
+            self._origin, self._size = list(map(int, origin)),list(map(int, size))
     
     def getMinx(self): return self.origin[0];
     def getMiny(self): return self.origin[1];
