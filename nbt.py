@@ -200,7 +200,7 @@ class TAG_String(TAG_Value):
 
     tag = 8;
     fmt = ">h%ds"
-    dataType = str
+    dataType = unicode
     
     def __init__(self, value="", name=None, data=""):
         self.name = name
