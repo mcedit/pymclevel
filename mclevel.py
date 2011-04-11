@@ -2243,8 +2243,8 @@ class MCRegionFile(object):
                 try:
                 
                     if sectorStart + sectorCount > len(self.freeSectors):
-                        raise RegionMalformed,  "Offset {start}:{end} ({offset}) at index {index} pointed outside of the file".format(
-                            start=sectorStart, end=sectorStart+sectorCount, index=index, offset=offset)
+                        raise RegionMalformed("Offset {start}:{end} ({offset}) at index {index} pointed outside of the file".format(
+                            start=sectorStart, end=sectorStart+sectorCount, index=index, offset=offset))
                         
                     compressedData = self._readChunk(cx,cz)
                     if compressedData is None: 
