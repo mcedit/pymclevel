@@ -414,6 +414,7 @@ am.NoteBlock = am.Block(25,
 
 am.Bed = am.Block(26, 
     name="Bed",
+    opacity=0,
     )
 
 
