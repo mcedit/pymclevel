@@ -954,7 +954,7 @@ class MCLevel(object):
             with closing(gzip.GzipFile(fileobj=StringIO.StringIO(rawdata))) as gz:
                 unzippedData = gz.read();
         except Exception,e:
-            info( u"Exception during Gzip operation, assuming {0} uncompressed: {1}".format(filename, e) )
+            info( u"Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e) )
             if unzippedData is None:
                 compressed = False;
                 unzippedData = rawdata
