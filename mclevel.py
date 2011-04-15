@@ -475,7 +475,7 @@ class MCLevel(object):
     def compressChunk(self, x, z): pass
     def entitiesAt(self, x, y, z):
         return None
-    def tileEntitiesAt(self, x, y, z):
+    def tileEntityAt(self, x, y, z):
         return None
     def addEntity(self, *args): pass
     def addTileEntity(self, *args): pass
@@ -1464,9 +1464,6 @@ class MCSchematic (MCLevel):
             self.materials = mats
  
         if root_tag:
-            #self.Entities = root_tag[Entities];
-            #self.TileEntities = root_tag[TileEntities];
-               
             self.root_tag = root_tag;
             if Materials in root_tag:
                 self.materials = namedMaterials[self.Materials]
@@ -1663,14 +1660,19 @@ class MCSchematic (MCLevel):
         assert isinstance(entityTag, TAG_Compound)
         self.Entities.append(entityTag);
         
-    def tileEntitiesAt(self, x, y, z):
+    def tileEntityAt(self, x, y, z):
         entities = [];
         for entityTag in self.TileEntities:
             pos = [entityTag[a].value for a in 'xyz']
             if pos == [x,y,z]:
                 entities.append(entityTag);
 
-        return entities;
+        if len(entities) > 1:
+            info("Multiple tile entities found: {0}".format(entities))
+        if len(entities) == 0:
+            return None
+            
+        return entities[0];
 
     def addTileEntity(self, entityTag):
         assert isinstance(entityTag, TAG_Compound)
@@ -3538,16 +3540,22 @@ class MCInfdevOldLevel(MCLevel):
             # raise Error, can't find a chunk?
         chunk.Entities.append(entity);
         
-    def tileEntitiesAt(self, x, y, z):
+    def tileEntityAt(self, x, y, z):
         chunk = self.getChunk(x>>4, z>>4)
         entities = [];
-        if chunk.TileEntities is None: return entities;
+        if chunk.TileEntities is None: return None;
         for entity in chunk.TileEntities:
             pos = [entity[a].value for a in 'xyz']
             if pos == [x,y,z]:
                 entities.append(entity);
 
-        return entities;
+        if len(entities) > 1:
+            info("Multiple tile entities found: {0}".format(entities))
+        if len(entities) == 0:
+            return None
+            
+        return entities[0];
+
 
     def addTileEntity(self, entity):
         assert isinstance(entity, TAG_Compound)
