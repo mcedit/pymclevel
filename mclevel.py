@@ -4036,6 +4036,16 @@ class MCInfdevOldLevel(MCLevel):
         yp = y,p;
         return array(yp);
 
+class TileEntity(object):
+    @classmethod
+    def pos(cls, tag):
+        return [tag[a].value for a in 'xyz']
+    
+    @classmethod
+    def setpos(cls, tag, pos):
+        for a, p in zip('xyz', pos):
+            tag[a] = TAG_Int(p)
+            
 class MCAlphaDimension (MCInfdevOldLevel):
     def loadLevelDat(self, create, random_seed, last_played):
         pass;
