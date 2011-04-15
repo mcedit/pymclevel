@@ -3655,15 +3655,25 @@ class MCInfdevOldLevel(MCLevel):
                 else:
                     skipped += 1;
                     needsLighting = False;
+                    
+                def include(tileEntity):
+                    p = TileEntity.pos(tileEntity)
+                    x,y,z = map(lambda a,b,c:(a-b)-c, p, point, box.origin)
+                    return not ((p in box) and mask[x,z,y])
+                    
+                chunk.TileEntities.value[:] = filter(include, chunk.TileEntities)
                 
+                 
+                    
             else:
                 blocks[:] = blockInfo.ID
                 if not shouldRetainData:
                     data[:] = blockInfo.blockData
-                
+                chunk.removeTileEntitiesInBox(box)
+            
             chunk.chunkChanged(needsLighting);
             chunk.compress();
-        
+            
         if len(blocksToReplace):
             info( u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced) )
             
