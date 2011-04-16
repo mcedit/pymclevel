@@ -4056,6 +4056,17 @@ class TileEntity(object):
     def setpos(cls, tag, pos):
         for a, p in zip('xyz', pos):
             tag[a] = TAG_Int(p)
+
+class Entity(object):
+    @classmethod
+    def pos(cls, tag):
+        if "Pos" not in tag:
+            print tag
+        return [a.value for a in tag["Pos"]]
+    
+    @classmethod
+    def setpos(cls, tag, pos):
+        tag["Pos"] = TAG_List([TAG_Int(p) for p in pos])
             
 class MCAlphaDimension (MCInfdevOldLevel):
     def loadLevelDat(self, create, random_seed, last_played):
