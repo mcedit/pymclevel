@@ -310,5 +310,5 @@ class Items (object):
 
     
 
-items = Items("items.txt");
+items = Items();
 
