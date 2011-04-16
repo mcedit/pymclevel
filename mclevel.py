@@ -3573,13 +3573,11 @@ class MCInfdevOldLevel(MCLevel):
         except (ChunkNotPresent, ChunkMalformed):
             return 
             # raise Error, can't find a chunk?
-        def samePosition(a):
-            return ('x' in a and (a['x'].value == x and a['y'].value == y and a['z'].value == z))
+        def differentPosition(a):
+            return not ((entity is a) or ('x' in a and (a['x'].value == x and a['y'].value == y and a['z'].value == z)))
             
-        try:     
-            chunk.TileEntities.remove(filter(samePosition, chunk.TileEntities));
-        except ValueError:
-            pass;
+        chunk.TileEntities.value[:] = filter(differentPosition, chunk.TileEntities);
+        
         chunk.TileEntities.append(entity);
         chunk.dirty = True
         
