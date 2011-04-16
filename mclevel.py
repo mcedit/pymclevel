@@ -520,6 +520,9 @@ class MCLevel(object):
         
         f.BlockLight = whiteLight
         f.SkyLight = whiteLight
+        f.Entities = []
+        f.TileEntities = []
+        
         
         f.root_tag = TAG_Compound();
         
