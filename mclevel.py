@@ -957,7 +957,7 @@ class MCLevel(object):
         try:
             unzippedData = wdecompress(rawdata)
         except Exception as e:
-            info( "Exception during Gzip operation, assuming {0} uncompressed: {1}".format(filename, e) )
+            info( "Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e) )
             if unzippedData is None:
                 compressed = False;
                 unzippedData = rawdata
@@ -2729,6 +2729,8 @@ class MCInfdevOldLevel(MCLevel):
                     info( "level.dat restored from backup." )
                     self.saveInPlace();
                 except Exception as e:
+                    traceback.print_exc()
+                    print(repr(e))
                     info( "Error loading level.dat_old. Initializing with defaults." );
                     self.create(self.filename, random_seed, last_played);
     

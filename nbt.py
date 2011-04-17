@@ -18,6 +18,7 @@ http://www.minecraft.net/docs/NBT.txt
 
 Copyright 2010 David Rio Vierra
 """
+from wpy import unicode_type
 import collections
 import itertools
 import struct
@@ -200,24 +201,25 @@ class TAG_String(TAG_Value):
 
     tag = 8;
     fmt = ">h%ds"
-    dataType = str
+    dataType = unicode_type();
     
     def __init__(self, value="", name=None, data=""):
         self.name = name
         if(data == ""):
-            self.value = value;
+            self.value = value.decode('utf-8');
         else:
             (string_len,) = struct.unpack_from(">H", data);
             if isinstance(data,bytes):
-                self.value = data[2:string_len + 2].decode();
+                self.value = data[2:string_len + 2].decode('utf-8');
             else:
-                self.value = data[2:string_len + 2].tostring().decode();
+                self.value = data[2:string_len + 2].tostring().decode('utf-8');
 
     def nbt_length(self) :
-        return len(self.value) + 2;
+        return len(self.value.encode('utf-8')) + 2;
 
     def write_value(self, buf):
-        buf.write(struct.pack(self.fmt % (len(self.value),), len(self.value), self.value.encode()))
+        u8value = self.value.encode('utf-8')
+        buf.write(struct.pack(self.fmt % (len(u8value),), len(u8value), u8value))
         
 
 

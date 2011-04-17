@@ -31,4 +31,9 @@ def wdecompress(param):
 		with closing(gzip.GzipFile(fileobj=StringIO.StringIO(param))) as gz:
 			return gz.read();
 
+def unicode_type():
+    if PY_VERSION >= 3:
+        return str;
+    else:
+        return unicode;
 
