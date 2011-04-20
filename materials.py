@@ -667,7 +667,7 @@ am.Chest = am.Block(54,
 
 am.RedstoneWire = am.Block(55, 
     name="Redstone Wire",
-    texture=(0x40,0x60),
+    texture=(0x40,0xA0), #note: as of 1.5 the texture is unsaturated like leaves
     opacity=0,
     )
 
