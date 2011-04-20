@@ -414,6 +414,19 @@ am.NoteBlock = am.Block(25,
 
 am.Bed = am.Block(26, 
     name="Bed",
+    texture=(0x60, 0x80),
+    opacity=0,
+    )
+
+am.PoweredRail = am.Block(27, 
+    name="Powered Rail",
+    texture=(0x30, 0xB0),
+    opacity=0,
+    )
+
+am.DetectorRail = am.Block(28, 
+    name="Detector Rail",
+    texture=(0x30, 0xC0),
     opacity=0,
     )
 
