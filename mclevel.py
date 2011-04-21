@@ -3600,6 +3600,7 @@ class MCInfdevOldLevel(MCLevel):
     def fillBlocks(self, box, blockInfo, blocksToReplace = []):
         if box is None:
             chunkIterator = self.getAllChunkSlices() 
+            box = self.bounds
         else:
             chunkIterator = self.getChunkSlices(box)
         
