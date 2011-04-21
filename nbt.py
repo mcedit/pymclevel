@@ -196,8 +196,10 @@ class TAG_Int_Array(TAG_Byte_Array):
         buf.write(struct.pack(self.fmt % (len(valuestr),), len(valuestr)/4, valuestr))
        
 class TAG_String(TAG_Value):
-    "String in UTF-8"
-
+    """String in UTF-8
+    The data parameter should either be a 'unicode' or an ascii-encoded 'str'
+    """
+    
     tag = 8;
     fmt = ">h%ds"
     dataType = unicode
@@ -205,7 +207,7 @@ class TAG_String(TAG_Value):
     def __init__(self, value="", name=None, data=""):
         self.name = name
         if(data == ""):
-            self.value = value.decode('utf-8');
+            self.value = value
         else:
             (string_len,) = struct.unpack_from(">H", data);
             self.value = data[2:string_len + 2].tostring().decode('utf-8');
