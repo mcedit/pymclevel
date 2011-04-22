@@ -530,6 +530,8 @@ class MCLevel(object):
         
     def getAllChunkSlices(self):
         slices = ( slice(None),slice(None),slice(None), )
+        box = self.bounds
+        x, y, z = box.origin
         
         for cpos in self.allChunks:    
             xPos, zPos = cpos
@@ -539,7 +541,7 @@ class MCLevel(object):
                 continue
                 
             
-            yield ( chunk, slices, (xPos * 16, 0, zPos * 16) )
+            yield ( chunk, slices, (xPos * 16 - x, 0, zPos * 16 - z) )
             
               
     def getChunkSlices(self, box):
