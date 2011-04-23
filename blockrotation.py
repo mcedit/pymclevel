@@ -140,7 +140,17 @@ rotationClasses.append(Rail)
 
 def applyThrownBit(array):
     array[8:16] = array[0:8] | 0x8
-    
+ 
+class PoweredDetectorRail(Rail):
+    blocktypes = [alphaMaterials.PoweredRail.ID, alphaMaterials.DetectorRail.ID]
+PoweredDetectorRail.rotateLeft = genericRotation(PoweredDetectorRail)
+PoweredDetectorRail.flipEastWest = genericEastWestFlip(PoweredDetectorRail)
+PoweredDetectorRail.flipNorthSouth = genericNorthSouthFlip(PoweredDetectorRail)
+applyThrownBit(PoweredDetectorRail.rotateLeft)
+applyThrownBit(PoweredDetectorRail.flipEastWest)
+applyThrownBit(PoweredDetectorRail.flipNorthSouth)
+
+   
 class Lever:
     blocktypes = [alphaMaterials.Lever.ID]
     ThrownBit = 0x8
