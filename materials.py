@@ -194,6 +194,7 @@ class MCMaterials(object):
         self.flatColors[blockID, (blockData or slice(None))] = block.color
             
         texture = kw.pop('texture', None)
+        
         if texture:
             self.blockTextures[blockID,(blockData or slice(None))] = texture
         
@@ -432,9 +433,10 @@ am.Bed = am.Block(26,
 
 am.PoweredRail = am.Block(27, 
     name="Powered Rail",
-    texture=(0x30, 0xB0),
+    texture=(0x30, 0xA0),
     opacity=0,
     )
+am.blockTextures[am.PoweredRail.ID][8:] = (0x30, 0xB0)
 
 am.DetectorRail = am.Block(28, 
     name="Detector Rail",
