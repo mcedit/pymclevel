@@ -144,6 +144,11 @@ def applyThrownBit(array):
 class PoweredDetectorRail(Rail):
     blocktypes = [alphaMaterials.PoweredRail.ID, alphaMaterials.DetectorRail.ID]
 PoweredDetectorRail.rotateLeft = genericRotation(PoweredDetectorRail)
+
+PoweredDetectorRail.rotateLeft[PoweredDetectorRail.NorthSouth] = PoweredDetectorRail.EastWest
+PoweredDetectorRail.rotateLeft[PoweredDetectorRail.EastWest] = PoweredDetectorRail.NorthSouth
+
+
 PoweredDetectorRail.flipEastWest = genericEastWestFlip(PoweredDetectorRail)
 PoweredDetectorRail.flipNorthSouth = genericNorthSouthFlip(PoweredDetectorRail)
 applyThrownBit(PoweredDetectorRail.rotateLeft)
