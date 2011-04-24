@@ -981,7 +981,7 @@ class mce(object):
                 raise UsageError, "Expected a long integer."
             
             self.level.RandomSeed = seed;
-            
+            self.needsSave = True
         else:
             print "Random Seed: ", self.level.RandomSeed
     
