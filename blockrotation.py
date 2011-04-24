@@ -149,6 +149,7 @@ PoweredDetectorRail.flipNorthSouth = genericNorthSouthFlip(PoweredDetectorRail)
 applyThrownBit(PoweredDetectorRail.rotateLeft)
 applyThrownBit(PoweredDetectorRail.flipEastWest)
 applyThrownBit(PoweredDetectorRail.flipNorthSouth)
+rotationClasses.append(PoweredDetectorRail)
 
    
 class Lever:
