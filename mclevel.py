@@ -3545,6 +3545,7 @@ class MCInfdevOldLevel(MCLevel):
             return None
             # raise Error, can't find a chunk?
         chunk.Entities.append(entity);
+        chunk.dirty = True
         
     def tileEntityAt(self, x, y, z):
         chunk = self.getChunk(x>>4, z>>4)
