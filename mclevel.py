@@ -509,6 +509,7 @@ class MCLevel(object):
             
         f = FakeChunk()
         f.world = self;
+        f.chunkPosition = (cx,cz)
         
         f.Blocks = self.fakeBlocksForChunk(cx, cz)
         
