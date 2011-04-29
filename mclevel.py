@@ -1786,11 +1786,11 @@ class InfdevChunk(MCLevel):
             rx,rz = cx>>5,cz>>5
             rf = self.world.regionFiles[rx,rz]
             offset = rf.getOffset(cx&0x1f,cz&0x1f)
-            return u"{region} index {index} offset {offset} sector {sector}".format(
+            return u"{region} index {index} sector {sector} format {format}".format(
                 region=os.path.basename(self.world.regionFilename(rx,rz)), 
                 sector=offset>>8, 
                 index=4*((cx&0x1f)+((cz&0x1f)*32)), 
-                offset=offset)
+                format=["???","gzip","deflate"][self.compressMode])
         else:
             return self.chunkFilename
     def __init__(self, world, chunkPosition, create = False):
