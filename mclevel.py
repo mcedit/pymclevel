@@ -1347,15 +1347,13 @@ class MCSchematic (MCLevel):
         try:       
             self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
         except Exception, e:
-            error( u"Malformed NBT data in file: {0} ({1})".format(self.filename, e) )
-            if self.world: self.world.malformedChunk(*self.chunkPosition);
+            error( u"Malformed NBT data in schematic file: {0} ({1})".format(self.filename, e) )
             raise ChunkMalformed, self.filename
             
         try:
             self.shapeChunkData()
         except KeyError, e:
-            error( u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e) )
-            if self.world: self.world.malformedChunk(*self.chunkPosition);
+            error( u"Incorrect schematic format in file: {0} ({1})".format(self.filename, e) )
             raise ChunkMalformed, self.filename
         pass
          
