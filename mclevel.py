@@ -957,8 +957,7 @@ class MCLevel(object):
         compressed = True
         unzippedData = None;
         try:
-            with closing(gzip.GzipFile(fileobj=StringIO.StringIO(rawdata))) as gz:
-                unzippedData = gz.read();
+            unzippedData = gunzip(rawdata)
         except Exception,e:
             info( u"Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e) )
             if unzippedData is None:
@@ -1806,12 +1805,52 @@ class InfdevChunk(MCLevel):
         self.root_tag = None
         self.dirty = False;
         self.needsLighting = False
+        self.compressMode = MCRegionFile.VERSION_GZIP
         
         if create:
             self.create();
         else:
             if not world.containsChunk(*chunkPosition):
                 raise ChunkNotPresent("Chunk {0} not found", self.chunkPosition)
+    
+    
+    def compressTagGzip(self, root_tag):
+        buf = StringIO.StringIO()
+        with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
+            root_tag.save(buf=gzipper)
+        
+        return buf.getvalue()    
+    
+    def compressTagDeflate(self, root_tag):
+        buf = StringIO.StringIO()
+        root_tag.save(buf=buf)
+        return deflate(buf.getvalue())
+        
+    def _compressChunk(self):
+        root_tag = self.root_tag
+        if root_tag is None: return
+        
+        if self.compressMode == MCRegionFile.VERSION_GZIP:
+            self.compressedTag = self.compressTagGzip(root_tag)
+        if self.compressMode == MCRegionFile.VERSION_DEFLATE:
+            self.compressedTag = self.compressTagDeflate(root_tag)
+        
+        self.root_tag = None
+        
+    def decompressTagGzip(self, data):
+        return nbt.load(buf=gunzip(data))
+            
+    def decompressTagDeflate(self, data):
+        return nbt.load(buf=inflate(data))
+        
+    def _decompressChunk(self):
+        data = self.compressedTag
+        
+        if self.compressMode == MCRegionFile.VERSION_GZIP:
+            self.root_tag = self.decompressTagGzip(data)
+        if self.compressMode == MCRegionFile.VERSION_DEFLATE:
+            self.root_tag = self.decompressTagDeflate(data)
+          
     
     def compressedSize(self):
         "return the size of the compressed data for this level, in bytes."
@@ -1829,7 +1868,7 @@ class InfdevChunk(MCLevel):
             self.root_tag = None
         else:
             self.packChunkData()
-            self.compressedTag = self.world.compressTag(self.root_tag)
+            self._compressChunk(self)
             
         self.world.chunkDidCompress(self);
     
@@ -1846,7 +1885,7 @@ class InfdevChunk(MCLevel):
             
                 
             try:       
-                self.root_tag = self.world.decompressTag(self.compressedTag)
+                self._decompressChunk()
             
             except Exception, e:
                 error( u"Malformed NBT data in file: {0} ({1})".format(self.filename, e) )
@@ -2319,14 +2358,15 @@ class MCRegionFile(object):
         chunk.compressedTag = data[5:]
         
         chunk.root_tag = nbt.load(buf=self.decompressSectors(data))
-    
+        chunk.compressMode = struct.unpack_from("B", data, 4)[0]
+        
+        
     def decompressSectors(self, data):
         length = struct.unpack_from(">I", data)[0]
         format = struct.unpack_from("B", data, 4)[0]
         data = data[5:length+5]
         if format == self.VERSION_GZIP:
-            with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
-                return gz.read()
+            return gunzip(data)
         if format == self.VERSION_DEFLATE:
             return inflate(data)
         
@@ -2452,55 +2492,15 @@ def deflate(data):
     return zlib.compress(data)
 def inflate(data):
     return zlib.decompress(data)
-    
-             
+from nbt import gunzip
+       
 class MCInfdevOldLevel(MCLevel):
     materials = alphaMaterials;
     hasEntities = True;
     parentWorld = None;
     dimNo = 0;
     ChunkHeight = 128
-    
-    compressMode = MCRegionFile.VERSION_DEFLATE
-    
-    @property
-    def compressMode(self):
-        if self.version:
-            return MCRegionFile.VERSION_DEFLATE
-        else:
-            return MCRegionFile.VERSION_GZIP
-    
-    def compressTagGzip(self, root_tag):
-        buf = StringIO.StringIO()
-        with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
-            root_tag.save(buf=gzipper)
-        
-        return buf.getvalue()    
-    
-    def compressTagDeflate(self, root_tag):
-        buf = StringIO.StringIO()
-        root_tag.save(buf=buf)
-        return deflate(buf.getvalue())
-        
-    def compressTag(self, root_tag):
-        if self.compressMode == MCRegionFile.VERSION_GZIP:
-            return self.compressTagGzip(root_tag)
-        if self.compressMode == MCRegionFile.VERSION_DEFLATE:
-            return self.compressTagDeflate(root_tag)
-           
-    def decompressTagGzip(self, data):
-        with closing(gzip.GzipFile(fileobj=StringIO.StringIO(data))) as gz:
-            return nbt.load(buf=gz.read())
-            
-    def decompressTagDeflate(self, data):
-        return nbt.load(buf=inflate(data))
-        
-    def decompressTag(self, data):
-        if self.compressMode == MCRegionFile.VERSION_GZIP:
-            return self.decompressTagGzip(data)
-        if self.compressMode == MCRegionFile.VERSION_DEFLATE:
-            return self.decompressTagDeflate(data)
-            
+      
         
     @property
     def displayName(self):
@@ -2907,10 +2907,9 @@ class MCInfdevOldLevel(MCLevel):
                 with file(chunk.filename, 'rb') as f:
                     cdata = f.read()
                     chunk.compressedTag = cdata
-                    with closing(gzip.GzipFile(fileobj=StringIO.StringIO(cdata))) as gz:
-                        data = gz.read()
-                        chunk.root_tag = nbt.load(buf=data)
-                
+                    data = gunzip(cdata)
+                    chunk.root_tag = nbt.load(buf=data)
+                        
         except Exception, e:
             raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e)
         
@@ -3000,9 +2999,13 @@ class MCInfdevOldLevel(MCLevel):
         outputFile = os.path.join(parentFolder, os.path.basename(chunkFilename))
         
         chunk = self.getChunk(cx,cz)
-        chunk.decompress()
-        data = self.compressTagGzip(chunk.root_tag)
-           
+        if chunk.compressMode == MCRegionFile.VERSION_GZIP:
+            chunk.compress()
+            data = chunk.compressedTag;
+        else:
+            chunk.decompress()
+            data = chunk.compressTagGzip(chunk.root_tag)
+        
         with file(outputFile, "wb") as f:
             f.write(data)
             
@@ -4106,8 +4109,7 @@ class ZipSchematic (MCInfdevOldLevel):
         try:
             schematicDat = os.path.join(tempdir, "schematic.dat")
             with closing(self.zipfile.open("schematic.dat")) as f:
-                with closing(gzip.GzipFile(fileobj=StringIO.StringIO(f.read()))) as g:
-                    schematicDat = nbt.load(buf=g.read())
+                schematicDat = nbt.load(buf=gunzip(f.read()))
                 
                 self.Width = schematicDat['Width'].value;
                 self.Height = schematicDat['Height'].value;

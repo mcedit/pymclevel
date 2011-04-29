@@ -407,11 +407,18 @@ tag_handlers = {
 def assert_type(t, offset) :
     if not t in tag_handlers: raise TypeError("Unexpected type %d at %d" % (t, offset));
 
+import zlib  
+def gunzip(data):
+    #strip off the header and use negative WBITS to tell zlib there's no header
+    return zlib.decompress(data[10:], -zlib.MAX_WBITS)
+      
 def loadFile(filename):
     #sio = StringIO.StringIO();
-    inputGz = gzip.GzipFile(filename, mode="rb")
+    with file(filename, "rb") as f:
+        inputdata = f.read()
+    #inputGz = gzip.GzipFile(filename, mode="rb")
     try:
-        data = inputGz.read();
+        data = gunzip(inputdata)
     except IOError:
         print "File %s not zipped" % filename
         data = file(filename, "rb").read();
