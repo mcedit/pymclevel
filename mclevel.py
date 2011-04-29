@@ -1866,7 +1866,7 @@ class InfdevChunk(MCLevel):
             self.root_tag = None
         else:
             self.packChunkData()
-            self._compressChunk(self)
+            self._compressChunk()
             
         self.world.chunkDidCompress(self);
     
