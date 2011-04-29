@@ -472,7 +472,7 @@ class MCLevel(object):
         pass
         
     
-    def compressChunk(self, x, z): pass
+    def compressChunk(self, cx, cz): pass
     def entitiesAt(self, x, y, z):
         return None
     def tileEntityAt(self, x, y, z):
@@ -2856,9 +2856,9 @@ class MCInfdevOldLevel(MCLevel):
         for ch in self._loadedChunks.itervalues():
             ch.compress();
             
-    def compressChunk(self, x, z):
-        if not (x,z) in self._loadedChunks: return; #not an error
-        self._loadedChunks[x,z].compress()
+    def compressChunk(self, cx, cz):
+        if not (cx,cz) in self._loadedChunks: return; #not an error
+        self._loadedChunks[cx,cz].compress()
     
     decompressedChunkLimit = 2048 # about 320 megabytes
     loadedChunkLimit = 8192 # from 8mb to 800mb depending on chunk contents
