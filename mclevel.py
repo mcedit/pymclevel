@@ -1803,7 +1803,11 @@ class InfdevChunk(MCLevel):
         self.root_tag = None
         self.dirty = False;
         self.needsLighting = False
-        self.compressMode = MCRegionFile.VERSION_GZIP
+        if self.world.version:
+            self.compressMode = MCRegionFile.VERSION_DEFLATE
+        else:
+            self.compressMode = MCRegionFile.VERSION_GZIP
+            
         
         if create:
             self.create();
@@ -2292,7 +2296,8 @@ class MCRegionFile(object):
                     if compressedData is None: 
                         raise RegionMalformed, "Failed to read chunk data for {0}".format((cx,cz))
                     
-                    chunkTag = nbt.load(buf=self.decompressSectors(compressedData))
+                    format, data = self.decompressSectors(compressedData)
+                    chunkTag = nbt.load(buf=data)
                     lev = chunkTag["Level"]
                     xPos = lev["xPos"].value
                     zPos = lev["zPos"].value
@@ -2305,7 +2310,7 @@ class MCRegionFile(object):
                         
                         
                     if xPos != cx or zPos != cz or overlaps:
-                        lostAndFound[xPos,zPos] = compressedData[5:] # chop off header
+                        lostAndFound[xPos,zPos] = (format, compressedData)
                         
                         if (xPos, zPos) != (cx,cz):
                             raise RegionMalformed, "Chunk {found} was found in the slot reserved for {expected}".format(found=(xPos, zPos), expected=(cx,cz))
@@ -2319,11 +2324,11 @@ class MCRegionFile(object):
                     self.setOffset(cx, cz, 0)
                     deleted += 1
                     
-        for cPos, foundData in lostAndFound.iteritems():
+        for cPos, (format, foundData) in lostAndFound.iteritems():
             cx,cz = cPos
             if self.getOffset(cx,cz) == 0:
                 info("Found chunk {found} and its slot is empty, recovering it".format(found=cPos))
-                self._saveChunk(cx,cz, foundData)
+                self._saveChunk(cx,cz, foundData[5:], format)
                 recovered += 1
                 
         info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered-deleted))
@@ -2355,8 +2360,9 @@ class MCRegionFile(object):
         if data is None: raise ChunkNotPresent, (cx, cz, self)
         chunk.compressedTag = data[5:]
         
-        chunk.root_tag = nbt.load(buf=self.decompressSectors(data))
-        chunk.compressMode = struct.unpack_from("B", data, 4)[0]
+        format, data = self.decompressSectors(data)
+        chunk.root_tag = nbt.load(buf=data)
+        chunk.compressMode = format
         
         
     def decompressSectors(self, data):
@@ -2364,9 +2370,9 @@ class MCRegionFile(object):
         format = struct.unpack_from("B", data, 4)[0]
         data = data[5:length+5]
         if format == self.VERSION_GZIP:
-            return gunzip(data)
+            return (format, gunzip(data))
         if format == self.VERSION_DEFLATE:
-            return inflate(data)
+            return (format, inflate(data))
         
         raise IOError, "Unknown compress format: {0}".format(format)
 
@@ -2374,9 +2380,11 @@ class MCRegionFile(object):
     def saveChunk(self, chunk):
         cx,cz = chunk.chunkPosition
         data = chunk.compressedTag
-        self._saveChunk(cx, cz, data)
+        format = chunk.compressMode
         
-    def _saveChunk(self, cx, cz, data):
+        self._saveChunk(cx, cz, data, format)
+        
+    def _saveChunk(self, cx, cz, data, format):
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx,cz)
@@ -2389,7 +2397,7 @@ class MCRegionFile(object):
         
         if (sectorNumber != 0 and sectorsAllocated >= sectorsNeeded):
             debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
-            self.writeSector(sectorNumber, data)
+            self.writeSector(sectorNumber, data, format)
         else:
             # we need to allocate new sectors
             
@@ -2421,7 +2429,7 @@ class MCRegionFile(object):
                 debug("REGION SAVE {0},{1}, reusing {2}b".format(cx, cz, len(data)))
                 sectorNumber = runStart
                 self.setOffset(cx,cz, sectorNumber << 8 | sectorsNeeded)
-                self.writeSector(sectorNumber, data)
+                self.writeSector(sectorNumber, data, format)
                 self.freeSectors[sectorNumber:sectorNumber+sectorsNeeded] = [False]*sectorsNeeded
                 
             else:
@@ -2444,16 +2452,16 @@ class MCRegionFile(object):
                 self.freeSectors += [False]*sectorsNeeded
                 
                 self.setOffset(cx,cz, sectorNumber << 8 | sectorsNeeded)
-                self.writeSector(sectorNumber, data)
+                self.writeSector(sectorNumber, data, format)
                  
             
-    def writeSector(self, sectorNumber, data):
+    def writeSector(self, sectorNumber, data, format):
         with self.file as f:
             debug("REGION: Writing sector {0}".format(sectorNumber) )
         
             f.seek( sectorNumber * self.SECTOR_BYTES )
             f.write(struct.pack(">I", len(data)+1));# // chunk length
-            f.write(struct.pack("B", self.VERSION_DEFLATE));# // chunk version number
+            f.write(struct.pack("B", format));# // chunk version number
             f.write(data);# // chunk data
             #f.flush()
     
