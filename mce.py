@@ -10,6 +10,8 @@ import itertools
 import traceback
 import shlex
 import operator
+import codecs
+
 from math import floor
 try:
     import readline
@@ -598,7 +600,7 @@ class mce(object):
         else:
             filename = self.level.displayName + ".signs"
         
-        outFile = file(filename, "w");
+        outFile = codecs.open(filename, "w", encoding = 'utf-8');
         
         print "Dumping signs..."
         signCount = 0;
@@ -615,7 +617,7 @@ class mce(object):
                     
                     outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n");
                     for i in range(4):
-                        outFile.write(tileEntity["Text{0}".format(i+1)].value + "\n");
+                        outFile.write(tileEntity["Text{0}".format(i+1)].value + u"\n");
                     
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
