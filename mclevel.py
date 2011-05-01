@@ -3350,9 +3350,12 @@ class MCInfdevOldLevel(MCLevel):
         oldLeftEdge = zeros( (1, 16, self.Height), 'uint8');
         oldBottomEdge = zeros( (16, 1, self.Height), 'uint8');
         oldChunk = zeros( (16, 16, self.Height), 'uint8');
-          
+        if self.dimNo == -1: 
+            lights = ("BlockLight", )
+        else:
+            lights = ("BlockLight", "SkyLight")
         info( u"Dispersing light..." )
-        for light in ("BlockLight", "SkyLight"):
+        for light in lights:
           zerochunkLight = getattr(zeroChunk, light); 
           
           newDirtyChunks = list(startingDirtyChunks);
