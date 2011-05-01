@@ -1154,6 +1154,7 @@ class MCLevel(object):
         if not hasattr(self, "TileEntities"): return;
         newEnts = [];
         for ent in self.TileEntities:
+            if not "x" in ent: continue
             if map(lambda x:x.value, (ent[a] for a in "xyz")) in box: 
                 continue;
             newEnts.append(ent);
