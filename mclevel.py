@@ -1130,7 +1130,7 @@ class MCLevel(object):
                     tileEntsCopied += 1;
                 except ChunkNotPresent:
                     pass
-            info( u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied) )
+            debug( u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied) )
 
         
     def removeEntitiesInBox(self, box):
