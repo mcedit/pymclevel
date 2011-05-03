@@ -194,6 +194,7 @@ class MCMaterials(object):
         self.flatColors[blockID, (blockData or slice(None))] = block.color
             
         texture = kw.pop('texture', None)
+        
         if texture:
             self.blockTextures[blockID,(blockData or slice(None))] = texture
         
@@ -261,6 +262,18 @@ am.Sapling = am.Block(6,
     texture=(0xF0,0x00),
     opacity=0,
     )
+
+am.BirchSapling = am.Block(6, blockData=1,
+    name="Birch Sapling",
+    texture=(0xF0,0x40),
+    opacity=0,
+    )
+am.SpruceSapling = am.Block(6, blockData=2,
+    name="Spruce Sapling",
+    texture=(0xF0,0x30),
+    opacity=0,
+    )
+
 
 am.Bedrock = am.Block(7, 
     name="Bedrock",
@@ -414,6 +427,20 @@ am.NoteBlock = am.Block(25,
 
 am.Bed = am.Block(26, 
     name="Bed",
+    texture=(0x60, 0x80),
+    opacity=0,
+    )
+
+am.PoweredRail = am.Block(27, 
+    name="Powered Rail",
+    texture=(0x30, 0xA0),
+    opacity=0,
+    )
+am.blockTextures[am.PoweredRail.ID][8:] = (0x30, 0xB0)
+
+am.DetectorRail = am.Block(28, 
+    name="Detector Rail",
+    texture=(0x30, 0xC0),
     opacity=0,
     )
 
@@ -654,7 +681,7 @@ am.Chest = am.Block(54,
 
 am.RedstoneWire = am.Block(55, 
     name="Redstone Wire",
-    texture=(0x40,0x60),
+    texture=(0x40,0xA0), #note: as of 1.5 the texture is unsaturated like leaves
     opacity=0,
     )
 

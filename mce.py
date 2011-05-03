@@ -12,6 +12,7 @@ import traceback
 import shlex
 import operator
 from operator import attrgetter
+import codecs
 from math import floor
 try:
     import readline
@@ -600,7 +601,7 @@ class mce(object):
         else:
             filename = self.level.displayName + ".signs"
         
-        outFile = open(filename, "w");
+        outFile = codecs.open(filename, "w", encoding = 'utf-8');
         
         print("Dumping signs...")
         signCount = 0;
@@ -983,7 +984,7 @@ class mce(object):
                 raise UsageError("Expected a long integer.")
             
             self.level.RandomSeed = seed;
-            
+            self.needsSave = True
         else:
             print("Random Seed: " + str(self.level.RandomSeed))
     
