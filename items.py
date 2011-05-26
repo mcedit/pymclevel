@@ -325,6 +325,9 @@ class Items (object):
         item = self.itemtypes.get((id, None))
         if item: return item
         
+        item = self.itemtypes.get((id, 0))
+        if item: return item
+        
         raise ItemNotFound, "Item {0}:{1} not found".format(id, damage)
 
 class ItemNotFound(KeyError): pass
