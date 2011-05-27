@@ -262,15 +262,16 @@ am.Sapling = am.Block(6,
     texture=(0xF0,0x00),
     opacity=0,
     )
-
-am.BirchSapling = am.Block(6, blockData=1,
-    name="Birch Sapling",
-    texture=(0xF0,0x40),
-    opacity=0,
-    )
-am.SpruceSapling = am.Block(6, blockData=2,
+    
+am.SpruceSapling = am.Block(6, blockData=1,
     name="Spruce Sapling",
     texture=(0xF0,0x30),
+    opacity=0,
+    )
+
+am.BirchSapling = am.Block(6, blockData=2,
+    name="Birch Sapling",
+    texture=(0xF0,0x40),
     opacity=0,
     )
 
