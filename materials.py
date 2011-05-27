@@ -444,7 +444,36 @@ am.DetectorRail = am.Block(28,
     opacity=0,
     )
 
+am.Web = am.Block(30, 
+    name="Web",
+    texture=(0xB0, 0x00),
+    opacity=0,
+    )
 
+am.UnusedShrub = am.Block(31, blockData = 0,
+    name="[Unused Shrub]",
+    texture=(0x80, 0x30),
+    opacity=0,
+    )
+
+am.TallGrass = am.Block(31, blockData = 1,
+    name="Tall Grass",
+    texture=(0x70, 0x20),
+    opacity=0,
+    )
+
+am.Shrub = am.Block(31, blockData = 2,
+    name="Shrub",
+    texture=(0x80, 0x30),
+    opacity=0,
+    )
+    
+am.DesertShrub2 = am.Block(32, 
+    name="Dead Shrub",
+    texture=(0x70, 0x30),
+    opacity=0,
+    )
+    
 am.WhiteWool = am.Block(35, 
     name="White Wool",
     texture=(0x00, 0x40),
@@ -919,6 +948,17 @@ am.RedstoneRepeaterOn = am.Block(94,
     opacity=0,
     )
 
+am.AprilFoolsChest = am.Block(95, 
+    name="April Fools Chest",
+    texture=((0xA0,0x10), (0xA0,0x10), (0xA0,0x10), (0xB0,0x10), (0x90,0x10), (0x90,0x10)),
+    )
+    
+am.Trapdoor = am.Block(96, 
+    name="Trapdoor",
+    texture=(0x10,0x50),
+    opacity=0,
+    )
+    
 del am
 
 from classicmaterials import classicMaterials
