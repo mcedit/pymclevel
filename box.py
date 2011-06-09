@@ -147,8 +147,8 @@ class BoundingBox (object):
         
         return True;
     
-    def __cmp__(a, b):
-        return cmp( (a.origin, a.size), (b.origin, b.size) )
+    def __cmp__(self, b):
+        return cmp( (self.origin, self.size), (b.origin, b.size) )
         
     def __repr__(self):
         return "BoundingBox({0}, {1})".format(self.origin, self.size)
