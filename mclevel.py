@@ -3997,7 +3997,7 @@ class MCInfdevOldLevel(MCLevel):
             playerSpawnTag = self.root_tag["Data"]
         else:
             playerSpawnTag = self.getPlayerTag(player)
-        for name, val in zip(self.xyz, pos):
+        for name, val in zip(self.spawnxyz, pos):
             playerSpawnTag[name] = nbt.TAG_Int(val);
     
             
