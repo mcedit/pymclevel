@@ -4080,7 +4080,9 @@ class Entity(object):
 class MCAlphaDimension (MCInfdevOldLevel):
     def loadLevelDat(self, create, random_seed, last_played):
         pass;
-    
+    def preloadDimensions(self):
+        pass
+        
     dimensionNames = { -1: "Nether" };
     @property
     def displayName(self):
