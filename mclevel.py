@@ -1010,10 +1010,10 @@ class MCLevel(object):
     def getPlayerDimension(self, player = "Player"): return 0;
     def setPlayerDimension(self, d, player = "Player"): return;
     
-    def setPlayerSpawnPosition(self, pos, player = "Player"):
+    def setPlayerSpawnPosition(self, pos, player = None):
         pass;
 
-    def playerSpawnPosition(self, player = "Player"):
+    def playerSpawnPosition(self, player = None):
         return self.getPlayerPosition();
 
     def setPlayerOrientation(self, yp, player = "Player"):
@@ -3978,7 +3978,7 @@ class MCInfdevOldLevel(MCLevel):
   
     spawnxyz = ["SpawnX", "SpawnY", "SpawnZ"]
         
-    def playerSpawnPosition(self, player = "Player"):
+    def playerSpawnPosition(self, player = None):
         """ 
         xxx if player is None then it gets the default spawn position for the world
         if player hasn't used a bed then it gets the default spawn position 
@@ -3991,7 +3991,7 @@ class MCInfdevOldLevel(MCLevel):
         
         return [playerSpawnTag.get(i, dataTag[i]).value for i in self.spawnxyz]
    
-    def setPlayerSpawnPosition(self, pos, player = "Player"):
+    def setPlayerSpawnPosition(self, pos, player = None):
         """ xxx if player is None then it sets the default spawn position for the world """
         if player is None:
             playerSpawnTag = self.root_tag["Data"]
@@ -4198,11 +4198,11 @@ class MCIndevLevel(MCLevel):
     swapping to be consistent with infinite levels."""
     hasEntities = True
         
-    def setPlayerSpawnPosition(self, pos):
+    def setPlayerSpawnPosition(self, pos, player = None):
         assert len(pos) == 3
         self.Spawn = array(pos);
 
-    def playerSpawnPosition(self):
+    def playerSpawnPosition(self, player = None):
         return self.Spawn;
         
     def setPlayerPosition(self, pos, player = "Ignored"):
