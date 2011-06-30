@@ -296,6 +296,23 @@ applyOpenedBit(Trapdoor.rotateLeft)
 applyOpenedBit(Trapdoor.flipEastWest)
 applyOpenedBit(Trapdoor.flipNorthSouth)
 
+applyPistonBit = applyBit8
+class PistonBody:
+    blocktypes = [alphaMaterials.StickyPiston.ID, alphaMaterials.Piston.ID]
+    
+    East = 2
+    West = 3
+    North = 4
+    South = 5
+genericFlipRotation(PistonBody)
+applyPistonBit(PistonBody.rotateLeft)
+applyPistonBit(PistonBody.flipEastWest)
+applyPistonBit(PistonBody.flipNorthSouth)
+    
+class PistonHead(PistonBody):
+    blocktypes = [alphaMaterials.PistonHead.ID]
+rotationClasses.append(PistonHead)    
+    
 def masterRotationTable(rotationFunc):
     # compute a 256x16 table mapping each possible blocktype/data combination to 
     # the resulting data when the block is rotated

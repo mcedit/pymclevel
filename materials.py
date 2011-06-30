@@ -445,6 +445,12 @@ am.DetectorRail = am.Block(28,
     opacity=0,
     )
 
+am.StickyPiston = am.Block(29, 
+    name="Sticky Piston",
+    texture=(0xA0, 0x60),
+    opacity=15,
+    )
+
 am.Web = am.Block(30, 
     name="Web",
     texture=(0xB0, 0x00),
@@ -473,6 +479,18 @@ am.DesertShrub2 = am.Block(32,
     name="Dead Shrub",
     texture=(0x70, 0x30),
     opacity=0,
+    )
+
+am.Piston = am.Block(33, 
+    name="Piston",
+    texture=(0xB0, 0x60),
+    opacity=15,
+    )
+
+am.PistonHead = am.Block(34, 
+    name="Piston Head",
+    texture=NOTEX,
+    opacity=15,
     )
     
 am.WhiteWool = am.Block(35, 
