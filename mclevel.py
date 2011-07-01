@@ -3208,12 +3208,22 @@ class MCInfdevOldLevel(MCLevel):
     
     def chunkIsLoaded(self, cx, cz):
         if (cx,cz) in self._loadedChunks:
-            if( self._loadedChunks[(cx,cz)].compressedTag is not None or 
-                self._loadedChunks[(cx,cz)].root_tag is not None):
-                return True
+            return self._loadedChunks[(cx,cz)].isLoaded()
                 
         return False
-        
+    
+    def chunkIsCompressed(self, cx, cz):
+        if (cx,cz) in self._loadedChunks:
+            return self._loadedChunks[(cx,cz)].isCompressed()
+                
+        return False
+    
+    def chunkIsDirty(self, cx, cz):
+        if (cx,cz) in self._loadedChunks:
+            return self._loadedChunks[(cx,cz)].dirty
+                
+        return False
+    
     def getChunk(self, cx, cz):
         """ read the chunk from disk, load it, and return it. 
         decompression and unpacking is done lazily."""
