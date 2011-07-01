@@ -490,6 +490,10 @@ class MCLevel(object):
         return self.allChunks #backward compatibility
     
     @property
+    def chunkCount(self):
+        return (self.Width+15>>4) * (self.Length+15>>4)
+        
+    @property
     def allChunks(self):
         """Returns a synthetic list of chunk positions (xPos, zPos), to fake 
         being a chunked level format."""
