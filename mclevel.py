@@ -617,6 +617,12 @@ class MCLevel(object):
     def chunkIsLoaded(self, cx, cz):
         return self.containsChunk(cx,cz)
         
+    def chunkIsCompressed(self, cx, cz):
+        return False
+    
+    def chunkIsDirty(self, cx, cz):
+        return True
+        
     
     def fakeBlocksForChunk(self, cx, cz):
         #return a 16x16xH block array for rendering.  Alpha levels can
