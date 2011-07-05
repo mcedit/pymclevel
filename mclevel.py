@@ -1872,6 +1872,12 @@ class InfdevChunk(MCLevel):
         return len(self.compressedTag)
     
     
+    def sanitizeGrass(self):
+        #change grass to dirt where needed so Minecraft doesn't flip out and die
+        grass = self.Blocks == self.materials.Grass.ID
+        badgrass = grass[:,:,1:] & grass[:,:,:-1]
+        self.Blocks[:,:,:-1][badgrass] = self.materials.Dirt.ID
+        
     def compress(self):
         
         
@@ -1880,6 +1886,8 @@ class InfdevChunk(MCLevel):
             #uncompressed tag structure away. rely on the OS disk cache.
             self.root_tag = None
         else:
+            self.sanitizeGrass() #xxx
+            
             self.packChunkData()
             self._compressChunk()
             
