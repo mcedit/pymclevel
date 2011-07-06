@@ -1806,6 +1806,7 @@ class InfdevChunk(MCLevel):
             return self.chunkFilename
     def __init__(self, world, chunkPosition, create = False):
         self.world = world;
+        #self.materials = self.world.materials
         self.chunkPosition = chunkPosition;
         self.chunkFilename = world.chunkFilename(*chunkPosition)
         #self.filename = "UNUSED" + world.chunkFilename(*chunkPosition);
@@ -1826,6 +1827,9 @@ class InfdevChunk(MCLevel):
             if not world.containsChunk(*chunkPosition):
                 raise ChunkNotPresent("Chunk {0} not found", self.chunkPosition)
     
+    @property
+    def materials(self):
+        return self.world.materials
     
     def compressTagGzip(self, root_tag):
         buf = StringIO.StringIO()
@@ -1872,11 +1876,21 @@ class InfdevChunk(MCLevel):
         return len(self.compressedTag)
     
     
-    def sanitizeGrass(self):
+    def sanitizeBlocks(self):
         #change grass to dirt where needed so Minecraft doesn't flip out and die
         grass = self.Blocks == self.materials.Grass.ID
         badgrass = grass[:,:,1:] & grass[:,:,:-1]
+        
         self.Blocks[:,:,:-1][badgrass] = self.materials.Dirt.ID
+        
+        #remove any thin snow layers immediately above other thin snow layers.
+        #minecraft doesn't flip out, but it's almost never intended
+        if hasattr(self.materials, "SnowLayer"):
+            snowlayer = self.Blocks == self.materials.SnowLayer.ID
+            badsnow = snowlayer[:,:,1:] & snowlayer[:,:,:-1]
+            
+            self.Blocks[:,:,1:][badsnow] = self.materials.Air.ID
+        
         
     def compress(self):
         
@@ -1886,7 +1900,7 @@ class InfdevChunk(MCLevel):
             #uncompressed tag structure away. rely on the OS disk cache.
             self.root_tag = None
         else:
-            self.sanitizeGrass() #xxx
+            self.sanitizeBlocks() #xxx
             
             self.packChunkData()
             self._compressChunk()
