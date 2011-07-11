@@ -509,7 +509,8 @@ class MCLevel(object):
             def compress(self):pass
             def __init__(self):pass
             def chunkChanged(self):pass
-            
+            @property
+            def materials(self): return self.world.materials
             
         f = FakeChunk()
         f.world = self;
