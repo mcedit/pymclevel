@@ -3283,7 +3283,7 @@ class MCInfdevOldLevel(MCLevel):
                     dirtyChunkCount += 1;
                 chunk.save();
         
-        for path, tag in self.playerTagCache.iteritems():
+        for path, tag in self.playerTagCache:
             tag.saveGzipped(path)
         
         self.playerTagCache = {}
