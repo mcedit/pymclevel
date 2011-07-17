@@ -138,9 +138,14 @@ Rail.flipNorthSouth[Rail.Southwest] = Rail.Northwest
 Rail.flipNorthSouth[Rail.Northwest] = Rail.Southwest
 rotationClasses.append(Rail)
 
-def applyThrownBit(array):
+def applyBit8(array):
     array[8:16] = array[0:8] | 0x8
+def applyBit4(array):
+    array[4:8] = array[0:4] | 0x4
+    array[12:16] = array[8:12] | 0x4
  
+applyThrownBit = applyBit8
+
 class PoweredDetectorRail(Rail):
     blocktypes = [alphaMaterials.PoweredRail.ID, alphaMaterials.DetectorRail.ID]
 PoweredDetectorRail.rotateLeft = genericRotation(PoweredDetectorRail)
@@ -275,7 +280,39 @@ RedstoneRepeater.flipEastWest[8:16] = RedstoneRepeater.flipEastWest[0:8] | 0x8
 RedstoneRepeater.flipNorthSouth[4:8] = RedstoneRepeater.flipNorthSouth[0:4] | 0x4
 RedstoneRepeater.flipNorthSouth[8:16] = RedstoneRepeater.flipNorthSouth[0:8] | 0x8
 
-      
+
+applyOpenedBit = applyBit4
+
+class Trapdoor:
+    blocktypes = [alphaMaterials.Trapdoor.ID]
+    
+    West = 0
+    East = 1
+    South = 2
+    North = 3
+
+genericFlipRotation(Trapdoor)
+applyOpenedBit(Trapdoor.rotateLeft)
+applyOpenedBit(Trapdoor.flipEastWest)
+applyOpenedBit(Trapdoor.flipNorthSouth)
+
+applyPistonBit = applyBit8
+class PistonBody:
+    blocktypes = [alphaMaterials.StickyPiston.ID, alphaMaterials.Piston.ID]
+    
+    East = 2
+    West = 3
+    North = 4
+    South = 5
+genericFlipRotation(PistonBody)
+applyPistonBit(PistonBody.rotateLeft)
+applyPistonBit(PistonBody.flipEastWest)
+applyPistonBit(PistonBody.flipNorthSouth)
+    
+class PistonHead(PistonBody):
+    blocktypes = [alphaMaterials.PistonHead.ID]
+rotationClasses.append(PistonHead)    
+    
 def masterRotationTable(rotationFunc):
     # compute a 256x16 table mapping each possible blocktype/data combination to 
     # the resulting data when the block is rotated

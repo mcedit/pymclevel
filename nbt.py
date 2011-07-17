@@ -421,13 +421,14 @@ def loadFile(filename):
     with open(filename, "rb") as f:
         inputdata = f.read()
     #inputGz = gzip.GzipFile(filename, mode="rb")
+    data = inputdata
     try:
         data = gunzip(inputdata)
     except IOError:
         print("File %s not zipped" % filename)
-        data = open(filename, "rb").read();
-    finally:
-        return load(buf=fromstring(data, 'uint8'));
+
+    return load(buf=fromstring(data, 'uint8'));
+
 
 def load_named(data, data_cursor, tag_type):
     tag_name = TAG_String(data=data[data_cursor:])

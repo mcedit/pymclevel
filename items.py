@@ -292,7 +292,7 @@ class Items (object):
                 if line[0] == "#": continue;
                 if line[0] == "~": continue; #groups
                 stacksize = 64
-                damagevalue = 0
+                damagevalue = None
                 maxdamage = 0
 
                 fields = line.split();
@@ -311,16 +311,28 @@ class Items (object):
                     name = name.replace("_", " ");
                     imagecoords = imagecoords.split(",");
 
-                    self.itemtypes[id] = ItemType(id, name, imagefile, imagecoords, maxdamage, damagevalue, stacksize)
+                    self.itemtypes[(id, damagevalue)] = ItemType(id, name, imagefile, imagecoords, maxdamage, damagevalue, stacksize)
             except Exception as e:
                 print("Error reading line:" + str(e))
                 print("Line: " + str(line))
                 wprint()
 
                 
-        self.names = dict((item.name, item.id) for item in list(self.itemtypes.values()))
-
+        self.names = dict((item.name, item.id) for item in self.itemtypes.itervalues())
     
+    def findItem(self, id=0, damage=None):
+        item = self.itemtypes.get((id, damage))
+        if item: return item
+        
+        item = self.itemtypes.get((id, None))
+        if item: return item
+        
+        item = self.itemtypes.get((id, 0))
+        if item: return item
+        
+        raise ItemNotFound, "Item {0}:{1} not found".format(id, damage)
+
+class ItemNotFound(KeyError): pass
 
 items = Items();
 
