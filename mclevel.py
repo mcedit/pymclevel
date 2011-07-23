@@ -2381,11 +2381,11 @@ class MCRegionFile(object):
                 lev = chunkTag["Level"]
                 xPos = lev["xPos"].value
                 zPos = lev["zPos"].value
-                #gzdata = InfdevChunk.compressTagGzip(chunkTag)
-                print chunkTag.pretty_string()
+                gzdata = InfdevChunk.compressTagGzip(chunkTag)
+                #print chunkTag.pretty_string()
                 
                 with file(os.path.join(folder, "c.{0}.{1}.dat".format(base36(xPos), base36(zPos))), "wb") as f:
-                    f.write(data)
+                    f.write(gzdata)
                     
     def _readChunk(self, cx, cz):
         cx &= 0x1f
