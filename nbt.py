@@ -216,6 +216,29 @@ class TAG_Int_Array(TAG_Byte_Array):
         #print self.value
         valuestr = self.value.tostring()
         buf.write(struct.pack(self.fmt % (len(valuestr),), len(valuestr)/4, valuestr))
+
+class TAG_Short_Array(TAG_Int_Array):
+    """An array of ints"""
+    tag = 12;
+    def dataType(self, value):
+        return array(value, '>u2')
+    
+    def __init__(self, value=zeros(0, ">u2"), name=None, data=""):
+        self.name = name
+        if(data == ""):
+            self.value = value;
+        else:
+            (string_len,) = struct.unpack_from(">I", data);
+            self.value = fromstring(data[4:string_len * 2 + 4], '>u2')
+           
+            
+    def nbt_length(self) :
+        return len(self.value) * 2 + 4;
+    
+    def write_value(self, buf):
+        #print self.value
+        valuestr = self.value.tostring()
+        buf.write(struct.pack(self.fmt % (len(valuestr),), len(valuestr)/2, valuestr))
        
 class TAG_String(TAG_Value):
     """String in UTF-8
@@ -447,6 +470,7 @@ tag_handlers = {
     9 : TAG_List,
     10: TAG_Compound,
     11: TAG_Int_Array,
+    12: TAG_Short_Array,
     };
 
 def assert_type(t, offset) :
