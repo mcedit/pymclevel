@@ -474,7 +474,7 @@ tag_handlers = {
     };
 
 def assert_type(t, offset) :
-    if not t in tag_handlers: raise TypeError("Unexpected type %d at %d" % (t, offset));
+    if not t in tag_handlers: raise ValueError("Unexpected tag type %d at %d" % (t, offset));
 
 import zlib  
 def gunzip(data):
