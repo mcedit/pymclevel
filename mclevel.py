@@ -1832,14 +1832,16 @@ class InfdevChunk(MCLevel):
     def materials(self):
         return self.world.materials
     
-    def compressTagGzip(self, root_tag):
+    @classmethod
+    def compressTagGzip(cls, root_tag):
         buf = StringIO.StringIO()
         with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
             root_tag.save(buf=gzipper)
         
         return buf.getvalue()    
     
-    def compressTagDeflate(self, root_tag):
+    @classmethod
+    def compressTagDeflate(cls, root_tag):
         buf = StringIO.StringIO()
         root_tag.save(buf=buf)
         return deflate(buf.getvalue())
@@ -2366,7 +2368,25 @@ class MCRegionFile(object):
                 recovered += 1
                 
         info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered-deleted))
-                        
+    
+    def extractAllChunks(self, folder):
+        if not os.path.exists(folder):
+            os.mkdir(folder)
+        for cx, cz in itertools.product(range(32), range(32)):
+            sectors = self._readChunk(cx,cz)
+            if sectors is not None:
+                format, compressedData = self.unpackSectors(sectors)
+                data = self._decompressSectors(format, compressedData)
+                chunkTag = nbt.load(buf=data)
+                lev = chunkTag["Level"]
+                xPos = lev["xPos"].value
+                zPos = lev["zPos"].value
+                #gzdata = InfdevChunk.compressTagGzip(chunkTag)
+                print chunkTag.pretty_string()
+                
+                with file(os.path.join(folder, "c.{0}.{1}.dat".format(base36(xPos), base36(zPos))), "wb") as f:
+                    f.write(data)
+                    
     def _readChunk(self, cx, cz):
         cx &= 0x1f
         cz &= 0x1f
@@ -2398,18 +2418,24 @@ class MCRegionFile(object):
         chunk.root_tag = nbt.load(buf=data)
         chunk.compressMode = format
         
-        
-    def decompressSectors(self, data):
+    def unpackSectors(self, data):
         length = struct.unpack_from(">I", data)[0]
         format = struct.unpack_from("B", data, 4)[0]
         data = data[5:length+5]
+        return (format, data)
+        
+    def _decompressSectors(self, format, data):
         if format == self.VERSION_GZIP:
-            return (format, gunzip(data))
+            return gunzip(data)
         if format == self.VERSION_DEFLATE:
-            return (format, inflate(data))
+            return inflate(data)
         
         raise IOError, "Unknown compress format: {0}".format(format)
 
+    def decompressSectors(self, data):
+        format, data = self.unpackSectors(data)
+        return format, self._decompressSectors(format, data)
+        
         
     def saveChunk(self, chunk):
         cx,cz = chunk.chunkPosition
@@ -2522,7 +2548,29 @@ class MCRegionFile(object):
     VERSION_DEFLATE = 2
     
     compressMode=VERSION_DEFLATE
+
+base36alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
+def decbase36(s):
+    return int(s, 36)
+
+def base36(n):
+    global base36alphabet
     
+    n = int(n);
+    if 0 == n: return '0'
+    neg = "";
+    if n < 0:
+        neg = "-"
+        n = -n;
+        
+    work = []
+
+    while(n):
+        n, digit = divmod(n, 36)
+        work.append(base36alphabet[digit])
+    
+    return neg + ''.join(reversed(work))
+
 import zlib
 def deflate(data):
     #zobj = zlib.compressobj(6,zlib.DEFLATED,-zlib.MAX_WBITS,zlib.DEF_MEM_LEVEL,0)
@@ -2639,7 +2687,7 @@ class MCInfdevOldLevel(MCLevel):
     
     def close(self):
         for rf in (self.regionFiles or {}).values():
-                rf.close();
+            rf.close();
             
         self.regionFiles = {}
         
@@ -2815,28 +2863,38 @@ class MCInfdevOldLevel(MCLevel):
             self.preloadRegions()
         else:
             self.preloadChunkPaths()
-        
-    def preloadRegions(self):
-        info( u"Scanning for regions..." )
-        self._allChunks = set()
-        
+    
+    def findRegionFiles(self):
         regionDir = os.path.join(self.worldDir, "region")
         if not os.path.exists(regionDir):
             os.mkdir(regionDir)
             
         regionFiles = os.listdir(regionDir)
         for filename in regionFiles:
-            bits = filename.split('.')
-            if len(bits) < 4 or bits[0] != 'r' or bits[3] != "mcr": continue
-            
-            try:
-                rx, rz = map(int, bits[1:3])
-            except ValueError:
-                continue
-            
-            regionFile = MCRegionFile(os.path.join(regionDir, filename), (rx,rz))
+            yield os.path.join(regionDir, filename)
+    
+    def loadRegionFile(self, filepath):
+        filename = os.path.basename(filepath)
+        bits = filename.split('.')
+        if len(bits) < 4 or bits[0] != 'r' or bits[3] != "mcr": return None
+        
+        try:
+            rx, rz = map(int, bits[1:3])
+        except ValueError:
+            return None
+        
+        return MCRegionFile(filepath, (rx,rz))
+        
+    def preloadRegions(self):
+        info( u"Scanning for regions..." )
+        self._allChunks = set()
+        
+        for filepath in self.findRegionFiles():
+            regionFile = self.loadRegionFile(filepath)
+            if regionFile is None: continue
             
             if regionFile.offsets.any():
+                rx,rz = regionFile.regionCoords
                 self.regionFiles[rx,rz] = regionFile
                 
                 for index, offset in enumerate(regionFile.offsets):
@@ -2849,7 +2907,7 @@ class MCInfdevOldLevel(MCLevel):
                         
                         self._allChunks.add( (cx,cz) )
             else:
-                info( u"Removing empty region file {0}".format(filename) )
+                info( u"Removing empty region file {0}".format(filepath) )
                 regionFile.close()
                 os.unlink(regionFile.path)
             
@@ -2879,7 +2937,7 @@ class MCInfdevOldLevel(MCLevel):
                         
                         for c in chunkfilenames:
                             try:
-                                cx, cz = (self.decbase36(c[1]), self.decbase36(c[2]))
+                                cx, cz = (decbase36(c[1]), decbase36(c[2]))
                             except Exception, e:
                                 info( u'Skipped file {0} ({1})'.format(u'.'.join(c), e) )
                                 continue
@@ -2982,30 +3040,12 @@ class MCInfdevOldLevel(MCLevel):
         cz = z >> 4
         return self._loadedChunks.get( (cx, cz) ).filename
     
-    base36alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-    def decbase36(self, s):
-        return int(s, 36)
-    
-    def base36(self, n):
-        n = int(n);
-        if 0 == n: return '0'
-        neg = "";
-        if n < 0:
-            neg = "-"
-            n = -n;
-            
-        work = []
-
-        while(n):
-            n, digit = divmod(n, 36)
-            work.append(self.base36alphabet[digit])
-        
-        return neg + ''.join(reversed(work))
 
     def dirhash(self, n):
         return self.dirhashes[n%64];
     
-    def _dirhash(n):
+    def _dirhash(self):
+        n=self
         n=n%64;
         s=u"";
         if(n>=36):
@@ -3024,7 +3064,7 @@ class MCInfdevOldLevel(MCLevel):
     
     def chunkFilename(self, x, z):
         s= os.path.join(self.worldDir, self.dirhash(x), self.dirhash(z),
-                                     "c.%s.%s.dat" % (self.base36(x), self.base36(z)));
+                                     "c.%s.%s.dat" % (base36(x), base36(z)));
         return s;
     
     def extractChunksInBox(self, box, parentFolder):
@@ -3274,7 +3314,7 @@ class MCInfdevOldLevel(MCLevel):
 
         dirtyChunkCount = 0;
         if self._loadedChunks:
-            for chunk in self._loadedChunks.values():
+            for chunk in self._loadedChunks.itervalues():
                 if chunk.dirty: 
                     dirtyChunkCount += 1;
                 chunk.save();
@@ -4209,7 +4249,7 @@ class ZipSchematic (MCInfdevOldLevel):
             c = name[2].split('.')
             if len(c) == 4 and c[0].lower() == 'c' and c[3].lower() == 'dat':
                 try:
-                    cx, cz = (self.decbase36(c[1]), self.decbase36(c[2]))
+                    cx, cz = (decbase36(c[1]), decbase36(c[2]))
                 except Exception, e:
                     info( 'Skipped file {0} ({1})'.format('.'.join(c), e) )
                     continue
@@ -4232,7 +4272,7 @@ class ZipSchematic (MCInfdevOldLevel):
             
     def chunkFilename(self, x, z):
         s= "/".join((self.dirhash(x), self.dirhash(z),
-                                     "c.%s.%s.dat" % (self.base36(x), self.base36(z))));
+                                     "c.%s.%s.dat" % (base36(x), base36(z))));
         return s;
         
 class MCIndevLevel(MCLevel):
