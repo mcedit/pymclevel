@@ -557,6 +557,7 @@ def createtest():
 
     level["Environment"] = TAG_Compound()
     level["Environment"]["SkyBrightness"] = TAG_Byte(16)
+    level["Environment"]["SurroundingWaterHeight"] = TAG_Short(32)
     
     "You can also create and name a tag before adding it to the compound."
     spawn = TAG_List((TAG_Short(100), TAG_Short(45), TAG_Short(55)))
@@ -610,7 +611,7 @@ def modifytest():
 
 def savetest():
 
-    level = load("paradise.mclevel");
+    level = createtest()
     level["Environment"]["SurroundingWaterHeight"].value += 6;
     
     "Save the entire TAG structure to a different file."
