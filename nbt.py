@@ -61,7 +61,17 @@ class TAG_Value(object):
                 (self.value,) = struct.unpack_from(self.fmt, data);
     
     def __repr__(self):
-        return "%s ( %s ) : %s" % (self.__class__, self.name, repr(self.value))
+        return "%s( \"%s\" ): %s" % (str(self.__class__), self.name, repr(self.value))
+    
+    def __str__(self):
+        return self.pretty_string()
+    
+    def pretty_string(self, indent=0):
+        if self.name:
+            return  " "*indent + "%s( \"%s\" ): %s" % (str(self.__class__.__name__), self.name, self.value)
+        else:
+            return  " "*indent + "%s: %s" % (str(self.__class__.__name__), self.value)
+        
     def nbt_length(self):
         return struct.calcsize(self.fmt);
     
@@ -155,7 +165,19 @@ class TAG_Byte_Array(TAG_Value):
             
     def __repr__(self):
         return "<%s: length %d> ( %s )" % (self.__class__, len(self.value), self.name)
+        
     
+    def pretty_string(self, indent=0):
+        if self.name:
+            return  " "*indent + "%s( \"%s\" ): shape=%s dtype=%s %s" % (
+                str(self.__class__.__name__), 
+                self.name, 
+                str(self.value.shape),
+                str(self.value.dtype), 
+                self.value)
+        else:
+            return  " "*indent + "%s: %s %s" % (str(self.__class__.__name__), str(self.value.shape), self.value)
+        
     def __init__(self, value=zeros(0, uint8), name=None, data=""):
         self.name = name
         if(data == ""):
@@ -236,8 +258,19 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
             return list(val)
     
     def __repr__(self):
-        return "%s( %s ): %s" % (str(self.__class__), self.name, self.value)
-
+        return "%s( %s ): %s" % (str(self.__class__.__name__), self.name, self.value)
+    
+    def pretty_string(self, indent=0):
+        if self.name:
+            pretty = " "*indent + "%s( \"%s\" ):\n" % (str(self.__class__.__name__), self.name)
+        else:
+            pretty = " "*indent + "%s():\n" % (str(self.__class__.__name__))
+        indent += 4
+        for tag in self.value:
+            pretty += tag.pretty_string(indent) + "\n"
+        return pretty
+        
+    
     def __init__(self, value=[], name="", data=""):
             
         self.name = name;
@@ -318,8 +351,20 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         return list(val)
     
     def __repr__(self):
-        return "%s( %s ): %s" % (self.__class__, self.name, self.value)
-
+        return "%s( %s ): %s" % (self.__class__.__name__, self.name, self.value)
+    
+        
+    def pretty_string(self, indent=0):
+        if self.name:
+            pretty = " "*indent + "%s( \"%s\" ):\n" % (str(self.__class__.__name__), self.name)
+        else:
+            pretty = " "*indent + "%s():\n" % (str(self.__class__.__name__), )
+        
+        indent += 4
+        for tag in self.value:
+            pretty += tag.pretty_string(indent) + "\n"
+        return pretty
+        
     def __init__(self, value=[], name=None, data=None, list_type=TAG_Compound):
         #can be created from a list of tags in value, with an optional
         #name, or created from raw tag data, or created with list_type
