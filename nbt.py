@@ -343,6 +343,13 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
 
 
     def __setitem__(self, k, v):
+        """Automatically wraps lists and tuples in a TAG_List, and wraps strings
+        and unicodes in a TAG_String."""
+        if isinstance(v, (list, tuple)):
+            v = TAG_List(v)
+        elif isinstance(v, basestring):
+            v = TAG_String(v)
+
         if not (v.__class__ in tag_handlers.values()): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
         """remove any items already named "k".    """
         olditems = filter(lambda x:x.name == k, self.value)
