@@ -1115,11 +1115,7 @@ class MCInfdevOldLevel(MCLevel):
     def getRegionForChunk(self, cx, cz):
         rx = cx >> 5
         rz = cz >> 5
-        rf = self.regionFiles.get((rx, rz))
-        if rf: return rf
-        rf = MCRegionFile(self.regionFilename(rx, rz), (rx, rz))
-        self.regionFiles[rx, rz] = rf;
-        return rf
+        return self.getRegionFile(rx, rz)
 
     def preloadChunkPositions(self):
         if self.version == 19132:
@@ -1147,6 +1143,13 @@ class MCInfdevOldLevel(MCLevel):
             return None
 
         return MCRegionFile(filepath, (rx, rz))
+
+    def getRegionFile(self, rx, rz):
+        regionFile = self.regionFiles.get((rx, rz))
+        if regionFile: return regionFile
+        regionFile = MCRegionFile(self.regionFilename(rx, rz), (rx, rz))
+        self.regionFiles[rx, rz] = regionFile;
+        return regionFile
 
     def preloadRegions(self):
         info(u"Scanning for regions...")
@@ -2292,7 +2295,7 @@ class MCInfdevOldLevel(MCLevel):
 
         if self.version:
             r = cx >> 5, cz >> 5
-            rf = self.regionFiles.get(r)
+            rf = self.getRegionFile(*r)
             if rf:
                 rf.setOffset(cx & 0x1f , cz & 0x1f, 0)
                 if (rf.offsets == 0).all():
