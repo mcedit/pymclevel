@@ -989,10 +989,6 @@ classicMaterials.lightEmission = materials.lightEmission
 
 namedMaterials = dict( (i.name, i) for i in (materials, classicMaterials) )
 
-
-materialNames = dict( (k,v) for v,k in namedMaterials.iteritems() )
-
-
 #filters certain block types in old maps to types available in /game/
 blockFilterClassicToAlpha = arange(256, dtype=uint8)
 
@@ -1029,3 +1025,5 @@ classicMaterials.conversionTables = {
 
 
 alphaMaterials = materials;
+
+__all__ = "alphaMaterials, classicMaterials, namedMaterials, MCMaterials".split(", ")

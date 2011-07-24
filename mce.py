@@ -1258,7 +1258,7 @@ class mce(object):
     batchMode = False;
 
     def run(self):
-        logging.basicConfig(format='%(levelname)s:%(message)s')
+        logging.basicConfig(format=u'%(levelname)s:%(message)s')
         logging.getLogger().level = logging.INFO
     
         appPath = sys.argv.pop(0)
