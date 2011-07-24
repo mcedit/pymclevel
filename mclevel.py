@@ -192,12 +192,12 @@ import sys
 
 # we need to decode file paths from environment variables or else we get an error
 # if they are formatted or joined to a unicode string
- 
+
 if sys.platform == "win32":
     #not sure why win32com is needed if the %APPDATA% var is available
-    try:      
+    try:
         import win32com.client
-        
+
         objShell = win32com.client.Dispatch("WScript.Shell")
         minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
     except Exception, e:
@@ -211,9 +211,9 @@ elif sys.platform == "darwin":
 else:
     minecraftDir = os.path.expanduser("~/.minecraft")
     minecraftDir.decode(sys.getfilesystemencoding());
-        
+
 saveFileDir = os.path.join(minecraftDir, u"saves")
- 
+
 #if sys.platform == "win32":
 #    from win32com.shell import shell, shellcon
 #    saveFileDir = shell.SHGetPathFromIDListEx (
@@ -221,53 +221,53 @@ saveFileDir = os.path.join(minecraftDir, u"saves")
 #    )
 #    
 
-                           
+
 def fromFile(filename, loadInfinite=True):
     ''' The preferred method for loading Minecraft levels of any type.
     pass False to loadInfinite if you'd rather not load infdev levels.
     '''
-    info( u"Identifying " + filename )
-    
+    info(u"Identifying " + filename)
+
     class LoadingError(RuntimeError): pass
-    
-    
+
+
     if not filename:
-        raise IOError, "File not found: "+filename
+        raise IOError, "File not found: " + filename
     if not os.path.exists(filename):
-        raise IOError, "File not found: "+filename
-    
+        raise IOError, "File not found: " + filename
+
     if (ZipSchematic._isLevel(filename)):
-        info( "Zipfile found, attempting zipped infinite level" )
+        info("Zipfile found, attempting zipped infinite level")
         lev = ZipSchematic(filename);
-        info( "Detected zipped Infdev level" )
+        info("Detected zipped Infdev level")
         return lev
-        
+
     if (MCInfdevOldLevel._isLevel(filename)):
-        info( u"Detected Infdev level.dat" )
+        info(u"Detected Infdev level.dat")
         if (loadInfinite):
             return MCInfdevOldLevel(filename=filename);
         else:
             raise ValueError, "Asked to load {0} which is an infinite level, loadInfinite was False".format(os.path.basename(filename));
-    
+
     if os.path.isdir(filename):
         raise ValueError, "Folder {0} was not identified as a Minecraft level.".format(os.path.basename(filename));
-        
+
     f = file(filename, 'rb');
     rawdata = f.read()
     f.close()
     if len(rawdata) < 4:
         raise ValueError, "{0} is too small! ({1}) ".format(filename, len(rawdata))
-        
-        
-    
-    
+
+
+
+
     data = fromstring(rawdata, dtype='uint8')
     if not data.any():
         raise ValueError, "{0} contains only zeroes. This file is damaged beyond repair."
-    
-    
+
+
     if MCJavaLevel._isDataLevel(data):
-        info( u"Detected Java-style level" )
+        info(u"Detected Java-style level")
         lev = MCJavaLevel(filename, data);
         lev.compressed = False;
         return lev;
@@ -277,16 +277,16 @@ def fromFile(filename, loadInfinite=True):
     unzippedData = None;
     try:
         unzippedData = gunzip(rawdata)
-    except Exception,e:
-        info( u"Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e) )
+    except Exception, e:
+        info(u"Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e))
         if unzippedData is None:
             compressed = False;
             unzippedData = rawdata
-    
+
     data = fromstring(unzippedData, dtype='uint8')
-    
+
     if MCJavaLevel._isDataLevel(data):
-        info( u"Detected compressed Java-style level" )
+        info(u"Detected compressed Java-style level")
         lev = MCJavaLevel(filename, data);
         lev.compressed = compressed;
         return lev;
@@ -294,37 +294,37 @@ def fromFile(filename, loadInfinite=True):
     try:
         root_tag = nbt.load(buf=data);
     except Exception, e:
-        info( u"Error during NBT load: {0!r}".format(e) )
-        info( u"Fallback: Detected compressed flat block array, yzx ordered " )
+        info(u"Error during NBT load: {0!r}".format(e))
+        info(u"Fallback: Detected compressed flat block array, yzx ordered ")
         try:
             lev = MCJavaLevel(filename, data);
             lev.compressed = compressed;
             return lev;
         except Exception, e2:
             raise LoadingError, ("Multiple errors encountered", e, e2)
-             
+
     else:
         if(MCIndevLevel._isTagLevel(root_tag)):
-            info( u"Detected Indev .mclevel" )
+            info(u"Detected Indev .mclevel")
             return MCIndevLevel(root_tag, filename)
         if(MCSchematic._isTagLevel(root_tag)):
-            info( u"Detected Schematic." )
+            info(u"Detected Schematic.")
             return MCSchematic(root_tag=root_tag, filename=filename)
-        
+
         if (INVEditChest._isTagLevel(root_tag)):
-            info( u"Detected INVEdit inventory file" )
+            info(u"Detected INVEdit inventory file")
             return INVEditChest(root_tag=root_tag, filename=filename);
-            
-        
+
+
     #it must be a plain array of blocks. see if MCJavaLevel handles it.
-    
+
     raise IOError, "Cannot detect file type."
 
- 
+
 def loadWorld(name):
     filename = os.path.join(saveFileDir, name)
     return fromFile(filename)
-               
+
 def loadWorldNumber(i):
     #deprecated
     filename = u"{0}{1}{2}{3}{1}".format(saveFileDir, os.sep, u"World", i)

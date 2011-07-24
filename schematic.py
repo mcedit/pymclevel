@@ -468,6 +468,7 @@ def extractSchematicFrom(sourceLevel, box):
 
     return tempSchematic
 
+import tempfile
 def extractZipSchematicFrom(sourceLevel, box, zipfilename):
     #converts classic blocks to alpha
     #probably should only apply to alpha levels

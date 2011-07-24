@@ -86,115 +86,115 @@ __all__ = ["MCIndevLevel"]
 
 
 class MCIndevLevel(MCLevel):
-    
+
     """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis 
     swapping to be consistent with infinite levels."""
     hasEntities = True
-        
-    def setPlayerSpawnPosition(self, pos, player = None):
+
+    def setPlayerSpawnPosition(self, pos, player=None):
         assert len(pos) == 3
         self.Spawn = array(pos);
 
-    def playerSpawnPosition(self, player = None):
+    def playerSpawnPosition(self, player=None):
         return self.Spawn;
-        
-    def setPlayerPosition(self, pos, player = "Ignored"):
+
+    def setPlayerPosition(self, pos, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 x["Pos"] = TAG_List([TAG_Float(p) for p in pos])
-    
-    def getPlayerPosition(self, player = "Ignored"):
+
+    def getPlayerPosition(self, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 return array(map(lambda x:x.value, x["Pos"]));
-                
-    def setPlayerOrientation(self, yp, player = "Ignored"):
+
+    def setPlayerOrientation(self, yp, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 x["Rotation"] = TAG_List([TAG_Float(p) for p in yp])
 
-    def playerOrientation(self, player = "Ignored"):
+    def playerOrientation(self, player="Ignored"):
         """ returns (yaw, pitch) """
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
                 return array(map(lambda x:x.value, x["Rotation"]));
-    
-    def setBlockDataAt(self, x,y,z, newdata):
-        if x<0 or y<0 or z<0: return 0
-        if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        self.Data[x,z,y] = (newdata & 0xf);        
+
+    def setBlockDataAt(self, x, y, z, newdata):
+        if x < 0 or y < 0 or z < 0: return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        self.Data[x, z, y] = (newdata & 0xf);
 
     def blockDataAt(self, x, y, z):
-        if x<0 or y<0 or z<0: return 0
-        if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        return self.Data[x,z,y];
-    
+        if x < 0 or y < 0 or z < 0: return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        return self.Data[x, z, y];
+
     def blockLightAt(self, x, y, z):
-        if x<0 or y<0 or z<0: return 0
-        if x>=self.Width or y>=self.Height or z>=self.Length: return 0;
-        return self.BlockLight[x,z,y];
-    
+        if x < 0 or y < 0 or z < 0: return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        return self.BlockLight[x, z, y];
+
     def __repr__(self):
         return u"MCIndevLevel({0}): {1}W {2}L {3}H".format(self.filename, self.Width, self.Length, self.Height)
-        
+
     @classmethod
     def _isTagLevel(cls, root_tag):
         return "MinecraftLevel" == root_tag.name
-           
-    def __init__(self, root_tag = None, filename = ""):
+
+    def __init__(self, root_tag=None, filename=""):
         self.Width = 0
         self.Height = 0
         self.Length = 0
         self.Blocks = array([], uint8)
         self.Data = array([], uint8)
-        self.Spawn = (0,0,0)
+        self.Spawn = (0, 0, 0)
         self.filename = filename;
-        
-        
+
+
         if root_tag:
-        
+
             self.root_tag = root_tag;
             mapTag = root_tag[Map];
             self.Width = mapTag[Width].value
             self.Length = mapTag[Length].value
             self.Height = mapTag[Height].value
-            
-            mapTag[Blocks].value.shape = (self.Height, self.Length, self.Width)
-            
-            self.Blocks = swapaxes(mapTag[Blocks].value, 0, 2)
-            
-            mapTag[Data].value.shape = (self.Height, self.Length, self.Width)
-            
-            self.Data = swapaxes(mapTag[Data].value, 0, 2)
-            
 
-            
+            mapTag[Blocks].value.shape = (self.Height, self.Length, self.Width)
+
+            self.Blocks = swapaxes(mapTag[Blocks].value, 0, 2)
+
+            mapTag[Data].value.shape = (self.Height, self.Length, self.Width)
+
+            self.Data = swapaxes(mapTag[Data].value, 0, 2)
+
+
+
             self.BlockLight = self.Data & 0xf
-            
+
             self.Data >>= 4
-            
+
             self.Spawn = [mapTag[Spawn][i].value for i in range(3)];
-            
-            if not Entities in root_tag: 
+
+            if not Entities in root_tag:
                 root_tag[Entities] = TAG_List();
             self.Entities = root_tag[Entities]
 
-            if not TileEntities in root_tag: 
+            if not TileEntities in root_tag:
                 root_tag[TileEntities] = TAG_List();
             self.TileEntities = root_tag[TileEntities]
-            
 
-            if len(filter(lambda x:x['id'].value=='LocalPlayer', root_tag[Entities])) == 0: #omen doesn't make a player entity
-                p=TAG_Compound()
+
+            if len(filter(lambda x:x['id'].value == 'LocalPlayer', root_tag[Entities])) == 0: #omen doesn't make a player entity
+                p = TAG_Compound()
                 p['id'] = TAG_String('LocalPlayer')
                 p['Pos'] = TAG_List([TAG_Float(0.), TAG_Float(64.), TAG_Float(0.)])
                 p['Rotation'] = TAG_List([TAG_Float(0.), TAG_Float(45.)])
-                
+
                 root_tag[Entities].append(p)
                 #self.saveInPlace();
-                
+
         else:
-            info( u"Creating new Indev levels is not yet implemented.!" )
+            info(u"Creating new Indev levels is not yet implemented.!")
             raise ValueError, "Can't do that yet"
 #            self.SurroundingGroundHeight = root_tag[Environment][SurroundingGroundHeight].value
 #            self.SurroundingGroundType = root_tag[Environment][SurroundingGroundType].value
@@ -212,65 +212,65 @@ class MCIndevLevel(MCLevel):
 #            self.Author = self.root_tag[About][Author].value
 #            self.CreatedOn = self.root_tag[About][CreatedOn].value
 
-                    
-    
+
+
     def rotateLeft(self):
         MCLevel.rotateLeft(self);
-        
-        self.Data = swapaxes(self.Data, 1, 0)[:,::-1,:]; #x=y; y=-x
-        
+
+        self.Data = swapaxes(self.Data, 1, 0)[:, ::-1, :]; #x=y; y=-x
+
         torchRotation = array([0, 4, 3, 1, 2, 5,
-                               6, 7, 
-                               
+                               6, 7,
+
                                8, 9, 10, 11, 12, 13, 14, 15]);
-                               
+
         torchIndexes = (self.Blocks == self.materials.Torch.ID)
-        info( u"Rotating torches: {0}".format( len(torchIndexes.nonzero()[0]) ) )
+        info(u"Rotating torches: {0}".format(len(torchIndexes.nonzero()[0])))
         self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
-        
-        
-    def saveToFile(self, filename = None):
+
+
+    def saveToFile(self, filename=None):
         if filename == None: filename = self.filename;
         if filename == None:
-            warn( u"Attempted to save an unnamed file in place" )
+            warn(u"Attempted to save an unnamed file in place")
             return; #you fool!
-        
+
         self.Data <<= 4;
         self.Data |= (self.BlockLight & 0xf)
-        
+
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
-            
-        mapTag = TAG_Compound( name=Map );
+
+        mapTag = TAG_Compound(name=Map);
         mapTag[Width] = TAG_Short(self.Width);
         mapTag[Height] = TAG_Short(self.Height);
         mapTag[Length] = TAG_Short(self.Length);
         mapTag[Blocks] = TAG_Byte_Array(self.Blocks);
-        mapTag[Data]   = TAG_Byte_Array(self.Data);
-        
+        mapTag[Data] = TAG_Byte_Array(self.Data);
+
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
-        
-        mapTag[Spawn]  = TAG_List([TAG_Short(i) for i in self.Spawn])
+
+        mapTag[Spawn] = TAG_List([TAG_Short(i) for i in self.Spawn])
 
         self.root_tag[Map] = mapTag;
         self.root_tag[Map]
         #output_file = gzip.open(self.filename, "wb", compresslevel=1)
         try:
             os.rename(filename, filename + ".old");
-        except Exception,e:
+        except Exception, e:
             pass
-            
+
         try:
             self.root_tag.saveGzipped(filename);
         except:
             os.rename(filename + ".old", filename);
-            
+
         try: os.remove(filename + ".old");
-        except Exception,e:
+        except Exception, e:
             pass
-        
+
         self.BlockLight = self.Data & 0xf
-            
+
         self.Data >>= 4
-              
+

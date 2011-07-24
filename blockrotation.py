@@ -35,7 +35,7 @@ class Torch:
         alphaMaterials.RedstoneTorchOn.ID,
         alphaMaterials.RedstoneTorchOff.ID,
     ]
-                          
+
     South = 1
     North = 2
     West = 3
@@ -45,7 +45,7 @@ genericFlipRotation(Torch)
 
 class Ladder:
     blocktypes = [alphaMaterials.Ladder.ID]
-    
+
     East = 2
     West = 3
     North = 4
@@ -57,7 +57,7 @@ class Stair:
         alphaMaterials.WoodenStairs.ID,
         alphaMaterials.StoneStairs.ID,
     ]
-    
+
     South = 0
     North = 1
     West = 2
@@ -66,13 +66,13 @@ genericFlipRotation(Stair)
 
 class WallSign:
     blocktypes = [alphaMaterials.WallSign.ID]
-    
+
     East = 2
     West = 3
     North = 4
     South = 5
 genericFlipRotation(WallSign)
-   
+
 class Furnace:
     blocktypes = [
         alphaMaterials.Furnace.ID,
@@ -87,15 +87,15 @@ genericFlipRotation(Furnace)
 class Dispenser(Furnace):
     blocktypes = [
         alphaMaterials.Dispenser.ID,
-    ]          
+    ]
 genericFlipRotation(Dispenser)
-    
+
 class Pumpkin:
     blocktypes = [
         alphaMaterials.Pumpkin.ID,
         alphaMaterials.JackOLantern.ID,
     ]
-    
+
     East = 0
     South = 1
     West = 2
@@ -104,14 +104,14 @@ genericFlipRotation(Pumpkin)
 
 class Rail:
     blocktypes = [alphaMaterials.Rail.ID]
-    
+
     EastWest = 0
     NorthSouth = 1
     South = 2
     North = 3
     East = 4
     West = 5
-    
+
     Northeast = 6
     Southeast = 7
     Southwest = 8
@@ -143,7 +143,7 @@ def applyBit8(array):
 def applyBit4(array):
     array[4:8] = array[0:4] | 0x4
     array[12:16] = array[8:12] | 0x4
- 
+
 applyThrownBit = applyBit8
 
 class PoweredDetectorRail(Rail):
@@ -161,7 +161,7 @@ applyThrownBit(PoweredDetectorRail.flipEastWest)
 applyThrownBit(PoweredDetectorRail.flipNorthSouth)
 rotationClasses.append(PoweredDetectorRail)
 
-   
+
 class Lever:
     blocktypes = [alphaMaterials.Lever.ID]
     ThrownBit = 0x8
@@ -199,11 +199,11 @@ rotationClasses.append(Button)
 class SignPost:
     blocktypes = [alphaMaterials.Sign.ID]
     #west is 0, increasing clockwise
-    
+
     rotateLeft = arange(16, dtype='uint8')
     rotateLeft -= 4
     rotateLeft &= 0xf
-    
+
     flipEastWest = arange(16, dtype='uint8')
     flipNorthSouth = arange(16, dtype='uint8')
     pass
@@ -217,14 +217,14 @@ class Door:
     ]
     TopHalfBit = 0x8
     SwungCCWBit = 0x4
-    
+
     Northeast = 0
     Southeast = 1
     Southwest = 2
     Northwest = 3
-    
+
     rotateLeft = arange(16, dtype='uint8')
-    
+
 Door.rotateLeft[Door.Northeast] = Door.Northwest
 Door.rotateLeft[Door.Southeast] = Door.Northeast
 Door.rotateLeft[Door.Southwest] = Door.Southeast
@@ -260,14 +260,14 @@ class RedstoneRepeater:
     blocktypes = [
         alphaMaterials.RedstoneRepeaterOff.ID,
         alphaMaterials.RedstoneRepeaterOn.ID,
-        
+
     ]
-    
+
     East = 0
     South = 1
     West = 2
     North = 3
-    
+
 genericFlipRotation(RedstoneRepeater)
 
 #high bits of the repeater indicate repeater delay, and should be preserved
@@ -285,7 +285,7 @@ applyOpenedBit = applyBit4
 
 class Trapdoor:
     blocktypes = [alphaMaterials.Trapdoor.ID]
-    
+
     West = 0
     East = 1
     South = 2
@@ -299,7 +299,7 @@ applyOpenedBit(Trapdoor.flipNorthSouth)
 applyPistonBit = applyBit8
 class PistonBody:
     blocktypes = [alphaMaterials.StickyPiston.ID, alphaMaterials.Piston.ID]
-    
+
     East = 2
     West = 3
     North = 4
@@ -308,36 +308,36 @@ genericFlipRotation(PistonBody)
 applyPistonBit(PistonBody.rotateLeft)
 applyPistonBit(PistonBody.flipEastWest)
 applyPistonBit(PistonBody.flipNorthSouth)
-    
+
 class PistonHead(PistonBody):
     blocktypes = [alphaMaterials.PistonHead.ID]
-rotationClasses.append(PistonHead)    
-    
+rotationClasses.append(PistonHead)
+
 def masterRotationTable(rotationFunc):
     # compute a 256x16 table mapping each possible blocktype/data combination to 
     # the resulting data when the block is rotated
-    table = zeros( (256, 16), dtype='uint8')
+    table = zeros((256, 16), dtype='uint8')
     table[:] = arange(16, dtype='uint8')
     for cls in rotationClasses:
         for blocktype in cls.blocktypes:
             table[blocktype] = rotationFunc(cls)
-            
-    return table 
-    
+
+    return table
+
 class BlockRotation:
     rotateLeft = masterRotationTable(lambda cls:cls.rotateLeft);
     flipEastWest = masterRotationTable(lambda cls:cls.flipEastWest);
     flipNorthSouth = masterRotationTable(lambda cls:cls.flipNorthSouth);
-    
-       
-    
+
+
+
 def FlipNorthSouth(blocks, data):
     data[:] = BlockRotation.flipNorthSouth[blocks, data]
-    
+
 def FlipEastWest(blocks, data):
     data[:] = BlockRotation.flipEastWest[blocks, data]
 
-    
+
 def RotateLeft(blocks, data):
     data[:] = BlockRotation.rotateLeft[blocks, data]
 

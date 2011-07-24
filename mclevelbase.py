@@ -60,8 +60,8 @@ def unpack_first(func):
         return func(self, *args, **kw);
     upk_first.__doc__ = func.__doc__
     return upk_first
-   
-class PlayerNotFound(Exception): pass     
+
+class PlayerNotFound(Exception): pass
 class ChunkNotPresent(Exception): pass
 class RegionMalformed(Exception): pass
 class ChunkMalformed(ChunkNotPresent): pass

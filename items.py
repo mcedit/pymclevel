@@ -257,20 +257,20 @@ items_txt = """
 
 """
 class ItemType (object):
-    def __init__(self, id, name, imagefile = None, imagecoords = None, maxdamage = 0, damagevalue = 0, stacksize = 64):
-        self.id=id
-        self.name=name
-        self.imagefile=imagefile
-        self.imagecoords=imagecoords
-        self.maxdamage=maxdamage
+    def __init__(self, id, name, imagefile=None, imagecoords=None, maxdamage=0, damagevalue=0, stacksize=64):
+        self.id = id
+        self.name = name
+        self.imagefile = imagefile
+        self.imagecoords = imagecoords
+        self.maxdamage = maxdamage
     def __repr__(self):
         return "ItemType({0}, '{1}')".format(self.id, self.name)
     def __str__(self):
         return "ItemType {0}: {1}".format(self.id, self.name)
-    
+
 class Items (object):
     items_txt = items_txt
-    def __init__(self, filename = None):
+    def __init__(self, filename=None):
         if filename is None:
             items_txt = self.items_txt
         else:
@@ -281,9 +281,9 @@ class Items (object):
                 print "Error reading items.txt: ", e;
                 print "Using internal data."
                 items_txt = self.items_txt
-            
+
         self.itemtypes = {};
-        
+
         for line in items_txt.split("\n"):
             try:
                 line = line.strip()
@@ -293,7 +293,7 @@ class Items (object):
                 stacksize = 64
                 damagevalue = None
                 maxdamage = 0
-                
+
                 fields = line.split();
                 if len(fields) >= 4:
                     maxdamage = None;
@@ -309,25 +309,25 @@ class Items (object):
                     id = int(id);
                     name = name.replace("_", " ");
                     imagecoords = imagecoords.split(",");
-                    
+
                     self.itemtypes[(id, damagevalue)] = ItemType(id, name, imagefile, imagecoords, maxdamage, damagevalue, stacksize)
             except Exception, e:
                 print "Error reading line:", e
                 print "Line: ", line
                 print
-                
+
         self.names = dict((item.name, item.id) for item in self.itemtypes.itervalues())
-    
+
     def findItem(self, id=0, damage=None):
         item = self.itemtypes.get((id, damage))
         if item: return item
-        
+
         item = self.itemtypes.get((id, None))
         if item: return item
-        
+
         item = self.itemtypes.get((id, 0))
         if item: return item
-        
+
         raise ItemNotFound, "Item {0}:{1} not found".format(id, damage)
 
 class ItemNotFound(KeyError): pass

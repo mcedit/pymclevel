@@ -19,7 +19,7 @@ def generate_file_list(directory):
             yield os.path.join(dirpath, filename)
 
 def sha1_file(name, checksum=None):
-    CHUNKSIZE=1024
+    CHUNKSIZE = 1024
     if checksum is None:
         checksum = hashlib.sha1()
     if fnmatch.fnmatch(name, "*.dat"):
@@ -71,17 +71,17 @@ def untared_content(src):
         f.extractall(dest)
         yield dest
 
-def launch_subprocess(directory, arguments, env = {}):
+def launch_subprocess(directory, arguments, env={}):
     #my python breaks with an empty environ, i think it wants PATH
     #if sys.platform == "win32":
     newenv = {}
     newenv.update(os.environ)
     newenv.update(env);
-    
+
     proc = subprocess.Popen((["python.exe"] if sys.platform == "win32" else []) + [
             "./mce.py",
             directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=newenv)
-            
+
     return proc
 
 class RegressionError(Exception): pass
@@ -129,7 +129,7 @@ def do_test_match_output(test_data, result_check, arguments=[]):
         proc.stdin.close()
         output = proc.stdout.read()
         proc.wait()
-        
+
         if proc.returncode:
             raise RegressionError("Program execution failed!")
 
@@ -146,13 +146,13 @@ def do_test_match_output(test_data, result_check, arguments=[]):
 
 
 alpha_tests = [
-    (do_test,               'baseline', '9e7460d39c8e0456789cf89fee45276db2719aaa', []),
-    (do_test,               'degrief',  '403e6c6147cf1f8d73377b18bbf5e4973606a311', ['degrief']),
-    (do_test_match_output,  'analyze',  '89ae362dec7f6c0fd743d6ed4e3957459cb3c34d', ['analyze']),
-    (do_test,               'relight',  'e0cf60c62adfdb313f198af5314c31f89d158c12', ['relight']),
-    (do_test,               'replace',  'd73767293e903b6d1c49c1838eb1849b69d83ad8', ['replace', 'Water (active)', 'with', 'Lava (active)']),
-    (do_test,               'fill',     'f4f57c3d902b6894031d416cb9279232e7e24bd7', ['fill', 'Water (active)']),
-    (do_test,               'heightmap',     '9e7460d39c8e0456789cf89fee45276db2719aaa', ['heightmap', 'regression_test/mars.png']),
+    (do_test, 'baseline', '9e7460d39c8e0456789cf89fee45276db2719aaa', []),
+    (do_test, 'degrief', '403e6c6147cf1f8d73377b18bbf5e4973606a311', ['degrief']),
+    (do_test_match_output, 'analyze', '89ae362dec7f6c0fd743d6ed4e3957459cb3c34d', ['analyze']),
+    (do_test, 'relight', 'e0cf60c62adfdb313f198af5314c31f89d158c12', ['relight']),
+    (do_test, 'replace', 'd73767293e903b6d1c49c1838eb1849b69d83ad8', ['replace', 'Water (active)', 'with', 'Lava (active)']),
+    (do_test, 'fill', 'f4f57c3d902b6894031d416cb9279232e7e24bd7', ['fill', 'Water (active)']),
+    (do_test, 'heightmap', '9e7460d39c8e0456789cf89fee45276db2719aaa', ['heightmap', 'regression_test/mars.png']),
 ]
 
 import optparse
@@ -172,26 +172,26 @@ def main(argv):
         test_data = os.path.join(directory, "alpha")
         passes = []
         fails = []
-        
+
         for func, name, sha, args in alpha_tests:
-            print "Starting regression {0} ({1})".format( name, args )
-            
+            print "Starting regression {0} ({1})".format(name, args)
+
             if any(fnmatch.fnmatch(name, x) for x in do_these_regressions):
                 if options.profile:
-                    print >>sys.stderr, "Starting to profile to %s.profile" % name
+                    print >> sys.stderr, "Starting to profile to %s.profile" % name
                     os.environ['MCE_PROFILE'] = '%s.profile' % name
                 try:
                     func(test_data, sha, args)
                 except RegressionError, e:
-                    fails.append( "Regression {0} failed: {1}".format(name, e) )
+                    fails.append("Regression {0} failed: {1}".format(name, e))
                     print fails[-1]
                 else:
-                    passes.append( "Regression {0!r} complete.".format(name) )
+                    passes.append("Regression {0!r} complete.".format(name))
                     print passes[-1]
-        
+
         print "{0} tests passed.".format(len(passes))
         for line in fails: print line;
-        
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
