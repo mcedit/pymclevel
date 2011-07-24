@@ -468,6 +468,8 @@ def extractSchematicFrom(sourceLevel, box):
 
     return tempSchematic
 
+MCLevel.extractSchematic = extractSchematicFrom
+
 import tempfile
 def extractZipSchematicFrom(sourceLevel, box, zipfilename):
     #converts classic blocks to alpha
@@ -513,6 +515,8 @@ def extractZipSchematicFrom(sourceLevel, box, zipfilename):
 
     import shutil
     shutil.rmtree(filename)
+
+MCLevel.extractZipSchematic = extractZipSchematicFrom
 
 from zipfile import ZipFile, ZIP_STORED
 def zipdir(basedir, archivename):
