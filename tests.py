@@ -3,9 +3,10 @@ Created on Jul 23, 2011
 
 @author: Rio
 '''
-from mclevel import fromFile, loadWorldNumber, BoundingBox
-from infiniteworld import MCInfdevOldLevel
-from schematic import MCSchematic
+#from mclevel import fromFile, loadWorldNumber, BoundingBox
+#from infiniteworld import MCInfdevOldLevel
+#from schematic import MCSchematic
+from pymclevel import *
 
 import itertools
 import traceback
@@ -54,6 +55,16 @@ class TestIndevLevel(unittest.TestCase):
         self.srclevel = TempLevel("hell.mclevel")
         self.indevlevel = TempLevel("hueg.mclevel")
 
+    def testEntities(self):
+        level = self.indevlevel.level
+        entityTag = Entity.Create("Zombie")
+        tileEntityTag = TileEntity.Create("Painting")
+        level.addEntity(entityTag)
+        level.addTileEntity(tileEntityTag)
+        schem = level.extractSchematic(level.bounds)
+        level.copyBlocksFrom(schem, schem.bounds, (0, 0, 0))
+
+        #raise Failure 
 
     def testCopy(self):
         info("Indev level")
@@ -96,18 +107,24 @@ class TestAlphaLevel(unittest.TestCase):
         self.alphalevel = TempLevel("PyTestWorld")
 
 
-    def testAlphaLevels(self):
-        info("Alpha level")
-
+    def testCreateChunks(self):
         indevlevel = self.indevlevel.level
-
         level = self.alphalevel.level
+
         for ch in list(level.allChunks): level.deleteChunk(*ch)
         level.createChunksInBox(BoundingBox((0, 0, 0), (32, 0, 32)))
+
+    def testCopyConvertBlocks(self):
+        indevlevel = self.indevlevel.level
+        level = self.alphalevel.level
         level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (256, 128, 256)), (-0, 0, 0))
 
         convertedSourceBlocks, convertedSourceData = indevlevel.convertBlocksFromLevel(level, indevlevel.Blocks[0:16, 0:16, 0:indevlevel.Height], indevlevel.Data[0:16, 0:16, 0:indevlevel.Height])
         assert (level.getChunk(0, 0).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
+
+    def testImportSchematic(self):
+        indevlevel = self.indevlevel.level
+        level = self.alphalevel.level
 
         schem = fromFile("schematics\\CreativeInABox.schematic");
         level.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 64, 0));
@@ -116,32 +133,37 @@ class TestAlphaLevel(unittest.TestCase):
         convertedSourceBlocks, convertedSourceData = schem.convertBlocksFromLevel(level, schem.Blocks, schem.Data)
         assert (level.getChunk(0, 0).Blocks[0:1, 0:3, 64:65] == convertedSourceBlocks).all()
 
-        try:
-            for x, z in itertools.product(xrange(-1, 3), xrange(-1, 2)):
-                level.deleteChunk(x, z);
-                level.createChunk(x, z)
-        except Exception, e:
-            traceback.print_exc();
-            print e;
-        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , indevlevel.materials.WoodPlanks);
+    def testRecreateChunks(self):
+        level = self.alphalevel.level
+
+        for x, z in itertools.product(xrange(-1, 3), xrange(-1, 2)):
+            level.deleteChunk(x, z);
+            level.createChunk(x, z)
+
+    def testFill(self):
+        level = self.alphalevel.level
+
+        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks);
         c = level.getChunk(0, 0)
         assert (c.Blocks == 5).all()
-        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , indevlevel.materials.WoodPlanks, [indevlevel.materials.Dirt, indevlevel.materials.Grass]);
-        #print b.shape
-        #raise SystemExit
+
+    def testReplace(self):
+        level = self.alphalevel.level
+
+        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks, [level.materials.Dirt, level.materials.Grass]);
+
+    def testSaveRelight(self):
+        indevlevel = self.indevlevel.level
+        level = self.alphalevel.level
+
         cx, cz = -3, -1;
 
-        try:
-            level.deleteChunk(cx, cz);
-        except KeyError:pass
+        level.deleteChunk(cx, cz);
+
         level.createChunk(cx, cz);
         level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (64, 64, 64,)), (-96, 32, 0))
-        #blocks = zeros((16,16,128), 'uint8');
-        #blocks[:,:,:] = level.getChunk(cx, cz).Blocks[:,:,:]
-        #level.getChunk(cx, cz).Blocks[:,:,:] = blocks[:,:,:]
-        level.generateLights();
-        level.saveInPlace();
 
+        level.generateLights();
         level.saveInPlace();
 
 
@@ -157,11 +179,10 @@ class TestSchematics(unittest.TestCase):
         schematic = MCSchematic(shape=size, filename="hell.schematic", mats='Classic');
         level = self.indevlevel.level
         schematic.rotateLeft();
-        try:
-            schematic.copyBlocksFrom(level, BoundingBox((-32, -32, -32), (64, 64, 64,)), (0, 0, 0))
-        except ValueError:
-            pass;
 
+        self.failUnlessRaises(ValueError, lambda:(
+            schematic.copyBlocksFrom(level, BoundingBox((-32, -32, -32), (64, 64, 64,)), (0, 0, 0))
+        ))
 
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         assert((schematic.Blocks[0:64, 0:64, 0:64] == level.Blocks[0:64, 0:64, 0:64]).all())

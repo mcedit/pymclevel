@@ -1896,22 +1896,21 @@ class MCInfdevOldLevel(MCLevel):
         entities = [];
         if chunk.Entities is None: return entities;
         for entity in chunk.Entities:
-            if map(lambda x:int(x.value), entity[Pos]) == [x, y, z]:
+            if map(lambda x:int(floor(x)), Entity.pos(entity)) == [x, y, z]:
                 entities.append(entity);
 
         return entities;
 
-    def addEntity(self, entity):
-        assert isinstance(entity, TAG_Compound)
-        x = int(entity[Pos][0].value)
-        z = int(entity[Pos][2].value)
+    def addEntity(self, entityTag):
+        assert isinstance(entityTag, TAG_Compound)
+        x, y, z = map(lambda x:int(floor(x)), Entity.pos(entityTag))
 
         try:
             chunk = self.getChunk(x >> 4, z >> 4)
         except (ChunkNotPresent, ChunkMalformed), e:
             return None
             # raise Error, can't find a chunk?
-        chunk.Entities.append(entity);
+        chunk.Entities.append(entityTag);
         chunk.dirty = True
 
     def tileEntityAt(self, x, y, z):
@@ -1931,13 +1930,10 @@ class MCInfdevOldLevel(MCLevel):
         return entities[0];
 
 
-    def addTileEntity(self, entity):
-        assert isinstance(entity, TAG_Compound)
-        if not 'x' in entity: return
-
-        x = int(entity['x'].value)
-        y = int(entity['y'].value)
-        z = int(entity['z'].value)
+    def addTileEntity(self, tileEntityTag):
+        assert isinstance(tileEntityTag, TAG_Compound)
+        if not 'x' in tileEntityTag: return
+        x, y, z = TileEntity.pos(tileEntityTag)
 
         try:
             chunk = self.getChunk(x >> 4, z >> 4)
@@ -1945,11 +1941,11 @@ class MCInfdevOldLevel(MCLevel):
             return
             # raise Error, can't find a chunk?
         def differentPosition(a):
-            return not ((entity is a) or ('x' in a and (a['x'].value == x and a['y'].value == y and a['z'].value == z)))
+            return not ((tileEntityTag is a) or ('x' in a and (a['x'].value == x and a['y'].value == y and a['z'].value == z)))
 
         chunk.TileEntities.value[:] = filter(differentPosition, chunk.TileEntities);
 
-        chunk.TileEntities.append(entity);
+        chunk.TileEntities.append(tileEntityTag);
         chunk.dirty = True
 
     def removeEntitiesInBox(self, box):

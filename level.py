@@ -569,16 +569,6 @@ class MCLevel(object):
     def playerOrientation(self, player="Player"):
         return (-45., 0.)
 
-    def copyEntityWithOffset(self, entity, copyOffset):
-        return Entity.copyWithOffset(entity, copyOffset)
-
-
-    def copyTileEntityWithOffset(self, tileEntity, copyOffset):
-        eTag = deepcopy(tileEntity)
-        eTag['x'] = TAG_Int(tileEntity['x'].value + copyOffset[0])
-        eTag['y'] = TAG_Int(tileEntity['y'].value + copyOffset[1])
-        eTag['z'] = TAG_Int(tileEntity['z'].value + copyOffset[2])
-        return eTag
 
     def copyEntitiesFromInfinite(self, sourceLevel, sourceBox, destinationPoint):
         chunkIterator = sourceLevel.getChunkSlices(sourceBox);
@@ -586,29 +576,24 @@ class MCLevel(object):
         for (chunk, slices, point) in chunkIterator:
             #remember, slices are ordered x,z,y so you can subscript them like so:  chunk.Blocks[slices]
             cx, cz = chunk.chunkPosition
-            wx, wz = cx << 4, cz << 4
+            #wx, wz = cx << 4, cz << 4
 
             copyOffset = map(lambda x, y:x - y, destinationPoint, sourceBox.origin)
-            for entity in chunk.Entities:
-                x, y, z = map(lambda x:x.value, entity[Pos])
+            for entityTag in chunk.Entities:
+                x, y, z = Entity.pos(entityTag)
+                if (x, y, z) not in sourceBox: continue
 
-                if x - wx < slices[0].start or x - wx >= slices[0].stop: continue
-                if y < slices[2].start or y >= slices[2].stop: continue
-                if z - wz < slices[1].start or z - wz >= slices[1].stop: continue
-
-                eTag = self.copyEntityWithOffset(entity, copyOffset)
+                eTag = Entity.copyWithOffset(entityTag, copyOffset)
 
                 self.addEntity(eTag);
 
-            for tileEntity in chunk.TileEntities:
-                if not 'x' in tileEntity: continue
+            for tileEntityTag in chunk.TileEntities:
+                if not 'x' in tileEntityTag: continue
 
-                x, y, z = tileEntity['x'].value, tileEntity['y'].value, tileEntity['z'].value
-                if x - wx < slices[0].start or x - wx >= slices[0].stop: continue
-                if y < slices[2].start or y >= slices[2].stop: continue
-                if z - wz < slices[1].start or z - wz >= slices[1].stop: continue
+                x, y, z = TileEntity.pos(tileEntityTag)
+                if (x, y, z) not in sourceBox: continue
 
-                eTag = self.copyTileEntityWithOffset(tileEntity, copyOffset)
+                eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
 
                 self.addTileEntity(eTag)
 
@@ -628,7 +613,7 @@ class MCLevel(object):
             tileEntsCopied = 0;
             copyOffset = map(lambda x, y:x - y, destinationPoint, sourcePoint0)
             for entity in getEntitiesInRange(sourceBox, sourceLevel.Entities):
-                eTag = self.copyEntityWithOffset(entity, copyOffset)
+                eTag = Entity.copyWithOffset(entity, copyOffset)
 
                 self.addEntity(eTag)
                 entsCopied += 1;
@@ -636,13 +621,8 @@ class MCLevel(object):
 
             for entity in getTileEntitiesInRange(sourceBox, sourceLevel.TileEntities):
                 if not 'x' in entity: continue
+                eTag = TileEntity.copyWithOffset(entity, copyOffset)
 
-                x, y, z = entity['x'].value, entity['y'].value, entity['z'].value
-
-                eTag = deepcopy(entity)
-                eTag['x'] = TAG_Int(x + copyOffset[0])
-                eTag['y'] = TAG_Int(y + copyOffset[1])
-                eTag['z'] = TAG_Int(z + copyOffset[2])
                 try:
                     self.addTileEntity(eTag)
                     tileEntsCopied += 1;

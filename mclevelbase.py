@@ -41,12 +41,9 @@ Height = "Height"
 Length = "Length"
 Blocks = "Blocks"
 Data = "Data"
+Inventory = 'Inventory'
 
 #entities
-Inventory = 'Inventory'
-Motion = "Motion"
-Pos = "Pos"
-Rotation = "Rotation"
 
 def decompress_first(func):
     def dec_first(self, *args, **kw):
