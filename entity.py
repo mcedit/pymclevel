@@ -46,7 +46,7 @@ class Entity(object):
     def Create(cls, entityID, **kw):
         entityTag = TAG_Compound()
         entityTag[EntityId] = TAG_String(entityID)
-        entityTag[Pos] = [TAG_Int(0) for i in range(3)]
+        Entity.setpos(entityTag, (0, 0, 0))
         return entityTag
 
     @classmethod
@@ -57,7 +57,7 @@ class Entity(object):
 
     @classmethod
     def setpos(cls, tag, pos):
-        tag["Pos"] = TAG_List([TAG_Int(p) for p in pos])
+        tag["Pos"] = TAG_List([TAG_Double(p) for p in pos])
 
     @classmethod
     def copyWithOffset(cls, entity, copyOffset):
