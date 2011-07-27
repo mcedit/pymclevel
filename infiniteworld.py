@@ -457,7 +457,7 @@ class InfdevChunk(MCLevel):
         self.root_tag[Level]["TerrainPopulated"].value = val;
 
 def generateHeightMap(self):
-    if None is self.root_tag: self.load();
+    self.load();
 
     blocks = self.Blocks
     heightMap = self.HeightMap
