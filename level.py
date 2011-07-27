@@ -204,6 +204,11 @@ class MCLevel(object):
         minxoff, minzoff = box.minx - (box.mincx << 4), box.minz - (box.mincz << 4);
         maxxoff, maxzoff = box.maxx - (box.maxcx << 4) + 16, box.maxz - (box.maxcz << 4) + 16;
 
+        newMinY = 0
+        if box.miny < 0:
+            newMinY = -box.miny
+        miny = max(0, box.miny)
+        maxy = min(self.Height, box.maxy)
 
         for cx in range(box.mincx, box.maxcx):
             localMinX = 0
@@ -232,8 +237,8 @@ class MCLevel(object):
                     continue;
 
                 yield           (ch,
-                                (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(box.miny, box.maxy)),
-                                (newMinX, 0, newMinZ))
+                                (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(miny, maxy)),
+                                (newMinX, newMinY, newMinZ))
 
                 ch.compress()
 
