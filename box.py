@@ -139,6 +139,21 @@ class BoundingBox (object):
         newbox.maxz = max(self.maxz, box.maxz)
         return newbox
 
+    def expand(self, dx, dy=None, dz=None):
+        if dz is None: dz = dx
+        if dy is None: dy = dx
+
+        box = BoundingBox(self)
+        box.minx -= dx
+        box.miny -= dy
+        box.minz -= dz
+
+        box.maxx += dx
+        box.maxy += dy
+        box.maxz += dz
+        return box
+
+
     def __contains__(self, pos):
         x, y, z = pos;
         if x < self.minx or x >= self.maxx: return False
