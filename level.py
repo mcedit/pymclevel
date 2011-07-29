@@ -526,7 +526,7 @@ class MCLevel(object):
 
         return sourceBox, destinationPoint
 
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None):
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
         if (not sourceLevel.isInfinite) and not(
                sourceLevel.containsPoint(*sourceBox.origin) and
                sourceLevel.containsPoint(*map(lambda x:x - 1, sourceBox.maximum))):
@@ -546,8 +546,7 @@ class MCLevel(object):
         else:
             self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
 
-
-        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
+        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint, entities)
 
     def saveInPlace(self):
         self.saveToFile(self.filename);
@@ -605,7 +604,7 @@ class MCLevel(object):
             chunk.compress();
 
 
-    def copyEntitiesFrom(self, sourceLevel, sourceBox, destinationPoint):
+    def copyEntitiesFrom(self, sourceLevel, sourceBox, destinationPoint, entities=True):
         #assume coords have already been adjusted by copyBlocks
         if not self.hasEntities or not sourceLevel.hasEntities: return;
         sourcePoint0 = sourceBox.origin;
@@ -617,11 +616,12 @@ class MCLevel(object):
             entsCopied = 0;
             tileEntsCopied = 0;
             copyOffset = map(lambda x, y:x - y, destinationPoint, sourcePoint0)
-            for entity in getEntitiesInRange(sourceBox, sourceLevel.Entities):
-                eTag = Entity.copyWithOffset(entity, copyOffset)
+            if entities:
+                for entity in getEntitiesInRange(sourceBox, sourceLevel.Entities):
+                    eTag = Entity.copyWithOffset(entity, copyOffset)
 
-                self.addEntity(eTag)
-                entsCopied += 1;
+                    self.addEntity(eTag)
+                    entsCopied += 1;
 
 
             for entity in getTileEntitiesInRange(sourceBox, sourceLevel.TileEntities):

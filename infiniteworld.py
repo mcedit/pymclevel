@@ -2212,7 +2212,7 @@ class MCInfdevOldLevel(MCLevel):
                 i += 1;
 
 
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None):
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
         (x, y, z) = destinationPoint;
         (lx, ly, lz) = sourceBox.size
         #sourcePoint, sourcePoint1 = sourceBox
@@ -2229,7 +2229,7 @@ class MCInfdevOldLevel(MCLevel):
         else:
             self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
 
-        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint)
+        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint, entities=True)
         info("Duration: {0}".format(datetime.now() - startTime))
         #self.saveInPlace()
 

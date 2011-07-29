@@ -457,21 +457,21 @@ class INVEditChest(MCSchematic):
         return TAG_List([chestTag], name="TileEntities")
 
 
-def extractSchematicFrom(sourceLevel, box):
+def extractSchematicFrom(sourceLevel, box, entities=True):
     p = sourceLevel.adjustExtractionParameters(box);
     if p is None: return
     newbox, destPoint = p
 
     tempSchematic = MCSchematic(shape=box.size)
     tempSchematic.materials = sourceLevel.materials
-    tempSchematic.copyBlocksFrom(sourceLevel, newbox, destPoint)
+    tempSchematic.copyBlocksFrom(sourceLevel, newbox, destPoint, entities=entities)
 
     return tempSchematic
 
 MCLevel.extractSchematic = extractSchematicFrom
 
 import tempfile
-def extractZipSchematicFrom(sourceLevel, box, zipfilename):
+def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
     #converts classic blocks to alpha
     #probably should only apply to alpha levels
 
@@ -500,7 +500,7 @@ def extractZipSchematicFrom(sourceLevel, box, zipfilename):
     else:
         tempSchematic.createChunksInBox(destBox)
 
-    tempSchematic.copyBlocksFrom(sourceLevel, sourceBox, destPoint)
+    tempSchematic.copyBlocksFrom(sourceLevel, sourceBox, destPoint, entities=entities)
     tempSchematic.saveInPlace(); #lights not needed for this format - crashes minecraft though
 
     schematicDat = TAG_Compound()
