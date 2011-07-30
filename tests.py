@@ -166,6 +166,12 @@ class TestAlphaLevel(unittest.TestCase):
         level.generateLights();
         level.saveInPlace();
 
+    def testPlayerSpawn(self):
+        level = self.alphalevel.level
+
+        level.setPlayerSpawnPosition((0, 64, 0), "Player")
+        level.getPlayerPosition()
+        level.players
 
 class TestSchematics(unittest.TestCase):
     def setUp(self):
