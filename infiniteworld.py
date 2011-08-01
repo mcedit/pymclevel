@@ -145,6 +145,7 @@ class InfdevChunk(MCLevel):
     def sanitizeBlocks(self):
         #change grass to dirt where needed so Minecraft doesn't flip out and die
         grass = self.Blocks == self.materials.Grass.ID
+        grass |= self.Blocks == self.materials.Dirt.ID
         badgrass = grass[:, :, 1:] & grass[:, :, :-1]
 
         self.Blocks[:, :, :-1][badgrass] = self.materials.Dirt.ID
