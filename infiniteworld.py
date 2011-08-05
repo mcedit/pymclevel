@@ -2513,7 +2513,7 @@ class ZipSchematic (MCInfdevOldLevel):
             raise NotImplementedError, "Cannot save zipfiles yet!"
 
         with closing(self.zipfile.open("level.dat")) as f:
-            with closing(gzip.GzipFile(fileobj=StringIO.StringIO(f.read()))) as g:
+            with closing(gzip.GzipFile(fileobj=StringIO(f.read()))) as g:
                 self.root_tag = nbt.load(buf=g.read())
 
     def chunkFilename(self, x, z):
