@@ -177,6 +177,7 @@ class TestSchematics(unittest.TestCase):
     def setUp(self):
         #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
         self.indevlevel = TempLevel("hell.mclevel")
+        self.alphalevel = TempLevel("PyTestWorld")
 
     def testCreate(self):
         #info("Schematic from indev")
@@ -184,7 +185,6 @@ class TestSchematics(unittest.TestCase):
         size = (64, 64, 64)
         schematic = MCSchematic(shape=size, filename="hell.schematic", mats='Classic');
         level = self.indevlevel.level
-        schematic.rotateLeft();
 
         self.failUnlessRaises(ValueError, lambda:(
             schematic.copyBlocksFrom(level, BoundingBox((-32, -32, -32), (64, 64, 64,)), (0, 0, 0))
@@ -213,6 +213,17 @@ class TestSchematics(unittest.TestCase):
             except ValueError:
                 pass
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
+    def testRotate(self):
+        level = self.indevlevel.level
+        schematic = level.extractSchematic(level.bounds)
+        schematic.rotateLeft()
+        schematic.flipNorthSouth()
+        schematic.flipVertical()
+
+    def testZipSchematic(self):
+        level = self.alphalevel.level
+        zs = level.extractZipSchematic(level.bounds)
+        assert(level.chunkCount == zs.chunkCount)
 
     def testINVEditChests(self):
         info("INVEdit chest")

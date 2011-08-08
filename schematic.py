@@ -268,6 +268,7 @@ class MCSchematic (MCLevel):
 
     def flipVertical(self):
         " xxx delete stuff "
+        blockrotation.FlipVertical(self.Blocks, self.Data);
         self.Blocks = self.Blocks[:, :, ::-1]; #y=-y
         self.Data = self.Data[:, :, ::-1];
 
@@ -475,6 +476,9 @@ def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
     #converts classic blocks to alpha
     #probably should only apply to alpha levels
 
+    if zipfilename is None:
+        zipfilename = tempfile.mktemp("zipschematic")
+
     p = sourceLevel.adjustExtractionParameters(box);
     if p is None: return
     sourceBox, destPoint = p
@@ -515,6 +519,8 @@ def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
 
     import shutil
     shutil.rmtree(filename)
+    import mclevel
+    return mclevel.fromFile(zipfilename)
 
 MCLevel.extractZipSchematic = extractZipSchematicFrom
 

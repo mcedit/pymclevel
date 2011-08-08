@@ -1,6 +1,14 @@
 from materials import alphaMaterials
 from numpy import array, arange, zeros
 
+def genericVerticalFlip(cls):
+    rotation = arange(16, dtype='uint8')
+    if hasattr(cls, "Up") and hasattr(cls, "Down"):
+        rotation[cls.Up] = cls.Down
+        rotation[cls.Down] = cls.Up
+
+    return rotation
+
 def genericRotation(cls):
     rotation = arange(16, dtype='uint8')
     rotation[cls.North] = cls.West
@@ -25,6 +33,8 @@ rotationClasses = [];
 
 def genericFlipRotation(cls):
     cls.rotateLeft = genericRotation(cls)
+
+    cls.flipVertical = genericVerticalFlip(cls)
     cls.flipEastWest = genericEastWestFlip(cls)
     cls.flipNorthSouth = genericNorthSouthFlip(cls)
     rotationClasses.append(cls)
@@ -300,10 +310,13 @@ applyPistonBit = applyBit8
 class PistonBody:
     blocktypes = [alphaMaterials.StickyPiston.ID, alphaMaterials.Piston.ID]
 
+    Down = 0
+    Up = 1
     East = 2
     West = 3
     North = 4
     South = 5
+
 genericFlipRotation(PistonBody)
 applyPistonBit(PistonBody.rotateLeft)
 applyPistonBit(PistonBody.flipEastWest)
@@ -313,23 +326,28 @@ class PistonHead(PistonBody):
     blocktypes = [alphaMaterials.PistonHead.ID]
 rotationClasses.append(PistonHead)
 
-def masterRotationTable(rotationFunc):
+def masterRotationTable(attrname):
     # compute a 256x16 table mapping each possible blocktype/data combination to 
     # the resulting data when the block is rotated
     table = zeros((256, 16), dtype='uint8')
     table[:] = arange(16, dtype='uint8')
     for cls in rotationClasses:
-        for blocktype in cls.blocktypes:
-            table[blocktype] = rotationFunc(cls)
+        if hasattr(cls, attrname):
+            blocktable = getattr(cls, attrname)
+            for blocktype in cls.blocktypes:
+                table[blocktype] = blocktable
 
     return table
 
 class BlockRotation:
-    rotateLeft = masterRotationTable(lambda cls:cls.rotateLeft);
-    flipEastWest = masterRotationTable(lambda cls:cls.flipEastWest);
-    flipNorthSouth = masterRotationTable(lambda cls:cls.flipNorthSouth);
+    rotateLeft = masterRotationTable("rotateLeft");
+    flipEastWest = masterRotationTable("flipEastWest");
+    flipNorthSouth = masterRotationTable("flipNorthSouth");
+    flipVertical = masterRotationTable("flipVertical");
 
 
+def FlipVertical(blocks, data):
+    data[:] = BlockRotation.flipVertical[blocks, data]
 
 def FlipNorthSouth(blocks, data):
     data[:] = BlockRotation.flipNorthSouth[blocks, data]
