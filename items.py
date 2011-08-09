@@ -219,9 +219,9 @@ items_txt = """
  342  Minecart_with_Chest    items.png  7,9    x1
  343  Minecart_with_Furnace  items.png  7,10   x1
  344  Egg                    items.png  12,0
- 345  Compass                items.png  6,3    (x1)
+ 345  Compass                items.png  6,3    x1
  346  Fishing_Rod            items.png  5,4    +64
- 347  Clock                  items.png  6,4    (x1)
+ 347  Clock                  items.png  6,4    x1
  348  Glowstone_Dust         items.png  9,4
  349  Raw_Fish               items.png  9,5    x1
  350  Cooked_Fish            items.png  10,5   x1
