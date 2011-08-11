@@ -106,6 +106,13 @@ class TestAlphaLevel(unittest.TestCase):
         self.indevlevel = TempLevel("hell.mclevel")
         self.alphalevel = TempLevel("PyTestWorld")
 
+    def testUnsetProperties(self):
+        level = self.alphalevel.level
+        del level.root_tag['Data']['LastPlayed']
+        import time
+        level.LastPlayed
+        level.LastPlayed = time.time() * 1000 - 1000000
+
 
     def testCreateChunks(self):
         indevlevel = self.indevlevel.level

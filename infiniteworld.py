@@ -6,6 +6,7 @@ Created on Jul 22, 2011
 from mclevelbase import *
 from collections import deque;
 import time
+import zlib
 import struct
 
 #infinite
@@ -835,7 +836,7 @@ def base36(n):
 
     return neg + ''.join(reversed(work))
 
-import zlib
+
 def deflate(data):
     #zobj = zlib.compressobj(6,zlib.DEFLATED,-zlib.MAX_WBITS,zlib.DEF_MEM_LEVEL,0)
     #zdata = zobj.compress(data)
@@ -892,52 +893,23 @@ class MCInfdevOldLevel(MCLevel):
     def __str__(self):
         return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
 
-    @property
-    def SizeOnDisk(self):
-        return self.root_tag[Data]['SizeOnDisk'].value
+    def TagProperty(tagName, tagType, defaultValueFunc=lambda self:None):
+        def getter(self):
+            if tagName not in self.root_tag[Data]:
+                self.root_tag[Data][tagName] = tagType(defaultValueFunc(self))
+            return self.root_tag[Data][tagName].value
 
-    @SizeOnDisk.setter
-    def SizeOnDisk(self, val):
-        if 'SizeOnDisk' not in self.root_tag[Data]:
-            self.root_tag[Data]['SizeOnDisk'] = TAG_Long(value=val)
-        else:
-            self.root_tag[Data]['SizeOnDisk'].value = val
+        def setter(self, val):
+            self.root_tag[Data][tagName] = tagType(value=val)
 
-    @property
-    def RandomSeed(self):
-        return self.root_tag[Data]['RandomSeed'].value
+        return property(getter, setter)
 
-    @RandomSeed.setter
-    def RandomSeed(self, val):
-        self.root_tag[Data]['RandomSeed'].value = val
+    SizeOnDisk = TagProperty('SizeOnDisk', TAG_Long)
+    RandomSeed = TagProperty('RandomSeed', TAG_Long)
+    Time = TagProperty('Time', TAG_Long); """ Age of the world in ticks. 20 ticks per second; 24000 ticks per day."""
+    LastPlayed = TagProperty('LastPlayed', TAG_Long, lambda self:long(time.time()*1000))
 
-    @property
-    def Time(self):
-        """ Age of the world in ticks. 20 ticks per second; 24000 ticks per day."""
-        return self.root_tag[Data]['Time'].value
-
-    @Time.setter
-    def Time(self, val):
-        self.root_tag[Data]['Time'].value = val
-
-    @property
-    def LastPlayed(self):
-        return self.root_tag[Data]['LastPlayed'].value
-
-    @LastPlayed.setter
-    def LastPlayed(self, val):
-        self.root_tag[Data]['LastPlayed'].value = val
-
-    @property
-    def LevelName(self):
-        if 'LevelName' not in self.root_tag[Data]:
-            return self.displayName
-
-        return self.root_tag[Data]['LevelName'].value
-
-    @LevelName.setter
-    def LevelName(self, val):
-        self.root_tag[Data]['LevelName'] = TAG_String(val)
+    LevelName = TagProperty('LevelName', TAG_String, lambda self:self.displayName)
 
     _bounds = None
     @property
@@ -971,39 +943,48 @@ class MCInfdevOldLevel(MCLevel):
         if random_seed is None:
             random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
-        root_tag[Data]['LastPlayed'] = TAG_Long(long(last_played))
-        root_tag[Data]['RandomSeed'] = TAG_Long(long(random_seed))
-        root_tag[Data]['SizeOnDisk'] = TAG_Long(long(0))
-        root_tag[Data]['Time'] = TAG_Long(1)
-
+        self.root_tag = root_tag;
         root_tag[Data]['version'] = TAG_Int(19132)
-        root_tag[Data]['LevelName'] = TAG_String(os.path.basename(self.worldDir))
+
+        self.LastPlayed = long(last_played)
+        self.RandomSeed = long(random_seed)
+        self.SizeOnDisk = 0
+        self.Time = 1
+        self.LevelName = os.path.basename(self.worldDir)
+
         ### if singleplayer:
-        root_tag[Data][Player] = TAG_Compound()
 
-
-        root_tag[Data][Player]['Air'] = TAG_Short(300);
-        root_tag[Data][Player]['AttackTime'] = TAG_Short(0)
-        root_tag[Data][Player]['DeathTime'] = TAG_Short(0);
-        root_tag[Data][Player]['Fire'] = TAG_Short(-20);
-        root_tag[Data][Player]['Health'] = TAG_Short(20);
-        root_tag[Data][Player]['HurtTime'] = TAG_Short(0);
-        root_tag[Data][Player]['Score'] = TAG_Int(0);
-        root_tag[Data][Player]['FallDistance'] = TAG_Float(0)
-        root_tag[Data][Player]['OnGround'] = TAG_Byte(0)
-
-        root_tag[Data][Player]['Inventory'] = TAG_List()
-
-        root_tag[Data][Player]['Motion'] = TAG_List([TAG_Double(0) for i in range(3)])
-        root_tag[Data][Player]['Pos'] = TAG_List([TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
-        root_tag[Data][Player]['Rotation'] = TAG_List([TAG_Float(0), TAG_Float(0)])
-
-        #root_tag["Creator"] = TAG_String("MCEdit-"+release.release);
+        self.createPlayer("Player")
 
         if not os.path.exists(self.worldDir):
             os.mkdir(self.worldDir)
 
-        self.root_tag = root_tag;
+
+
+    def createPlayer(self, playerName):
+        if playerName == "Player":
+            playerTag = self.root_tag[Data].setdefault(playerName, TAG_Compound())
+        else:
+            playerTag = TAG_Compound()
+
+        playerTag['Air'] = TAG_Short(300);
+        playerTag['AttackTime'] = TAG_Short(0)
+        playerTag['DeathTime'] = TAG_Short(0);
+        playerTag['Fire'] = TAG_Short(-20);
+        playerTag['Health'] = TAG_Short(20);
+        playerTag['HurtTime'] = TAG_Short(0);
+        playerTag['Score'] = TAG_Int(0);
+        playerTag['FallDistance'] = TAG_Float(0)
+        playerTag['OnGround'] = TAG_Byte(0)
+
+        playerTag['Inventory'] = TAG_List()
+
+        playerTag['Motion'] = TAG_List([TAG_Double(0) for i in range(3)])
+        playerTag['Pos'] = TAG_List([TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
+        playerTag['Rotation'] = TAG_List([TAG_Float(0), TAG_Float(0)])
+
+        if playerName != "Player":
+            self.playerTagCache.save(self.getPlayerPath(playerName))
 
     def __init__(self, filename=None, create=False, random_seed=None, last_played=None):
         """
@@ -2346,6 +2327,9 @@ class MCInfdevOldLevel(MCLevel):
         for name, val in zip(self.spawnxyz, pos):
             playerSpawnTag[name] = nbt.TAG_Int(val);
 
+    def getPlayerPath(self, player):
+        assert player != "Player"
+        return os.path.join(self.worldDir, "players", player + ".dat")
 
     def getPlayerTag(self, player="Player"):
         if player == "Player" and player in self.root_tag["Data"]:
@@ -2353,7 +2337,7 @@ class MCInfdevOldLevel(MCLevel):
             return self.root_tag["Data"]["Player"];
 
         else:
-            playerFilePath = os.path.join(self.worldDir, "players", player + ".dat")
+            playerFilePath = self.getPlayerPath(player)
             if os.path.exists(playerFilePath):
                 #multiplayer world, found this player
                 playerTag = self.playerTagCache.get(playerFilePath)
