@@ -2211,7 +2211,7 @@ class MCInfdevOldLevel(MCLevel):
         else:
             self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
 
-        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint, entities=True)
+        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint, entities)
         info("Duration: {0}".format(datetime.now() - startTime))
         #self.saveInPlace()
 
