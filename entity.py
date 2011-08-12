@@ -16,10 +16,46 @@ Rotation = "Rotation"
 
 class TileEntity(object):
     knownIDs = "Furnace, Sign, MonsterSpawner, Chest, Music, Trap, RecordPlayer".split(", ")
+    baseStructures = {
+        "Furnace": (
+            ("BurnTime", TAG_Short),
+            ("CookTime", TAG_Short),
+            ("Items", TAG_List),
+        ),
+        "Sign": (
+            ("Items", TAG_List),
+        ),
+        "MobSpawner": (
+            ("Items", TAG_List),
+        ),
+        "Chest": (
+            ("Items", TAG_List),
+        ),
+        "Music": (
+            ("note", TAG_Byte),
+        ),
+        "Trap": (
+            ("Items", TAG_List),
+        ),
+        "RecordPlayer": (
+            ("Record", TAG_Int),
+        ),
+
+    }
+    maxItems = {
+        "Furnace" : 3,
+        "Chest" : 27,
+        "Trap" : 9,
+    }
     @classmethod
     def Create(cls, tileEntityID, **kw):
         tileEntityTag = TAG_Compound()
         tileEntityTag[id] = TAG_String(tileEntityID)
+        base = cls.baseStructures.get(tileEntityID, None)
+        if base:
+            for (name, tag) in base:
+                tileEntityTag[name] = tag()
+
         cls.setpos(tileEntityTag, (0, 0, 0))
         return tileEntityTag
 
