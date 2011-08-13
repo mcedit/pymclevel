@@ -102,6 +102,9 @@ class BoundingBox (object):
     def chunkPositions(self):
         #iterate through all of the chunk positions within this selection box
         return itertools.product(xrange(self.mincx, self.maxcx), xrange(self.mincz, self.maxcz));
+    @property
+    def chunkCount(self):
+        return (self.maxcx - self.mincx) * (self.maxcz - self.mincz)
 
 
     @property
