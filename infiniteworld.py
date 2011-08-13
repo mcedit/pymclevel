@@ -1577,7 +1577,7 @@ class MCInfdevOldLevel(MCLevel):
         info(u"Saved {0} chunks".format(dirtyChunkCount))
 
     def generateLights(self, dirtyChunks=None):
-        for i in generateLightsIter(self, dirtyChunks):
+        for i in self.generateLightsIter(dirtyChunks):
             pass
 
     def generateLightsIter(self, dirtyChunks=None):
