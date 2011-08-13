@@ -1634,10 +1634,10 @@ class MCInfdevOldLevel(MCLevel):
             info(u"Using {0} batches to conserve memory.".format(len(chunkLists)))
 
         i = 0
-
         for dc in chunkLists:
             i += 1;
             info(u"Batch {0}/{1}".format(i, len(chunkLists)))
+            yield i, len(chunkLists)
 
             dc = sorted(dc, key=lambda x:x.chunkPosition)
 
@@ -1660,25 +1660,30 @@ class MCInfdevOldLevel(MCLevel):
             #[d.genFastLights() for d in dirtyChunks]
         dirtyChunks = set(dirtyChunks)
 
-        for ch in list(dirtyChunks):
-            #relight all blocks in neighboring chunks in case their light source disappeared.
-            cx, cz = ch.chunkPosition
-            for dx, dz in itertools.product((-1, 0, 1), (-1, 0, 1)):
-                if (cx + dx, cz + dz) in self._loadedChunks:
-                    dirtyChunks.add(self._loadedChunks[(cx + dx, cz + dz)]);
-
-        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
 
         info(u"Lighting {0} chunks".format(len(dirtyChunks)))
-        for chunk in dirtyChunks:
+        for i, chunk in enumerate(dirtyChunks):
             try:
                 chunk.load();
             except (ChunkNotPresent, ChunkMalformed):
                 continue;
             chunk.chunkChanged();
-
+            yield i, len(dirtyChunks) * 14
             assert chunk.dirty and chunk.needsLighting
 
+        for ch in list(dirtyChunks):
+            #relight all blocks in neighboring chunks in case their light source disappeared.
+            cx, cz = ch.chunkPosition
+            for dx, dz in itertools.product((-1, 0, 1), (-1, 0, 1)):
+                try:
+                    ch = self.getChunk (cx + dx, cz + dz)
+                except (ChunkNotPresent, ChunkMalformed):
+                    continue
+                dirtyChunks.add(ch);
+
+        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
+
+        for i, chunk in enumerate(dirtyChunks):
             chunk.BlockLight[:] = self.materials.lightEmission[chunk.Blocks];
 
             if conserveMemory:
@@ -1700,9 +1705,11 @@ class MCInfdevOldLevel(MCLevel):
         else:
             lights = ("BlockLight", "SkyLight")
         info(u"Dispersing light...")
-        j = 0
 
         for light in lights:
+          j = 0
+          workTotal = 0
+          estimatedTotals = [len(startingDirtyChunks)] * 14
           zerochunkLight = getattr(zeroChunk, light);
 
           newDirtyChunks = list(startingDirtyChunks);
@@ -1731,7 +1738,7 @@ class MCInfdevOldLevel(MCLevel):
 
             for chunk in dirtyChunks:
                 #xxx code duplication
-                yield (j, len(dirtyChunks))
+                yield (workTotal + j, sum(estimatedTotals))
                 j += 1
                 (cx, cz) = chunk.chunkPosition
                 neighboringChunks = {};
@@ -1880,6 +1887,10 @@ class MCInfdevOldLevel(MCLevel):
 
                 if (oldChunk != chunkLight).any():
                     newDirtyChunks.append(chunk);
+
+            workTotal += j
+            estimatedTotals[i] = j
+            j = 0
 
         for ch in startingDirtyChunks:
             ch.needsLighting = False;
