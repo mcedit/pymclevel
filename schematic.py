@@ -459,20 +459,32 @@ class INVEditChest(MCSchematic):
 
 
 def extractSchematicFrom(sourceLevel, box, entities=True):
+    for i in extractSchematicFromIter(sourceLevel, box, entities):
+        pass
+    return i
+
+def extractSchematicFromIter(sourceLevel, box, entities=True):
     p = sourceLevel.adjustExtractionParameters(box);
     if p is None: return
     newbox, destPoint = p
 
     tempSchematic = MCSchematic(shape=box.size)
     tempSchematic.materials = sourceLevel.materials
-    tempSchematic.copyBlocksFrom(sourceLevel, newbox, destPoint, entities=entities)
+    for i in tempSchematic.copyBlocksFromIter(sourceLevel, newbox, destPoint, entities=entities):
+        yield i
 
-    return tempSchematic
+    yield tempSchematic
 
 MCLevel.extractSchematic = extractSchematicFrom
+MCLevel.extractSchematicIter = extractSchematicFromIter
 
 import tempfile
 def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
+    for i in extractZipSchematicFromIter(sourceLevel, box, zipfilename, entities):
+        pass
+    return i
+
+def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=True):
     #converts classic blocks to alpha
     #probably should only apply to alpha levels
 
@@ -498,13 +510,15 @@ def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
         destChunks = destBox.chunkPositions
         chunkIter = itertools.izip(chunks, destChunks)
 
-        chunks = (x[1] for x in chunkIter if sourceLevel.containsChunk(*x[0]))
-        tempSchematic.createChunks(chunks)
-
+        for i, (src, chunk) in enumerate(chunkIter):
+            if sourceLevel.containsChunk(*src):
+                tempSchematic.createChunk(*chunk)
+            yield i, sourceBox.chunkCount
     else:
         tempSchematic.createChunksInBox(destBox)
 
-    tempSchematic.copyBlocksFrom(sourceLevel, sourceBox, destPoint, entities=entities)
+    for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities):
+        yield i
     tempSchematic.saveInPlace(); #lights not needed for this format - crashes minecraft though
 
     schematicDat = TAG_Compound()
@@ -520,9 +534,10 @@ def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
     import shutil
     shutil.rmtree(filename)
     import mclevel
-    return mclevel.fromFile(zipfilename)
+    yield mclevel.fromFile(zipfilename)
 
 MCLevel.extractZipSchematic = extractZipSchematicFrom
+MCLevel.extractZipSchematicIter = extractZipSchematicFromIter
 
 from zipfile import ZipFile, ZIP_STORED
 def zipdir(basedir, archivename):

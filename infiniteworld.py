@@ -1576,6 +1576,10 @@ class MCInfdevOldLevel(MCLevel):
         info(u"Saved {0} chunks".format(dirtyChunkCount))
 
     def generateLights(self, dirtyChunks=None):
+        for i in generateLightsIter(self, dirtyChunks):
+            pass
+
+    def generateLightsIter(self, dirtyChunks=None):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
         if none, generate lights for all chunks that need lighting
         """
@@ -1629,13 +1633,16 @@ class MCInfdevOldLevel(MCLevel):
             info(u"Using {0} batches to conserve memory.".format(len(chunkLists)))
 
         i = 0
+
         for dc in chunkLists:
             i += 1;
             info(u"Batch {0}/{1}".format(i, len(chunkLists)))
 
             dc = sorted(dc, key=lambda x:x.chunkPosition)
 
-            self._generateLights(dc)
+            for j in self._generateLightsIter(dc):
+                yield j
+
             for ch in dc:
                 ch.compress();
         timeDelta = datetime.now() - startTime;
@@ -1645,7 +1652,7 @@ class MCInfdevOldLevel(MCLevel):
 
         return;
 
-    def _generateLights(self, dirtyChunks):
+    def _generateLightsIter(self, dirtyChunks):
         conserveMemory = False
         la = array(self.materials.lightAbsorption)
 
@@ -1692,6 +1699,8 @@ class MCInfdevOldLevel(MCLevel):
         else:
             lights = ("BlockLight", "SkyLight")
         info(u"Dispersing light...")
+        j = 0
+
         for light in lights:
           zerochunkLight = getattr(zeroChunk, light);
 
@@ -1721,6 +1730,8 @@ class MCInfdevOldLevel(MCLevel):
 
             for chunk in dirtyChunks:
                 #xxx code duplication
+                yield (j, len(dirtyChunks))
+                j += 1
                 (cx, cz) = chunk.chunkPosition
                 neighboringChunks = {};
                 try:
@@ -2030,7 +2041,7 @@ class MCInfdevOldLevel(MCLevel):
 
 
 
-    def copyBlocksFromFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         #assumes destination point and bounds have already been checked.
         (sx, sy, sz) = sourceBox.origin
 
@@ -2043,11 +2054,15 @@ class MCInfdevOldLevel(MCLevel):
             typemask[blocksToCopy] = 1;
 
 
-        destChunks = self.getChunkSlices(BoundingBox(destinationPoint, sourceBox.size))
+        destBox = BoundingBox(destinationPoint, sourceBox.size)
+        destChunks = self.getChunkSlices(destBox)
         i = 0;
+        chunkCount = float(destBox.chunkCount)
 
         for (chunk, slices, point) in destChunks:
             i += 1;
+            yield (i, chunkCount)
+
             if i % 100 == 0:
                 info("Chunk {0}...".format(i))
 
@@ -2098,19 +2113,21 @@ class MCInfdevOldLevel(MCLevel):
 
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
 
-    def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         """ copy blocks between two infinite levels via repeated export/import.  hilariously slow. """
 
         #assumes destination point and bounds have already been checked.
 
         tempSize = 128
+        dx, dy, dz = destinationPoint
+        ox, oy, oz = sourceBox.origin
+        sx, sy, sz = sourceBox.size
+        mx, my, mz = sourceBox.maximum
+        def subsectionCount():
+            return (ox, ox + sx, tempSize) * (oz, oz + sz, tempSize)
 
         def iterateSubsections():
             #tempShape = (tempSize, sourceBox.height, tempSize)
-            dx, dy, dz = destinationPoint
-            ox, oy, oz = sourceBox.origin
-            sx, sy, sz = sourceBox.size
-            mx, my, mz = sourceBox.maximum
             for x, z in itertools.product(arange(ox, ox + sx, tempSize), arange(oz, oz + sz, tempSize)):
                 box = BoundingBox((x, oy, z), (min(tempSize, mx - x), sy, min(tempSize, mz - z)))
                 destPoint = (dx + x - ox, dy, dz + z - oz)
@@ -2121,9 +2138,13 @@ class MCInfdevOldLevel(MCLevel):
 
         def isChunkBox(box):
             return box.isChunkAligned and box.miny == 0 and box.height == sourceLevel.Height
+        i = 0
+        print sourceBox.chunkCount
+        chunkCount = float(sourceBox.chunkCount)
 
         if isChunkBox(sourceBox) and isChunkBox(destBox):
             print "Copying with chunk alignment!"
+
             cxoffset = destBox.mincx - sourceBox.mincx
             czoffset = destBox.mincz - sourceBox.mincz
 
@@ -2132,9 +2153,9 @@ class MCInfdevOldLevel(MCLevel):
                 typemask[blocksToCopy] = True
 
             changedChunks = deque();
-            i = 0;
             for cx, cz in sourceBox.chunkPositions:
-                i += 1;
+                i += 1
+                yield (i, chunkCount)
                 if i % 100 == 0:
                     info("Chunk {0}...".format(i))
 
@@ -2186,15 +2207,21 @@ class MCInfdevOldLevel(MCLevel):
                             ch.needsLighting = True
 
         else:
-            i = 0;
+            chunkCount = subsectionCount()
             for box, destPoint in iterateSubsections():
                 info("Subsection {0} at {1}".format(i, destPoint))
                 temp = sourceLevel.extractSchematic(box);
                 self.copyBlocksFrom(temp, BoundingBox((0, 0, 0), box.size), destPoint, blocksToCopy);
-                i += 1;
+                i += 1
+                yield (i, chunkCount)
+
 
 
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
+        for i in self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities):
+            pass
+
+    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
         (x, y, z) = destinationPoint;
         (lx, ly, lz) = sourceBox.size
         #sourcePoint, sourcePoint1 = sourceBox
@@ -2205,13 +2232,16 @@ class MCInfdevOldLevel(MCLevel):
         startTime = datetime.now()
 
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
-            self.copyBlocksFromFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
+            for i in self.copyBlocksFromFiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+                yield i
 
 
         else:
-            self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
+            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+                yield i
 
-        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint, entities)
+        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
+            yield i
         info("Duration: {0}".format(datetime.now() - startTime))
         #self.saveInPlace()
 

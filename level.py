@@ -526,7 +526,12 @@ class MCLevel(object):
 
         return sourceBox, destinationPoint
 
+
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
+        for i in self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities):
+            pass
+
+    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
         if (not sourceLevel.isInfinite) and not(
                sourceLevel.containsPoint(*sourceBox.origin) and
                sourceLevel.containsPoint(*map(lambda x:x - 1, sourceBox.maximum))):
@@ -546,11 +551,12 @@ class MCLevel(object):
         else:
             self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
 
-        self.copyEntitiesFrom(sourceLevel, sourceBox, destinationPoint, entities)
+        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
+            yield i
 
     def saveInPlace(self):
         self.saveToFile(self.filename);
-    @classmethod
+
 
     def setPlayerPosition(self, pos, player="Player"):
         pass;
@@ -574,9 +580,10 @@ class MCLevel(object):
         return (-45., 0.)
 
 
-    def copyEntitiesFromInfinite(self, sourceLevel, sourceBox, destinationPoint):
+    def copyEntitiesFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint):
         chunkIterator = sourceLevel.getChunkSlices(sourceBox);
-
+        chunkCount = sourceBox.chunkCount
+        i = 0
         for (chunk, slices, point) in chunkIterator:
             #remember, slices are ordered x,z,y so you can subscript them like so:  chunk.Blocks[slices]
             cx, cz = chunk.chunkPosition
@@ -602,16 +609,22 @@ class MCLevel(object):
                 self.addTileEntity(eTag)
 
             chunk.compress();
-
+            yield float(i) / float(chunkCount)
+            i += 1
 
     def copyEntitiesFrom(self, sourceLevel, sourceBox, destinationPoint, entities=True):
+        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
+            pass
+
+    def copyEntitiesFromIter(self, sourceLevel, sourceBox, destinationPoint, entities=True):
         #assume coords have already been adjusted by copyBlocks
         if not self.hasEntities or not sourceLevel.hasEntities: return;
         sourcePoint0 = sourceBox.origin;
         sourcePoint1 = sourceBox.maximum;
 
         if sourceLevel.isInfinite:
-            self.copyEntitiesFromInfinite(sourceLevel, sourceBox, destinationPoint)
+            for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint):
+                yield i
         else:
             entsCopied = 0;
             tileEntsCopied = 0;
@@ -623,8 +636,12 @@ class MCLevel(object):
                     self.addEntity(eTag)
                     entsCopied += 1;
 
-
+            i = 0
             for entity in getTileEntitiesInRange(sourceBox, sourceLevel.TileEntities):
+                i += 1
+                if i % 100 == 0:
+                    yield
+
                 if not 'x' in entity: continue
                 eTag = TileEntity.copyWithOffset(entity, copyOffset)
 
@@ -633,6 +650,8 @@ class MCLevel(object):
                     tileEntsCopied += 1;
                 except ChunkNotPresent:
                     pass
+
+            yield
             debug(u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied))
 
 
@@ -671,6 +690,8 @@ class MCLevel(object):
 
     def generateLights(self, dirtyChunks=None):
         pass;
+    def generateLightsIter(self, dirtyChunks=None):
+        yield 0
 
     def adjustExtractionParameters(self, box):
         x, y, z = box.origin
