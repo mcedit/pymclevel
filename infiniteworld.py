@@ -8,6 +8,7 @@ from collections import deque;
 import time
 import zlib
 import struct
+import shutil
 
 #infinite
 Level = 'Level'
@@ -2487,6 +2488,8 @@ class ZipSchematic (MCInfdevOldLevel):
 
     def saveInPlace(self):
         raise NotImplementedError, "Cannot save zipfiles yet!"
+    def saveToFile(self, filename):
+        shutil.copy(self.filename, filename)
 
     def containsChunk(self, cx, cz):
         return (cx, cz) in self.allChunks
