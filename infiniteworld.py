@@ -2136,7 +2136,7 @@ class MCInfdevOldLevel(MCLevel):
         sx, sy, sz = sourceBox.size
         mx, my, mz = sourceBox.maximum
         def subsectionCount():
-            return (ox, ox + sx, tempSize) * (oz, oz + sz, tempSize)
+            return (sx / tempSize) * (sz / tempSize)
 
         def iterateSubsections():
             #tempShape = (tempSize, sourceBox.height, tempSize)
