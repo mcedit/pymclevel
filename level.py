@@ -609,7 +609,7 @@ class MCLevel(object):
                 self.addTileEntity(eTag)
 
             chunk.compress();
-            yield float(i) / float(chunkCount)
+            yield (i, chunkCount)
             i += 1
 
     def copyEntitiesFrom(self, sourceLevel, sourceBox, destinationPoint, entities=True):
