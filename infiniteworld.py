@@ -2051,19 +2051,24 @@ class MCInfdevOldLevel(MCLevel):
         if len(blocksToReplace):
             info(u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))
 
-
+    def sourceMaskFunc(self, blocksToCopy):
+        if blocksToCopy is not None:
+            typemask = zeros((256) , dtype='bool')
+            typemask[blocksToCopy] = 1;
+            def sourceMask(sourceBlocks):
+                return typemask[sourceBlocks]
+        else:
+            def sourceMask(_sourceBlocks):
+                return slice(None, None)
+        return sourceMask
 
     def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         #assumes destination point and bounds have already been checked.
         (sx, sy, sz) = sourceBox.origin
 
-        #filterTable = self.conversionTableFromLevel(sourceLevel);
-
         start = datetime.now();
 
-        if blocksToCopy is not None:
-            typemask = zeros((256) , dtype='bool')
-            typemask[blocksToCopy] = 1;
+        sourceMask = self.sourceMaskFunc(blocksToCopy)
 
 
         destBox = BoundingBox(destinationPoint, sourceBox.size)
@@ -2079,7 +2084,6 @@ class MCInfdevOldLevel(MCLevel):
                 info("Chunk {0}...".format(i))
 
             blocks = chunk.Blocks[slices];
-            mask = slice(None, None)
 
             localSourceCorner2 = (
                 sx + point[0] + blocks.shape[0],
@@ -2091,12 +2095,11 @@ class MCInfdevOldLevel(MCLevel):
                                               sz + point[2]:localSourceCorner2[2],
                                               sy:localSourceCorner2[1]]
             #sourceBlocks = filterTable[sourceBlocks]
+            mask = sourceMask(sourceBlocks)
 
             #for small level slices, reduce the destination area
             x, z, y = sourceBlocks.shape
             blocks = blocks[0:x, 0:z, 0:y]
-            if blocksToCopy is not None:
-                mask = typemask[sourceBlocks]
 
             sourceData = None
             if hasattr(sourceLevel, 'Data'):
@@ -2129,104 +2132,36 @@ class MCInfdevOldLevel(MCLevel):
         """ copy blocks between two infinite levels via repeated export/import.  hilariously slow. """
 
         #assumes destination point and bounds have already been checked.
-
-        tempSize = 128
-        dx, dy, dz = destinationPoint
-        ox, oy, oz = sourceBox.origin
-        sx, sy, sz = sourceBox.size
-        mx, my, mz = sourceBox.maximum
-        def subsectionCount():
-            return (sx / tempSize) * (sz / tempSize)
-
-        def iterateSubsections():
-            #tempShape = (tempSize, sourceBox.height, tempSize)
-            for x, z in itertools.product(arange(ox, ox + sx, tempSize), arange(oz, oz + sz, tempSize)):
-                box = BoundingBox((x, oy, z), (min(tempSize, mx - x), sy, min(tempSize, mz - z)))
-                destPoint = (dx + x - ox, dy, dz + z - oz)
-                yield box, destPoint
-
-
         destBox = BoundingBox(destinationPoint, sourceBox.size)
-
-        def isChunkBox(box):
-            return box.isChunkAligned and box.miny == 0 and box.height == sourceLevel.Height
+        chunkCount = destBox.chunkCount
         i = 0
-        print sourceBox.chunkCount
-        chunkCount = float(sourceBox.chunkCount)
+        sourceMask = self.sourceMaskFunc(blocksToCopy)
 
-        if isChunkBox(sourceBox) and isChunkBox(destBox):
-            print "Copying with chunk alignment!"
+        for chunk, slices, point in self.getChunkSlices(destBox):
+            i += 1
+            yield (i, chunkCount)
+            if i % 100 == 0:
+                info("Chunk {0}...".format(i))
 
-            cxoffset = destBox.mincx - sourceBox.mincx
-            czoffset = destBox.mincz - sourceBox.mincz
+            dstblocks = chunk.Blocks[slices]
+            dstdata = chunk.Data[slices]
+            size = [s.stop - s.start for s in slices]
+            size[1], size[2] = size[2], size[1]
+            sourceSubBox = BoundingBox([p + a for p, a in zip(point, sourceBox.origin)], size)
+            for srcchunk, srcslices, srcpoint in sourceLevel.getChunkSlices(sourceSubBox):
+                srcpoint = srcpoint[0], srcpoint[2], srcpoint[1]
+                sourceBlocks = srcchunk.Blocks[srcslices]
+                sourceData = srcchunk.Data[srcslices]
+                mask = sourceMask(sourceBlocks)
+                convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
 
-            typemask = zeros((256,), dtype='bool')
-            if blocksToCopy:
-                typemask[blocksToCopy] = True
+                dstslices = [slice(p, p + (s.stop - s.start)) for p, s in zip(srcpoint, srcslices)]
+                dstblocks[dstslices][mask] = convertedSourceBlocks[mask]
+                if convertedSourceData is not None:
+                    dstdata[dstslices][mask] = convertedSourceData[mask]
 
-            changedChunks = deque();
-            for cx, cz in sourceBox.chunkPositions:
-                i += 1
-                yield (i, chunkCount)
-                if i % 100 == 0:
-                    info("Chunk {0}...".format(i))
-
-                dcx = cx + cxoffset
-                dcz = cz + czoffset
-                try:
-                    sourceChunk = sourceLevel.getChunk(cx, cz);
-                    destChunk = self.getChunk(dcx, dcz);
-                except (ChunkNotPresent, ChunkMalformed), e:
-                    continue;
-                else:
-                    x = cx << 4
-                    z = cz << 4
-                    width = sourceBox.maxx - x;
-                    length = sourceBox.maxz - z;
-                    if width < 16 or length < 16:
-                        slices = (slice(0, width), slice(0, length), slice(None, None));
-                    else:
-                        slices = (slice(None, None))
-
-                    mask = slice(None, None)
-                    if blocksToCopy:
-                        mask = typemask[sourceChunk.Blocks[slices]]
-
-                    destChunk.Blocks[slices][mask] = sourceChunk.Blocks[slices][mask]
-                    destChunk.Data[slices][mask] = sourceChunk.Data[slices][mask]
-                    destChunk.BlockLight[slices][mask] = sourceChunk.BlockLight[slices][mask]
-                    destChunk.SkyLight[slices][mask] = sourceChunk.SkyLight[slices][mask]
-                    destChunk.copyEntitiesFrom(sourceChunk, sourceBox, destinationPoint);
-                    generateHeightMap(destChunk)
-
-                    changedChunks.append(destChunk);
-
-                    destChunk.dirty = True;
-                    destChunk.unload(); #also saves the chunk
-
-            #calculate which chunks need lighting after the mass copy. 
-            #find non-changed chunks adjacent to changed ones and mark for light
-            changedChunkPositions = set([ch.chunkPosition for ch in changedChunks])
-
-            for ch in changedChunks:
-                cx, cz = ch.chunkPosition
-
-                for dx, dz in itertools.product((-1, 0, 1), (-1, 0, 1)):
-                    ncPos = (cx + dx, cz + dz);
-                    if ncPos not in changedChunkPositions:
-                        ch = self._loadedChunks.get((cx, cz), None);
-                        if ch:
-                            ch.needsLighting = True
-
-        else:
-            chunkCount = subsectionCount()
-            for box, destPoint in iterateSubsections():
-                info("Subsection {0} at {1}".format(i, destPoint))
-                temp = sourceLevel.extractSchematic(box);
-                self.copyBlocksFrom(temp, BoundingBox((0, 0, 0), box.size), destPoint, blocksToCopy);
-                i += 1
-                yield (i, chunkCount)
-
+            chunk.chunkChanged()
+            chunk.compress()
 
 
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
@@ -2483,6 +2418,9 @@ class ZipSchematic (MCInfdevOldLevel):
     def __del__(self):
         self.zipfile.close()
         MCInfdevOldLevel.__del__(self)
+
+    def getWorldBounds(self):
+        return BoundingBox((0, 0, 0), (self.Width, self.Height, self.Length))
 
     @classmethod
     def _isLevel(cls, filename):
