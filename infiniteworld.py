@@ -2477,6 +2477,8 @@ class ZipSchematic (MCInfdevOldLevel):
             self.Width = 0
             self.Height = 128
             self.Length = 0
+        if "Materials" in schematicDat:
+            self.materials = namedMaterials[schematicDat["Materials"].value]
 
     def __del__(self):
         self.zipfile.close()

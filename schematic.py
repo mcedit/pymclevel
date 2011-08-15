@@ -500,6 +500,7 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
     filename = tempfile.mktemp("schematic")
 
     tempSchematic = MCInfdevOldLevel(filename, create=True);
+    tempSchematic.materials = sourceLevel.materials
 
     destBox = BoundingBox(destPoint, sourceBox.size);
 
@@ -527,6 +528,7 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
     schematicDat["Width"] = TAG_Int(sourceBox.size[0]);
     schematicDat["Height"] = TAG_Int(sourceBox.size[1]);
     schematicDat["Length"] = TAG_Int(sourceBox.size[2]);
+    schematicDat["Materials"] = TAG_String(tempSchematic.materials.name);
     schematicDat.save(os.path.join(filename, "schematic.dat"))
 
     zipdir(filename, zipfilename)
