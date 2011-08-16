@@ -1939,7 +1939,7 @@ class MCInfdevOldLevel(EntityLevel):
         count = 0;
         for chunk, slices, point in self.getChunkSlices(box):
             count += chunk.removeEntitiesInBox(box);
-            chunk.compress();
+
         info("Removed {0} entities".format(count))
         return count;
 
@@ -1947,7 +1947,7 @@ class MCInfdevOldLevel(EntityLevel):
         count = 0;
         for chunk, slices, point in self.getChunkSlices(box):
             count += chunk.removeTileEntitiesInBox(box);
-            chunk.compress();
+
         info("Removed {0} tile entities".format(count))
         return count;
 
@@ -2028,7 +2028,7 @@ class MCInfdevOldLevel(EntityLevel):
                 chunk.removeTileEntitiesInBox(box)
 
             chunk.chunkChanged(needsLighting);
-            chunk.compress();
+
 
         if len(blocksToReplace):
             info(u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))
@@ -2102,7 +2102,7 @@ class MCInfdevOldLevel(EntityLevel):
                 data[mask] &= 0xf;
 
             chunk.chunkChanged();
-            chunk.compress();
+
 
         d = datetime.now() - start;
         if i:
@@ -2143,7 +2143,7 @@ class MCInfdevOldLevel(EntityLevel):
                     dstdata[dstslices][mask] = convertedSourceData[mask]
 
             chunk.chunkChanged()
-            chunk.compress()
+
 
 
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
