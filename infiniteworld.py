@@ -167,7 +167,8 @@ class InfdevChunk(EntityLevel):
             #uncompressed tag structure away. rely on the OS disk cache.
             self.root_tag = None
         else:
-            self.sanitizeBlocks() #xxx
+            if self.root_tag is not None:
+                self.sanitizeBlocks() #xxx
 
             self.packChunkData()
             self._compressChunk()
