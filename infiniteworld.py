@@ -1895,17 +1895,6 @@ class MCInfdevOldLevel(MCLevel):
         for ch in startingDirtyChunks:
             ch.needsLighting = False;
 
-
-    def entitiesAt(self, x, y, z):
-        chunk = self.getChunk(x >> 4, z >> 4)
-        entities = [];
-        if chunk.Entities is None: return entities;
-        for entity in chunk.Entities:
-            if map(lambda x:int(floor(x)), Entity.pos(entity)) == [x, y, z]:
-                entities.append(entity);
-
-        return entities;
-
     def addEntity(self, entityTag):
         assert isinstance(entityTag, TAG_Compound)
         x, y, z = map(lambda x:int(floor(x)), Entity.pos(entityTag))

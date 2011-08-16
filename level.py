@@ -106,8 +106,6 @@ class MCLevel(object):
 
 
     def compressChunk(self, cx, cz): pass
-    def entitiesAt(self, x, y, z):
-        return None
     def tileEntityAt(self, x, y, z):
         return None
     def addEntity(self, *args): pass

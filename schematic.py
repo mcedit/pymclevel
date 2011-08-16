@@ -358,13 +358,6 @@ class MCSchematic (MCLevel):
         if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
         return self.Data[x, z, y];
 
-    def entitiesAt(self, x, y, z):
-        entities = [];
-        for entityTag in self.Entities:
-            if map(lambda x:int(x.value), entityTag[Pos]) == [x, y, z]:
-                entities.append(entityTag);
-
-        return entities;
 
     def addEntity(self, entityTag):
         assert isinstance(entityTag, TAG_Compound)
