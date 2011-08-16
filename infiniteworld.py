@@ -2291,10 +2291,11 @@ class MCInfdevOldLevel(EntityLevel):
         return os.path.join(self.worldDir, "players", player + ".dat")
 
     def getPlayerTag(self, player="Player"):
-        if player == "Player" and player in self.root_tag["Data"]:
-            #single-player world
-            return self.root_tag["Data"]["Player"];
-
+        if player == "Player":
+            if player in self.root_tag["Data"]:
+                #single-player world
+                return self.root_tag["Data"]["Player"];
+            raise PlayerNotFound, player
         else:
             playerFilePath = self.getPlayerPath(player)
             if os.path.exists(playerFilePath):
