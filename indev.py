@@ -182,7 +182,15 @@ class MCIndevLevel(MCLevel):
             if not TileEntities in root_tag:
                 root_tag[TileEntities] = TAG_List();
             self.TileEntities = root_tag[TileEntities]
+            #xxx fixup TileEntities positions to match infdev format
+            for te in self.TileEntities:
+                pos = te["Pos"].value
+                def decode(v):
+                    x = 10; m = (1 << x) - 1; return (v & m, (v >> x) & m, (v >> (2 * x)))
 
+                (x, y, z) = decode(pos)
+
+                TileEntity.setpos(te, (x, y, z))
 
             if len(filter(lambda x:x['id'].value == 'LocalPlayer', root_tag[Entities])) == 0: #omen doesn't make a player entity
                 p = TAG_Compound()
