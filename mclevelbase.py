@@ -63,4 +63,4 @@ class ChunkNotPresent(Exception): pass
 class RegionMalformed(Exception): pass
 class ChunkMalformed(ChunkNotPresent): pass
 
-from level import MCLevel
+from level import MCLevel, EntityLevel

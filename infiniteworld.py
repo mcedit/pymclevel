@@ -46,7 +46,7 @@ class ZeroChunk(object):
         self.SkyLight = whiteLight
         self.Data = zeroChunk
 
-class InfdevChunk(MCLevel):
+class InfdevChunk(EntityLevel):
     """ This is a 16x16xH chunk in an (infinite) world.
     The properties Blocks, Data, SkyLight, BlockLight, and Heightmap 
     are ndarrays containing the respective blocks in the chunk file.
@@ -54,8 +54,6 @@ class InfdevChunk(MCLevel):
     arrays are automatically unpacked from nibble arrays into byte arrays 
     for better handling.
     """
-    hasEntities = True
-
     @property
     def filename(self):
         if self.world.version:
@@ -396,18 +394,18 @@ class InfdevChunk(MCLevel):
         chunkTag[Level][SkyLight].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight / 2)
         chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight / 2)
         chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight / 2)
-        if not TileEntities in chunkTag[Level]:
+        if TileEntities not in chunkTag[Level]:
             chunkTag[Level][TileEntities] = TAG_List();
-        if not Entities in chunkTag[Level]:
+        if Entities not in chunkTag[Level]:
             chunkTag[Level][Entities] = TAG_List();
 
     def removeEntitiesInBox(self, box):
         self.dirty = True;
-        return MCLevel.removeEntitiesInBox(self, box)
+        return super(InfdevChunk, self).removeEntitiesInBox(box)
 
     def removeTileEntitiesInBox(self, box):
         self.dirty = True;
-        return MCLevel.removeTileEntitiesInBox(self, box)
+        return super(InfdevChunk, self).removeTileEntitiesInBox(box)
 
 
     @property
@@ -847,10 +845,9 @@ def deflate(data):
 def inflate(data):
     return zlib.decompress(data)
 
-class MCInfdevOldLevel(MCLevel):
+class MCInfdevOldLevel(EntityLevel):
     materials = alphaMaterials;
     isInfinite = True
-    hasEntities = True;
     parentWorld = None;
     dimNo = 0;
     ChunkHeight = 128
@@ -1904,24 +1901,12 @@ class MCInfdevOldLevel(MCLevel):
         except (ChunkNotPresent, ChunkMalformed), e:
             return None
             # raise Error, can't find a chunk?
-        chunk.Entities.append(entityTag);
+        chunk.addEntity(entityTag);
         chunk.dirty = True
 
     def tileEntityAt(self, x, y, z):
         chunk = self.getChunk(x >> 4, z >> 4)
-        entities = [];
-        if chunk.TileEntities is None: return None;
-        for entity in chunk.TileEntities:
-            pos = [entity[a].value for a in 'xyz']
-            if pos == [x, y, z]:
-                entities.append(entity);
-
-        if len(entities) > 1:
-            info("Multiple tile entities found: {0}".format(entities))
-        if len(entities) == 0:
-            return None
-
-        return entities[0];
+        return chunk.tileEntityAt(x, y, z)
 
 
     def addTileEntity(self, tileEntityTag):
@@ -1941,6 +1926,13 @@ class MCInfdevOldLevel(MCLevel):
 
         chunk.TileEntities.append(tileEntityTag);
         chunk.dirty = True
+
+    def getEntitiesInBox(self, box):
+        entities = []
+        for chunk, slices, point in self.getChunkSlices(box):
+            entities += chunk.getEntitiesInBox(box)
+
+        return entities
 
     def removeEntitiesInBox(self, box):
         count = 0;
@@ -2061,11 +2053,11 @@ class MCInfdevOldLevel(MCLevel):
 
 
         destBox = BoundingBox(destinationPoint, sourceBox.size)
-        destChunks = self.getChunkSlices(destBox)
+
         i = 0;
         chunkCount = float(destBox.chunkCount)
 
-        for (chunk, slices, point) in destChunks:
+        for (chunk, slices, point) in self.getChunkSlices(destBox):
             i += 1;
             yield (i, chunkCount)
 

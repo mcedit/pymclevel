@@ -113,6 +113,9 @@ class TestAlphaLevel(unittest.TestCase):
         level.LastPlayed
         level.LastPlayed = time.time() * 1000 - 1000000
 
+    def testGetEntities(self):
+        level = self.alphalevel.level
+        print len(level.getEntitiesInBox(level.bounds))
 
     def testCreateChunks(self):
         indevlevel = self.indevlevel.level

@@ -7,8 +7,7 @@ Created on Jul 22, 2011
 
 from mclevelbase import *
 import tempfile
-
-#decorator for the primitive methods of MCLevel.
+from collections import defaultdict
 
 class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
@@ -30,7 +29,6 @@ class MCLevel(object):
     materials = classicMaterials;
     isInfinite = False
 
-    hasEntities = False;
     compressedTag = None
     root_tag = None
 
@@ -96,20 +94,20 @@ class MCLevel(object):
         Blocks, Data, Light, SkyLight, HeightMap attributes if present """
         pass
 
-    def close(self):
-        pass
+    def close(self): pass
 
-    def compress(self):
-        pass
-    def decompress(self):
-        pass
-
+    def compress(self): pass
+    def decompress(self):pass
 
     def compressChunk(self, cx, cz): pass
-    def tileEntityAt(self, x, y, z):
-        return None
-    def addEntity(self, *args): pass
-    def addTileEntity(self, *args): pass
+    def addEntity(self, entityTag): pass
+    def tileEntityAt(self, x, y, z): return None
+    def addTileEntity(self, entityTag): pass
+    def getEntitiesInBox(self, box): return []
+    def getTileEntitiesInBox(self, box): return []
+
+    def copyEntitiesFromIter(self, *args, **kw): yield;
+
 
     @property
     def loadedChunks(self):
@@ -129,6 +127,12 @@ class MCLevel(object):
         """Returns a synthetic list of chunk positions (xPos, zPos), to fake 
         being a chunked level format."""
         return self.loadedChunks
+
+
+
+    def _getFakeChunkEntities(self, cx, cz):
+        """Returns Entities, TileEntities"""
+        return ([], [])
 
     def getChunk(self, cx, cz):
         """Synthesize a FakeChunk object representing the chunk at the given
@@ -157,8 +161,9 @@ class MCLevel(object):
 
         f.BlockLight = whiteLight
         f.SkyLight = whiteLight
-        f.Entities = []
-        f.TileEntities = []
+
+        f.Entities, f.TileEntities = self._getFakeChunkEntities(cx, cz)
+
 
 
         f.root_tag = TAG_Compound();
@@ -444,14 +449,11 @@ class MCLevel(object):
 
     def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
 
-        chunkIterator = sourceLevel.getChunkSlices(sourceBox)
-
-
         if blocksToCopy is not None:
             typemask = zeros((256) , dtype='bool')
             typemask[blocksToCopy] = True;
 
-        for (chunk, slices, point) in chunkIterator:
+        for (chunk, slices, point) in sourceLevel.getChunkSlices(sourceBox):
             point = map(lambda a, b:a + b, point, destinationPoint)
             point = point[0], point[2], point[1]
             mask = slice(None, None)
@@ -474,8 +476,6 @@ class MCLevel(object):
 
                 #self.Data[ destSlices ][mask] = chunk.Data[slices][mask]
 
-
-            chunk.compress();
 
 
     def adjustCopyParameters(self, sourceLevel, sourceBox, destinationPoint):
@@ -578,113 +578,6 @@ class MCLevel(object):
         return (-45., 0.)
 
 
-    def copyEntitiesFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint):
-        chunkIterator = sourceLevel.getChunkSlices(sourceBox);
-        chunkCount = sourceBox.chunkCount
-        i = 0
-        for (chunk, slices, point) in chunkIterator:
-            #remember, slices are ordered x,z,y so you can subscript them like so:  chunk.Blocks[slices]
-            cx, cz = chunk.chunkPosition
-            #wx, wz = cx << 4, cz << 4
-
-            copyOffset = map(lambda x, y:x - y, destinationPoint, sourceBox.origin)
-            for entityTag in chunk.Entities:
-                x, y, z = Entity.pos(entityTag)
-                if (x, y, z) not in sourceBox: continue
-
-                eTag = Entity.copyWithOffset(entityTag, copyOffset)
-
-                self.addEntity(eTag);
-
-            for tileEntityTag in chunk.TileEntities:
-                if not 'x' in tileEntityTag: continue
-
-                x, y, z = TileEntity.pos(tileEntityTag)
-                if (x, y, z) not in sourceBox: continue
-
-                eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
-
-                self.addTileEntity(eTag)
-
-            chunk.compress();
-            yield (i, chunkCount)
-            i += 1
-
-    def copyEntitiesFrom(self, sourceLevel, sourceBox, destinationPoint, entities=True):
-        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
-            pass
-
-    def copyEntitiesFromIter(self, sourceLevel, sourceBox, destinationPoint, entities=True):
-        #assume coords have already been adjusted by copyBlocks
-        if not self.hasEntities or not sourceLevel.hasEntities: return;
-        sourcePoint0 = sourceBox.origin;
-        sourcePoint1 = sourceBox.maximum;
-
-        if sourceLevel.isInfinite:
-            for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint):
-                yield i
-        else:
-            entsCopied = 0;
-            tileEntsCopied = 0;
-            copyOffset = map(lambda x, y:x - y, destinationPoint, sourcePoint0)
-            if entities:
-                for entity in getEntitiesInRange(sourceBox, sourceLevel.Entities):
-                    eTag = Entity.copyWithOffset(entity, copyOffset)
-
-                    self.addEntity(eTag)
-                    entsCopied += 1;
-
-            i = 0
-            for entity in getTileEntitiesInRange(sourceBox, sourceLevel.TileEntities):
-                i += 1
-                if i % 100 == 0:
-                    yield
-
-                if not 'x' in entity: continue
-                eTag = TileEntity.copyWithOffset(entity, copyOffset)
-
-                try:
-                    self.addTileEntity(eTag)
-                    tileEntsCopied += 1;
-                except ChunkNotPresent:
-                    pass
-
-            yield
-            debug(u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied))
-
-
-    def removeEntitiesInBox(self, box):
-
-        if not self.hasEntities: return 0;
-        newEnts = [];
-        for ent in self.Entities:
-            if map(lambda x:x.value, ent["Pos"]) in box:
-                continue;
-            newEnts.append(ent);
-
-        entsRemoved = len(self.Entities) - len(newEnts);
-        debug("Removed {0} entities".format(entsRemoved))
-
-        self.Entities.value[:] = newEnts
-
-        return entsRemoved
-
-    def removeTileEntitiesInBox(self, box):
-
-        if not hasattr(self, "TileEntities"): return;
-        newEnts = [];
-        for ent in self.TileEntities:
-            if not "x" in ent: continue
-            if map(lambda x:x.value, (ent[a] for a in "xyz")) in box:
-                continue;
-            newEnts.append(ent);
-
-        entsRemoved = len(self.TileEntities) - len(newEnts);
-        debug("Removed {0} tile entities".format(entsRemoved))
-
-        self.TileEntities.value[:] = newEnts
-
-        return entsRemoved
 
     def generateLights(self, dirtyChunks=None):
         pass;
@@ -738,23 +631,150 @@ class MCLevel(object):
         return box, (destX, destY, destZ)
 
 
-def getEntitiesInRange(sourceBox, entities):
-    entsInRange = [];
-    for entity in entities:
-        dir()
-        x, y, z = Entity.pos(entity)
-        if not (x, y, z) in sourceBox: continue
-        entsInRange.append(entity)
 
-    return entsInRange
+class EntityLevel(MCLevel):
+    """Abstract subclass of MCLevel that adds default entity behavior"""
+    def copyEntitiesFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint):
+        chunkCount = sourceBox.chunkCount
+        i = 0
+        copyOffset = map(lambda x, y:x - y, destinationPoint, sourceBox.origin)
+        for (chunk, slices, point) in sourceLevel.getChunkSlices(sourceBox):
+            self.copyEntitiesFromInfiniteChunk(chunk, slices, point, sourceBox, copyOffset)
+            yield (i, chunkCount)
+            i += 1
 
-def getTileEntitiesInRange(sourceBox, tileEntities):
-    entsInRange = [];
-    for tileEntity in tileEntities:
-        if not 'x' in tileEntity: continue
+    def copyEntitiesFromInfiniteChunk(self, chunk, slices, point, sourceBox, copyOffset):
 
-        x, y, z = TileEntity.pos(tileEntity)
-        if not (x, y, z) in sourceBox: continue
-        entsInRange.append(tileEntity)
+        for entityTag in chunk.Entities:
+            x, y, z = Entity.pos(entityTag)
+            if (x, y, z) not in sourceBox: continue
 
-    return entsInRange
+            eTag = Entity.copyWithOffset(entityTag, copyOffset)
+
+            self.addEntity(eTag);
+
+        for tileEntityTag in chunk.TileEntities:
+            x, y, z = TileEntity.pos(tileEntityTag)
+            if (x, y, z) not in sourceBox: continue
+
+            eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
+
+            self.addTileEntity(eTag)
+
+
+
+
+    def copyEntitiesFromIter(self, sourceLevel, sourceBox, destinationPoint, entities=True):
+        #assume coords have already been adjusted by copyBlocks
+        #if not self.hasEntities or not sourceLevel.hasEntities: return;
+        sourcePoint0 = sourceBox.origin;
+        sourcePoint1 = sourceBox.maximum;
+
+        if sourceLevel.isInfinite:
+            for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint):
+                yield i
+        else:
+            entsCopied = 0;
+            tileEntsCopied = 0;
+            copyOffset = map(lambda x, y:x - y, destinationPoint, sourcePoint0)
+            if entities:
+                for entity in sourceLevel.getEntitiesInBox(sourceBox):
+                    eTag = Entity.copyWithOffset(entity, copyOffset)
+
+                    self.addEntity(eTag)
+                    entsCopied += 1;
+
+            i = 0
+            for entity in sourceLevel.getTileEntitiesInBox(sourceBox):
+                i += 1
+                if i % 100 == 0:
+                    yield
+
+                if not 'x' in entity: continue
+                eTag = TileEntity.copyWithOffset(entity, copyOffset)
+
+                try:
+                    self.addTileEntity(eTag)
+                    tileEntsCopied += 1;
+                except ChunkNotPresent:
+                    pass
+
+            yield
+            debug(u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied))
+
+    def getEntitiesInBox(self, box):
+        """Returns a list of references to entities in this chunk, whose positions are within box"""
+        return [ent for ent in self.Entities if Entity.pos(ent) in box]
+
+    def getTileEntitiesInBox(self, box):
+        """Returns a list of references to tile entities in this chunk, whose positions are within box"""
+        return [ent for ent in self.TileEntities if TileEntity.pos(ent) in box]
+
+    def removeEntitiesInBox(self, box):
+
+        newEnts = [];
+        for ent in self.Entities:
+            if Entity.pos(ent) in box:
+                continue;
+            newEnts.append(ent);
+
+        entsRemoved = len(self.Entities) - len(newEnts);
+        debug("Removed {0} entities".format(entsRemoved))
+
+        self.Entities.value[:] = newEnts
+
+        return entsRemoved
+
+    def removeTileEntitiesInBox(self, box):
+
+        if not hasattr(self, "TileEntities"): return;
+        newEnts = [];
+        for ent in self.TileEntities:
+            if TileEntity.pos(ent) in box:
+                continue;
+            newEnts.append(ent);
+
+        entsRemoved = len(self.TileEntities) - len(newEnts);
+        debug("Removed {0} tile entities".format(entsRemoved))
+
+        self.TileEntities.value[:] = newEnts
+
+        return entsRemoved
+
+    def addEntity(self, entityTag):
+        assert isinstance(entityTag, TAG_Compound)
+        self.Entities.append(entityTag);
+
+    def tileEntityAt(self, x, y, z):
+        entities = [];
+        for entityTag in self.TileEntities:
+            if TileEntity.pos(entityTag) == [x, y, z]:
+                entities.append(entityTag);
+
+        if len(entities) > 1:
+            info("Multiple tile entities found: {0}".format(entities))
+        if len(entities) == 0:
+            return None
+
+        return entities[0];
+
+    def addTileEntity(self, entityTag):
+        assert isinstance(entityTag, TAG_Compound)
+        self.TileEntities.append(entityTag);
+
+
+    _fakeEntities = None
+    def _getFakeChunkEntities(self, cx, cz):
+        """distribute entities into sublists based on fake chunk position
+        _fakeEntities keys are (cx,cz) and values are (Entities, TileEntities)"""
+        if self._fakeEntities is None:
+            self._fakeEntities = defaultdict(lambda: ([], []))
+            for i, e in enumerate((self.Entities, self.TileEntities)):
+                for ent in e:
+                    x, y, z = Entity.pos(ent)
+                    ecx, ecz = map(lambda x:(int(floor(x)) >> 4), (x, z))
+
+                    self._fakeEntities[ecx, ecz][i].append(ent)
+
+        return self._fakeEntities[cx, cz]
+

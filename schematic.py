@@ -8,10 +8,8 @@ from mclevelbase import *
 Materials = 'Materials'
 
 __all__ = ['MCSchematic', 'INVEditChest']
-class MCSchematic (MCLevel):
+class MCSchematic (EntityLevel):
     materials = alphaMaterials
-    hasEntities = True;
-
 
     def __str__(self):
         return u"MCSchematic(shape={0}, filename=\"{1}\")".format(self.size, self.filename or u"")
@@ -358,28 +356,6 @@ class MCSchematic (MCLevel):
         if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
         return self.Data[x, z, y];
 
-
-    def addEntity(self, entityTag):
-        assert isinstance(entityTag, TAG_Compound)
-        self.Entities.append(entityTag);
-
-    def tileEntityAt(self, x, y, z):
-        entities = [];
-        for entityTag in self.TileEntities:
-            pos = [entityTag[a].value for a in 'xyz']
-            if pos == [x, y, z]:
-                entities.append(entityTag);
-
-        if len(entities) > 1:
-            info("Multiple tile entities found: {0}".format(entities))
-        if len(entities) == 0:
-            return None
-
-        return entities[0];
-
-    def addTileEntity(self, entityTag):
-        assert isinstance(entityTag, TAG_Compound)
-        self.TileEntities.append(entityTag);
 
     @classmethod
     def chestWithItemID(self, itemID, count=64, damage=0):

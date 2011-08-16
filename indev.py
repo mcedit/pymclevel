@@ -85,11 +85,10 @@ Spawn = "Spawn"
 __all__ = ["MCIndevLevel"]
 
 
-class MCIndevLevel(MCLevel):
+class MCIndevLevel(EntityLevel):
 
     """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis 
     swapping to be consistent with infinite levels."""
-    hasEntities = True
 
     def setPlayerSpawnPosition(self, pos, player=None):
         assert len(pos) == 3
