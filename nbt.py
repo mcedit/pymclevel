@@ -335,7 +335,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         #if(len(hits)): return hits[0];
         for key in self.value:
                 if key.name == k: return key
-        raise KeyError("Key {0} not found".format(k));
+        raise KeyError("Key {0} not found in tag {1}".format(k, self));
 
     def __iter__(self):             return itertools.imap(lambda x:x.name, self.value);
     def __contains__(self, k):return k in map(lambda x:x.name, self.value);
