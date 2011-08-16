@@ -7,7 +7,6 @@ from mclevelbase import *
 
 __all__ = "Entity, TileEntity".split(", ")
 
-EntityId = "EntityId"
 id = "id"
 
 Motion = "Motion"
@@ -81,7 +80,7 @@ class Entity(object):
     @classmethod
     def Create(cls, entityID, **kw):
         entityTag = TAG_Compound()
-        entityTag[EntityId] = TAG_String(entityID)
+        entityTag[id] = TAG_String(entityID)
         Entity.setpos(entityTag, (0, 0, 0))
         return entityTag
 
