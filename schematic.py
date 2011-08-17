@@ -12,7 +12,7 @@ class MCSchematic (EntityLevel):
     materials = alphaMaterials
 
     def __str__(self):
-        return u"MCSchematic(shape={0}, filename=\"{1}\")".format(self.size, self.filename or u"")
+        return u"MCSchematic(shape={0}, materials={2}, filename=\"{1}\")".format(self.size, self.filename or u"", self.Materials)
 
     def compress(self):
         #if self.root_tag is not None, then our compressed data must be stale and we need to recompress.
