@@ -1920,12 +1920,7 @@ class MCInfdevOldLevel(EntityLevel):
         except (ChunkNotPresent, ChunkMalformed):
             return
             # raise Error, can't find a chunk?
-        def differentPosition(a):
-            return not ((tileEntityTag is a) or ('x' in a and (a['x'].value == x and a['y'].value == y and a['z'].value == z)))
-
-        chunk.TileEntities.value[:] = filter(differentPosition, chunk.TileEntities);
-
-        chunk.TileEntities.append(tileEntityTag);
+        chunk.addTileEntity(tileEntityTag)
         chunk.dirty = True
 
     def getEntitiesInBox(self, box):
