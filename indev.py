@@ -184,10 +184,8 @@ class MCIndevLevel(EntityLevel):
             #xxx fixup TileEntities positions to match infdev format
             for te in self.TileEntities:
                 pos = te["Pos"].value
-                def decode(v):
-                    x = 10; m = (1 << x) - 1; return (v & m, (v >> x) & m, (v >> (2 * x)))
 
-                (x, y, z) = decode(pos)
+                (x, y, z) = self.decodePos(pos)
 
                 TileEntity.setpos(te, (x, y, z))
 
@@ -235,6 +233,12 @@ class MCIndevLevel(EntityLevel):
         info(u"Rotating torches: {0}".format(len(torchIndexes.nonzero()[0])))
         self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
 
+    def decodePos(self, v):
+        b = 10;
+        m = (1 << b) - 1; return (v & m, (v >> b) & m, (v >> (2 * b)))
+    def encodePos(self, x, y, z):
+        b = 10;
+        return x + (y << b) + (z << (2 * b))
 
     def saveToFile(self, filename=None):
         if filename == None: filename = self.filename;
@@ -262,6 +266,11 @@ class MCIndevLevel(EntityLevel):
 
         self.root_tag[Map] = mapTag;
         self.root_tag[Map]
+
+        #fix up TileEntities imported from Alpha worlds.
+        for ent in self.TileEntities:
+            if "Pos" not in ent and all(c in ent for c in 'xyz'):
+                ent["Pos"] = TAG_Int(self.encodePos(ent['x'].value, ent['y'].value, ent['z'].value))
         #output_file = gzip.open(self.filename, "wb", compresslevel=1)
         try:
             os.rename(filename, filename + ".old");
