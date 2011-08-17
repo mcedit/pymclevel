@@ -782,7 +782,7 @@ class EntityLevel(MCLevel):
             self._fakeEntities = defaultdict(lambda: ([], []))
             for i, e in enumerate((self.Entities, self.TileEntities)):
                 for ent in e:
-                    x, y, z = Entity.pos(ent)
+                    x, y, z = [Entity, TileEntity][i].pos(ent)
                     ecx, ecz = map(lambda x:(int(floor(x)) >> 4), (x, z))
 
                     self._fakeEntities[ecx, ecz][i].append(ent)
