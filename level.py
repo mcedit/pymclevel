@@ -101,6 +101,7 @@ class MCLevel(object):
 
     def compressChunk(self, cx, cz): pass
     def addEntity(self, entityTag): pass
+    def addEntities(self, entities): pass
     def tileEntityAt(self, x, y, z): return None
     def addTileEntity(self, entityTag): pass
     def getEntitiesInBox(self, box): return []
@@ -740,6 +741,10 @@ class EntityLevel(MCLevel):
         self.TileEntities.value[:] = newEnts
 
         return entsRemoved
+
+    def addEntities(self, entities):
+        for e in entities:
+            self.addEntity(e)
 
     def addEntity(self, entityTag):
         assert isinstance(entityTag, TAG_Compound)
