@@ -750,6 +750,7 @@ class EntityLevel(MCLevel):
     def addEntity(self, entityTag):
         assert isinstance(entityTag, TAG_Compound)
         self.Entities.append(entityTag);
+        self._fakeEntities = None
 
     def tileEntityAt(self, x, y, z):
         entities = [];
@@ -773,6 +774,7 @@ class EntityLevel(MCLevel):
         self.TileEntities.value[:] = filter(differentPosition, self.TileEntities);
 
         self.TileEntities.append(tileEntityTag);
+        self._fakeEntities = None
 
     _fakeEntities = None
     def _getFakeChunkEntities(self, cx, cz):
