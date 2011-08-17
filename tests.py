@@ -171,7 +171,7 @@ class TestAlphaLevel(unittest.TestCase):
         level.deleteChunk(cx, cz);
 
         level.createChunk(cx, cz);
-        level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (64, 64, 64,)), (-96, 32, 0))
+        level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (32, 64, 32,)), (-96, 32, 0))
 
         level.generateLights();
         level.saveInPlace();
@@ -232,8 +232,9 @@ class TestSchematics(unittest.TestCase):
 
     def testZipSchematic(self):
         level = self.alphalevel.level
-        zs = level.extractZipSchematic(level.bounds)
-        assert(level.chunkCount == zs.chunkCount)
+        box = BoundingBox((0, 0, 0), (64, 64, 64,))
+        zs = level.extractZipSchematic(box)
+        assert(box.chunkCount == zs.chunkCount)
 
     def testINVEditChests(self):
         info("INVEdit chest")
