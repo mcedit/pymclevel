@@ -633,33 +633,36 @@ class MCLevel(object):
 
 class EntityLevel(MCLevel):
     """Abstract subclass of MCLevel that adds default entity behavior"""
-    def copyEntitiesFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint):
+    def copyEntitiesFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, entities):
         chunkCount = sourceBox.chunkCount
         i = 0
         copyOffset = map(lambda x, y:x - y, destinationPoint, sourceBox.origin)
+        e = t = 0
+
         for (chunk, slices, point) in sourceLevel.getChunkSlices(sourceBox):
-            self.copyEntitiesFromInfiniteChunk(chunk, slices, point, sourceBox, copyOffset)
             yield (i, chunkCount)
             i += 1
 
-    def copyEntitiesFromInfiniteChunk(self, chunk, slices, point, sourceBox, copyOffset):
+            if entities:
+                e += len(chunk.Entities)
+                for entityTag in chunk.Entities:
+                    x, y, z = Entity.pos(entityTag)
+                    if (x, y, z) not in sourceBox: continue
 
-        for entityTag in chunk.Entities:
-            x, y, z = Entity.pos(entityTag)
-            if (x, y, z) not in sourceBox: continue
+                    eTag = Entity.copyWithOffset(entityTag, copyOffset)
 
-            eTag = Entity.copyWithOffset(entityTag, copyOffset)
+                    self.addEntity(eTag);
 
-            self.addEntity(eTag);
+            t += len(chunk.TileEntities)
+            for tileEntityTag in chunk.TileEntities:
+                x, y, z = TileEntity.pos(tileEntityTag)
+                if (x, y, z) not in sourceBox: continue
 
-        for tileEntityTag in chunk.TileEntities:
-            x, y, z = TileEntity.pos(tileEntityTag)
-            if (x, y, z) not in sourceBox: continue
+                eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
 
-            eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
+                self.addTileEntity(eTag)
 
-            self.addTileEntity(eTag)
-
+        info("Copied {0} entities, {1} tile entities".format(e, t))
 
 
 
@@ -670,7 +673,7 @@ class EntityLevel(MCLevel):
         sourcePoint1 = sourceBox.maximum;
 
         if sourceLevel.isInfinite:
-            for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint):
+            for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, entities):
                 yield i
         else:
             entsCopied = 0;
@@ -699,7 +702,7 @@ class EntityLevel(MCLevel):
                     pass
 
             yield
-            debug(u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied))
+            info(u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied))
 
     def getEntitiesInBox(self, box):
         """Returns a list of references to entities in this chunk, whose positions are within box"""
