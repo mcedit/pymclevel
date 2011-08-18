@@ -147,7 +147,7 @@ class MCLevel(object):
         position. Subclasses override fakeBlocksForChunk and fakeDataForChunk
         to fill in the chunk arrays"""
 
-        class FakeChunk:
+        class FakeChunk(EntityLevel):
             def load(self):pass
             def compress(self):pass
             def __init__(self):pass
