@@ -1495,13 +1495,6 @@ class MCInfdevOldLevel(EntityLevel):
         return self._allChunks.__iter__();
 
 
-    def getChunks(self, chunks=None):
-        """ pass a list of chunk coordinate tuples to get an iterator yielding
-        InfdevChunks. pass nothing for an iterator of every chunk in the level. 
-        the chunks are automatically loaded."""
-        if chunks is None: chunks = self.allChunks;
-        return (self.getChunk(cx, cz) for (cx, cz) in chunks if self.containsChunk(cx, cz))
-
 
     def _makeChunk(self, cx, cz):
         """return the InfdevChunk object at the given position. because loading

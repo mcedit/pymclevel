@@ -130,6 +130,13 @@ class MCLevel(object):
         return self.loadedChunks
 
 
+    def getChunks(self, chunks=None):
+        """ pass a list of chunk coordinate tuples to get an iterator yielding
+        InfdevChunks. pass nothing for an iterator of every chunk in the level. 
+        the chunks are automatically loaded."""
+        if chunks is None: chunks = self.allChunks;
+        return (self.getChunk(cx, cz) for (cx, cz) in chunks if self.containsChunk(cx, cz))
+
 
     def _getFakeChunkEntities(self, cx, cz):
         """Returns Entities, TileEntities"""
