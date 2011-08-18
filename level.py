@@ -82,42 +82,29 @@ class MCLevel(object):
     def bounds(self):
         return BoundingBox((0, 0, 0), self.size)
 
-    def packChunkData(self):
-        """called before compression"""
-        pass
-    def unpackChunkData(self):
-        """called when accessing attributes decorated with @unpack_first"""
-        pass
-
-    def shapeChunkData(self):
-        """called during the default decompress(), should assign a shape to the
-        Blocks, Data, Light, SkyLight, HeightMap attributes if present """
-        pass
 
     def close(self): pass
 
+    # --- Compression ---
     def compress(self): pass
     def decompress(self):pass
 
-    def compressChunk(self, cx, cz): pass
+
+    # --- Entity Methods ---
     def addEntity(self, entityTag): pass
     def addEntities(self, entities): pass
     def tileEntityAt(self, x, y, z): return None
     def addTileEntity(self, entityTag): pass
     def getEntitiesInBox(self, box): return []
     def getTileEntitiesInBox(self, box): return []
-
     def copyEntitiesFromIter(self, *args, **kw): yield;
 
+    # --- Chunked Format Emulation ---
+    def compressChunk(self, cx, cz): pass
 
     @property
     def loadedChunks(self):
         return itertools.product(xrange(0, self.Width + 15 >> 4), xrange(0, self.Length + 15 >> 4))
-
-    @property
-    def presentChunks(self):
-        """Returns self.allChunks for compatibility"""
-        return self.allChunks #backward compatibility
 
     @property
     def chunkCount(self):
@@ -296,6 +283,7 @@ class MCLevel(object):
         else:
             return zeros(shape=(16, 16, self.Height), dtype='uint8')
 
+    # --- Block accessors ---
     def skylightAt(self, *args):
         return 15
 
@@ -317,15 +305,7 @@ class MCLevel(object):
         if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
         self.Blocks[x, z, y] = blockID
 
-
-
-    def blocksInRanges(self, origin, size):
-        # origin is (x,y,z), size is (w,h,l)
-        (x, y, z) = origin
-        (w, h, l) = size
-#        end = tuple([o+s for o,s in zip(origin,size)])
-        return self.Blocks[x:x + w, z:z + l, y:y + h]
-
+    # --- Fill and Replace ---
     def blockReplaceTable(self, blocksToReplace):
         blocktable = zeros((256, 16), dtype='bool')
         for b in blocksToReplace:
@@ -366,44 +346,8 @@ class MCLevel(object):
             if hasattr(self, "Data"):
                 self.Data[slices[0], slices[2], slices[1]] = blockInfo.blockData;
 
-        #self.saveInPlace();
-    classicWoolMask = zeros((256,), dtype='bool')
-    classicWoolMask[range(21, 37)] = True;
 
-    classicToAlphaWoolTypes = range(21) + [
-        0xE, #"Red", (21)
-        0x1, #"Orange",
-        0x4, #"Yellow",
-        0x5, #"Light Green",
-        0xD, #"Green",
-        0x9, #"Aqua",
-        0x3, #"Cyan",
-        0xB, #"Blue",
-        0xA, #"Purple",
-        0xA, #"Indigo",
-        0x2, #"Violet",
-        0x2, #"Magenta",
-        0x6, #"Pink",
-        0x7, #"Black",
-        0x8, #"Gray",
-        0x0, #"White",
-    ]
-    classicToAlphaWoolTypes = array(classicToAlphaWoolTypes, dtype='uint8')
-
-    def convertBlocksFromLevel(self, sourceLevel, blocks, blockData):
-        convertedBlocks = sourceLevel.materials.conversionTables[self.materials][blocks]
-        if blockData is None:
-            blockData = zeros_like(convertedBlocks)
-
-        convertedBlockData = array(blockData)
-
-        if sourceLevel.materials is classicMaterials and self.materials is alphaMaterials:
-            woolMask = self.classicWoolMask[blocks]
-            woolBlocks = blocks[woolMask]
-            convertedBlockData[woolMask] = self.classicToAlphaWoolTypes[woolBlocks]
-
-        return convertedBlocks, convertedBlockData
-
+    # --- Transformations ---
     def rotateLeft(self):
         self.Blocks = swapaxes(self.Blocks, 1, 0)[:, ::-1, :]; #x=z; z=-x
         pass;
@@ -424,7 +368,7 @@ class MCLevel(object):
         self.Blocks = self.Blocks[:, ::-1, :]; #z=-z
         pass
 
-
+    # --- Copying ---
 
     def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         # assume destinationPoint is entirely within this level, and the size of sourceBox fits entirely within it.
@@ -558,10 +502,49 @@ class MCLevel(object):
         for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
             yield i
 
+    # --- Wool Color Conversion ---
+    classicWoolMask = zeros((256,), dtype='bool')
+    classicWoolMask[range(21, 37)] = True;
+
+    classicToAlphaWoolTypes = range(21) + [
+        0xE, #"Red", (21)
+        0x1, #"Orange",
+        0x4, #"Yellow",
+        0x5, #"Light Green",
+        0xD, #"Green",
+        0x9, #"Aqua",
+        0x3, #"Cyan",
+        0xB, #"Blue",
+        0xA, #"Purple",
+        0xA, #"Indigo",
+        0x2, #"Violet",
+        0x2, #"Magenta",
+        0x6, #"Pink",
+        0x7, #"Black",
+        0x8, #"Gray",
+        0x0, #"White",
+    ]
+    classicToAlphaWoolTypes = array(classicToAlphaWoolTypes, dtype='uint8')
+
+    def convertBlocksFromLevel(self, sourceLevel, blocks, blockData):
+        convertedBlocks = sourceLevel.materials.conversionTables[self.materials][blocks]
+        if blockData is None:
+            blockData = zeros_like(convertedBlocks)
+
+        convertedBlockData = array(blockData)
+
+        if sourceLevel.materials is classicMaterials and self.materials is alphaMaterials:
+            woolMask = self.classicWoolMask[blocks]
+            woolBlocks = blocks[woolMask]
+            convertedBlockData[woolMask] = self.classicToAlphaWoolTypes[woolBlocks]
+
+        return convertedBlocks, convertedBlockData
+
+
     def saveInPlace(self):
         self.saveToFile(self.filename);
 
-
+    # --- Player Methods ---
     def setPlayerPosition(self, pos, player="Player"):
         pass;
 
@@ -584,57 +567,13 @@ class MCLevel(object):
         return (-45., 0.)
 
 
-
+    # --- Dummy Lighting Methods ---
     def generateLights(self, dirtyChunks=None):
         pass;
     def generateLightsIter(self, dirtyChunks=None):
         yield 0
 
-    def adjustExtractionParameters(self, box):
-        x, y, z = box.origin
-        w, h, l = box.size
-        destX = destY = destZ = 0;
 
-        if y < 0:
-            destY -= y
-            h += y
-            y = 0;
-
-        if y >= self.Height: return;
-
-        if y + h >= self.Height:
-            h -= y + h - self.Height
-            y = self.Height - h
-
-        if h <= 0: return
-
-        if self.Width:
-            if x < 0:
-                w += x
-                destX -= x;
-                x = 0;
-            if x >= self.Width: return;
-
-            if x + w >= self.Width:
-                w = self.Width - x
-
-            if w <= 0: return
-
-            if z < 0:
-                l += z
-                destZ -= z;
-                z = 0;
-
-            if z >= self.Length: return;
-
-            if z + l >= self.Length:
-                l = self.Length - z
-
-            if l <= 0: return
-
-        box = BoundingBox ((x, y, z), (w, h, l))
-
-        return box, (destX, destY, destZ)
 
 
 

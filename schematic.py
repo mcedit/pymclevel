@@ -426,6 +426,51 @@ class INVEditChest(MCSchematic):
 
         return TAG_List([chestTag], name="TileEntities")
 
+def adjustExtractionParameters(self, box):
+    x, y, z = box.origin
+    w, h, l = box.size
+    destX = destY = destZ = 0;
+
+    if y < 0:
+        destY -= y
+        h += y
+        y = 0;
+
+    if y >= self.Height: return;
+
+    if y + h >= self.Height:
+        h -= y + h - self.Height
+        y = self.Height - h
+
+    if h <= 0: return
+
+    if self.Width:
+        if x < 0:
+            w += x
+            destX -= x;
+            x = 0;
+        if x >= self.Width: return;
+
+        if x + w >= self.Width:
+            w = self.Width - x
+
+        if w <= 0: return
+
+        if z < 0:
+            l += z
+            destZ -= z;
+            z = 0;
+
+        if z >= self.Length: return;
+
+        if z + l >= self.Length:
+            l = self.Length - z
+
+        if l <= 0: return
+
+    box = BoundingBox ((x, y, z), (w, h, l))
+
+    return box, (destX, destY, destZ)
 
 def extractSchematicFrom(sourceLevel, box, entities=True):
     for i in extractSchematicFromIter(sourceLevel, box, entities):
@@ -446,6 +491,7 @@ def extractSchematicFromIter(sourceLevel, box, entities=True):
 
 MCLevel.extractSchematic = extractSchematicFrom
 MCLevel.extractSchematicIter = extractSchematicFromIter
+MCLevel.adjustExtractionParameters = adjustExtractionParameters
 
 import tempfile
 def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
