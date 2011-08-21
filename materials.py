@@ -1,6 +1,4 @@
-'''
-from materials import classicMaterials, materials
-'''
+
 from numpy import *
 NOTEX = (0xB0, 0x80)
 
@@ -223,9 +221,9 @@ class MCMaterials(object):
 ### MATERIALS for the latest version of the game ###
 ###
 
-materials = MCMaterials(defaultName="Future Block!");
-materials.name = "Alpha"
-am = materials
+alphaMaterials = MCMaterials(defaultName="Future Block!");
+alphaMaterials.name = "Alpha"
+am = alphaMaterials
 am.Air = am.Block(0,
     name="Air",
     texture=(0x80, 0xB0),
@@ -982,12 +980,12 @@ del am
 
 from classicmaterials import classicMaterials
 
-classicMaterials.lightAbsorption = materials.lightAbsorption
+classicMaterials.lightAbsorption = alphaMaterials.lightAbsorption
 
-classicMaterials.lightEmission = materials.lightEmission
+classicMaterials.lightEmission = alphaMaterials.lightEmission
 
 
-namedMaterials = dict((i.name, i) for i in (materials, classicMaterials))
+namedMaterials = dict((i.name, i) for i in (alphaMaterials, classicMaterials))
 
 #filters certain block types in old maps to types available in /game/
 blockFilterClassicToAlpha = arange(256, dtype=uint8)
@@ -1012,18 +1010,16 @@ blockFilterAlphaToClassic[50:255] = 36 # change all blocks from torch (50) on up
 nullConversionTable = arange(256, dtype=uint8)
 
 
-materials.conversionTables = {
-        materials:  nullConversionTable,
+alphaMaterials.conversionTables = {
+        alphaMaterials:  nullConversionTable,
         classicMaterials: blockFilterAlphaToClassic,
     }
 
 classicMaterials.conversionTables = {
-        materials: blockFilterClassicToAlpha,
+        alphaMaterials: blockFilterClassicToAlpha,
         classicMaterials: nullConversionTable,
 
     };
 
-
-alphaMaterials = materials;
 
 __all__ = "alphaMaterials, classicMaterials, namedMaterials, MCMaterials".split(", ")
