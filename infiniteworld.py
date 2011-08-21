@@ -1426,7 +1426,8 @@ class MCInfdevOldLevel(EntityLevel):
             return 0
 
         ch.Blocks[xInChunk, zInChunk, y] = blockID
-        ch.chunkChanged(False)
+        ch.dirty = True
+        ch.needsLighting = True
 
     def skylightAt(self, x, y, z):
 
