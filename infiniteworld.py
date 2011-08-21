@@ -1881,7 +1881,7 @@ class MCInfdevOldLevel(EntityLevel):
                     newDirtyChunks.append(chunk);
 
             workTotal += j
-            estimatedTotals[i] = j
+            estimatedTotals[i:] = [j] * (14 - i)
             j = 0
 
         for ch in startingDirtyChunks:
