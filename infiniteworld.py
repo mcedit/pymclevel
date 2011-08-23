@@ -133,11 +133,11 @@ class ServerJarCache(object):
         return max(self.versions, key=alphanum_key)
 
     def getJarfile(self, version=None):
-        version = version or self.latestVersion
         if len(self.versions) == 0:
             print "No servers found in cache."
             self.downloadCurrentServer()
 
+        version = version or self.latestVersion
         if version not in self.versions: return None
         return self.jarfileForVersion(version)
 
