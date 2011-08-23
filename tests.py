@@ -137,7 +137,7 @@ class TestAlphaLevel(unittest.TestCase):
         indevlevel = self.indevlevel.level
         level = self.alphalevel.level
 
-        schem = fromFile("schematics\\CreativeInABox.schematic");
+        schem = fromFile("schematics/CreativeInABox.schematic");
         level.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 64, 0));
         schem = MCSchematic(shape=(1, 1, 3))
         schem.copyBlocksFrom(level, BoundingBox((0, 64, 0), (1, 1, 3)), (0, 0, 0));
@@ -212,7 +212,7 @@ class TestSchematics(unittest.TestCase):
 
         schematic.saveInPlace();
 
-        schem = fromFile("schematics\CreativeInABox.schematic");
+        schem = fromFile("schematics/CreativeInABox.schematic");
         tempSchematic = MCSchematic(shape=(1, 1, 3))
         tempSchematic.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 0, 0))
 
