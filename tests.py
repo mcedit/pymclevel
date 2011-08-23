@@ -18,6 +18,7 @@ import os
 import numpy
 from numpy import *
 from logging import info
+from pymclevel.infiniteworld import MCServerChunkGenerator
 #logging.basicConfig(format=u'%(levelname)s:%(message)s')
 #logging.getLogger().level = logging.INFO
 
@@ -244,6 +245,20 @@ class TestSchematics(unittest.TestCase):
         info("Entities: ", invFile.Entities)
         info("TileEntities: ", invFile.TileEntities)
         #raise SystemExit;
+
+class TestServerGen(unittest.TestCase):
+    def setUp(self):
+        #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
+        self.alphalevel = TempLevel("PyTestWorld")
+
+    def testServerGen(self):
+        gen = MCServerChunkGenerator()
+        print "Version: ", gen.serverVersion
+
+        level = self.alphalevel.level
+
+        gen.generateChunkInLevel(level, 50, 50)
+        gen.generateChunksInLevel(level, [(120, 50), (121, 50), (122, 50), (123, 50), (244, 244), (244, 245), (244, 246)])
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

@@ -9,6 +9,10 @@ import time
 import zlib
 import struct
 import shutil
+import subprocess
+import sys
+import urllib
+import tempfile
 
 #infinite
 Level = 'Level'
@@ -32,6 +36,288 @@ Time = 'Time'
 Player = 'Player'
 
 __all__ = ["ZeroChunk", "InfdevChunk", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
+
+
+import re
+
+convert = lambda text: int(text) if text.isdigit() else text
+alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+def sort_nicely(l):
+  """ Sort the given list in the way that humans expect. 
+  """
+  l.sort(key=alphanum_key)
+
+# Thank you, Stackoverflow
+# http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+def which(program):
+    def is_exe(fpath):
+        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, _fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+if sys.platform == "win32":
+    appSupportDir = os.path.join(os.environ["APPDATA"], "pymclevel")
+elif sys.platform == "darwin":
+    appSupportDir = os.path.expanduser("~/Library/Application Support/pymclevel/")
+else:
+    appSupportDir = os.path.expanduser("~/.pymclevel")
+
+class ServerJarCache(object):
+
+    def __init__(self, cacheDir=None):
+        if cacheDir is None:
+            cacheDir = os.path.join(appSupportDir, "ServerJarCache")
+        self.cacheDir = cacheDir
+        if not os.path.exists(self.cacheDir):
+            os.makedirs(self.cacheDir)
+
+        cacheDirList = os.listdir(self.cacheDir)
+        self.versions = [v for v in cacheDirList if os.path.exists(self.jarfileForVersion(v))]
+
+        for f in cacheDirList:
+            p = os.path.join(self.cacheDir, f)
+            if f.startswith("minecraft_server") and f.endswith(".jar") and os.path.isfile(p):
+                print "Unclassified minecraft_server.jar found in cache dir. Discovering version number..."
+                self.cacheNewVersion(p)
+                os.remove(p)
+
+
+        print "Minecraft_Server.jar cache initialized."
+        print "Each server is stored in a subdirectory of {0} named with the server's version number".format(self.cacheDir)
+
+
+        print "Cached servers: ", self.versions
+
+
+    def downloadCurrentServer(self):
+        print "Downloading the latest Minecraft Server..."
+        try:
+            (filename, headers) = urllib.urlretrieve("http://www.minecraft.net/download/minecraft_server.jar")
+        except Exception, e:
+            print "Error downloading server: {0!r}".format(e)
+            return
+
+        self.cacheNewVersion(filename)
+
+    def cacheNewVersion(self, filename):
+        """ Finds the version number from the server jar at filename and copies
+        it into the proper subfolder of the server jar cache folder"""
+
+        version = MCServerChunkGenerator._serverVersionFromJarFile(filename)
+        print "Found version ", version
+        versionDir = os.path.join(self.cacheDir, version)
+        if not os.path.exists(versionDir):
+            os.mkdir(versionDir)
+
+        shutil.copy2(filename, os.path.join(versionDir, "minecraft_server.jar"))
+
+        if version not in self.versions:
+            self.versions.append(version)
+
+    def jarfileForVersion(self, v):
+        return os.path.join(self.cacheDir, v, "minecraft_server.jar")
+
+    @property
+    def latestVersion(self):
+        if len(self.versions) == 0: return None
+        return max(self.versions, key=alphanum_key)
+
+    def getJarfile(self, version=None):
+        version = version or self.latestVersion
+        if len(self.versions) == 0:
+            print "No servers found in cache."
+            self.downloadCurrentServer()
+
+        if version not in self.versions: return None
+        return self.jarfileForVersion(version)
+
+class JavaNotFound(RuntimeError): pass
+class VersionNotFound(RuntimeError): pass
+
+class MCServerChunkGenerator(object):
+    """Generates chunks using minecraft_server.jar. Uses a ServerJarCache to 
+    store different versions of minecraft_server.jar in an application support
+    folder. 
+    
+    
+    
+        from pymclevel import *
+        
+    Example usage:
+        
+        gen = MCServerChunkGenerator() # with no arguments, use the newest 
+                                       # server version in the cache, or download
+                                       # the newest one automatically
+        level = loadWorldNamed("MyWorld")
+        
+        gen.generateChunkInLevel(level, 12, 24)
+        
+        
+    Using an older version:
+    
+        gen = MCServerChunkGenerator("Beta 1.6.5")
+        
+    """
+
+    if sys.platform == "win32":
+        javaExe = which("java.exe")
+    else:
+        javaExe = which("java")
+
+    jarcache = None
+
+    def __init__(self, version=None, jarfile=None):
+        if self.__class__.jarcache is None:
+            self.__class__.jarcache = ServerJarCache()
+        if self.javaExe is None:
+            raise JavaNotFound, "Could not find java. Please check that java is installed correctly. (Could not find java in your PATH environment variable.)"
+        if jarfile is None:
+            jarfile = self.jarcache.getJarfile(version)
+        if jarfile is None:
+            raise VersionNotFound, "Could not find minecraft_server.jar for version {0}. Please make sure that a minecraft_server.jar is placed under {1} in a subfolder named after the server's version number.".format(version or "(latest)", self.jarcache.cacheDir)
+        self.serverJarFile = jarfile
+        self.serverVersion = self._serverVersion()
+        self.tempWorldCache = {}
+
+    def clearWorldCache(self):
+        tempDirs = [tempDir for tempDir, _tempWorld in self.tempWorldCache.itervalues()]
+        #self.tempWorldCache = None
+
+        for tempDir in tempDirs:
+            shutil.rmtree(tempDir)
+
+    def waitForServer(self, proc):
+        """ wait for the server to finish starting up, then stop it. """
+        while proc.poll() is None:
+            line = proc.stderr.readline()
+            if "[INFO] Done" in line:
+                proc.stdin.write("stop\n")
+                proc.wait()
+                break
+            if "FAILED TO BIND" in line:
+                proc.kill()
+                proc.wait()
+                raise RuntimeError, "Server Died!"
+
+    def tempWorldForLevel(self, level):
+        if level.RandomSeed in self.tempWorldCache:
+            return self.tempWorldCache[level.RandomSeed]
+
+        #tempDir = tempfile.mkdtemp("mclevel_servergen")
+        tempDir = os.path.join(tempfile.gettempdir(), "pymclevel_MCServerChunkGenerator", self.serverVersion, str(level.RandomSeed))
+        if not os.path.exists(tempDir):
+            os.makedirs(tempDir)
+
+        tempWorldDir = os.path.join(tempDir, "world")
+        tempWorld = MCInfdevOldLevel(tempWorldDir, create=True, random_seed=level.RandomSeed)
+        self.tempWorldCache[level.RandomSeed] = (tempWorld, tempDir)
+        return (tempWorld, tempDir)
+
+    def generateChunkInLevel(self, level, cx, cz):
+        assert isinstance(level, MCInfdevOldLevel)
+        tempWorld, tempDir = self.tempWorldForLevel(level)
+        self.generateAtPosition(tempWorld, tempDir, cx, cz)
+        self.copyChunkAtPosition(tempWorld, level, cx, cz)
+
+    def generateAtPosition(self, tempWorld, tempDir, cx, cz):
+        tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
+        tempWorld.saveInPlace()
+        tempWorld.unloadRegions()
+
+        proc = self.runServer(tempDir)
+        self.waitForServer(proc)
+
+    def copyChunkAtPosition(self, tempWorld, level, cx, cz):
+        tempChunk = tempWorld.getChunk(cx, cz)
+        tempChunk.decompress()
+        tempChunk.unpackChunkData()
+        root_tag = tempChunk.root_tag
+
+        if not level.containsChunk(cx, cz):
+            level.createChunk(cx, cz)
+
+        chunk = level.getChunk(cx, cz)
+        chunk.decompress()
+        chunk.unpackChunkData()
+        chunk.root_tag = root_tag #xxx tag swap, could copy blocks and entities and chunk attrs instead?
+        chunk.dirty = True
+
+        chunk.compress()
+        tempChunk.compress()
+
+
+    def generateChunksInLevel(self, level, chunks):
+        assert isinstance(level, MCInfdevOldLevel)
+        tempWorld, tempDir = self.tempWorldForLevel(level)
+
+        def inBox(cPos):
+            x, z = cPos
+            return x > centercx - 12 and x < centercx + 12 and z > centercz - 12 and z < centercz + 12
+
+        while len(chunks):
+            centercx, centercz = chunks[0]
+
+            boxedChunks = [cPos for cPos in chunks if inBox(cPos)]
+            print "Generating {0} chunks out of {1} starting from {2}".format(len(boxedChunks), len(chunks), (centercx, centercz))
+            chunks = [c for c in chunks if not inBox(c)]
+
+            self.generateAtPosition(tempWorld, tempDir, centercx, centercz)
+            for cx, cz in boxedChunks:
+                self.copyChunkAtPosition(tempWorld, level, cx, cz)
+
+        level.saveInPlace()
+
+    def runServer(self, startingDir):
+        return self._runServer(startingDir, self.serverJarFile)
+
+    @classmethod
+    def _runServer(cls, startingDir, jarfile):
+        print "Starting server {0} in {1}".format(jarfile, startingDir)
+        proc = subprocess.Popen([cls.javaExe, "-jar", jarfile],
+            executable=cls.javaExe,
+            cwd=startingDir,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            )
+        return proc
+
+    def _serverVersion(self):
+        return self._serverVersionFromJarFile(self.serverJarFile)
+
+    @classmethod
+    def _serverVersionFromJarFile(cls, jarfile):
+        tempdir = tempfile.mkdtemp("mclevel_servergen")
+        proc = cls._runServer(tempdir, jarfile)
+
+        version = "Unknown"
+        #out, err = proc.communicate()
+        #for line in err.split("\n"):
+
+        while True:
+            line = proc.stderr.readline()
+            if "Preparing start region" in line: break
+            if "Starting minecraft server version" in line:
+                version = line.split("Starting minecraft server version")[1].strip()
+                break
+
+
+        proc.kill()
+        proc.wait()
+        shutil.rmtree(tempdir)
+
+        return version
 
 
 class ZeroChunk(object):
@@ -1131,6 +1417,10 @@ class MCInfdevOldLevel(EntityLevel):
         regionFile = MCRegionFile(self.regionFilename(rx, rz), (rx, rz))
         self.regionFiles[rx, rz] = regionFile;
         return regionFile
+
+    def unloadRegions(self):
+        self.regionFiles = {}
+        self._allChunks = None
 
     def preloadRegions(self):
         info(u"Scanning for regions...")
