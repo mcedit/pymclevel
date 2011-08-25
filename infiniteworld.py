@@ -72,12 +72,9 @@ elif sys.platform == "darwin":
 else:
     appSupportDir = os.path.expanduser("~/.pymclevel")
 
-class ServerJarCache(object):
-
-    def __init__(self, cacheDir=None):
-        if cacheDir is None:
-            cacheDir = os.path.join(appSupportDir, "ServerJarCache")
-        self.cacheDir = cacheDir
+class ServerJarStorage(object):
+    cacheDir = os.path.join(appSupportDir, "ServerJarStorage")
+    def __init__(self):
         if not os.path.exists(self.cacheDir):
             os.makedirs(self.cacheDir)
         readme = os.path.join(self.cacheDir, "README.TXT")
@@ -172,7 +169,7 @@ class JavaNotFound(RuntimeError): pass
 class VersionNotFound(RuntimeError): pass
 
 class MCServerChunkGenerator(object):
-    """Generates chunks using minecraft_server.jar. Uses a ServerJarCache to 
+    """Generates chunks using minecraft_server.jar. Uses a ServerJarStorage to 
     store different versions of minecraft_server.jar in an application support
     folder. 
     
@@ -201,11 +198,11 @@ class MCServerChunkGenerator(object):
     else:
         javaExe = which("java")
 
-    jarcache = ServerJarCache()
+    jarcache = ServerJarStorage()
     tempWorldCache = {}
     @classmethod
     def reloadJarCache(cls):
-        cls.jarcache = ServerJarCache()
+        cls.jarcache = ServerJarStorage()
 
     def __init__(self, version=None, jarfile=None):
         if self.javaExe is None:
@@ -222,7 +219,9 @@ class MCServerChunkGenerator(object):
         cls.tempWorldCache = {}
 
         for tempDir in os.listdir(cls.worldCacheDir):
-            shutil.rmtree(os.path.join(cls.worldCacheDir, tempDir))
+            t = os.path.join(cls.worldCacheDir, tempDir)
+            if os.path.isdir(t):
+                shutil.rmtree(t)
 
     def waitForServer(self, proc):
         """ wait for the server to finish starting up, then stop it. """
@@ -264,10 +263,20 @@ generation. Feel free to delete it for any reason.
         del tempWorld.version # for compatibility with older servers. newer ones will set it again without issue.
 
         self.tempWorldCache[level.RandomSeed] = (tempWorld, tempDir)
+
+        propsFile = os.path.join(tempDir, "server.properties")
+        if level.dimNo == 0:
+            with file(propsFile, "w") as f:
+                f.write("allow-nether=false\n")
+        else:
+            with file(propsFile, "w") as f:
+                f.write("allow-nether=true\n")
+
         return (tempWorld, tempDir)
 
     def generateChunkInLevel(self, level, cx, cz):
         assert isinstance(level, MCInfdevOldLevel)
+
         tempWorld, tempDir = self.tempWorldForLevel(level)
         self.generateAtPosition(tempWorld, tempDir, cx, cz)
         self.copyChunkAtPosition(tempWorld, level, cx, cz)
@@ -276,12 +285,14 @@ generation. Feel free to delete it for any reason.
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
         tempWorld.saveInPlace()
         tempWorld.unloadRegions()
+
         proc = self.runServer(tempDir)
         self.waitForServer(proc)
 
         tempWorld.loadLevelDat() #reload version number
 
     def copyChunkAtPosition(self, tempWorld, level, cx, cz):
+        if level.containsChunk(cx, cz): return
         try:
             tempChunk = tempWorld.getChunk(cx, cz)
         except ChunkNotPresent, e:
