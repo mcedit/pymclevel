@@ -37,15 +37,20 @@ Player = 'Player'
 
 __all__ = ["ZeroChunk", "InfdevChunk", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
 
+def exhaust(_iter):
+    i = 0
+    for i in _iter:
+        pass
+    return i
 
 import re
 
 convert = lambda text: int(text) if text.isdigit() else text
 alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
 def sort_nicely(l):
-  """ Sort the given list in the way that humans expect. 
-  """
-  l.sort(key=alphanum_key)
+    """ Sort the given list in the way that humans expect. 
+    """
+    l.sort(key=alphanum_key)
 
 # Thank you, Stackoverflow
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
@@ -73,8 +78,14 @@ else:
     appSupportDir = os.path.expanduser("~/.pymclevel")
 
 class ServerJarStorage(object):
-    cacheDir = os.path.join(appSupportDir, "ServerJarStorage")
-    def __init__(self):
+    defaultCacheDir = os.path.join(appSupportDir, "ServerJarStorage")
+
+    def __init__(self, cacheDir=None):
+        if cacheDir is None:
+            cacheDir = self.defaultCacheDir
+
+        self.cacheDir = cacheDir
+
         if not os.path.exists(self.cacheDir):
             os.makedirs(self.cacheDir)
         readme = os.path.join(self.cacheDir, "README.TXT")
@@ -85,9 +96,9 @@ About this folder:
 
 This folder is used by MCEdit and pymclevel to store different versions of the 
 Minecraft Server to use for terrain generation. It should have one or more 
-subfolders, one for each version of the server. Each subfolder must contain at
+subfolders, one for each version of the server. Each subfolder must hold at
 least one file named minecraft_server.jar, and the subfolder's name should 
-contain the server's version and the names of any installed mods.
+have the server's version plus the names of any installed mods.
 
 There may already be a subfolder here (for example, "Beta 1.7.3") if you have 
 used the Chunk Create feature in MCEdit to create chunks using the server. 
@@ -99,7 +110,9 @@ begins with "minecraft_server" and ends with ".jar", it will be detected in
 this way.
 """)
 
+        self.reloadVersions()
 
+    def reloadVersions(self):
         cacheDirList = os.listdir(self.cacheDir)
         self.versions = list(reversed(sorted([v for v in cacheDirList if os.path.exists(self.jarfileForVersion(v))], key=alphanum_key)))
 
@@ -111,7 +124,7 @@ this way.
                 os.remove(p)
 
 
-        print "Minecraft_Server.jar cache initialized."
+        print "Minecraft_Server.jar storage initialized."
         print "Each server is stored in a subdirectory of {0} named with the server's version number".format(self.cacheDir)
 
 
@@ -135,8 +148,14 @@ this way.
         version = MCServerChunkGenerator._serverVersionFromJarFile(filename)
         print "Found version ", version
         versionDir = os.path.join(self.cacheDir, version)
-        if not os.path.exists(versionDir):
-            os.mkdir(versionDir)
+
+        i = 1
+        versionDir2 = versionDir
+        while os.path.exists(versionDir2):
+            versionDir2 = versionDir + str(i)
+            i += 1
+
+        os.mkdir(versionDir2)
 
         shutil.copy2(filename, os.path.join(versionDir, "minecraft_server.jar"))
 
@@ -168,6 +187,17 @@ this way.
 class JavaNotFound(RuntimeError): pass
 class VersionNotFound(RuntimeError): pass
 
+def readProperties(filename):
+    with file(filename) as f:
+        properties = dict((line.split("=", 2) for line in (l.strip() for l in f) if not line.startswith("#")))
+
+    return properties
+
+def saveProperties(filename, properties):
+    with file(filename, "w") as f:
+        for k, v in properties.iteritems():
+            f.write("{0}={1}\n".format(k, v))
+
 class MCServerChunkGenerator(object):
     """Generates chunks using minecraft_server.jar. Uses a ServerJarStorage to 
     store different versions of minecraft_server.jar in an application support
@@ -192,25 +222,32 @@ class MCServerChunkGenerator(object):
         gen = MCServerChunkGenerator("Beta 1.6.5")
         
     """
+    defaultJarStorage = None
 
     if sys.platform == "win32":
         javaExe = which("java.exe")
     else:
         javaExe = which("java")
 
-    jarcache = ServerJarStorage()
+    jarStorage = None
     tempWorldCache = {}
     @classmethod
     def reloadJarCache(cls):
-        cls.jarcache = ServerJarStorage()
+        cls.defaultJarStorage.reloadVersions()
 
-    def __init__(self, version=None, jarfile=None):
+    def __init__(self, version=None, jarfile=None, jarStorage=None):
+
+        if self.__class__.defaultJarStorage is None:
+            self.__class__.defaultJarStorage = ServerJarStorage()
+
+        self.jarStorage = jarStorage or self.defaultJarStorage
+
         if self.javaExe is None:
             raise JavaNotFound, "Could not find java. Please check that java is installed correctly. (Could not find java in your PATH environment variable.)"
         if jarfile is None:
-            jarfile = self.jarcache.getJarfile(version)
+            jarfile = self.jarStorage.getJarfile(version)
         if jarfile is None:
-            raise VersionNotFound, "Could not find minecraft_server.jar for version {0}. Please make sure that a minecraft_server.jar is placed under {1} in a subfolder named after the server's version number.".format(version or "(latest)", self.jarcache.cacheDir)
+            raise VersionNotFound, "Could not find minecraft_server.jar for version {0}. Please make sure that a minecraft_server.jar is placed under {1} in a subfolder named after the server's version number.".format(version or "(latest)", self.jarStorage.cacheDir)
         self.serverJarFile = jarfile
         self.serverVersion = self._serverVersion()
 
@@ -223,63 +260,57 @@ class MCServerChunkGenerator(object):
             if os.path.isdir(t):
                 shutil.rmtree(t)
 
-    def waitForServer(self, proc):
-        """ wait for the server to finish starting up, then stop it. """
-        while proc.poll() is None:
-            line = proc.stderr.readline()
-            if "[INFO] Done" in line:
-                proc.stdin.write("stop\n")
-                proc.wait()
-                break
-            if "FAILED TO BIND" in line:
-                proc.kill()
-                proc.wait()
-                raise RuntimeError, "Server Died!"
-
-    worldCacheDir = os.path.join(tempfile.gettempdir(), "pymclevel_MCServerChunkGenerator")
-
-    def tempWorldForLevel(self, level):
-        if level.RandomSeed in self.tempWorldCache:
-            return self.tempWorldCache[level.RandomSeed]
-
-        #tempDir = tempfile.mkdtemp("mclevel_servergen")
-        tempDir = os.path.join(self.worldCacheDir, self.jarcache.checksumForVersion(self.serverVersion), str(level.RandomSeed))
+    def createReadme(self):
         readme = os.path.join(self.worldCacheDir, "README.TXT")
 
         if not os.path.exists(readme):
             with file(readme, "w") as f:
                 f.write("""
-About this folder:
+    About this folder:
+    
+    This folder is used by MCEdit and pymclevel to cache levels during terrain 
+    generation. Feel free to delete it for any reason.
+    """)
 
-This folder is used by MCEdit and pymclevel to cache levels during terrain 
-generation. Feel free to delete it for any reason.
-""")
+    worldCacheDir = os.path.join(tempfile.gettempdir(), "pymclevel_MCServerChunkGenerator")
 
-        if not os.path.exists(tempDir):
-            os.makedirs(tempDir)
+    def tempWorldForLevel(self, level):
 
-        tempWorldDir = os.path.join(tempDir, "world")
-        tempWorld = MCInfdevOldLevel(tempWorldDir, create=True, random_seed=level.RandomSeed)
-        del tempWorld.version # for compatibility with older servers. newer ones will set it again without issue.
-
-        self.tempWorldCache[level.RandomSeed] = (tempWorld, tempDir)
-
+        #tempDir = tempfile.mkdtemp("mclevel_servergen")
+        tempDir = os.path.join(self.worldCacheDir, self.jarStorage.checksumForVersion(self.serverVersion), str(level.RandomSeed))
         propsFile = os.path.join(tempDir, "server.properties")
-        if level.dimNo == 0:
-            with file(propsFile, "w") as f:
-                f.write("allow-nether=false\n")
+        if os.path.exists(propsFile):
+            properties = readProperties(propsFile)
         else:
-            with file(propsFile, "w") as f:
-                f.write("allow-nether=true\n")
+            properties = {}
+
+        if level.RandomSeed in self.tempWorldCache:
+            tempWorld = self.tempWorldCache[level.RandomSeed]
+        else:
+            if not os.path.exists(tempDir):
+                os.makedirs(tempDir)
+                self.createReadme()
+
+            worldName = "world"
+            worldName = properties.setdefault("world-name", worldName)
+
+            tempWorldDir = os.path.join(tempDir, worldName)
+            tempWorld = MCInfdevOldLevel(tempWorldDir, create=True, random_seed=level.RandomSeed)
+            del tempWorld.version # for compatibility with older servers. newer ones will set it again without issue.
+
+            self.tempWorldCache[level.RandomSeed] = tempWorld
+
+
+        if level.dimNo == 0:
+            properties["allow-nether"] = "false"
+        else:
+            tempWorld = tempWorld.getDimension(level.dimNo)
+
+            properties["allow-nether"] = "true"
+
+        saveProperties(propsFile, properties)
 
         return (tempWorld, tempDir)
-
-    def generateChunkInLevel(self, level, cx, cz):
-        assert isinstance(level, MCInfdevOldLevel)
-
-        tempWorld, tempDir = self.tempWorldForLevel(level)
-        self.generateAtPosition(tempWorld, tempDir, cx, cz)
-        self.copyChunkAtPosition(tempWorld, level, cx, cz)
 
     def generateAtPosition(self, tempWorld, tempDir, cx, cz):
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
@@ -289,7 +320,7 @@ generation. Feel free to delete it for any reason.
         proc = self.runServer(tempDir)
         self.waitForServer(proc)
 
-        tempWorld.loadLevelDat() #reload version number
+        (tempWorld.parentWorld or tempWorld).loadLevelDat() #reload version number
 
     def copyChunkAtPosition(self, tempWorld, level, cx, cz):
         if level.containsChunk(cx, cz): return
@@ -315,9 +346,15 @@ generation. Feel free to delete it for any reason.
         tempChunk.compress()
 
 
+    def generateChunkInLevel(self, level, cx, cz):
+        assert isinstance(level, MCInfdevOldLevel)
+
+        tempWorld, tempDir = self.tempWorldForLevel(level)
+        self.generateAtPosition(tempWorld, tempDir, cx, cz)
+        self.copyChunkAtPosition(tempWorld, level, cx, cz)
+
     def generateChunksInLevel(self, level, chunks):
-        for i in self.generateChunksInLevelIter(level, chunks):
-            yield i
+        return exhaust(self.generateChunksInLevelIter(level, chunks))
 
     def generateChunksInLevelIter(self, level, chunks):
         assert isinstance(level, MCInfdevOldLevel)
@@ -353,13 +390,27 @@ generation. Feel free to delete it for any reason.
 
         level.saveInPlace()
 
+
+    def waitForServer(self, proc):
+        """ wait for the server to finish starting up, then stop it. """
+        while proc.poll() is None:
+            line = proc.stderr.readline()
+            if "[INFO] Done" in line:
+                proc.stdin.write("stop\n")
+                proc.wait()
+                break
+            if "FAILED TO BIND" in line:
+                proc.kill()
+                proc.wait()
+                raise RuntimeError, "Server Died!"
+
     def runServer(self, startingDir):
         return self._runServer(startingDir, self.serverJarFile)
 
     @classmethod
     def _runServer(cls, startingDir, jarfile):
         print "Starting server {0} in {1}".format(jarfile, startingDir)
-        proc = subprocess.Popen([cls.javaExe, "-jar", jarfile],
+        proc = subprocess.Popen([cls.javaExe, "-Xmx1024M", "-Xms1024M", "-jar", jarfile],
             executable=cls.javaExe,
             cwd=startingDir,
             stdin=subprocess.PIPE,
@@ -388,8 +439,12 @@ generation. Feel free to delete it for any reason.
                 version = line.split("Starting minecraft server version")[1].strip()
                 break
 
+        if proc.returncode is None:
+            try:
+                proc.kill()
+            except WindowsError:
+                pass #access denied, process already terminated
 
-        proc.kill()
         proc.wait()
         shutil.rmtree(tempdir)
 
@@ -1252,7 +1307,7 @@ class MCInfdevOldLevel(EntityLevel):
 
 
     def __str__(self):
-        return "MCInfdevOldLevel(" + os.path.split(self.worldDir)[1] + ")"
+        return "MCInfdevOldLevel(\"" + os.path.split(self.worldDir)[1] + "\")"
 
     def TagProperty(tagName, tagType, defaultValueFunc=lambda self:None):
         def getter(self):
@@ -1268,7 +1323,7 @@ class MCInfdevOldLevel(EntityLevel):
     SizeOnDisk = TagProperty('SizeOnDisk', TAG_Long)
     RandomSeed = TagProperty('RandomSeed', TAG_Long)
     Time = TagProperty('Time', TAG_Long); """ Age of the world in ticks. 20 ticks per second; 24000 ticks per day."""
-    LastPlayed = TagProperty('LastPlayed', TAG_Long, lambda self:long(time.time()*1000))
+    LastPlayed = TagProperty('LastPlayed', TAG_Long, lambda self:long(time.time() * 1000))
 
     LevelName = TagProperty('LevelName', TAG_String, lambda self:self.displayName)
 
@@ -1300,7 +1355,7 @@ class MCInfdevOldLevel(EntityLevel):
         root_tag[Data][SpawnZ] = TAG_Int(0)
 
         if last_played is None:
-            last_played = long(time.time()*1000)
+            last_played = long(time.time() * 1000)
         if random_seed is None:
             random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
@@ -1442,17 +1497,22 @@ class MCInfdevOldLevel(EntityLevel):
                 try:
                     dimNo = int(dirname[3:]);
                     info("Found dimension {0}".format(dirname))
-                    dim = MCAlphaDimension(filename=os.path.join(self.worldDir, dirname));
-                    dim.parentWorld = self;
-                    dim.dimNo = dimNo
-                    dim.root_tag = self.root_tag;
-                    dim.filename = self.filename
-                    dim.playersDir = self.playersDir;
-                    dim.players = self.players
-
+                    dim = MCAlphaDimension(self, dimNo);
                     self.dimensions[dimNo] = dim;
                 except Exception, e:
                     error(u"Error loading dimension {0}: {1}".format(dirname, e))
+
+    def getDimension(self, dimNo):
+        if self.dimNo != 0:
+            return self.parentWorld.getDimension(dimNo)
+
+        if dimNo == 0:
+            return self
+
+        if dimNo in self.dimensions: return self.dimensions[dimNo]
+        dim = MCAlphaDimension(self, dimNo, create=True)
+        self.dimensions[dimNo] = dim
+        return dim
 
 
     def getRegionForChunk(self, cx, cz):
@@ -2713,12 +2773,31 @@ class MCInfdevOldLevel(EntityLevel):
         return array(yp);
 
 class MCAlphaDimension (MCInfdevOldLevel):
+    def __init__(self, parentWorld, dimNo):
+        filename = os.path.join(parentWorld.worldDir, "DIM" + str(int(dimNo)))
+        MCInfdevOldLevel.__init__(self, filename)
+        self.dimNo = dimNo
+        self.parentWorld = parentWorld;
+        self.filename = parentWorld.filename
+        self.playersDir = parentWorld.playersDir;
+        self.players = parentWorld.players
+
+    @property
+    def root_tag(self): return self.parentWorld.root_tag;
+
+
+    def __str__(self):
+        return "MCAlphaDimension({0}, {1})".format(self.parentWorld, self.dimNo)
+
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
         pass;
     def preloadDimensions(self):
         pass
+    def create(self, *args, **kw):
+        if not os.path.exists(self.worldDir):
+            os.mkdir(self.worldDir)
 
-    dimensionNames = { -1: "Nether" };
+    dimensionNames = { -1: "Nether", 3: "Aether"};
     @property
     def displayName(self):
         return u"{0} ({1})".format(self.parentWorld.displayName, self.dimensionNames[self.dimNo])
