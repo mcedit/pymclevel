@@ -231,9 +231,6 @@ class MCServerChunkGenerator(object):
 
     jarStorage = None
     tempWorldCache = {}
-    @classmethod
-    def reloadJarCache(cls):
-        cls.defaultJarStorage.reloadVersions()
 
     def __init__(self, version=None, jarfile=None, jarStorage=None):
 
