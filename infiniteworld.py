@@ -167,8 +167,8 @@ this way.
     def checksumForVersion(self, v):
         jf = self.jarfileForVersion(v)
         with file(jf, "rb") as f:
-            import md5
-            return (md5.md5(f.read()).hexdigest())
+            import hashlib
+            return (hashlib.md5(f.read()).hexdigest())
 
     @property
     def latestVersion(self):
