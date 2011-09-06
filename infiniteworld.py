@@ -37,12 +37,6 @@ Player = 'Player'
 
 __all__ = ["ZeroChunk", "InfdevChunk", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
 
-def exhaust(_iter):
-    i = 0
-    for i in _iter:
-        pass
-    return i
-
 import re
 
 convert = lambda text: int(text) if text.isdigit() else text
@@ -1647,7 +1641,7 @@ class MCInfdevOldLevel(EntityLevel):
         self.loadedChunkQueue.discard(chunk)
 
     def chunkDidLoad(self, chunk):
-        if not chunk in self.loadedChunkQueue:
+        if chunk not in self.loadedChunkQueue:
             self.loadedChunkQueue.append(chunk);
             if self.loadedChunkLimit and (len(self.loadedChunkQueue) > self.loadedChunkLimit):
                 oldestChunk = self.loadedChunkQueue[0];
@@ -2003,8 +1997,7 @@ class MCInfdevOldLevel(EntityLevel):
         info(u"Saved {0} chunks".format(dirtyChunkCount))
 
     def generateLights(self, dirtyChunks=None):
-        for i in self.generateLightsIter(dirtyChunks):
-            pass
+        return exhaust(self.generateLightsIter(dirtyChunks))
 
     def generateLightsIter(self, dirtyChunks=None):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
@@ -2570,8 +2563,7 @@ class MCInfdevOldLevel(EntityLevel):
 
 
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
-        for i in self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities):
-            pass
+        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities))
 
     def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
         (x, y, z) = destinationPoint;

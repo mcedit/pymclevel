@@ -476,8 +476,7 @@ class MCLevel(object):
 
 
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
-        for i in self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities):
-            pass
+        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities))
 
     def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
         if (not sourceLevel.isInfinite) and not(

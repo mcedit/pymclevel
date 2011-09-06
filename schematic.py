@@ -473,10 +473,7 @@ def adjustExtractionParameters(self, box):
     return box, (destX, destY, destZ)
 
 def extractSchematicFrom(sourceLevel, box, entities=True):
-    i = None
-    for i in extractSchematicFromIter(sourceLevel, box, entities):
-        pass
-    return i
+    return exhaust(extractSchematicFromIter(sourceLevel, box, entities))
 
 def extractSchematicFromIter(sourceLevel, box, entities=True):
     p = sourceLevel.adjustExtractionParameters(box);
@@ -496,9 +493,7 @@ MCLevel.adjustExtractionParameters = adjustExtractionParameters
 
 import tempfile
 def extractZipSchematicFrom(sourceLevel, box, zipfilename=None, entities=True):
-    for i in extractZipSchematicFromIter(sourceLevel, box, zipfilename, entities):
-        pass
-    return i
+    return exhaust(extractZipSchematicFromIter(sourceLevel, box, zipfilename, entities))
 
 def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=True):
     #converts classic blocks to alpha
