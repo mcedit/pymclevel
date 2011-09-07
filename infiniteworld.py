@@ -228,10 +228,7 @@ class MCServerChunkGenerator(object):
 
     def __init__(self, version=None, jarfile=None, jarStorage=None):
 
-        if self.__class__.defaultJarStorage is None:
-            self.__class__.defaultJarStorage = ServerJarStorage()
-
-        self.jarStorage = jarStorage or self.defaultJarStorage
+        self.jarStorage = jarStorage or self.getDefaultJarStorage()
 
         if self.javaExe is None:
             raise JavaNotFound, "Could not find java. Please check that java is installed correctly. (Could not find java in your PATH environment variable.)"
@@ -241,6 +238,12 @@ class MCServerChunkGenerator(object):
             raise VersionNotFound, "Could not find minecraft_server.jar for version {0}. Please make sure that a minecraft_server.jar is placed under {1} in a subfolder named after the server's version number.".format(version or "(latest)", self.jarStorage.cacheDir)
         self.serverJarFile = jarfile
         self.serverVersion = self._serverVersion()
+
+    @classmethod
+    def getDefaultJarStorage(cls):
+        if cls.defaultJarStorage is None:
+            cls.defaultJarStorage = ServerJarStorage()
+        return cls.defaultJarStorage
 
     @classmethod
     def clearWorldCache(cls):
