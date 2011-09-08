@@ -366,20 +366,29 @@ class MCServerChunkGenerator(object):
         while len(chunks):
             centercx, centercz = chunks[0]
 
-            boxedChunks = [cPos for cPos in chunks if inBox(cPos)]
-            print "Generating {0} chunks out of {1} starting from {2}".format(len(boxedChunks), len(chunks), (centercx, centercz))
+            #boxedChunks = [cPos for cPos in chunks if inBox(cPos)]
+            missingChunks = []
+
+            print "Generating {0} chunks out of {1} starting from {2}".format("XXX", len(chunks), (centercx, centercz))
             yield startLength - len(chunks), startLength
 
-            chunks = [c for c in chunks if not inBox(c)]
+            #chunks = [c for c in chunks if not inBox(c)]
 
             self.generateAtPosition(tempWorld, tempDir, centercx, centercz)
 
-            for cx, cz in boxedChunks:
-                try:
+            for cx, cz in chunks:
+                if tempWorld.containsChunk(cx, cz):
                     self.copyChunkAtPosition(tempWorld, level, cx, cz)
-                except ChunkNotPresent:
-                    print "Failed to copy chunk", (cx, cz), "at a delta of ", (centercx - cx, centercz - cz), "from the last generation center."
-                    raise
+                else:
+                    missingChunks.append((cx, cz))
+
+            if len(chunks) == len(missingChunks):
+                raise ChunkNotPresent, "Asked the generator to create {0} chunks and it didn't create any of them!".format(len(missingChunks))
+
+            chunks = missingChunks
+#                except ChunkNotPresent:
+#                    print "Failed to copy chunk", (cx, cz), "at a delta of ", (centercx - cx, centercz - cz), "from the last generation center."
+#                    raise
 
 
         level.saveInPlace()
