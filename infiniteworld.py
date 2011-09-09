@@ -1772,6 +1772,7 @@ class MCInfdevOldLevel(EntityLevel):
             data = chunk.compressedTag;
         else:
             chunk.decompress()
+            chunk.packChunkData()
             data = chunk.compressTagGzip(chunk.root_tag)
 
         with file(outputFile, "wb") as f:
