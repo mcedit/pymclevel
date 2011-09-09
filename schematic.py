@@ -384,6 +384,7 @@ class INVEditChest(MCSchematic):
     Blocks = array([[[alphaMaterials.Chest.ID]]], 'uint8');
     Data = array([[[0]]], 'uint8');
     Entities = TAG_List();
+    Materials = alphaMaterials
 
     @classmethod
     def _isTagLevel(cls, root_tag):
