@@ -221,7 +221,6 @@ class MCServerChunkGenerator(object):
 
     if sys.platform == "win32":
         javaExe = which("java.exe")
-        javaExe = None
         if javaExe is None:
             KEY_NAME = "HKLM\SOFTWARE\JavaSoft\Java Runtime Environment"
             try:
