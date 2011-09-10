@@ -368,6 +368,7 @@ am.BirchLeaves = am.Block(18, blockData=2,
     color=(89, 151, 76, 128),
     )
 
+
 am.LeavesDecaying = am.Block(18, blockData=0 | 4,
     name="Leaves (Decaying)",
     texture=(0x50, 0x30),
@@ -378,15 +379,17 @@ am.PineLeavesDecaying = am.Block(18, blockData=1 | 4,
     name="Pine Leaves (Decaying)",
     texture=(0x50, 0x80),
     opacity=1,
-    color=am.PineLeaves.color
     )
 
 am.BirchLeavesDecaying = am.Block(18, blockData=2 | 4,
     name="Birch Leaves (Decaying)",
     texture=(0x50, 0x30),
     opacity=1,
-    color=am.BirchLeaves.color
     )
+#repeat flat colors for decaying and bit 0x8 varieties of leaves
+am.flatColors[18, 4:7] = am.flatColors[18, 0:3]
+am.flatColors[18, 8:15] = am.flatColors[18, 0:7]
+am.names[18][8:15] = am.names[18][0:7]
 
 am.Sponge = am.Block(19,
     name="Sponge",
@@ -645,6 +648,18 @@ am.DoubleCobblestoneSlab = am.Block(43, blockData=3,
     texture=(0x00, 0x10),
     )
 
+am.DoubleBrickSlab = am.Block(43, blockData=4,
+    name="Double Wooden Slab",
+    texture=(0x70, 0x00),
+    color=am.WoodPlanks.color
+    )
+
+am.DoubleStoneBrickSlab = am.Block(43, blockData=5,
+    name="Double Stone Brick Slab",
+    texture=(0x60, 0x30),
+    )
+
+
 am.StoneSlab = am.Block(44,
     name="Stone Slab",
     texture=((0x50, 0x00), (0x50, 0x00), (0x60, 0x00), (0x60, 0x00), (0x50, 0x00), (0x50, 0x00)),
@@ -667,6 +682,14 @@ am.CobblestoneSlab = am.Block(44, blockData=3,
     texture=(0x00, 0x10),
     )
 
+am.BrickSlab = am.Block(44, blockData=4,
+    name="Brick Slab",
+    texture=(0x70, 0x00),
+    )
+am.StoneBrickSlab = am.Block(44, blockData=5,
+    name="Stone Brick Slab",
+    texture=(0x60, 0x30),
+    )
 
 am.Brick = am.Block(45,
     name="Brick",
@@ -717,7 +740,6 @@ am.MonsterSpawner = am.Block(52,
 am.WoodenStairs = am.Block(53,
     name="Wooden Stairs",
     texture=(0x40, 0x00),
-    opacity=0,
     )
 
 am.Chest = am.Block(54,
@@ -799,7 +821,6 @@ am.Rail = am.Block(66,
 am.StoneStairs = am.Block(67,
     name="Stone Stairs",
     texture=(0x00, 0x10),
-    opacity=0,
     )
 
 am.WallSign = am.Block(68,
@@ -974,6 +995,76 @@ am.Trapdoor = am.Block(96,
     name="Trapdoor",
     texture=(0x10, 0x50),
     opacity=0,
+    )
+
+am.StoneWithMonster = am.Block(97,
+    name="Stone (with Silverfish?)",
+    texture=(0x00, 0x00),
+    )
+
+am.StoneBricks = am.Block(98,
+    name="Stone Bricks",
+    texture=(0x60, 0x30),
+    )
+
+am.Mushroom = am.Block(99,
+    name="Mushroom",
+    texture=(0xE0, 0x80),
+    )
+
+am.Mushroom2 = am.Block(100,
+    name="Mushroom",
+    texture=(0xE0, 0x80),
+    )
+
+am.IronBars = am.Block(101,
+    name="Iron Bars",
+    texture=(0x50, 0x50),
+    opacity=0,
+    )
+am.GlassPane = am.Block(102,
+    name="Glass Pane",
+    texture=(0x10, 0x30),
+    opacity=0,
+    )
+am.Watermelon = am.Block(103,
+    name="Watermelon",
+    texture=((0x80, 0x80), (0x80, 0x80),
+             (0x90, 0x80), (0x90, 0x80),
+             (0x80, 0x80), (0x80, 0x80),),
+    opacity=0,
+    )
+
+am.TownEdge = am.Block(104,
+    name="Town Edge(?)",
+    opacity=0,
+    )
+
+am.TownEdge2 = am.Block(105,
+    name="Town Edge(?)",
+    opacity=0,
+    )
+
+am.Vines = am.Block(106,
+    name="Vines",
+    texture=(0xF0, 0x80),
+    opacity=0,
+    )
+
+am.FenceGate = am.Block(107,
+    name="Fence Gate",
+    texture=(0x40, 0x00),
+    opacity=0,
+    )
+
+am.BrickStairs = am.Block(108,
+    name="Brick Stairs",
+    texture=(0x70, 0x00),
+    )
+
+am.StoneBrickStairs = am.Block(109,
+    name="Stone Brick Stairs",
+    texture=(0x60, 0x30),
     )
 
 del am
