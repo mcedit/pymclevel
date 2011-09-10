@@ -218,11 +218,37 @@ class MCServerChunkGenerator(object):
     """
     defaultJarStorage = None
 
+
     if sys.platform == "win32":
         javaExe = which("java.exe")
+        javaExe = None
+        if javaExe is None:
+            KEY_NAME = "HKLM\SOFTWARE\JavaSoft\Java Runtime Environment"
+            try:
+                p = subprocess.Popen(["REG", "QUERY", KEY_NAME, "/v", "CurrentVersion"], stdout=subprocess.PIPE, universal_newlines=True)
+                o, e = p.communicate()
+                lines = o.split("\n")
+                for l in lines:
+                    l = l.strip()
+                    if l.startswith("CurrentVersion"):
+                        words = l.split(None, 2)
+                        version = words[-1]
+                        p = subprocess.Popen(["REG", "QUERY", KEY_NAME + "\\" + version, "/v", "JavaHome"], stdout=subprocess.PIPE, universal_newlines=True)
+                        o, e = p.communicate()
+                        lines = o.split("\n")
+                        for l in lines:
+                            l = l.strip()
+                            if l.startswith("JavaHome"):
+                                w = l.split(None, 2)
+                                javaHome = w[-1]
+                                javaExe = os.path.join(javaHome, "bin", "java.exe")
+                                print "RegQuery: java.exe found at ", javaExe
+                                break
+
+            except Exception, e:
+                print "Error while locating java.exe using the Registry: ", repr(e)
     else:
         javaExe = which("java")
-
     jarStorage = None
     tempWorldCache = {}
 
