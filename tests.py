@@ -65,7 +65,7 @@ class TestIndevLevel(unittest.TestCase):
         schem = level.extractSchematic(level.bounds)
         level.copyBlocksFrom(schem, schem.bounds, (0, 0, 0))
 
-        #raise Failure 
+        #raise Failure
 
     def testCopy(self):
         info("Indev level")

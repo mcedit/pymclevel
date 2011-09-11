@@ -5,7 +5,7 @@ import sys
 import subprocess
 import shutil
 import os
-import mclevel
+from pymclevel import mclevel
 import hashlib
 import contextlib
 import gzip
@@ -79,7 +79,7 @@ def launch_subprocess(directory, arguments, env={}):
     newenv.update(env);
 
     proc = subprocess.Popen((["python.exe"] if sys.platform == "win32" else []) + [
-            "./mce.py",
+            "./pymclevel/mce.py",
             directory] + arguments, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=newenv)
 
     return proc

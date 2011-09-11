@@ -28,53 +28,53 @@ class mce(object):
        {commandPrefix}clone <sourceBox> <destPoint> [noair] [nowater]
        {commandPrefix}fill <blockType> [ <box> ]
        {commandPrefix}replace <blockType> [with] <newBlockType> [ <box> ]
-       
+
        {commandPrefix}export <filename> <sourceBox>
        {commandPrefix}import <filename> <destPoint> [noair] [nowater]
-       
+
        {commandPrefix}createChest <point> <item> [ <count> ]
        {commandPrefix}analyze
-       
+
     Player commands:
        {commandPrefix}player [ <player> [ <point> ] ]
        {commandPrefix}spawn [ <point> ]
-       
+
     Entity commands:
        {commandPrefix}removeEntities [ <EntityID> ]
        {commandPrefix}dumpSigns [ <filename> ]
        {commandPrefix}dumpChests [ <filename> ]
-       
+
     Chunk commands:
        {commandPrefix}createChunks <box>
        {commandPrefix}deleteChunks <box>
        {commandPrefix}prune <box>
        {commandPrefix}relight [ <box> ]
-       
+
     World commands:
        {commandPrefix}create <filename>
-       {commandPrefix}degrief 
+       {commandPrefix}degrief
        {commandPrefix}time [ <time> ]
-       {commandPrefix}worldsize       
+       {commandPrefix}worldsize
        {commandPrefix}heightmap <filename>
        {commandPrefix}randomseed [ <seed> ]
-       
+
     Editor commands:
-       {commandPrefix}save 
-       {commandPrefix}reload 
+       {commandPrefix}save
+       {commandPrefix}reload
        {commandPrefix}load <filename> | <world number>
        {commandPrefix}execute <filename>
-       {commandPrefix}quit 
-       
-    Informational: 
+       {commandPrefix}quit
+
+    Informational:
        {commandPrefix}blocks [ <block name> | <block ID> ]
        {commandPrefix}help [ <command> ]
-        
+
     **IMPORTANT**
-       {commandPrefix}box 
-       
+       {commandPrefix}box
+
        Type 'box' to learn how to specify points and areas.
-       
-       
+
+
     """
     random_seed = os.getenv('MCE_RANDOM_SEED', None)
     last_played = os.getenv("MCE_LAST_PLAYED", None)
@@ -271,37 +271,37 @@ class mce(object):
     def _box(self, command):
         """
         Boxes:
-        
+
     Many commands require a <box> as arguments. A box can be specified with
     a point and a size:
         (12, 5, 15), (5, 5, 5)
-    
+
     or with two points, making sure to put the keyword "to" between them:
         (12, 5, 15) to (17, 10, 20)
-        
-    The commas and parentheses are not important. 
+
+    The commas and parentheses are not important.
     You may add them for improved readability.
-    
-    
+
+
         Points:
-        
+
     Points and sizes are triplets of numbers ordered X Y Z.
-    X is position north-south, increasing southward. 
-    Y is position up-down, increasing upward. 
+    X is position north-south, increasing southward.
+    Y is position up-down, increasing upward.
     Z is position east-west, increasing westward.
-    
-    
+
+
         Players:
-    
+
     A player's name can be used as a point - it will use the
-    position of the player's head. Use the keyword 'delta' after 
-    the name to specify a point near the player. 
-    
+    position of the player's head. Use the keyword 'delta' after
+    the name to specify a point near the player.
+
     Example:
        codewarrior delta 0 5 0
-       
-    This refers to a point 5 blocks above codewarrior's head. 
-    
+
+    This refers to a point 5 blocks above codewarrior's head.
+
     """
         raise UsageError;
     def _debug(self, command):
@@ -311,7 +311,7 @@ class mce(object):
     def _log(self, command):
         """
     log [ <number> ]
-    
+
     Get or set the log threshold. 0 logs everything; 50 only logs major errors.
     """
         if len(command):
@@ -326,9 +326,9 @@ class mce(object):
     def _clone(self, command):
         """
     clone <sourceBox> <destPoint> [noair] [nowater]
-    
-    Clone blocks in a cuboid starting at sourcePoint and extending for 
-    sourceSize blocks in each direction. Blocks and entities in the area 
+
+    Clone blocks in a cuboid starting at sourcePoint and extending for
+    sourceSize blocks in each direction. Blocks and entities in the area
     are cloned at destPoint.
     """
         if len(command) == 0:
@@ -351,9 +351,9 @@ class mce(object):
     def _fill(self, command):
         """
     fill <blockType> [ <box> ]
-    
-    Fill blocks with blockType in a cuboid starting at point and 
-    extending for size blocks in each direction. Without a 
+
+    Fill blocks with blockType in a cuboid starting at point and
+    extending for size blocks in each direction. Without a
     destination, fills the whole world. blockType and may be a
     number from 0-255 or a name listed by the 'blocks' command.
     """
@@ -379,11 +379,11 @@ class mce(object):
     def _replace(self, command):
         """
     replace <blockType> [with] <newBlockType> [ <box> ]
-    
-    Replace all blockType blocks with newBlockType in a cuboid 
-    starting at point and extending for size blocks in 
+
+    Replace all blockType blocks with newBlockType in a cuboid
+    starting at point and extending for size blocks in
     each direction. Without a destination, replaces blocks over
-    the whole world. blockType and newBlockType may be numbers 
+    the whole world. blockType and newBlockType may be numbers
     from 0-255 or names listed by the 'blocks' command.
     """
         if len(command) == 0:
@@ -412,8 +412,8 @@ class mce(object):
     def _createchest(self, command):
         """
     createChest <point> <item> [ <count> ]
-    
-    Create a chest filled with the specified item. 
+
+    Create a chest filled with the specified item.
     Stacks are 64 if count is not given.
     """
         point = map(lambda x: int(floor(float(x))), self.readPoint(command))
@@ -429,16 +429,16 @@ class mce(object):
     def _analyze(self, command):
         """
     analyze
-    
+
     Counts all of the block types in every chunk of the world.
     Also updates the level's 'SizeOnDisk' field, correcting its size in the
-    world select menu.  
+    world select menu.
     """
         blockCounts = zeros((4096,), 'uint64')
         sizeOnDisk = 0;
 
         print "Analyzing {0} chunks...".format(self.level.chunkCount)
-        #for input to bincount, create an array of uint16s by 
+        #for input to bincount, create an array of uint16s by
         #shifting the data left and adding the blocks
 
 
@@ -480,7 +480,7 @@ class mce(object):
     def _export(self, command):
         """
     export <filename> <sourceBox>
-    
+
     Exports blocks in the specified region to a file in schematic format.
     This file can be imported with mce or MCEdit.
     """
@@ -500,12 +500,12 @@ class mce(object):
     def _import(self, command):
         """
     import <filename> <destPoint> [noair] [nowater]
-    
+
     Imports a level or schematic into this world, beginning at destPoint.
-    Supported formats include 
+    Supported formats include
     - Alpha single or multiplayer world folder containing level.dat,
     - Zipfile containing Alpha world folder,
-    - Classic single-player .mine, 
+    - Classic single-player .mine,
     - Classic multiplayer server_level.dat,
     - Indev .mclevel
     - Schematic from RedstoneSim, MCEdit, mce
@@ -533,11 +533,11 @@ class mce(object):
     def _player(self, command):
         """
     player [ <player> [ <point> ] ]
-    
+
     Move the named player to the specified point.
     Without a point, prints the named player's position.
     Without a player, prints all players and positions.
-    
+
     In a single-player world, the player is named Player.
     """
         if len(command) == 0:
@@ -560,7 +560,7 @@ class mce(object):
     def _spawn(self, command):
         """
     spawn [ <point> ]
-    
+
     Move the world's spawn point.
     Without a point, prints the world's spawn point.
     """
@@ -578,22 +578,22 @@ class mce(object):
     def _dumpsigns(self, command):
         """
     dumpSigns [ <filename> ]
-    
-    Saves the text and location of every sign in the world to a text file. 
+
+    Saves the text and location of every sign in the world to a text file.
     With no filename, saves signs to <worldname>.signs
-    
-    Output is newline-delimited. 5 lines per sign. Coordinates are 
+
+    Output is newline-delimited. 5 lines per sign. Coordinates are
     on the first line, followed by four lines of sign text. For example:
-    
+
         [229, 118, -15]
         "To boldy go
         where no man
         has gone
         before."
-        
-    Coordinates are ordered the same as point inputs: 
+
+    Coordinates are ordered the same as point inputs:
         [North/South, Down/Up, East/West]
-        
+
     """
         if len(command):
             filename = command[0]
@@ -631,15 +631,15 @@ class mce(object):
     def _repair(self, command):
         """
     repair
-    
-    Attempt to repair inconsistent region files. 
+
+    Attempt to repair inconsistent region files.
     MAKE A BACKUP. WILL DELETE YOUR DATA.
-    
+
     Scans for and repairs errors in region files:
         Deletes chunks whose sectors overlap with another chunk
         Rearranges chunks that are in the wrong slot in the offset table
         Deletes completely unreadable chunks
-        
+
     Only usable with region-format saves.
     """
         if self.level.version:
@@ -651,22 +651,22 @@ class mce(object):
     def _dumpchests(self, command):
         """
     dumpChests [ <filename> ]
-    
-    Saves the content and location of every chest in the world to a text file. 
+
+    Saves the content and location of every chest in the world to a text file.
     With no filename, saves signs to <worldname>.chests
-    
-    Output is delimited by brackets and newlines. A set of coordinates in 
-    brackets begins a chest, followed by a line for each inventory slot. 
+
+    Output is delimited by brackets and newlines. A set of coordinates in
+    brackets begins a chest, followed by a line for each inventory slot.
     For example:
-    
+
         [222, 51, 22]
         2 String
         3 String
         3 Iron bar
-        
-    Coordinates are ordered the same as point inputs: 
+
+    Coordinates are ordered the same as point inputs:
         [North/South, Down/Up, East/West]
-        
+
     """
         from items import items
         if len(command):
@@ -718,22 +718,22 @@ class mce(object):
     def _removeentities(self, command):
         """
     removeEntities [ [except] [ <EntityID> [ <EntityID> ... ] ] ]
-    
+
     Remove all entities matching one or more entity IDs.
-    With the except keyword, removes all entities not 
+    With the except keyword, removes all entities not
     matching one or more entity IDs.
-    
+
     Without any IDs, removes all entities in the world,
     except for Paintings.
-    
-    Known Mob Entity IDs: 
-        Mob Monster Creeper Skeleton Spider Giant 
+
+    Known Mob Entity IDs:
+        Mob Monster Creeper Skeleton Spider Giant
         Zombie Slime Pig Sheep Cow Chicken
 
     Known Item Entity IDs: Item Arrow Snowball Painting
 
     Known Vehicle Entity IDs: Minecart Boat
-    
+
     Known Dynamic Tile Entity IDs: PrimedTnt FallingSand
     """
         removedEntities = {};
@@ -788,8 +788,8 @@ class mce(object):
     def _createchunks(self, command):
         """
     createChunks <box>
-    
-    Creates any chunks not present in the specified region. 
+
+    Creates any chunks not present in the specified region.
     New chunks are filled with only air. New chunks are written
     to disk immediately.
     """
@@ -808,8 +808,8 @@ class mce(object):
     def _deletechunks(self, command):
         """
     deleteChunks <box>
-    
-    Removes all chunks contained in the specified region. 
+
+    Removes all chunks contained in the specified region.
     Chunks are deleted from disk immediately.
     """
         if len(command) == 0:
@@ -825,7 +825,7 @@ class mce(object):
     def _prune(self, command):
         """
     prune <box>
-    
+
     Removes all chunks not contained in the specified region. Useful for enforcing a finite map size.
     Chunks are deleted from disk immediately.
     """
@@ -846,8 +846,8 @@ class mce(object):
     def _relight(self, command):
         """
     relight [ <box> ]
-    
-    Recalculates lights in the region specified. If omitted, 
+
+    Recalculates lights in the region specified. If omitted,
     recalculates the entire world.
     """
         if len(command):
@@ -865,14 +865,14 @@ class mce(object):
     def _create(self, command):
         """
     create [ <filename> ]
-    
-    Create and load a new Minecraft Alpha world. This world will have no 
+
+    Create and load a new Minecraft Alpha world. This world will have no
     chunks and a random terrain seed. If run from the shell, filename is not
     needed because you already specified a filename earlier in the command.
-    For example: 
-        
+    For example:
+
         mce.py MyWorld create
-        
+
     """
         if len(command) < 1:
             raise UsageError, "Expected a filename"
@@ -895,14 +895,14 @@ class mce(object):
     def _degrief(self, command):
         """
     degrief [ <height> ]
-    
-    Reverse a few forms of griefing by removing 
-    Adminium, Obsidian, Fire, and Lava wherever 
+
+    Reverse a few forms of griefing by removing
+    Adminium, Obsidian, Fire, and Lava wherever
     they occur above the specified height.
     Without a height, uses height level 32.
-    
+
     Removes natural surface lava.
-    
+
     Also see removeEntities
     """
         box = self.level.bounds;
@@ -929,8 +929,8 @@ class mce(object):
     def _time(self, command):
         """
     time [time of day]
-    
-    Set or display the time of day. Acceptable values are "morning", "noon", 
+
+    Set or display the time of day. Acceptable values are "morning", "noon",
     "evening", "midnight", or a time of day such as 8:02, 12:30 PM, or 16:45.
     """
         ticks = self.level.Time
@@ -980,7 +980,7 @@ class mce(object):
     def _randomseed(self, command):
         """
     randomseed [ <seed> ]
-    
+
     Set or display the world's random seed, a 64-bit integer that uniquely
     defines the world's terrain.
     """
@@ -998,8 +998,8 @@ class mce(object):
     def _worldsize(self, command):
         """
     worldsize
-    
-    Computes and prints the dimensions of the world.  For infinite worlds, 
+
+    Computes and prints the dimensions of the world.  For infinite worlds,
     also prints the most negative corner.
     """
         bounds = self.level.bounds;
@@ -1119,10 +1119,10 @@ class mce(object):
     def _quit(self, command):
         """
     quit [ yes | no ]
-    
-    Quits the program. 
-    Without 'yes' or 'no', prompts to save before quitting. 
-    
+
+    Quits the program.
+    Without 'yes' or 'no', prompts to save before quitting.
+
     In batch mode, an end of file automatically saves the level.
     """
         if len(command) == 0 or not (command[0].lower() in ("yes", "no")):
@@ -1146,7 +1146,7 @@ class mce(object):
     def _load(self, command):
         """
     load [ <filename> | <world number> ]
-    
+
     Loads another world, discarding all changes to this world.
     """
         if len(command) == 0:
@@ -1159,10 +1159,10 @@ class mce(object):
     def _dimension(self, command):
         """
     dimension [ <dim> ]
-    
+
     Load another dimension, a sub-world of this level. Without options, lists
-    all of the dimensions found in this world. <dim> can be a number or one of 
-    these keywords: 
+    all of the dimensions found in this world. <dim> can be a number or one of
+    these keywords:
         nether, hell, slip: DIM-1
         earth, overworld, parent: parent world
     """
@@ -1202,7 +1202,7 @@ class mce(object):
     def _blocks(self, command):
         """
     blocks [ <block name> | <block ID> ]
-    
+
     Prints block IDs matching the name, or the name matching the ID.
     With nothing, prints a list of all blocks.
     """
@@ -1364,7 +1364,7 @@ class mce(object):
             self.printUsage(keyword)
 
 
-def main(argv):
+def main(argv=sys.argv):
     profile = os.getenv("MCE_PROFILE", None)
     editor = mce()
     if profile:
