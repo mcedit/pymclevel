@@ -2741,7 +2741,7 @@ class MCInfdevOldLevel(EntityLevel):
 
     def getPlayerPath(self, player):
         assert player != "Player"
-        return os.path.join(self.worldDir, "players", player + ".dat")
+        return os.path.join(self.playersDir, player + ".dat")
 
     def getPlayerTag(self, player="Player"):
         if player == "Player":
