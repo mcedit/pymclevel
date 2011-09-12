@@ -119,7 +119,7 @@ this way.
 
 
         print "Minecraft_Server.jar storage initialized."
-        print "Each server is stored in a subdirectory of {0} named with the server's version number".format(self.cacheDir)
+        print u"Each server is stored in a subdirectory of {0} named with the server's version number".format(self.cacheDir)
 
 
         print "Cached servers: ", self.versions
