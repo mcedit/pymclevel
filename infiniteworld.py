@@ -1354,7 +1354,9 @@ class MCInfdevOldLevel(EntityLevel):
     LastPlayed = TagProperty('LastPlayed', TAG_Long, lambda self:long(time.time() * 1000))
 
     LevelName = TagProperty('LevelName', TAG_String, lambda self:self.displayName)
-
+    
+    GameType = TagProperty('GameType', TAG_Int, lambda a:0) #0 for survival, 1 for creative
+    
     _bounds = None
     @property
     def bounds(self):
