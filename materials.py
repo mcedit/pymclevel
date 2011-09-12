@@ -745,6 +745,7 @@ am.WoodenStairs = am.Block(53,
 am.Chest = am.Block(54,
     name="Chest",
     texture=((0xA0, 0x10), (0xA0, 0x10), (0xA0, 0x10), (0xB0, 0x10), (0x90, 0x10), (0x90, 0x10)),
+    opacity = 0,
     )
 
 am.RedstoneWire = am.Block(55,
