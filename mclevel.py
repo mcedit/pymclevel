@@ -190,30 +190,7 @@ from schematic import *
 import sys
 
 
-# we need to decode file paths from environment variables or else we get an error
-# if they are formatted or joined to a unicode string
-
-if sys.platform == "win32":
-    #not sure why win32com is needed if the %APPDATA% var is available
-    try:
-        import win32com.client
-
-        objShell = win32com.client.Dispatch("WScript.Shell")
-        minecraftDir = os.path.join(objShell.SpecialFolders("AppData"), u".minecraft")
-    except Exception, e:
-        print "WScript error {0!r}".format(e)
-        appdata = os.environ['APPDATA'].decode(sys.getfilesystemencoding());
-        minecraftDir = os.path.join(appdata, ".minecraft")
-
-elif sys.platform == "darwin":
-    minecraftDir = os.path.expanduser("~/Library/Application Support/minecraft")
-    minecraftDir.decode(sys.getfilesystemencoding());
-else:
-    minecraftDir = os.path.expanduser("~/.minecraft")
-    minecraftDir.decode(sys.getfilesystemencoding());
-
-saveFileDir = os.path.join(minecraftDir, u"saves")
-
+ 
 #if sys.platform == "win32":
 #    from win32com.shell import shell, shellcon
 #    saveFileDir = shell.SHGetPathFromIDListEx (

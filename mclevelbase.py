@@ -73,4 +73,33 @@ def exhaust(_iter):
         pass
     return i
 
+
+# we need to decode file paths from environment variables or else we get an error
+# if they are formatted or joined to a unicode string
+import sys
+
+if sys.platform == "win32":
+    #not sure why win32com is needed if the %APPDATA% var is available
+    try:
+        import win32com.client
+        objShell = win32com.client.Dispatch("WScript.Shell")
+        appDataDir = objShell.SpecialFolders("AppData")
+        minecraftDir = os.path.join(appDataDir, u".minecraft")
+    except Exception, e:
+        print "Error while getting AppData folder using WScript.Shell.SpecialFolders: {0!r}".format(e)
+        appDataDir = os.environ['APPDATA'].decode(sys.getfilesystemencoding());
+        minecraftDir = os.path.join(appDataDir, u".minecraft")
+
+elif sys.platform == "darwin":
+    appDataDir = os.path.expanduser(u"~/Library/Application Support")
+    
+    minecraftDir = os.path.join(appDataDir, u"minecraft")
+    minecraftDir.decode(sys.getfilesystemencoding());
+else:
+    appDataDir = os.path.expanduser(u"~")
+    minecraftDir = os.path.expanduser(u"~/.minecraft")
+    minecraftDir.decode(sys.getfilesystemencoding());
+
+saveFileDir = os.path.join(minecraftDir, u"saves")
+
 from level import MCLevel, EntityLevel

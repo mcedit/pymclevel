@@ -65,7 +65,8 @@ def which(program):
     return None
 
 if sys.platform == "win32":
-    appSupportDir = os.path.join(os.environ["APPDATA"], "pymclevel")
+    from mclevel import appDataDir
+    appSupportDir = os.path.join(appDataDir, "pymclevel")
 elif sys.platform == "darwin":
     appSupportDir = os.path.expanduser("~/Library/Application Support/pymclevel/")
 else:
