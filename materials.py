@@ -1037,12 +1037,12 @@ am.Watermelon = am.Block(103,
     )
 
 am.TownEdge = am.Block(104,
-    name="Town Edge(?)",
+    name="Pumpkin Stem",
     opacity=0,
     )
 
 am.TownEdge2 = am.Block(105,
-    name="Town Edge(?)",
+    name="Melon Stem",
     opacity=0,
     )
 
