@@ -2399,6 +2399,9 @@ class MCInfdevOldLevel(EntityLevel):
         return count;
 
     def fillBlocks(self, box, blockInfo, blocksToReplace=[]):
+        return exhaust(self.fillBlocksIter(box, blockInfo, blocksToReplace))
+        
+    def fillBlocksIter(self, box, blockInfo, blocksToReplace=[]):
         if box is None:
             chunkIterator = self.getAllChunkSlices()
             box = self.bounds
@@ -2432,12 +2435,13 @@ class MCInfdevOldLevel(EntityLevel):
         i = 0;
         skipped = 0
         replaced = 0;
-
+        
         for (chunk, slices, point) in chunkIterator:
             i += 1;
             if i % 100 == 0:
                 info(u"Chunk {0}...".format(i))
-
+            yield i, box.chunkCount
+                
             blocks = chunk.Blocks[slices]
             data = chunk.Data[slices]
             mask = slice(None)
