@@ -348,7 +348,7 @@ class MCServerChunkGenerator(object):
             tempChunk = tempWorld.getChunk(cx, cz)
         except ChunkNotPresent, e:
             raise ChunkNotPresent, "While generating a world in {0} using server {1} ({2!r})".format(tempWorld, self.serverJarFile, e), sys.exc_traceback
-
+        
         tempChunk.decompress()
         tempChunk.unpackChunkData()
         root_tag = tempChunk.root_tag
@@ -380,14 +380,6 @@ class MCServerChunkGenerator(object):
         assert isinstance(level, MCInfdevOldLevel)
         tempWorld, tempDir = self.tempWorldForLevel(level)
 
-        startRegionRadius = 7 #more recent servers use 12
-        def inBox(cPos):
-            x, z = cPos
-            return (x > centercx - startRegionRadius
-                and x < centercx + startRegionRadius
-                and z > centercz - startRegionRadius
-                and z < centercz + startRegionRadius)
-
         startLength = len(chunks)
         while len(chunks):
             centercx, centercz = chunks[0]
@@ -403,19 +395,17 @@ class MCServerChunkGenerator(object):
             self.generateAtPosition(tempWorld, tempDir, centercx, centercz)
 
             for cx, cz in chunks:
-                if tempWorld.containsChunk(cx, cz):
+                if tempWorld.containsChunk(cx, cz) and tempWorld.getChunk(cx,cz).TerrainPopulated:
                     self.copyChunkAtPosition(tempWorld, level, cx, cz)
                 else:
                     missingChunks.append((cx, cz))
 
             if len(chunks) == len(missingChunks):
                 raise ChunkNotPresent, "Asked the generator to create {0} chunks and it didn't create any of them!".format(len(missingChunks))
-
+            else:
+                print "Generated {0} chunks.".format(len(chunks) - len(missingChunks))
+                
             chunks = missingChunks
-#                except ChunkNotPresent:
-#                    print "Failed to copy chunk", (cx, cz), "at a delta of ", (centercx - cx, centercz - cz), "from the last generation center."
-#                    raise
-
 
         level.saveInPlace()
 
@@ -1588,7 +1578,8 @@ class MCInfdevOldLevel(EntityLevel):
     def unloadRegions(self):
         self.regionFiles = {}
         self._allChunks = None
-
+        self._loadedChunks = {}
+        
     def preloadRegions(self):
         info(u"Scanning for regions...")
         self._allChunks = set()
