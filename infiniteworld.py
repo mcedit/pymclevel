@@ -465,7 +465,7 @@ class MCServerChunkGenerator(object):
 
         proc.wait()
         shutil.rmtree(tempdir)
-
+        if ";)" in version: version = version.replace(";)", "") #Damnit, Jeb!
         return version
 
 
