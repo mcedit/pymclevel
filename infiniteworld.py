@@ -64,16 +64,15 @@ def which(program):
 
     return None
 
-if sys.platform == "win32":
-    from mclevel import appDataDir
-    appSupportDir = os.path.join(appDataDir, "pymclevel")
+if sys.platform == "win32": 
+    appSupportDir = os.path.join(appDataDir, u"pymclevel")
 elif sys.platform == "darwin":
-    appSupportDir = os.path.expanduser("~/Library/Application Support/pymclevel/")
+    appSupportDir = os.path.expanduser(u"~/Library/Application Support/pymclevel/")
 else:
-    appSupportDir = os.path.expanduser("~/.pymclevel")
+    appSupportDir = os.path.expanduser(u"~/.pymclevel")
 
 class ServerJarStorage(object):
-    defaultCacheDir = os.path.join(appSupportDir, "ServerJarStorage")
+    defaultCacheDir = os.path.join(appSupportDir, u"ServerJarStorage")
 
     def __init__(self, cacheDir=None):
         if cacheDir is None:
