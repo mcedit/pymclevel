@@ -516,21 +516,7 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
 
     destBox = BoundingBox(destPoint, sourceBox.size);
 
-    if (sourceBox.isChunkAligned):
-        #create chunks in the destination area corresponding only to chunks
-        #present in the source
-        chunks = sourceBox.chunkPositions
-        destChunks = destBox.chunkPositions
-        chunkIter = itertools.izip(chunks, destChunks)
-
-        for i, (src, chunk) in enumerate(chunkIter):
-            if sourceLevel.containsChunk(*src):
-                tempSchematic.createChunk(*chunk)
-            yield i, sourceBox.chunkCount
-    else:
-        tempSchematic.createChunksInBox(destBox)
-
-    for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities):
+    for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True):
         yield i
     tempSchematic.saveInPlace(); #lights not needed for this format - crashes minecraft though
 

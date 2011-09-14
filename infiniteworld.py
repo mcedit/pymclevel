@@ -2495,7 +2495,7 @@ class MCInfdevOldLevel(EntityLevel):
                 return slice(None, None)
         return sourceMask
 
-    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
         #assumes destination point and bounds have already been checked.
         (sx, sy, sz) = sourceBox.origin
 
@@ -2561,7 +2561,7 @@ class MCInfdevOldLevel(EntityLevel):
 
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
 
-    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
         """ copy blocks between two infinite levels via repeated export/import.  hilariously slow. """
 
         #assumes destination point and bounds have already been checked.
@@ -2569,8 +2569,20 @@ class MCInfdevOldLevel(EntityLevel):
         chunkCount = destBox.chunkCount
         i = 0
         sourceMask = self.sourceMaskFunc(blocksToCopy)
-
-        for chunk, slices, point in self.getChunkSlices(destBox):
+        
+        def subbox(slices, point):
+            size = [s.stop - s.start for s in slices]
+            size[1], size[2] = size[2], size[1]
+            return BoundingBox([p + a for p, a in zip(point, sourceBox.origin)], size)
+            
+        def shouldCreateFunc(slices, point):
+            box = subbox(slices, point)
+            b = any(list(sourceLevel.containsChunk(*c) for c in box.chunkPositions)) #any() won't take a generator-expression :(
+            if b == False:
+                print 'Skipped ', list(box.chunkPositions)
+            return b
+            
+        for chunk, slices, point in self.getChunkSlices(destBox, create=(create and shouldCreateFunc)):
             i += 1
             yield (i, chunkCount)
             if i % 100 == 0:
@@ -2578,9 +2590,7 @@ class MCInfdevOldLevel(EntityLevel):
 
             dstblocks = chunk.Blocks[slices]
             dstdata = chunk.Data[slices]
-            size = [s.stop - s.start for s in slices]
-            size[1], size[2] = size[2], size[1]
-            sourceSubBox = BoundingBox([p + a for p, a in zip(point, sourceBox.origin)], size)
+            sourceSubBox = subbox(slices, point)
             for srcchunk, srcslices, srcpoint in sourceLevel.getChunkSlices(sourceSubBox):
                 srcpoint = srcpoint[0], srcpoint[2], srcpoint[1]
                 sourceBlocks = srcchunk.Blocks[srcslices]
@@ -2597,10 +2607,10 @@ class MCInfdevOldLevel(EntityLevel):
 
 
 
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
-        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities))
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
+        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
 
-    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
+    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
         (x, y, z) = destinationPoint;
         (lx, ly, lz) = sourceBox.size
         #sourcePoint, sourcePoint1 = sourceBox
@@ -2611,12 +2621,12 @@ class MCInfdevOldLevel(EntityLevel):
         startTime = datetime.now()
 
         if(not isinstance(sourceLevel, MCInfdevOldLevel)):
-            for i in self.copyBlocksFromFiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+            for i in self.copyBlocksFromFiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
                 yield i
 
 
         else:
-            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
                 yield i
 
         for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):

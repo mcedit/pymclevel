@@ -180,8 +180,10 @@ class MCLevel(object):
 
             yield (chunk, slices, (xPos * 16 - x, 0, zPos * 16 - z))
 
-
-    def getChunkSlices(self, box):
+    def getChunkSlicesCreating(self, box): 
+        return self.getChunkSlices(box, create=True)
+        
+    def getChunkSlices(self, box, create=False):
         """ call this method to iterate through a large slice of the world by 
             visiting each chunk and indexing its data with a subslice.
         
@@ -194,6 +196,9 @@ class MCLevel(object):
         and the 'offset' triplet. x,z,y ordering is used only
         to index arrays, since it reflects the order of the blocks in memory.
         In all other places, including an entity's 'Pos', the order is x,y,z. 
+        
+        'create' controls whether to create absent chunks or skip over them.
+        create can be False, True, or a function of (slices, point) 
         """
         level = self
 
@@ -229,14 +234,21 @@ class MCLevel(object):
                     localMaxZ = maxzoff
                 newMinZ = localMinZ + (cz << 4) - box.minz
                 newMaxZ = localMaxZ + (cz << 4) - box.minz
-                try:
-                    ch = level.getChunk(cx, cz)
-                except ChunkNotPresent, e:
-                    continue;
-
-                yield           (ch,
-                                (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(miny, maxy)),
-                                (newMinX, newMinY, newMinZ))
+                slices, point = (
+                    (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(miny, maxy)),
+                    (newMinX, newMinY, newMinZ)
+                )
+                
+                if not level.containsChunk(cx,cz):
+                    if create and hasattr(level, 'createChunk'):
+                        if not hasattr(create, "__call__") or create(slices, point):
+                            level.createChunk(cx,cz)
+                        else:
+                            continue
+                    else:
+                        continue;
+                chunk = level.getChunk(cx,cz)
+                yield chunk, slices, point
 
 
     def containsPoint(self, x, y, z):

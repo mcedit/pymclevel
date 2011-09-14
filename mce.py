@@ -522,9 +522,8 @@ class mce(object):
         importLevel = mclevel.fromFile(filename)
 
         destBox = BoundingBox(destPoint, importLevel.size)
-        self.level.createChunksInBox(destBox);
 
-        self.level.copyBlocksFrom(importLevel, importLevel.bounds, destPoint, blocksToCopy);
+        self.level.copyBlocksFrom(importLevel, importLevel.bounds, destPoint, blocksToCopy, create=True);
 
 
         self.needsSave = True;
