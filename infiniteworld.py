@@ -262,7 +262,7 @@ class MCServerChunkGenerator(object):
         if jarfile is None:
             raise VersionNotFound, "Could not find minecraft_server.jar for version {0}. Please make sure that a minecraft_server.jar is placed under {1} in a subfolder named after the server's version number.".format(version or "(latest)", self.jarStorage.cacheDir)
         self.serverJarFile = jarfile
-        self.serverVersion = self._serverVersion()
+        self.serverVersion = version or self._serverVersion()
 
     @classmethod
     def getDefaultJarStorage(cls):
