@@ -2509,7 +2509,7 @@ class MCInfdevOldLevel(EntityLevel):
         i = 0;
         chunkCount = float(destBox.chunkCount)
 
-        for (chunk, slices, point) in self.getChunkSlices(destBox):
+        for (chunk, slices, point) in self.getChunkSlices(destBox, create=create):
             i += 1;
             yield (i, chunkCount)
 
