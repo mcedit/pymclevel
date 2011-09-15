@@ -2807,9 +2807,9 @@ class MCInfdevOldLevel(EntityLevel):
         return array(yp);
 
 class MCAlphaDimension (MCInfdevOldLevel):
-    def __init__(self, parentWorld, dimNo):
+    def __init__(self, parentWorld, dimNo, create=False):
         filename = os.path.join(parentWorld.worldDir, "DIM" + str(int(dimNo)))
-        MCInfdevOldLevel.__init__(self, filename)
+        MCInfdevOldLevel.__init__(self, filename, create)
         self.dimNo = dimNo
         self.parentWorld = parentWorld;
         self.filename = parentWorld.filename
