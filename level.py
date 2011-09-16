@@ -98,7 +98,9 @@ class MCLevel(object):
     def getEntitiesInBox(self, box): return []
     def getTileEntitiesInBox(self, box): return []
     def copyEntitiesFromIter(self, *args, **kw): yield;
-
+    def removeEntitiesInBox(self, box): pass
+    def removeTileEntitiesInBox(self, box): pass
+    
     # --- Chunked Format Emulation ---
     def compressChunk(self, cx, cz): pass
 
