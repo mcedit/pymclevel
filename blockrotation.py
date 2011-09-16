@@ -85,22 +85,18 @@ class WallSign:
     South = 5
 genericFlipRotation(WallSign)
 
-class Furnace:
+class FurnaceDispenserChest:
     blocktypes = [
         alphaMaterials.Furnace.ID,
         alphaMaterials.LitFurnace.ID,
+        alphaMaterials.Dispenser.ID,
+        alphaMaterials.Chest.ID,
     ]
     East = 2
     West = 3
     North = 4
     South = 5
-genericFlipRotation(Furnace)
-
-class Dispenser(Furnace):
-    blocktypes = [
-        alphaMaterials.Dispenser.ID,
-    ]
-genericFlipRotation(Dispenser)
+genericFlipRotation(FurnaceDispenserChest)
 
 class Pumpkin:
     blocktypes = [
@@ -327,6 +323,30 @@ applyPistonBit(PistonBody.flipNorthSouth)
 class PistonHead(PistonBody):
     blocktypes = [alphaMaterials.PistonHead.ID]
 rotationClasses.append(PistonHead)
+
+class Vines:
+    blocktypes = [alphaMaterials.Vines.ID]
+    
+    WestBit = 1
+    NorthBit = 2
+    EastBit = 4
+    SouthBit = 8
+    
+    rotateLeft = arange(16, dtype='uint8')
+    flipEastWest = arange(16, dtype='uint8')
+    flipNorthSouth = arange(16, dtype='uint8')
+    
+
+#Hmm... Since each bit is a direction, we can rotate by shifting!
+Vines.rotateLeft = 0xf & ((Vines.rotateLeft >> 1) | (Vines.rotateLeft << 3))
+# Wherever each bit is set, clear it and set the opposite bit
+EastWestBits = (Vines.EastBit | Vines.WestBit)
+Vines.flipEastWest[(Vines.flipEastWest & EastWestBits) > 0] ^= EastWestBits
+
+NorthSouthBits = (Vines.NorthBit | Vines.SouthBit)
+Vines.flipNorthSouth[(Vines.flipNorthSouth & NorthSouthBits) > 0] ^= NorthSouthBits
+
+rotationClasses.append(Vines)
 
 def masterRotationTable(attrname):
     # compute a 256x16 table mapping each possible blocktype/data combination to 
