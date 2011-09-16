@@ -66,6 +66,8 @@ class Stair:
     blocktypes = [
         alphaMaterials.WoodenStairs.ID,
         alphaMaterials.StoneStairs.ID,
+        alphaMaterials.BrickStairs.ID,
+        alphaMaterials.StoneBrickStairs.ID,
     ]
 
     South = 0
