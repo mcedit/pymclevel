@@ -2815,7 +2815,8 @@ class MCAlphaDimension (MCInfdevOldLevel):
         self.filename = parentWorld.filename
         self.playersDir = parentWorld.playersDir;
         self.players = parentWorld.players
-
+        self.playerTagCache = parentWorld.playerTagCache
+        
     @property
     def root_tag(self): return self.parentWorld.root_tag;
 
