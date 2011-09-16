@@ -1008,6 +1008,15 @@ am.StoneBricks = am.Block(98,
     texture=(0x60, 0x30),
     )
 
+am.MossyStoneBricks = am.Block(98, blockData=1,
+    name="Mossy Stone Bricks",
+    texture=(0x40, 0x60),
+    )
+am.CrackedStoneBricks = am.Block(98, blockData=2,
+    name="Cracked Stone Bricks",
+    texture=(0x50, 0x60),
+    )
+    
 am.Mushroom = am.Block(99,
     name="Mushroom",
     texture=(0xE0, 0x80),
