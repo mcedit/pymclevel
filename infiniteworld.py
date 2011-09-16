@@ -2412,14 +2412,15 @@ class MCInfdevOldLevel(EntityLevel):
         #if shouldRetainData:
         #    info( "Preserving data bytes" )
         shouldRetainData = False #xxx old behavior overwrote blockdata with 0 when e.g. replacing water with lava
-
+       
         info("Replacing {0} with {1}".format(blocksToReplace, blockInfo))
 
         changesLighting = True
 
         if len(blocksToReplace):
             blocktable = self.blockReplaceTable(blocksToReplace)
-
+            shouldRetainData = all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
+        
             newAbsorption = self.materials.lightAbsorption[blockInfo.ID]
             oldAbsorptions = [self.materials.lightAbsorption[b.ID] for b in blocksToReplace]
             changesLighting = False

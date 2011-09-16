@@ -361,13 +361,25 @@ def masterRotationTable(attrname):
 
     return table
 
+def rotationTypeTable():
+    table = {}
+    for cls in rotationClasses:
+        for b in cls.blocktypes:
+            table[b] = cls
+    
+    return table
+    
 class BlockRotation:
     rotateLeft = masterRotationTable("rotateLeft");
     flipEastWest = masterRotationTable("flipEastWest");
     flipNorthSouth = masterRotationTable("flipNorthSouth");
     flipVertical = masterRotationTable("flipVertical");
-
-
+    typeTable = rotationTypeTable()
+    
+def SameRotationType(blocktype1, blocktype2):
+    #use different default values for typeTable.get() to make it return false when neither blocktype is present
+    return BlockRotation.typeTable.get(blocktype1.ID) == BlockRotation.typeTable.get(blocktype2.ID, BlockRotation)
+    
 def FlipVertical(blocks, data):
     data[:] = BlockRotation.flipVertical[blocks, data]
 

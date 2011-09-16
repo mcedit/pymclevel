@@ -340,12 +340,13 @@ class MCLevel(object):
         info(u"Filling blocks in {0} with {1}, replacing{2}".format(box, blockInfo, blocksToReplace))
 
         slices = map(slice, box.origin, box.maximum)
-
+        
         blocks = self.Blocks[slices[0], slices[2], slices[1]]
         if len(blocksToReplace):
             blocktable = self.blockReplaceTable(blocksToReplace)
-
-            if hasattr(self, "Data"):
+            shouldRetainData = (self.materials == alphaMaterials) and all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
+            
+            if hasattr(self, "Data") and shouldRetainData:
                 data = self.Data[slices[0], slices[2], slices[1]]
                 mask = blocktable[blocks, data]
 
