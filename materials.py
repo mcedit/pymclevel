@@ -46,6 +46,7 @@ class Block(object):
         bl = Block(self.materials, self.ID, self.blockData)
         bl.wildcard = True
         return bl
+
 class MCMaterials(object):
     defaultBrightness = 0
     defaultOpacity = 15
@@ -213,9 +214,7 @@ class MCMaterials(object):
 
         return block
 
-    def __cmp__(self, rhs):
-        return (self.ID, self.blockData).__cmp__((rhs.ID, rhs.blockData))
-
+   
 
 ###
 ### MATERIALS for the latest version of the game ###
