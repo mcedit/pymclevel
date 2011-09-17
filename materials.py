@@ -648,7 +648,7 @@ am.DoubleCobblestoneSlab = am.Block(43, blockData=3,
     )
 
 am.DoubleBrickSlab = am.Block(43, blockData=4,
-    name="Double Wooden Slab",
+    name="Double Brick Slab",
     texture=(0x70, 0x00),
     color=am.WoodPlanks.color
     )
@@ -1020,19 +1020,22 @@ am.StoneBricks = am.Block(98,
 am.MossyStoneBricks = am.Block(98, blockData=1,
     name="Mossy Stone Bricks",
     texture=(0x40, 0x60),
+    color=am.MossStone.color,
     )
 am.CrackedStoneBricks = am.Block(98, blockData=2,
     name="Cracked Stone Bricks",
     texture=(0x50, 0x60),
+    color=am.Cobblestone.color,
     )
     
 am.Mushroom = am.Block(99,
-    name="Mushroom",
+    name="Huge Red Mushroom",
     texture=(0xE0, 0x80),
+    color=(0xDD, 0x22, 0x25, 0xFF),
     )
 
 am.Mushroom2 = am.Block(100,
-    name="Mushroom",
+    name="Huge Brown Mushroom",
     texture=(0xE0, 0x80),
     )
 
@@ -1054,12 +1057,12 @@ am.Watermelon = am.Block(103,
     opacity=0,
     )
 
-am.TownEdge = am.Block(104,
+am.PumpkinStem = am.Block(104,
     name="Pumpkin Stem",
     opacity=0,
     )
 
-am.TownEdge2 = am.Block(105,
+am.MelonStem = am.Block(105,
     name="Melon Stem",
     opacity=0,
     )
@@ -1079,13 +1082,16 @@ am.FenceGate = am.Block(107,
 am.BrickStairs = am.Block(108,
     name="Brick Stairs",
     texture=(0x70, 0x00),
+    color=am.Brick.color,
     )
 
 am.StoneBrickStairs = am.Block(109,
     name="Stone Brick Stairs",
     texture=(0x60, 0x30),
+    color=am.StoneBricks.color,
     )
 
+am.AllStairs = [am.WoodenStairs, am.StoneStairs, am.BrickStairs, am.StoneBrickStairs]
 del am
 
 from classicmaterials import classicMaterials
