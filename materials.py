@@ -997,9 +997,19 @@ am.Trapdoor = am.Block(96,
     opacity=0,
     )
 
-am.StoneWithMonster = am.Block(97,
-    name="Stone (with Silverfish?)",
+am.HiddenSilverfishStone = am.Block(97,
+    name="Hidden Silverfish (Stone)",
     texture=(0x00, 0x00),
+    )
+
+am.HiddenSilverfishCobblestone = am.Block(97, blockData = 1,
+    name="Hidden Silverfish (Cobblestone)",
+    texture=(0x00, 0x10),
+    )
+
+am.HiddenSilverfishStoneBrick = am.Block(97, blockData = 2,
+    name="Hidden Silverfish (Stone Brick)",
+    texture=(0x60, 0x30),
     )
 
 am.StoneBricks = am.Block(98,
