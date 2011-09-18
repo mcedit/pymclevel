@@ -490,10 +490,10 @@ class MCLevel(object):
         return sourceBox, destinationPoint
 
 
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
-        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities))
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
+        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
 
-    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True):
+    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
         if (not sourceLevel.isInfinite) and not(
                sourceLevel.containsPoint(*sourceBox.origin) and
                sourceLevel.containsPoint(*map(lambda x:x - 1, sourceBox.maximum))):
