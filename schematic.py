@@ -220,12 +220,20 @@ class MCSchematic (EntityLevel):
         if self.dataIsPacked:
             self.packUnpack()
             self.dataIsPacked = False;
+    
+    def _update_shape(self):
+        root_tag=self.root_tag
+        shape = self.Blocks.shape
+        root_tag[Height] = TAG_Short(shape[2])
+        root_tag[Length] = TAG_Short(shape[1])
+        root_tag[Width] = TAG_Short(shape[0])
 
     def rotateLeft(self):
 
         self.Blocks = swapaxes(self.Blocks, 1, 0)[:, ::-1, :]; #x=z; z=-x
         self.Data = swapaxes(self.Data, 1, 0)[:, ::-1, :]; #x=z; z=-x
-
+        self._update_shape()
+        
         blockrotation.RotateLeft(self.Blocks, self.Data);
 
         info(u"Relocating entities...")
@@ -262,14 +270,15 @@ class MCSchematic (EntityLevel):
         " xxx rotate stuff "
         self.Blocks = swapaxes(self.Blocks, 2, 0)[:, :, ::-1]; #x=z; z=-x
         self.Data = swapaxes(self.Data, 2, 0)[:, :, ::-1];
-
+        self._update_shape()
+        
 
     def flipVertical(self):
         " xxx delete stuff "
         blockrotation.FlipVertical(self.Blocks, self.Data);
         self.Blocks = self.Blocks[:, :, ::-1]; #y=-y
         self.Data = self.Data[:, :, ::-1];
-
+        
     def flipNorthSouth(self):
         blockrotation.FlipNorthSouth(self.Blocks, self.Data);
         self.Blocks = self.Blocks[::-1, :, :]; #x=-x
