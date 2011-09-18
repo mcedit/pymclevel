@@ -2579,8 +2579,8 @@ class MCInfdevOldLevel(EntityLevel):
         def shouldCreateFunc(slices, point):
             box = subbox(slices, point)
             b = any(list(sourceLevel.containsChunk(*c) for c in box.chunkPositions)) #any() won't take a generator-expression :(
-            if b == False:
-                print 'Skipped ', list(box.chunkPositions)
+            #if b == False:
+            #    print 'Skipped ', list(box.chunkPositions)
             return b
             
         for chunk, slices, point in self.getChunkSlices(destBox, create=(create and shouldCreateFunc)):
