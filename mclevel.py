@@ -174,12 +174,6 @@ from logging import warn, error, info, debug
 from numpy import fromstring
 import nbt
 
-try:
-    import psyco
-    psyco.full()
-except:
-    pass
-
 from mclevelbase import *
 from indev import *
 from infiniteworld import *
