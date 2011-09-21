@@ -428,7 +428,7 @@ class MCServerChunkGenerator(object):
     @classmethod
     def _runServer(cls, startingDir, jarfile):
         print "Starting server {0} in {1}".format(jarfile, startingDir)
-        proc = subprocess.Popen([cls.javaExe, "-Xmx1024M", "-Xms1024M", "-jar", jarfile],
+        proc = subprocess.Popen([cls.javaExe, "-Djava.awt.headless=true", "-Xmx1024M", "-Xms1024M", "-jar", jarfile],
             executable=cls.javaExe,
             cwd=startingDir,
             stdin=subprocess.PIPE,
