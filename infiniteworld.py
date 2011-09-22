@@ -1345,7 +1345,9 @@ class MCInfdevOldLevel(EntityLevel):
 
     LevelName = TagProperty('LevelName', TAG_String, lambda self:self.displayName)
     
-    GameType = TagProperty('GameType', TAG_Int, lambda a:0) #0 for survival, 1 for creative
+    MapFeatures = TagProperty('MapFeatures', TAG_Byte, lambda self:1)
+    
+    GameType = TagProperty('GameType', TAG_Int, lambda self:0) #0 for survival, 1 for creative
     
     _bounds = None
     @property
