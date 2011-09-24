@@ -395,14 +395,19 @@ class MCServerChunkGenerator(object):
 
             #chunks = [c for c in chunks if not inBox(c)]
 
-            self.generateAtPosition(tempWorld, tempDir, centercx, centercz)
-
+            for p in self.generateAtPositionIter(tempWorld, tempDir, centercx, centercz):
+                yield startLength - len(chunks), startLength, p
+            
+            i=0
             for cx, cz in chunks:
                 if tempWorld.containsChunk(cx, cz) and tempWorld.getChunk(cx,cz).TerrainPopulated:
                     self.copyChunkAtPosition(tempWorld, level, cx, cz)
+                    i+= 1
+                    yield startLength - len(chunks) + i, startLength
                 else:
                     missingChunks.append((cx, cz))
-
+                
+            [(cx,cz) for (cx,cz) in chunks if tempWorld.containsChunk(cx,cz)]
             if len(chunks) == len(missingChunks):
                 raise ChunkNotPresent, "Asked the generator to create {0} chunks and it didn't create any of them!".format(len(missingChunks))
             else:
@@ -414,9 +419,13 @@ class MCServerChunkGenerator(object):
 
 
     def waitForServer(self, proc):
+        return exhaust(self.waitForServerIter(proc))
+    def waitForServerIter(self, proc):
         """ wait for the server to finish starting up, then stop it. """
         while proc.poll() is None:
             line = proc.stderr.readline()
+            yield line.strip()
+            
             if "[INFO] Done" in line:
                 proc.stdin.write("stop\n")
                 proc.wait()
