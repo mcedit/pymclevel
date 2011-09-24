@@ -332,12 +332,16 @@ class MCServerChunkGenerator(object):
         return (tempWorld, tempDir)
 
     def generateAtPosition(self, tempWorld, tempDir, cx, cz):
+        return exhaust(self.generateAtPositionIter(tempWorld, tempDir, cx, cz))
+        
+    def generateAtPositionIter(self, tempWorld, tempDir, cx, cz):
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
         tempWorld.saveInPlace()
         tempWorld.unloadRegions()
 
         proc = self.runServer(tempDir)
-        self.waitForServer(proc)
+        for p in self.waitForServerIter(proc): yield p
+        
 
         (tempWorld.parentWorld or tempWorld).loadLevelDat() #reload version number
 
