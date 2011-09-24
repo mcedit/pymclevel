@@ -1354,6 +1354,8 @@ class MCInfdevOldLevel(EntityLevel):
     MapFeatures = TagProperty('MapFeatures', TAG_Byte, lambda self:1)
     
     GameType = TagProperty('GameType', TAG_Int, lambda self:0) #0 for survival, 1 for creative
+    GAMETYPE_SURVIVAL = 0
+    GAMETYPE_CREATIVE = 1
     
     _bounds = None
     @property
@@ -2571,7 +2573,9 @@ class MCInfdevOldLevel(EntityLevel):
             #chunk.compress(); #xxx find out why this trashes changes to tile entities
 
     def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
-        """ copy blocks between two infinite levels via repeated export/import.  hilariously slow. """
+        """ copy blocks between two infinite levels by looping through the 
+        destination's chunks. make a sub-box of the source level for each chunk
+        and copy block and entities in the sub box to the dest chunk."""
 
         #assumes destination point and bounds have already been checked.
         destBox = BoundingBox(destinationPoint, sourceBox.size)
