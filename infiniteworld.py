@@ -366,7 +366,11 @@ class MCServerChunkGenerator(object):
         chunk.dirty = True
 
         chunk.compress()
+        chunk.save()
+        chunk.unload()
         tempChunk.compress()
+        tempChunk.unload()
+        
 
 
     def generateChunkInLevel(self, level, cx, cz):
