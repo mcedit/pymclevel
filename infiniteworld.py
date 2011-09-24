@@ -758,7 +758,9 @@ class InfdevChunk(EntityLevel):
     def isCompressed(self):
         return self.isLoaded() and self.root_tag == None
 
-
+    def generateHeightMap(self):
+        extractLightMap(self.materials, self.Blocks, self.HeightMap)
+         
     def chunkChanged(self, calcLighting=True):
         """ You are required to call this function after you are done modifying
         the chunk. Pass False for calcLighting if you know your changes will 
@@ -770,7 +772,7 @@ class InfdevChunk(EntityLevel):
 
         self.dirty = True;
         self.needsLighting = calcLighting or self.needsLighting;
-        generateHeightMap(self);
+        self.generateHeightMap();
         if calcLighting:
             self.genFastLights()
 
@@ -909,19 +911,6 @@ class InfdevChunk(EntityLevel):
         """True or False. If False, the game will populate the chunk with 
         ores and vegetation on next load"""
         self.root_tag[Level]["TerrainPopulated"].value = val;
-
-def generateHeightMap(self):
-    self.load();
-
-    blocks = self.Blocks
-    heightMap = self.HeightMap
-    heightMap[:] = 0;
-
-    lightAbsorption = self.world.materials.lightAbsorption[blocks]
-    axes = lightAbsorption.nonzero()
-    heightMap[axes[1], axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
-    heightMap += 1;
-
 
 class dequeset(object):
     def __init__(self):

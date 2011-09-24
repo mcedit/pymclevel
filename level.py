@@ -9,6 +9,21 @@ from mclevelbase import *
 import tempfile
 from collections import defaultdict
 
+def extractLightMap(materials, blocks, heightMap = None):
+    """Computes the HeightMap array for a chunk, which stores the lowest 
+    y-coordinate of each column where the sunlight is still at full strength."""
+    
+    if heightMap is None:
+        heightMap = zeros((16, 16), 'uint8')
+        
+    heightMap[:] = 0;
+
+    lightAbsorption = materials.lightAbsorption[blocks]
+    axes = lightAbsorption.nonzero()
+    heightMap[axes[1], axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
+    heightMap += 1;
+    return heightMap
+
 class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
     including a common copyEntitiesFrom built on class-specific routines, and
@@ -143,7 +158,13 @@ class MCLevel(object):
             def chunkChanged(self):pass
             @property
             def materials(self): return self.world.materials
-
+            @property
+            def HeightMap(self):
+                if hasattr(self, "_heightMap"):
+                    return self._heightMap
+                    
+                self._heightMap = extractLightMap(self.materials, self.Blocks)
+                return self._heightMap
         f = FakeChunk()
         f.world = self;
         f.chunkPosition = (cx, cz)

@@ -102,4 +102,4 @@ else:
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
 
-from level import MCLevel, EntityLevel
+from level import MCLevel, EntityLevel, extractLightMap
