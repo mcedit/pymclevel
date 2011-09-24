@@ -1231,7 +1231,9 @@ class MCRegionFile(object):
             f.write(data);# // chunk data
             #f.flush()
 
-
+    def containsChunk(self, cx,cz):
+        return self.getOffset(cx,cz) != 0
+        
     def getOffset(self, cx, cz):
         cx &= 0x1f;
         cz &= 0x1f
@@ -2656,7 +2658,10 @@ class MCInfdevOldLevel(EntityLevel):
         if self._allChunks is not None: return (cx, cz) in self._allChunks;
         if (cx, cz) in self._loadedChunks: return True;
         if self.version:
-            return (cx, cz) in self.allChunks
+            rx, rz = cx>>5, cz>>5
+            if not os.path.exists(self.regionFilename(rx, rz)): return False
+            
+            return self.getRegionFile(rx,rz).containsChunk(cx, cz)
         else:
             return os.path.exists(self.chunkFilename(cx, cz))
 
