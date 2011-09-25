@@ -1010,8 +1010,17 @@ class MCRegionFile(object):
             self.repair()
 
         info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
-             file=os.path.basename(path), used=len(self.freeSectors) - sum(self.freeSectors), total=len(self.freeSectors), chunks=sum(self.offsets > 0)))
-
+             file=os.path.basename(path), used=self.usedSectors, total=self.sectorCount, chunks=self.chunkCount))
+    
+    @property
+    def usedSectors(self): return len(self.freeSectors) - sum(self.freeSectors)
+    
+    @property
+    def sectorCount(self): return len(self.freeSectors)
+    
+    @property
+    def chunkCount(self): return sum(self.offsets > 0)
+    
     def repair(self):
         lostAndFound = {}
         _freeSectors = [True] * len(self.freeSectors)

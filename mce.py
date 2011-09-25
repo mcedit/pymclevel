@@ -125,6 +125,7 @@ class mce(object):
         "help",
         "blocks",
         "analyze",
+        "region",
 
         "debug",
         "log",
@@ -626,7 +627,96 @@ class mce(object):
         print "Dumped {0} signs to {1}".format(signCount, filename);
 
         outFile.close();
-
+    
+    def _region(self, command):
+        """
+    region [rx rz]
+    
+    List region files in this world.
+    """
+        level = self.level
+        assert(isinstance(level, mclevel.MCInfdevOldLevel))
+        assert(level.version)
+        def getFreeSectors(rf):
+            runs = []
+            start = None
+            count = 0
+            for i, free in enumerate(rf.freeSectors):
+                if free:
+                    if start is None:
+                        start = i
+                        count = 1
+                    else:
+                        count += 1
+                else:
+                    if start is None:
+                        pass
+                    else:
+                        runs.append((start, count))
+                        start = None
+                        count = 0
+            
+            return runs
+            
+        def printFreeSectors(runs):
+            
+            for i, (start, count) in enumerate(runs):
+                if i % 4 == 3: print ""
+                print "{start:>6}+{count:<4}".format(**locals()), 
+                
+                
+            print ""
+            
+        if len(command):
+            if len(command) > 1:
+                rx,rz = map(int, command[:2])
+                level.allChunks
+                rf = level.regionFiles.get((rx,rz))
+                if rf is None:
+                    print "Region {rx},{rz} not found.".format(**locals())
+                    return
+                
+                used = rf.usedSectors
+                sectors = rf.sectorCount
+                print "Region {rx:6}, {rz:6}: {used}/{sectors} sectors".format(**locals())
+                print "Offset Table:"
+                for cx in range(32):
+                    for cz in range(32):
+                        if cz % 4 == 0:
+                            print ""
+                            print "{0:3}, {1:3}: ".format(cx,cz),
+                        off = rf.getOffset(cx,cz)
+                        sector, length = off>>8, off&0xff
+                        print "{sector:>6}+{length:<2} ".format(**locals()),
+                    print ""
+                    
+                runs = getFreeSectors(rf)
+                if len(runs):
+                    print "Free sectors:",
+                
+                    printFreeSectors(runs)
+                    
+            else:
+                if command[0] == "free":
+                    level.allChunks
+                    for (rx,rz), rf in level.regionFiles.iteritems():
+                        
+                        runs = getFreeSectors(rf)
+                        if len(runs):
+                            print "R {0:3}, {1:3}:".format(rx,rz), 
+                            printFreeSectors(runs)
+                        
+                    
+        else:
+            level.allChunks
+            coords = (r for r in level.regionFiles)
+            for i, (rx, rz) in enumerate(coords):
+                count = level.regionFiles[rx,rz].chunkCount
+                print "({rx:6}, {rz:6}): {count}, ".format(**locals()), 
+                if i % 5 == 4: print ""
+            
+        
+        
     def _repair(self, command):
         """
     repair
