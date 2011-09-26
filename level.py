@@ -24,6 +24,7 @@ def extractLightMap(materials, blocks, heightMap = None):
     heightMap += 1;
     return heightMap
 
+
 class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
     including a common copyEntitiesFrom built on class-specific routines, and
@@ -151,20 +152,7 @@ class MCLevel(object):
         position. Subclasses override fakeBlocksForChunk and fakeDataForChunk
         to fill in the chunk arrays"""
 
-        class FakeChunk(EntityLevel):
-            def load(self):pass
-            def compress(self):pass
-            def __init__(self):pass
-            def chunkChanged(self):pass
-            @property
-            def materials(self): return self.world.materials
-            @property
-            def HeightMap(self):
-                if hasattr(self, "_heightMap"):
-                    return self._heightMap
-                    
-                self._heightMap = extractLightMap(self.materials, self.Blocks)
-                return self._heightMap
+        
         f = FakeChunk()
         f.world = self;
         f.chunkPosition = (cx, cz)
@@ -772,3 +760,18 @@ class EntityLevel(MCLevel):
 
         return self._fakeEntities[cx, cz]
 
+class FakeChunk(EntityLevel):
+    def load(self):pass
+    def compress(self):pass
+    def __init__(self):pass
+    def chunkChanged(self):pass
+    @property
+    def materials(self): return self.world.materials
+    @property
+    def HeightMap(self):
+        if hasattr(self, "_heightMap"):
+            return self._heightMap
+            
+        self._heightMap = extractLightMap(self.materials, self.Blocks)
+        return self._heightMap
+        
