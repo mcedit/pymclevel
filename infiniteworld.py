@@ -485,8 +485,14 @@ class MCServerChunkGenerator(object):
         if ";)" in version: version = version.replace(";)", "") #Damnit, Jeb!
         return version
 
-
-class ZeroChunk(object):
+_zeros = {}
+def ZeroChunk(height=512):
+    z = _zeros.get(height)
+    if z is None:
+        z = _zeros[height] = _ZeroChunk(height)
+    return z
+    
+class _ZeroChunk(object):
     " a placebo for neighboring-chunk routines "
     def compress(self): pass
     def load(self): pass
@@ -675,19 +681,19 @@ class InfdevChunk(EntityLevel):
         levelTag[LastUpdate] = TAG_Long(0);
 
         levelTag[BlockLight] = TAG_Byte_Array()
-        levelTag[BlockLight].value = zeros(16 * 16 * self.world.ChunkHeight / 2, uint8)
+        levelTag[BlockLight].value = zeros(16 * 16 * self.world.Height / 2, uint8)
 
         levelTag[Blocks] = TAG_Byte_Array()
-        levelTag[Blocks].value = zeros(16 * 16 * self.world.ChunkHeight, uint8)
+        levelTag[Blocks].value = zeros(16 * 16 * self.world.Height, uint8)
 
         levelTag[Data] = TAG_Byte_Array()
-        levelTag[Data].value = zeros(16 * 16 * self.world.ChunkHeight / 2, uint8)
+        levelTag[Data].value = zeros(16 * 16 * self.world.Height / 2, uint8)
 
         levelTag[SkyLight] = TAG_Byte_Array()
-        levelTag[SkyLight].value = zeros(16 * 16 * self.world.ChunkHeight / 2, uint8)
+        levelTag[SkyLight].value = zeros(16 * 16 * self.world.Height / 2, uint8)
         levelTag[SkyLight].value[:] = 255
 
-        if self.world.ChunkHeight <= 128:
+        if self.world.Height <= 256:
             levelTag[HeightMap] = TAG_Byte_Array()
             levelTag[HeightMap].value = zeros(16 * 16, uint8)
         else:
@@ -736,7 +742,7 @@ class InfdevChunk(EntityLevel):
             except Exception, e:
                 error(u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e))
                 if self.world: self.world.malformedChunk(*self.chunkPosition);
-                raise ChunkMalformed, self.filename
+                raise ChunkMalformed, self.filename, sys.exc_info()[2]
 
             self.world.chunkDidLoad(self)
             self.world.chunkDidDecompress(self);
@@ -805,7 +811,7 @@ class InfdevChunk(EntityLevel):
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
             s = dataArray.shape
-            assert s[2] == self.world.ChunkHeight / 2;
+            assert s[2] == self.world.Height / 2;
             #unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)  
 
             unpackedData = zeros((s[0], s[1], s[2] * 2), dtype='uint8')
@@ -829,9 +835,9 @@ class InfdevChunk(EntityLevel):
             return;
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
-            assert dataArray.shape[2] == self.world.ChunkHeight;
+            assert dataArray.shape[2] == self.world.Height;
 
-            unpackedData = self.root_tag[Level][key].value.reshape(16, 16, self.world.ChunkHeight / 2, 2)
+            unpackedData = self.root_tag[Level][key].value.reshape(16, 16, self.world.Height / 2, 2)
             unpackedData[..., 1] <<= 4
             unpackedData[..., 1] |= unpackedData[..., 0]
             self.root_tag[Level][key].value = array(unpackedData[:, :, :, 1])
@@ -844,11 +850,18 @@ class InfdevChunk(EntityLevel):
         chunkTag = self.root_tag
 
         chunkSize = 16
-        chunkTag[Level][Blocks].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight)
+        if not hasattr(self.world, 'HeightOverride'):
+            length = chunkTag[Level][Blocks].value.ravel().shape[0]
+            height = length / (chunkSize * chunkSize)
+            self.world.Height = height
+            self.world.HeightOverride = True
+            self.world._bounds = None
+            
+        chunkTag[Level][Blocks].value.shape = (chunkSize, chunkSize, self.world.Height)
         chunkTag[Level][HeightMap].value.shape = (chunkSize, chunkSize);
-        chunkTag[Level][SkyLight].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight / 2)
-        chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight / 2)
-        chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, self.world.ChunkHeight / 2)
+        chunkTag[Level][SkyLight].value.shape = (chunkSize, chunkSize, self.world.Height / 2)
+        chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, self.world.Height / 2)
+        chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, self.world.Height / 2)
         if TileEntities not in chunkTag[Level]:
             chunkTag[Level][TileEntities] = TAG_List();
         if Entities not in chunkTag[Level]:
@@ -1303,7 +1316,7 @@ class MCInfdevOldLevel(EntityLevel):
     isInfinite = True
     parentWorld = None;
     dimNo = 0;
-    ChunkHeight = 128
+    Height = 128
 
 
     @property
@@ -1494,8 +1507,7 @@ class MCInfdevOldLevel(EntityLevel):
 
         #attempt to support yMod
         try:
-            self.ChunkHeight = self.root_tag["Data"]["YLimit"].value
-            self.Height = self.ChunkHeight
+            self.Height = self.root_tag["Data"]["YLimit"].value
         except:
             pass
 

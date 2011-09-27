@@ -12,7 +12,7 @@ class BoundingBox (object):
     def chunkBox(self, level):
         """Returns this box extended to the chunk boundaries of the given level"""
         box = self
-        return BoundingBox((box.mincx << 4, 0, box.mincz << 4), (box.maxcx - box.mincx << 4, level.ChunkHeight, box.maxcz - box.mincz << 4))
+        return BoundingBox((box.mincx << 4, 0, box.mincz << 4), (box.maxcx - box.mincx << 4, level.Height, box.maxcz - box.mincz << 4))
 
     def getMinx(self): return self.origin[0];
     def getMiny(self): return self.origin[1];
