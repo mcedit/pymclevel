@@ -190,7 +190,7 @@ class MCMaterials(object):
         self.lightAbsorption[blockID] = block.opacity
         self.aka[blockID] = block.aka
 
-        self.flatColors[blockID, (blockData or slice(None))] = block.color
+        self.flatColors[blockID, (blockData or slice(None))] = (block.color + (255,))[:4]
 
         texture = kw.pop('texture', None)
 
@@ -1090,8 +1090,55 @@ am.StoneBrickStairs = am.Block(109,
     texture=(0x60, 0x30),
     color=am.StoneBricks.color,
     )
+    
+am.Mycelium = am.Block(110,
+    name="Mycelium",
+    texture = ((0xd0, 0x40), (0xd0, 0x40), 
+               (0xe0, 0x40), (0x20, 0x00), 
+               (0xd0, 0x40), (0xd0, 0x40), 
+               ),
+    color=(140, 115, 119),
+)
 
-am.AllStairs = [am.WoodenStairs, am.StoneStairs, am.BrickStairs, am.StoneBrickStairs]
+am.Lilypad = am.Block(111,
+    name="Lilypad",
+    texture = (0xc0, 0x40),
+    opacity = 0,
+)
+
+am.NetherBrick = am.Block(112,
+    name="Nether Brick",
+    texture = (0x0, 0xe0),
+    color=(54, 24, 30),
+)
+
+am.NetherBrickFence = am.Block(113,
+    name="Nether Fence",
+    texture = (0x0, 0xe0),
+    color=(54, 24, 30),
+)
+
+am.NetherBrickStairs = am.Block(114,
+    name="Nether Stairs",
+    texture = (0x0, 0xe0),
+    color=(54, 24, 30),
+)
+
+am.NetherWart = am.Block(115,
+    name="Nether Wart",
+    texture = (0x40, 0xe0),
+    color=(112, 8, 28),
+)
+
+
+
+am.AllStairs = [
+    am.WoodenStairs, 
+    am.StoneStairs, 
+    am.BrickStairs, 
+    am.StoneBrickStairs,
+    am.NetherBrickStairs,
+]
 del am
 
 from classicmaterials import classicMaterials
