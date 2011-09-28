@@ -21,7 +21,7 @@ def extractLightMap(materials, blocks, heightMap = None):
     lightAbsorption = materials.lightAbsorption[blocks]
     axes = lightAbsorption.nonzero()
     heightMap[axes[1], axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
-    heightMap += 1;
+    heightMap[heightMap<255] += 1;
     return heightMap
 
 
