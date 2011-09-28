@@ -1396,7 +1396,10 @@ class MCInfdevOldLevel(EntityLevel):
             rf.close();
 
         self.regionFiles = {}
-
+        
+        self._allChunks = None
+        self._loadedChunks = {}
+        
     def create(self, filename, random_seed, last_played):
 
         if filename == None:
@@ -1520,7 +1523,10 @@ class MCInfdevOldLevel(EntityLevel):
 
         self.preloadDimensions();
         #self.preloadChunkPositions();
-
+    
+    def __del__(self):
+        self.close()
+        
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
 
         if create:
@@ -1608,9 +1614,7 @@ class MCInfdevOldLevel(EntityLevel):
         return regionFile
 
     def unloadRegions(self):
-        self.regionFiles = {}
-        self._allChunks = None
-        self._loadedChunks = {}
+        self.close()
         
     def preloadRegions(self):
         info(u"Scanning for regions...")
@@ -2917,10 +2921,11 @@ class ZipSchematic (MCInfdevOldLevel):
         if "Materials" in schematicDat:
             self.materials = namedMaterials[schematicDat["Materials"].value]
 
-    def __del__(self):
+    def close(self):
+        MCInfdevOldLevel.close(self)
         self.zipfile.close()
-        MCInfdevOldLevel.__del__(self)
-
+        shutil.rmtree(self.worldDir, True)
+        
     def getWorldBounds(self):
         return BoundingBox((0, 0, 0), (self.Width, self.Height, self.Length))
 
@@ -2937,12 +2942,22 @@ class ZipSchematic (MCInfdevOldLevel):
             chunk.decompress()
 
     def _saveChunk(self, chunk):
-        raise NotImplementedError, "Cannot save zipfiles yet!"
+        if self.version:
+            return MCInfdevOldLevel._saveChunk(self, chunk)
+        else:
+            raise NotImplementedError, "Cannot save chunk-format zipfiles!"
 
     def saveInPlace(self):
-        raise NotImplementedError, "Cannot save zipfiles yet!"
+        self.saveToFile(self.filename)
+        
     def saveToFile(self, filename):
-        shutil.copy(self.filename, filename)
+        tempfile = filename + ".new"
+        from schematic import zipdir
+        zipdir(self.worldDir, tempfile)
+        
+        if os.path.exists(filename):
+            os.remove(filename)
+        shutil.copy(tempfile, filename)
 
     def containsChunk(self, cx, cz):
         return (cx, cz) in self.allChunks
