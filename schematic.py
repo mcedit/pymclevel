@@ -4,6 +4,7 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 from mclevelbase import *
+import shutil
 #schematic
 Materials = 'Materials'
 
@@ -518,35 +519,52 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
 
     destPoint = (0, 0, 0)
 
-    filename = tempfile.mktemp("schematic")
-
-    tempSchematic = MCInfdevOldLevel(filename, create=True);
-    tempSchematic.materials = sourceLevel.materials
-
-    destBox = BoundingBox(destPoint, sourceBox.size);
-
-    for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True):
-        yield i
-    tempSchematic.saveInPlace(); #lights not needed for this format - crashes minecraft though
-
-    schematicDat = TAG_Compound()
-    schematicDat.name = "Mega Schematic"
-
-    schematicDat["Width"] = TAG_Int(sourceBox.size[0]);
-    schematicDat["Height"] = TAG_Int(sourceBox.size[1]);
-    schematicDat["Length"] = TAG_Int(sourceBox.size[2]);
-    schematicDat["Materials"] = TAG_String(tempSchematic.materials.name);
-    schematicDat.save(os.path.join(filename, "schematic.dat"))
-
-    zipdir(filename, zipfilename)
-
-    import shutil
-    shutil.rmtree(filename)
-    import mclevel
-    yield mclevel.fromFile(zipfilename)
-
+    tempfolder = tempfile.mktemp("schematic")
+    try:
+        done = False
+        tempSchematic = MCInfdevOldLevel(tempfolder, create=True);
+        tempSchematic.materials = sourceLevel.materials
+    
+        destBox = BoundingBox(destPoint, sourceBox.size);
+    
+        for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True):
+            yield i
+        tempSchematic.saveInPlace(); #lights not needed for this format - crashes minecraft though
+        
+        schematicDat = TAG_Compound()
+        schematicDat.name = "Mega Schematic"
+    
+        schematicDat["Width"] = TAG_Int(sourceBox.size[0]);
+        schematicDat["Height"] = TAG_Int(sourceBox.size[1]);
+        schematicDat["Length"] = TAG_Int(sourceBox.size[2]);
+        schematicDat["Materials"] = TAG_String(tempSchematic.materials.name);
+        schematicDat.save(os.path.join(tempfolder, "schematic.dat"))
+    
+        zipdir(tempfolder, zipfilename)
+    
+        import mclevel
+        yield mclevel.fromFile(zipfilename)
+    finally:
+        #We get here if the generator is GCed also
+        if os.path.exists(tempfolder): shutil.rmtree(tempfolder, False)
+            
+            
 MCLevel.extractZipSchematic = extractZipSchematicFrom
 MCLevel.extractZipSchematicIter = extractZipSchematicFromIter
+
+def extractAnySchematic(level, box):
+    return exhaust(level.extractAnySchematicIter(box))
+    
+def extractAnySchematicIter(level, box):
+    try:
+        for i in level.extractSchematicIter(box):
+            yield i
+    except MemoryError:
+        for i in level.extractZipSchematicIter(box):
+            yield i
+            
+MCLevel.extractAnySchematic = extractAnySchematic
+MCLevel.extractAnySchematicIter = extractAnySchematicIter
 
 from zipfile import ZipFile, ZIP_STORED
 def zipdir(basedir, archivename):
