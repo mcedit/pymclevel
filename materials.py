@@ -220,9 +220,9 @@ class MCMaterials(object):
 ### MATERIALS for the latest version of the game ###
 ###
 
-alphaMaterials = MCMaterials(defaultName="Future Block!");
+am = MCMaterials(defaultName="Future Block!");
+alphaMaterials = am
 alphaMaterials.name = "Alpha"
-am = alphaMaterials
 am.Air = am.Block(0,
     name="Air",
     texture=(0x80, 0xB0),
@@ -1027,18 +1027,66 @@ am.CrackedStoneBricks = am.Block(98, blockData=2,
     texture=(0x50, 0x60),
     color=am.Cobblestone.color,
     )
-    
-am.Mushroom = am.Block(99,
-    name="Huge Red Mushroom",
-    texture=(0xE0, 0x80),
+Red = (0xD0, 0x70)
+Brown = (0xE0, 0x70)
+Pore = (0xE0, 0x80)
+Stem = (0xD0, 0x80)
+
+
+HugeMushroomTypes = {
+    "Northeast" : 1,
+    "East" : 2,
+    "Southeast" : 3,
+    "South" : 6,
+    "Southwest" : 9,
+    "West" : 8,
+    "Northwest" : 7,
+    "North" : 4,
+    "Stem" : 10,
+    "Top" : 5,
+}
+from faces import *
+
+def defineShroomFaces(Shroom, id, name):
+    for way, data in sorted(HugeMushroomTypes.items(), key=lambda a:a[1]):
+        loway = way.lower()
+        if way is "Stem":
+            tex = [Stem, Stem, Pore, Pore, Stem, Stem]
+        elif way is "Pore":
+            tex = Pore
+        else:
+            tex = [Pore] * 6
+            tex[FaceYIncreasing] = Shroom
+            if "east" in loway:
+                tex[FaceZDecreasing] = Shroom
+            if "west" in loway:
+                tex[FaceZIncreasing] = Shroom
+            if "north" in loway:
+                tex[FaceXDecreasing] = Shroom
+            if "south" in loway:
+                tex[FaceXIncreasing] = Shroom
+                
+        am.Block(id, blockData = data,
+            name="Huge " + name + " Mushroom (" + way + ")",
+            texture=tex,
+            )
+
+                    
+am.HugeBrownMushroom = am.Block(99,
+    name="Huge Brown Mushroom",
+    texture=Pore,
     color=(0xDD, 0x22, 0x25, 0xFF),
     )
 
-am.Mushroom2 = am.Block(100,
-    name="Huge Brown Mushroom",
-    texture=(0xE0, 0x80),
-    )
+defineShroomFaces(Brown, 99, "Brown")
 
+am.HugeRedMushroom = am.Block(100,
+    name="Huge Red Mushroom",
+    texture=Pore,
+    )
+    
+defineShroomFaces(Red, 100, "Red")
+    
 am.IronBars = am.Block(101,
     name="Iron Bars",
     texture=(0x50, 0x50),
