@@ -63,12 +63,7 @@ class Ladder:
 genericFlipRotation(Ladder)
 
 class Stair:
-    blocktypes = [
-        alphaMaterials.WoodenStairs.ID,
-        alphaMaterials.StoneStairs.ID,
-        alphaMaterials.BrickStairs.ID,
-        alphaMaterials.StoneBrickStairs.ID,
-    ]
+    blocktypes = [b.ID for b in alphaMaterials.AllStairs]
 
     South = 0
     North = 1
@@ -124,34 +119,60 @@ class Rail:
     Southeast = 7
     Southwest = 8
     Northwest = 9
-Rail.rotateLeft = genericRotation(Rail)
-Rail.rotateLeft[Rail.Northeast] = Rail.Northwest
-Rail.rotateLeft[Rail.Southeast] = Rail.Northeast
-Rail.rotateLeft[Rail.Southwest] = Rail.Southeast
-Rail.rotateLeft[Rail.Northwest] = Rail.Southwest
 
+def generic8wayRotation(cls):
+        
+    cls.rotateLeft = genericRotation(cls)
+    cls.rotateLeft[cls.Northeast] = cls.Northwest
+    cls.rotateLeft[cls.Southeast] = cls.Northeast
+    cls.rotateLeft[cls.Southwest] = cls.Southeast
+    cls.rotateLeft[cls.Northwest] = cls.Southwest
+    
+    
+    cls.flipEastWest = genericEastWestFlip(cls)
+    cls.flipEastWest[cls.Northeast] = cls.Northwest
+    cls.flipEastWest[cls.Northwest] = cls.Northeast
+    cls.flipEastWest[cls.Southwest] = cls.Southeast
+    cls.flipEastWest[cls.Southeast] = cls.Southwest
+    
+    cls.flipNorthSouth = genericNorthSouthFlip(cls)
+    cls.flipNorthSouth[cls.Northeast] = cls.Southeast
+    cls.flipNorthSouth[cls.Southeast] = cls.Northeast
+    cls.flipNorthSouth[cls.Southwest] = cls.Northwest
+    cls.flipNorthSouth[cls.Northwest] = cls.Southwest
+    rotationClasses.append(cls)
+
+generic8wayRotation(Rail)
 Rail.rotateLeft[Rail.NorthSouth] = Rail.EastWest
 Rail.rotateLeft[Rail.EastWest] = Rail.NorthSouth
-
-Rail.flipEastWest = genericEastWestFlip(Rail)
-Rail.flipEastWest[Rail.Northeast] = Rail.Northwest
-Rail.flipEastWest[Rail.Northwest] = Rail.Northeast
-Rail.flipEastWest[Rail.Southwest] = Rail.Southeast
-Rail.flipEastWest[Rail.Southeast] = Rail.Southwest
-
-Rail.flipNorthSouth = genericNorthSouthFlip(Rail)
-Rail.flipNorthSouth[Rail.Northeast] = Rail.Southeast
-Rail.flipNorthSouth[Rail.Southeast] = Rail.Northeast
-Rail.flipNorthSouth[Rail.Southwest] = Rail.Northwest
-Rail.flipNorthSouth[Rail.Northwest] = Rail.Southwest
-rotationClasses.append(Rail)
-
+    
+def applyBit(apply):
+    def _applyBit(class_or_array):
+        if hasattr(class_or_array, "rotateLeft"):
+            for a in (class_or_array.flipEastWest, 
+                      class_or_array.flipNorthSouth, 
+                      class_or_array.rotateLeft):
+                apply(a)
+        else:
+            array = class_or_array
+            apply(array)
+            
+    return _applyBit
+    
+@applyBit
 def applyBit8(array):
     array[8:16] = array[0:8] | 0x8
+    
+@applyBit
 def applyBit4(array):
     array[4:8] = array[0:4] | 0x4
     array[12:16] = array[8:12] | 0x4
 
+@applyBit
+def applyBits48(array):
+    array[4:8] = array[0:4] | 0x4
+    array[8:16] = array[0:8] | 0x8
+    
 applyThrownBit = applyBit8
 
 class PoweredDetectorRail(Rail):
@@ -164,9 +185,7 @@ PoweredDetectorRail.rotateLeft[PoweredDetectorRail.EastWest] = PoweredDetectorRa
 
 PoweredDetectorRail.flipEastWest = genericEastWestFlip(PoweredDetectorRail)
 PoweredDetectorRail.flipNorthSouth = genericNorthSouthFlip(PoweredDetectorRail)
-applyThrownBit(PoweredDetectorRail.rotateLeft)
-applyThrownBit(PoweredDetectorRail.flipEastWest)
-applyThrownBit(PoweredDetectorRail.flipNorthSouth)
+applyThrownBit(PoweredDetectorRail)
 rotationClasses.append(PoweredDetectorRail)
 
 
@@ -184,9 +203,7 @@ Lever.rotateLeft[Lever.NorthSouth] = Lever.EastWest
 Lever.rotateLeft[Lever.EastWest] = Lever.NorthSouth
 Lever.flipEastWest = genericEastWestFlip(Lever)
 Lever.flipNorthSouth = genericNorthSouthFlip(Lever)
-applyThrownBit(Lever.rotateLeft)
-applyThrownBit(Lever.flipEastWest)
-applyThrownBit(Lever.flipNorthSouth)
+applyThrownBit(Lever)
 rotationClasses.append(Lever)
 
 class Button:
@@ -199,9 +216,7 @@ class Button:
 Button.rotateLeft = genericRotation(Button)
 Button.flipEastWest = genericEastWestFlip(Button)
 Button.flipNorthSouth = genericNorthSouthFlip(Button)
-applyThrownBit(Button.rotateLeft)
-applyThrownBit(Button.flipEastWest)
-applyThrownBit(Button.flipNorthSouth)
+applyThrownBit(Button)
 rotationClasses.append(Button)
 
 class SignPost:
@@ -217,6 +232,17 @@ class SignPost:
     pass
 
 rotationClasses.append(SignPost)
+
+class Bed:
+    blocktypes = [alphaMaterials.Bed.ID]
+    West = 0
+    North = 1
+    East = 2
+    South = 3
+    
+genericFlipRotation(Bed)
+applyBit8(Bed)
+applyBit4(Bed)
 
 class Door:
     blocktypes = [
@@ -238,8 +264,7 @@ Door.rotateLeft[Door.Southeast] = Door.Northeast
 Door.rotateLeft[Door.Southwest] = Door.Southeast
 Door.rotateLeft[Door.Northwest] = Door.Southwest
 
-Door.rotateLeft[4:8] = Door.rotateLeft[0:4] | 0x4
-Door.rotateLeft[8:16] = Door.rotateLeft[0:8] | 0x8
+applyBit4(Door.rotateLeft)
 
 #when flipping horizontally, swing the doors so they at least look the same
 
@@ -279,17 +304,8 @@ class RedstoneRepeater:
 genericFlipRotation(RedstoneRepeater)
 
 #high bits of the repeater indicate repeater delay, and should be preserved
-RedstoneRepeater.rotateLeft[4:8] = RedstoneRepeater.rotateLeft[0:4] | 0x4
-RedstoneRepeater.rotateLeft[8:16] = RedstoneRepeater.rotateLeft[0:8] | 0x8
+applyBits48(RedstoneRepeater)
 
-RedstoneRepeater.flipEastWest[4:8] = RedstoneRepeater.flipEastWest[0:4] | 0x4
-RedstoneRepeater.flipEastWest[8:16] = RedstoneRepeater.flipEastWest[0:8] | 0x8
-
-RedstoneRepeater.flipNorthSouth[4:8] = RedstoneRepeater.flipNorthSouth[0:4] | 0x4
-RedstoneRepeater.flipNorthSouth[8:16] = RedstoneRepeater.flipNorthSouth[0:8] | 0x8
-
-
-applyOpenedBit = applyBit4
 
 class Trapdoor:
     blocktypes = [alphaMaterials.Trapdoor.ID]
@@ -300,11 +316,10 @@ class Trapdoor:
     North = 3
 
 genericFlipRotation(Trapdoor)
-applyOpenedBit(Trapdoor.rotateLeft)
-applyOpenedBit(Trapdoor.flipEastWest)
-applyOpenedBit(Trapdoor.flipNorthSouth)
+applyOpenedBit = applyBit4
+applyOpenedBit(Trapdoor)
 
-applyPistonBit = applyBit8
+
 class PistonBody:
     blocktypes = [alphaMaterials.StickyPiston.ID, alphaMaterials.Piston.ID]
 
@@ -314,11 +329,10 @@ class PistonBody:
     West = 3
     North = 4
     South = 5
-
+    
 genericFlipRotation(PistonBody)
-applyPistonBit(PistonBody.rotateLeft)
-applyPistonBit(PistonBody.flipEastWest)
-applyPistonBit(PistonBody.flipNorthSouth)
+applyPistonBit = applyBit8
+applyPistonBit(PistonBody)
 
 class PistonHead(PistonBody):
     blocktypes = [alphaMaterials.PistonHead.ID]
@@ -336,7 +350,34 @@ class Vines:
     flipEastWest = arange(16, dtype='uint8')
     flipNorthSouth = arange(16, dtype='uint8')
     
+"""
+Value     Description     Textures
+0     Fleshy piece     Pores on all sides
+1     Corner piece     Cap texture on top, directions 1 (cloud direction) and 2 (sunrise)
+2     Side piece     Cap texture on top and direction 2 (sunrise)
+3     Corner piece     Cap texture on top, directions 2 (sunrise) and 3 (cloud origin)
+4     Side piece     Cap texture on top and direction 1 (cloud direction)
+5     Top piece     Cap texture on top
+6     Side piece     Cap texture on top and direction 3 (cloud origin)
+7     Corner piece     Cap texture on top, directions 0 (sunset) and 1 (cloud direction)
+8     Side piece     Cap texture on top and direction 0 (sunset)
+9     Corner piece     Cap texture on top, directions 3 (cloud origin) and 0 (sunset)
+10     Stem piece     Stem texture on all four sides, pores on top and bottom
+"""
+class HugeMushroom:
+    blocktypes = [alphaMaterials.HugeRedMushroom.ID, alphaMaterials.HugeBrownMushroom.ID]
+    Northeast = 1
+    East = 2
+    Southeast = 3
+    South = 6
+    Southwest = 9 
+    West = 8
+    Northwest = 7
+    North = 4
+    
 
+generic8wayRotation(HugeMushroom)
+        
 #Hmm... Since each bit is a direction, we can rotate by shifting!
 Vines.rotateLeft = 0xf & ((Vines.rotateLeft >> 1) | (Vines.rotateLeft << 3))
 # Wherever each bit is set, clear it and set the opposite bit
