@@ -326,7 +326,8 @@ class MCServerChunkGenerator(object):
             tempWorld = tempWorld.getDimension(level.dimNo)
 
             properties["allow-nether"] = "true"
-
+        
+        properties["server-port"] = int(32767 + random.random() * 32700)
         saveProperties(propsFile, properties)
 
         return (tempWorld, tempDir)
