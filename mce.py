@@ -57,6 +57,7 @@ class mce(object):
        {commandPrefix}worldsize       
        {commandPrefix}heightmap <filename>
        {commandPrefix}randomseed [ <seed> ]
+       {commandPrefix}gametype [ <gametype> ]
        
     Editor commands:
        {commandPrefix}save 
@@ -112,6 +113,7 @@ class mce(object):
         "worldsize",
         "heightmap",
         "randomseed",
+        "gametype",
 
         "save",
         "load",
@@ -1083,6 +1085,24 @@ class mce(object):
             self.needsSave = True
         else:
             print "Random Seed: ", self.level.RandomSeed
+
+    def _gametype(self, command):
+        """
+    gametype [ <gametype> ]
+
+    Set or display the world's game type, an integer that identifies whether
+    the game is survival (0) or creative (1).
+    """
+        if len(command):
+            try:
+                gametype = int(command[0])
+            except ValueError:
+                raise UsageError, "Expected an integer."
+
+            self.level.GameType = gametype
+            self.needsSave = True
+        else:
+            print "Game Type: ", self.level.GameType
 
     def _worldsize(self, command):
         """
