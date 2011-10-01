@@ -339,10 +339,27 @@ class MCServerChunkGenerator(object):
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
         tempWorld.saveInPlace()
         tempWorld.unloadRegions()
-
-        proc = self.runServer(tempDir)
-        for p in self.waitForServerIter(proc): yield p
         
+        proc = self.runServer(tempDir)
+        while proc.poll() is None:
+            line = proc.stderr.readline()
+            yield line.strip()
+            
+            if "[INFO] Done" in line:
+                proc.stdin.write("stop\n")
+                proc.wait()
+                break
+            if "FAILED TO BIND" in line:
+                proc.kill()
+                proc.wait()
+                raise RuntimeError, "Server failed to bind to port!"
+                
+        stdout, _ = proc.communicate()
+        
+        if "Could not reserve enough space" in stdout and not MCServerChunkGenerator.lowMemory:
+            MCServerChunkGenerator.lowMemory = True
+            for i in self.generateAtPositionIter(tempWorld, tempDir, cx, cz):
+                yield i
 
         (tempWorld.parentWorld or tempWorld).loadLevelDat() #reload version number
 
@@ -372,8 +389,6 @@ class MCServerChunkGenerator(object):
         tempChunk.compress()
         tempChunk.unload()
         
-
-
     def generateChunkInLevel(self, level, cx, cz):
         assert isinstance(level, MCInfdevOldLevel)
 
@@ -422,31 +437,18 @@ class MCServerChunkGenerator(object):
 
         level.saveInPlace()
 
-
-    def waitForServer(self, proc):
-        return exhaust(self.waitForServerIter(proc))
-    def waitForServerIter(self, proc):
-        """ wait for the server to finish starting up, then stop it. """
-        while proc.poll() is None:
-            line = proc.stderr.readline()
-            yield line.strip()
             
-            if "[INFO] Done" in line:
-                proc.stdin.write("stop\n")
-                proc.wait()
-                break
-            if "FAILED TO BIND" in line:
-                proc.kill()
-                proc.wait()
-                raise RuntimeError, "Server Died!"
-
     def runServer(self, startingDir):
         return self._runServer(startingDir, self.serverJarFile)
 
+    lowMemory = False
     @classmethod
     def _runServer(cls, startingDir, jarfile):
         print "Starting server {0} in {1}".format(jarfile, startingDir)
-        proc = subprocess.Popen([cls.javaExe, "-Djava.awt.headless=true", "-Xmx1024M", "-Xms1024M", "-jar", jarfile],
+        if cls.lowMemory:   memflags = []
+        else:               memflags = ["-Xmx1024M", "-Xms1024M", ]
+        
+        proc = subprocess.Popen([cls.javaExe, "-Djava.awt.headless=true"] + memflags + ["-jar", jarfile],
             executable=cls.javaExe,
             cwd=startingDir,
             stdin=subprocess.PIPE,
@@ -467,7 +469,7 @@ class MCServerChunkGenerator(object):
         version = "Unknown"
         #out, err = proc.communicate()
         #for line in err.split("\n"):
-
+        
         while proc.poll() is None:
             line = proc.stderr.readline()
             if "Preparing start region" in line: break
