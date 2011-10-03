@@ -1892,7 +1892,8 @@ class MCInfdevOldLevel(EntityLevel):
             return 0
 
         ch.Data[xInChunk, zInChunk, y] = newdata
-        ch.chunkChanged(False)
+        ch.dirty = True
+        ch.needsLighting = True
 
     def blockAt(self, x, y, z):
         """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
