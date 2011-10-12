@@ -17,8 +17,10 @@ import shutil
 import os
 import numpy
 from numpy import *
-from logging import info
 from pymclevel.infiniteworld import MCServerChunkGenerator
+
+log = logging.getLogger(__name__)
+info = log.info
 #logging.basicConfig(format=u'%(levelname)s:%(message)s')
 #logging.getLogger().level = logging.INFO
 
@@ -240,10 +242,10 @@ class TestSchematics(unittest.TestCase):
     def testINVEditChests(self):
         info("INVEdit chest")
         invFile = fromFile("schematics/Chests/TinkerersBox.inv");
-        info("Blocks: ", invFile.Blocks)
-        info("Data: ", invFile.Data)
-        info("Entities: ", invFile.Entities)
-        info("TileEntities: ", invFile.TileEntities)
+        info("Blocks: %s", invFile.Blocks)
+        info("Data: %s", invFile.Data)
+        info("Entities: %s", invFile.Entities)
+        info("TileEntities: %s", invFile.TileEntities)
         #raise SystemExit;
 
 class TestServerGen(unittest.TestCase):

@@ -170,7 +170,7 @@ def fillBlocks(self, box, blockType, blockData = 0):
 Copyright 2010 David Rio Vierra
 """
 import os
-from logging import warn, error, info, debug
+import logging
 from numpy import fromstring
 import nbt
 
@@ -182,6 +182,9 @@ from level import *
 from schematic import *
 
 import sys
+
+log = logging.getLogger(__name__)
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 
  
@@ -307,7 +310,6 @@ def loadWorldNumber(i):
 ####xxxxx CHECK RESULTS
 #
 ##import cProfile   
-#import logging
 #if __name__=="__main__":
 #    #cProfile.run('testmain()');
 #    logging.basicConfig(format=u'%(levelname)s:%(message)s')
