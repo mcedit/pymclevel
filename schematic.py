@@ -5,6 +5,10 @@ Created on Jul 22, 2011
 '''
 from mclevelbase import *
 import shutil
+
+log = logging.getLogger(__name__)
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
+
 #schematic
 Materials = 'Materials'
 

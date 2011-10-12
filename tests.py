@@ -20,7 +20,8 @@ from numpy import *
 from pymclevel.infiniteworld import MCServerChunkGenerator
 
 log = logging.getLogger(__name__)
-info = log.info
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
+
 #logging.basicConfig(format=u'%(levelname)s:%(message)s')
 #logging.getLogger().level = logging.INFO
 
