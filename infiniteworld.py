@@ -952,11 +952,6 @@ class dequeset(object):
     def __getitem__(self, idx):
         return self.deque[idx];
 
-from contextlib import contextmanager
-
-@contextmanager
-def notclosing(f):
-    yield f;
 
 class MCRegionFile(object):
     holdFileOpen = False #if False, reopens and recloses the file on each access

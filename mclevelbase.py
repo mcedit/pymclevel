@@ -38,6 +38,12 @@ Inventory = 'Inventory'
 
 #entities
 
+from contextlib import contextmanager
+
+@contextmanager
+def notclosing(f):
+    yield f;
+    
 def decompress_first(func):
     def dec_first(self, *args, **kw):
         self.decompress();
