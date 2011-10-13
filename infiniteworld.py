@@ -1309,7 +1309,708 @@ def deflate(data):
 def inflate(data):
     return zlib.decompress(data)
 
-class MCInfdevOldLevel(EntityLevel):
+class ChunkedLevelMixin(object):
+    
+    def blockLightAt(self, x, y, z):
+        if y < 0 or y >= self.Height: return 0
+        zc = z >> 4
+        xc = x >> 4
+
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+        ch = self.getChunk(xc, zc)
+
+        return ch.BlockLight[xInChunk, zInChunk, y]
+
+
+    def setBlockLightAt(self, x, y, z, newLight):
+        if y < 0 or y >= self.Height: return 0
+        zc = z >> 4
+        xc = x >> 4
+
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+
+        ch = self.getChunk(xc, zc)
+        ch.BlockLight[xInChunk, zInChunk, y] = newLight
+        ch.chunkChanged(False)
+
+    def blockDataAt(self, x, y, z):
+        if y < 0 or y >= self.Height: return 0
+        zc = z >> 4
+        xc = x >> 4
+
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+
+        try:
+            ch = self.getChunk(xc, zc)
+        except ChunkNotPresent:
+            return 0
+
+        return ch.Data[xInChunk, zInChunk, y]
+
+
+    def setBlockDataAt(self, x, y, z, newdata):
+        if y < 0 or y >= self.Height: return 0
+        zc = z >> 4
+        xc = x >> 4
+
+
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+
+        try:
+            ch = self.getChunk(xc, zc)
+        except ChunkNotPresent:
+            return 0
+
+        ch.Data[xInChunk, zInChunk, y] = newdata
+        ch.dirty = True
+        ch.needsLighting = True
+
+    def blockAt(self, x, y, z):
+        """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
+        if y < 0 or y >= self.Height: return 0
+
+        zc = z >> 4
+        xc = x >> 4
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+
+        try:
+            ch = self.getChunk(xc, zc)
+        except ChunkNotPresent:
+            return 0
+
+        return ch.Blocks[xInChunk, zInChunk, y]
+
+    def setBlockAt(self, x, y, z, blockID):
+        """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
+        if y < 0 or y >= self.Height: return 0
+
+        zc = z >> 4
+        xc = x >> 4
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+
+        try:
+            ch = self.getChunk(xc, zc)
+        except ChunkNotPresent:
+            return 0
+
+        ch.Blocks[xInChunk, zInChunk, y] = blockID
+        ch.dirty = True
+        ch.needsLighting = True
+
+    def skylightAt(self, x, y, z):
+
+        if y < 0 or y >= self.Height: return 0
+        zc = z >> 4
+        xc = x >> 4
+
+
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf
+
+        ch = self.getChunk(xc, zc)
+
+        return ch.SkyLight[xInChunk, zInChunk, y]
+
+
+    def setSkylightAt(self, x, y, z, lightValue):
+        if y < 0 or y >= self.Height: return 0
+        zc = z >> 4
+        xc = x >> 4
+
+        xInChunk = x & 0xf;
+        zInChunk = z & 0xf;
+
+        ch = self.getChunk(xc, zc)
+        skyLight = ch.SkyLight
+
+        oldValue = skyLight[xInChunk, zInChunk, y]
+
+        ch.chunkChanged(False)
+        if oldValue < lightValue:
+            skyLight[xInChunk, zInChunk, y] = lightValue
+        return oldValue < lightValue
+
+    def sourceMaskFunc(self, blocksToCopy):
+        if blocksToCopy is not None:
+            typemask = zeros((256) , dtype='bool')
+            typemask[blocksToCopy] = 1;
+            def sourceMask(sourceBlocks):
+                return typemask[sourceBlocks]
+        else:
+            def sourceMask(_sourceBlocks):
+                return slice(None, None)
+        return sourceMask
+
+    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
+        #assumes destination point and bounds have already been checked.
+        (sx, sy, sz) = sourceBox.origin
+
+        start = datetime.now();
+
+        sourceMask = self.sourceMaskFunc(blocksToCopy)
+
+
+        destBox = BoundingBox(destinationPoint, sourceBox.size)
+
+        i = 0;
+        chunkCount = float(destBox.chunkCount)
+        
+        for (cPos, slices, point) in self._getSlices(destBox):
+            if not self.containsChunk(*cPos):
+                if create:
+                    self.createChunk(*cPos)
+                else:
+                    continue
+            chunk = self.getChunk(*cPos)
+             
+            i += 1;
+            yield (i, chunkCount)
+
+            if i % 100 == 0:
+                info("Chunk {0}...".format(i))
+
+            blocks = chunk.Blocks[slices];
+
+            localSourceCorner2 = (
+                sx + point[0] + blocks.shape[0],
+                sy + blocks.shape[2],
+                sz + point[2] + blocks.shape[1],
+            )
+
+            sourceBlocks = sourceLevel.Blocks[sx + point[0]:localSourceCorner2[0],
+                                              sz + point[2]:localSourceCorner2[2],
+                                              sy:localSourceCorner2[1]]
+            #sourceBlocks = filterTable[sourceBlocks]
+            mask = sourceMask(sourceBlocks)
+
+            #for small level slices, reduce the destination area
+            x, z, y = sourceBlocks.shape
+            blocks = blocks[0:x, 0:z, 0:y]
+
+            sourceData = None
+            if hasattr(sourceLevel, 'Data'):
+                #indev or schematic
+                sourceData = sourceLevel.Data[sx + point[0]:localSourceCorner2[0],
+                                              sz + point[2]:localSourceCorner2[2],
+                                              sy:localSourceCorner2[1]]
+
+            data = chunk.Data[slices][0:x, 0:z, 0:y]
+
+
+
+            convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
+
+            blocks[mask] = convertedSourceBlocks[mask]
+            if convertedSourceData is not None:
+                data[mask] = (convertedSourceData[:, :, :])[mask]
+                data[mask] &= 0xf;
+
+            chunk.chunkChanged();
+
+
+        d = datetime.now() - start;
+        if i:
+            info("Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i))
+
+            #chunk.compress(); #xxx find out why this trashes changes to tile entities
+
+    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
+        """ copy blocks between two infinite levels by looping through the 
+        destination's chunks. make a sub-box of the source level for each chunk
+        and copy block and entities in the sub box to the dest chunk."""
+
+        #assumes destination point and bounds have already been checked.
+        destBox = BoundingBox(destinationPoint, sourceBox.size)
+        chunkCount = destBox.chunkCount
+        i = 0
+        sourceMask = self.sourceMaskFunc(blocksToCopy)
+        
+        def subbox(slices, point):
+            size = [s.stop - s.start for s in slices]
+            size[1], size[2] = size[2], size[1]
+            return BoundingBox([p + a for p, a in zip(point, sourceBox.origin)], size)
+            
+        def shouldCreateFunc(slices, point):
+            box = subbox(slices, point)
+            b = any(list(sourceLevel.containsChunk(*c) for c in box.chunkPositions)) #any() won't take a generator-expression :(
+            #if b == False:
+            #    print 'Skipped ', list(box.chunkPositions)
+            return b
+            
+        for cPos, slices, point in self._getSlices(destBox):
+            if not self.containsChunk(*cPos):
+                if shouldCreateFunc(slices, point):
+                    self.createChunk(*cPos)
+                else:
+                    continue
+            chunk = self.getChunk(*cPos)
+                
+            i += 1
+            yield (i, chunkCount)
+            if i % 100 == 0:
+                info("Chunk {0}...".format(i))
+
+            dstblocks = chunk.Blocks[slices]
+            dstdata = chunk.Data[slices]
+            sourceSubBox = subbox(slices, point)
+            for srcchunk, srcslices, srcpoint in sourceLevel.getChunkSlices(sourceSubBox):
+                srcpoint = srcpoint[0], srcpoint[2], srcpoint[1]
+                sourceBlocks = srcchunk.Blocks[srcslices]
+                sourceData = srcchunk.Data[srcslices]
+                mask = sourceMask(sourceBlocks)
+                convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
+
+                dstslices = [slice(p, p + (s.stop - s.start)) for p, s in zip(srcpoint, srcslices)]
+                dstblocks[dstslices][mask] = convertedSourceBlocks[mask]
+                if convertedSourceData is not None:
+                    dstdata[dstslices][mask] = convertedSourceData[mask]
+
+            chunk.chunkChanged()
+
+
+
+    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
+        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
+
+    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
+        (x, y, z) = destinationPoint;
+        (lx, ly, lz) = sourceBox.size
+        #sourcePoint, sourcePoint1 = sourceBox
+
+        sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
+        #needs work xxx
+        info(u"Copying {0} blocks from {1} to {2}" .format (ly * lz * lx, sourceBox, destinationPoint))
+        startTime = datetime.now()
+
+        if not sourceLevel.isInfinite:
+            for i in self.copyBlocksFromFiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
+                yield i
+
+
+        else:
+            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
+                yield i
+
+        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
+            yield i
+        info("Duration: {0}".format(datetime.now() - startTime))
+        #self.saveInPlace()
+    
+    
+    def fillBlocks(self, box, blockInfo, blocksToReplace=[]):
+        return exhaust(self.fillBlocksIter(box, blockInfo, blocksToReplace))
+        
+    def fillBlocksIter(self, box, blockInfo, blocksToReplace=[]):
+        if box is None:
+            chunkIterator = self.getAllChunkSlices()
+            box = self.bounds
+        else:
+            chunkIterator = self.getChunkSlices(box)
+
+        #shouldRetainData = (not blockInfo.hasAlternate and not any([b.hasAlternate for b in blocksToReplace]))
+        #if shouldRetainData:
+        #    info( "Preserving data bytes" )
+        shouldRetainData = False #xxx old behavior overwrote blockdata with 0 when e.g. replacing water with lava
+       
+        info("Replacing {0} with {1}".format(blocksToReplace, blockInfo))
+
+        changesLighting = True
+
+        if len(blocksToReplace):
+            blocktable = self.blockReplaceTable(blocksToReplace)
+            shouldRetainData = all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
+        
+            newAbsorption = self.materials.lightAbsorption[blockInfo.ID]
+            oldAbsorptions = [self.materials.lightAbsorption[b.ID] for b in blocksToReplace]
+            changesLighting = False
+            for a in oldAbsorptions:
+                if a != newAbsorption: changesLighting = True;
+
+            newEmission = self.materials.lightEmission[blockInfo.ID]
+            oldEmissions = [self.materials.lightEmission[b.ID] for b in blocksToReplace]
+            for a in oldEmissions:
+                if a != newEmission: changesLighting = True;
+
+
+        i = 0;
+        skipped = 0
+        replaced = 0;
+        
+        for (chunk, slices, point) in chunkIterator:
+            i += 1;
+            if i % 100 == 0:
+                info(u"Chunk {0}...".format(i))
+            yield i, box.chunkCount
+                
+            blocks = chunk.Blocks[slices]
+            data = chunk.Data[slices]
+            mask = slice(None)
+
+            needsLighting = changesLighting;
+
+            if len(blocksToReplace):
+                mask = blocktable[blocks, data]
+
+                blockCount = mask.sum()
+                replaced += blockCount;
+
+                #don't waste time relighting and copying if the mask is empty
+                if blockCount:
+                    blocks[:][mask] = blockInfo.ID
+                    if not shouldRetainData:
+                        data[mask] = blockInfo.blockData
+                else:
+                    skipped += 1;
+                    needsLighting = False;
+
+                def include(tileEntity):
+                    p = TileEntity.pos(tileEntity)
+                    x, y, z = map(lambda a, b, c:(a - b) - c, p, point, box.origin)
+                    return not ((p in box) and mask[x, z, y])
+
+                chunk.TileEntities.value[:] = filter(include, chunk.TileEntities)
+
+
+
+            else:
+                blocks[:] = blockInfo.ID
+                if not shouldRetainData:
+                    data[:] = blockInfo.blockData
+                chunk.removeTileEntitiesInBox(box)
+
+            chunk.chunkChanged(needsLighting);
+
+
+        if len(blocksToReplace):
+            info(u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))
+
+    
+    def generateLights(self, dirtyChunks=None):
+        return exhaust(self.generateLightsIter(dirtyChunks))
+
+    def generateLightsIter(self, dirtyChunks=None):
+        """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
+        if none, generate lights for all chunks that need lighting
+        """
+
+        startTime = datetime.now();
+
+        if dirtyChunks is None:
+            dirtyChunks = (ch for ch in self._loadedChunks.itervalues() if ch.needsLighting)
+        else:
+            dirtyChunks = (self._makeChunk(*c) for c in dirtyChunks if self.containsChunk(*c))
+
+        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
+
+
+        #at 150k per loaded chunk, 
+        maxLightingChunks = 4000
+
+        info(u"Asked to light {0} chunks".format(len(dirtyChunks)))
+        chunkLists = [dirtyChunks];
+        def reverseChunkPosition(x):
+            cx, cz = x.chunkPosition;
+            return cz, cx
+
+        def splitChunkLists(chunkLists):
+            newChunkLists = []
+            for l in chunkLists:
+
+                #list is already sorted on x position, so this splits into left and right
+
+                smallX = l[:len(l) / 2]
+                bigX = l[len(l) / 2:]
+
+                #sort halves on z position
+                smallX = sorted(smallX, key=reverseChunkPosition)
+                bigX = sorted(bigX, key=reverseChunkPosition)
+
+                #add quarters to list
+
+                newChunkLists.append(smallX[:len(smallX) / 2])
+                newChunkLists.append(smallX[len(smallX) / 2:])
+
+                newChunkLists.append(bigX[:len(bigX) / 2])
+                newChunkLists.append(bigX[len(bigX) / 2:])
+
+            return newChunkLists
+
+        while len(chunkLists[0]) > maxLightingChunks:
+            chunkLists = splitChunkLists(chunkLists);
+
+        if len(chunkLists) > 1:
+            info(u"Using {0} batches to conserve memory.".format(len(chunkLists)))
+
+        i = 0
+        for dc in chunkLists:
+            i += 1;
+            info(u"Batch {0}/{1}".format(i, len(chunkLists)))
+            yield i, len(chunkLists)
+
+            dc = sorted(dc, key=lambda x:x.chunkPosition)
+
+            for j in self._generateLightsIter(dc):
+                yield j
+
+            for ch in dc:
+                ch.compress();
+        timeDelta = datetime.now() - startTime;
+
+        if len(dirtyChunks):
+            info(u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta / len(dirtyChunks) or 0))
+
+        return;
+
+    def _generateLightsIter(self, dirtyChunks):
+        conserveMemory = False
+        la = array(self.materials.lightAbsorption)
+
+            #[d.genFastLights() for d in dirtyChunks]
+        dirtyChunks = set(dirtyChunks)
+
+
+        info(u"Lighting {0} chunks".format(len(dirtyChunks)))
+        for i, chunk in enumerate(dirtyChunks):
+            try:
+                chunk.load();
+            except (ChunkNotPresent, ChunkMalformed):
+                continue;
+            chunk.chunkChanged();
+            yield i, len(dirtyChunks) * 14
+            assert chunk.dirty and chunk.needsLighting
+
+        for ch in list(dirtyChunks):
+            #relight all blocks in neighboring chunks in case their light source disappeared.
+            cx, cz = ch.chunkPosition
+            for dx, dz in itertools.product((-1, 0, 1), (-1, 0, 1)):
+                try:
+                    ch = self.getChunk (cx + dx, cz + dz)
+                except (ChunkNotPresent, ChunkMalformed):
+                    continue
+                dirtyChunks.add(ch);
+
+        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
+
+        for i, chunk in enumerate(dirtyChunks):
+            chunk.BlockLight[:] = self.materials.lightEmission[chunk.Blocks];
+
+            if conserveMemory:
+                chunk.compress();
+
+        zeroChunk = ZeroChunk(self.Height)
+        zeroChunk.BlockLight[:] = 0;
+        zeroChunk.SkyLight[:] = 0;
+
+
+        la[18] = 0; #for normal light dispersal, leaves absorb the same as empty air.
+        startingDirtyChunks = dirtyChunks
+
+        oldLeftEdge = zeros((1, 16, self.Height), 'uint8');
+        oldBottomEdge = zeros((16, 1, self.Height), 'uint8');
+        oldChunk = zeros((16, 16, self.Height), 'uint8');
+        if self.dimNo == -1:
+            lights = ("BlockLight",)
+        else:
+            lights = ("BlockLight", "SkyLight")
+        info(u"Dispersing light...")
+
+        for light in lights:
+          j = 0
+          workTotal = 0
+          estimatedTotals = [len(startingDirtyChunks)] * 14
+          zerochunkLight = getattr(zeroChunk, light);
+
+          newDirtyChunks = list(startingDirtyChunks);
+
+          for i in range(14):
+            if len(newDirtyChunks) == 0: break
+
+            info(u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks)));
+
+            """
+            propagate light!
+            for each of the six cardinal directions, figure a new light value for 
+            adjoining blocks by reducing this chunk's light by light absorption and fall off. 
+            compare this new light value against the old light value and update with the maximum.
+            
+            we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.  
+            we do an extra cycle because lights sent across edges may lag by one cycle.
+            """
+            newDirtyChunks = set(newDirtyChunks)
+            newDirtyChunks.discard(zeroChunk)
+
+            dirtyChunks = sorted(newDirtyChunks, key=lambda x:x.chunkPosition)
+
+            newDirtyChunks = list();
+
+
+            for chunk in dirtyChunks:
+                #xxx code duplication
+                yield (workTotal + j, sum(estimatedTotals))
+                j += 1
+                (cx, cz) = chunk.chunkPosition
+                neighboringChunks = {};
+                try:
+                    chunk.load();
+                except (ChunkNotPresent, ChunkMalformed), e:
+                    print "Chunk error during relight, chunk skipped: ", e
+                    continue;
+
+                for dir, dx, dz in ((FaceXDecreasing, -1, 0),
+                                      (FaceXIncreasing, 1, 0),
+                                      (FaceZDecreasing, 0, -1),
+                                      (FaceZIncreasing, 0, 1)):
+                    try:
+                        neighboringChunks[dir] = self.getChunk(cx + dx, cz + dz)
+                    except (ChunkNotPresent, ChunkMalformed):
+                        neighboringChunks[dir] = zeroChunk;
+
+
+                chunkLa = la[chunk.Blocks] + 1;
+                chunkLight = getattr(chunk, light);
+                oldChunk[:] = chunkLight[:]
+
+
+                nc = neighboringChunks[FaceXDecreasing]
+                ncLight = getattr(nc, light);
+                oldLeftEdge[:] = ncLight[15:16, :, 0:self.Height] #save the old left edge 
+
+                #left edge
+                newlight = (chunkLight[0:1, :, :self.Height] - la[nc.Blocks[15:16, :, 0:self.Height]]) - 1
+                newlight[newlight > 15] = 0;
+
+                ncLight[15:16, :, 0:self.Height] = maximum(ncLight[15:16, :, 0:self.Height], newlight)
+
+                #chunk body
+                newlight = (chunkLight[1:16, :, 0:self.Height] - chunkLa[0:15, :, 0:self.Height])
+                newlight[newlight > 15] = 0; #light went negative;
+
+                chunkLight[0:15, :, 0:self.Height] = maximum(chunkLight[0:15, :, 0:self.Height], newlight)
+
+                #right edge
+                nc = neighboringChunks[FaceXIncreasing]
+                ncLight = getattr(nc, light);
+
+                newlight = ncLight[0:1, :, :self.Height] - chunkLa[15:16, :, 0:self.Height]
+                newlight[newlight > 15] = 0;
+
+                chunkLight[15:16, :, 0:self.Height] = maximum(chunkLight[15:16, :, 0:self.Height], newlight)
+
+
+                #right edge
+                nc = neighboringChunks[FaceXIncreasing]
+                ncLight = getattr(nc, light);
+
+                newlight = (chunkLight[15:16, :, 0:self.Height] - la[nc.Blocks[0:1, :, 0:self.Height]]) - 1
+                newlight[newlight > 15] = 0;
+
+                ncLight[0:1, :, 0:self.Height] = maximum(ncLight[0:1, :, 0:self.Height], newlight)
+
+                #chunk body
+                newlight = (chunkLight[0:15, :, 0:self.Height] - chunkLa[1:16, :, 0:self.Height])
+                newlight[newlight > 15] = 0;
+
+                chunkLight[1:16, :, 0:self.Height] = maximum(chunkLight[1:16, :, 0:self.Height], newlight)
+
+                #left edge
+                nc = neighboringChunks[FaceXDecreasing]
+                ncLight = getattr(nc, light);
+
+                newlight = ncLight[15:16, :, :self.Height] - chunkLa[0:1, :, 0:self.Height]
+                newlight[newlight > 15] = 0;
+
+                chunkLight[0:1, :, 0:self.Height] = maximum(chunkLight[0:1, :, 0:self.Height], newlight)
+
+                zerochunkLight[:] = 0;
+
+                #check if the left edge changed and dirty or compress the chunk appropriately
+                if (oldLeftEdge != ncLight[15:16, :, :self.Height]).any():
+                    #chunk is dirty
+                    newDirtyChunks.append(nc)
+
+                #bottom edge
+                nc = neighboringChunks[FaceZDecreasing]
+                ncLight = getattr(nc, light);
+                oldBottomEdge[:] = ncLight[:, 15:16, :self.Height] # save the old bottom edge
+
+                newlight = (chunkLight[:, 0:1, :self.Height] - la[nc.Blocks[:, 15:16, :self.Height]]) - 1
+                newlight[newlight > 15] = 0;
+
+                ncLight[:, 15:16, :self.Height] = maximum(ncLight[:, 15:16, :self.Height], newlight)
+
+                #chunk body
+                newlight = (chunkLight[:, 1:16, :self.Height] - chunkLa[:, 0:15, :self.Height])
+                newlight[newlight > 15] = 0;
+
+                chunkLight[:, 0:15, :self.Height] = maximum(chunkLight[:, 0:15, :self.Height], newlight)
+
+                #top edge
+                nc = neighboringChunks[FaceZIncreasing]
+                ncLight = getattr(nc, light);
+
+                newlight = ncLight[:, 0:1, :self.Height] - chunkLa[:, 15:16, 0:self.Height]
+                newlight[newlight > 15] = 0;
+
+                chunkLight[:, 15:16, 0:self.Height] = maximum(chunkLight[:, 15:16, 0:self.Height], newlight)
+
+
+                #top edge  
+                nc = neighboringChunks[FaceZIncreasing]
+
+                ncLight = getattr(nc, light);
+
+                newlight = (chunkLight[:, 15:16, :self.Height] - la[nc.Blocks[:, 0:1, :self.Height]]) - 1
+                newlight[newlight > 15] = 0;
+
+                ncLight[:, 0:1, :self.Height] = maximum(ncLight[:, 0:1, :self.Height], newlight)
+
+                #chunk body
+                newlight = (chunkLight[:, 0:15, :self.Height] - chunkLa[:, 1:16, :self.Height])
+                newlight[newlight > 15] = 0;
+
+                chunkLight[:, 1:16, :self.Height] = maximum(chunkLight[:, 1:16, :self.Height], newlight)
+
+                #bottom edge
+                nc = neighboringChunks[FaceZDecreasing]
+                ncLight = getattr(nc, light);
+
+                newlight = ncLight[:, 15:16, :self.Height] - chunkLa[:, 0:1, 0:self.Height]
+                newlight[newlight > 15] = 0;
+
+                chunkLight[:, 0:1, 0:self.Height] = maximum(chunkLight[:, 0:1, 0:self.Height], newlight)
+
+                zerochunkLight[:] = 0;
+
+                if (oldBottomEdge != ncLight[:, 15:16, :self.Height]).any():
+                    newDirtyChunks.append(nc)
+
+                newlight = (chunkLight[:, :, 0:self.Height - 1] - chunkLa[:, :, 1:self.Height])
+                newlight[newlight > 15] = 0;
+                chunkLight[:, :, 1:self.Height] = maximum(chunkLight[:, :, 1:self.Height], newlight)
+
+                newlight = (chunkLight[:, :, 1:self.Height] - chunkLa[:, :, 0:self.Height - 1])
+                newlight[newlight > 15] = 0;
+                chunkLight[:, :, 0:self.Height - 1] = maximum(chunkLight[:, :, 0:self.Height - 1], newlight)
+                zerochunkLight[:] = 0;
+
+                if (oldChunk != chunkLight).any():
+                    newDirtyChunks.append(chunk);
+
+            workTotal += j
+            estimatedTotals[i:] = [j] * (14 - i)
+            j = 0
+
+        for ch in startingDirtyChunks:
+            ch.needsLighting = False;
+
+
+class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     materials = alphaMaterials;
     isInfinite = True
     parentWorld = None;
@@ -1327,11 +2028,19 @@ class MCInfdevOldLevel(EntityLevel):
 
     @classmethod
     def _isLevel(cls, filename):
-        if os.path.isdir(filename):
-            files = os.listdir(filename);
-            if "level.dat" in files or "level.dat_old" in files:
-                return True;
-        elif os.path.basename(filename) in ("level.dat", "level.dat_old"):
+        join = os.path.join
+        exists = os.path.exists
+        
+        if exists(join(filename, "chunks.dat")): return False # exclude Pocket Edition folders
+        
+        if not os.path.isdir(filename):
+            f = os.path.basename(filename)
+            if f not in ("level.dat", "level.dat_old"): return False
+            filename = os.path.dirname(filename)
+            
+        
+        files = os.listdir(filename);
+        if "level.dat" in files or "level.dat_old" in files:
             return True;
 
         return False
@@ -1832,131 +2541,6 @@ class MCInfdevOldLevel(EntityLevel):
             f.write(data)
 
 
-    def blockLightAt(self, x, y, z):
-        if y < 0 or y >= self.Height: return 0
-        zc = z >> 4
-        xc = x >> 4
-
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf;
-        ch = self.getChunk(xc, zc)
-
-        return ch.BlockLight[xInChunk, zInChunk, y]
-
-
-    def setBlockLightAt(self, x, y, z, newLight):
-        if y < 0 or y >= self.Height: return 0
-        zc = z >> 4
-        xc = x >> 4
-
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf;
-
-        ch = self.getChunk(xc, zc)
-        ch.BlockLight[xInChunk, zInChunk, y] = newLight
-        ch.chunkChanged(False)
-
-    def blockDataAt(self, x, y, z):
-        if y < 0 or y >= self.Height: return 0
-        zc = z >> 4
-        xc = x >> 4
-
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf;
-
-        try:
-            ch = self.getChunk(xc, zc)
-        except ChunkNotPresent:
-            return 0
-
-        return ch.Data[xInChunk, zInChunk, y]
-
-
-    def setBlockDataAt(self, x, y, z, newdata):
-        if y < 0 or y >= self.Height: return 0
-        zc = z >> 4
-        xc = x >> 4
-
-
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf;
-
-        try:
-            ch = self.getChunk(xc, zc)
-        except ChunkNotPresent:
-            return 0
-
-        ch.Data[xInChunk, zInChunk, y] = newdata
-        ch.dirty = True
-        ch.needsLighting = True
-
-    def blockAt(self, x, y, z):
-        """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
-        if y < 0 or y >= self.Height: return 0
-
-        zc = z >> 4
-        xc = x >> 4
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf;
-
-        try:
-            ch = self.getChunk(xc, zc)
-        except ChunkNotPresent:
-            return 0
-
-        return ch.Blocks[xInChunk, zInChunk, y]
-
-    def setBlockAt(self, x, y, z, blockID):
-        """returns 0 for blocks outside the loadable chunks.  automatically loads chunks."""
-        if y < 0 or y >= self.Height: return 0
-
-        zc = z >> 4
-        xc = x >> 4
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf;
-
-        try:
-            ch = self.getChunk(xc, zc)
-        except ChunkNotPresent:
-            return 0
-
-        ch.Blocks[xInChunk, zInChunk, y] = blockID
-        ch.dirty = True
-        ch.needsLighting = True
-
-    def skylightAt(self, x, y, z):
-
-        if y < 0 or y >= self.Height: return 0
-        zc = z >> 4
-        xc = x >> 4
-
-
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf
-
-        ch = self.getChunk(xc, zc)
-
-        return ch.SkyLight[xInChunk, zInChunk, y]
-
-
-    def setSkylightAt(self, x, y, z, lightValue):
-        if y < 0 or y >= self.Height: return 0
-        zc = z >> 4
-        xc = x >> 4
-
-        xInChunk = x & 0xf;
-        zInChunk = z & 0xf;
-
-        ch = self.getChunk(xc, zc)
-        skyLight = ch.SkyLight
-
-        oldValue = skyLight[xInChunk, zInChunk, y]
-
-        ch.chunkChanged(False)
-        if oldValue < lightValue:
-            skyLight[xInChunk, zInChunk, y] = lightValue
-        return oldValue < lightValue
-
     def heightMapAt(self, x, z):
         zc = z >> 4
         xc = x >> 4
@@ -2063,324 +2647,6 @@ class MCInfdevOldLevel(EntityLevel):
         self.root_tag.save(self.filename);
         info(u"Saved {0} chunks".format(dirtyChunkCount))
 
-    def generateLights(self, dirtyChunks=None):
-        return exhaust(self.generateLightsIter(dirtyChunks))
-
-    def generateLightsIter(self, dirtyChunks=None):
-        """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
-        if none, generate lights for all chunks that need lighting
-        """
-
-        startTime = datetime.now();
-
-        if dirtyChunks is None:
-            dirtyChunks = (ch for ch in self._loadedChunks.itervalues() if ch.needsLighting)
-        else:
-            dirtyChunks = (self._makeChunk(*c) for c in dirtyChunks if self.containsChunk(*c))
-
-        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
-
-
-        #at 150k per loaded chunk, 
-        maxLightingChunks = 4000
-
-        info(u"Asked to light {0} chunks".format(len(dirtyChunks)))
-        chunkLists = [dirtyChunks];
-        def reverseChunkPosition(x):
-            cx, cz = x.chunkPosition;
-            return cz, cx
-
-        def splitChunkLists(chunkLists):
-            newChunkLists = []
-            for l in chunkLists:
-
-                #list is already sorted on x position, so this splits into left and right
-
-                smallX = l[:len(l) / 2]
-                bigX = l[len(l) / 2:]
-
-                #sort halves on z position
-                smallX = sorted(smallX, key=reverseChunkPosition)
-                bigX = sorted(bigX, key=reverseChunkPosition)
-
-                #add quarters to list
-
-                newChunkLists.append(smallX[:len(smallX) / 2])
-                newChunkLists.append(smallX[len(smallX) / 2:])
-
-                newChunkLists.append(bigX[:len(bigX) / 2])
-                newChunkLists.append(bigX[len(bigX) / 2:])
-
-            return newChunkLists
-
-        while len(chunkLists[0]) > maxLightingChunks:
-            chunkLists = splitChunkLists(chunkLists);
-
-        if len(chunkLists) > 1:
-            info(u"Using {0} batches to conserve memory.".format(len(chunkLists)))
-
-        i = 0
-        for dc in chunkLists:
-            i += 1;
-            info(u"Batch {0}/{1}".format(i, len(chunkLists)))
-            yield i, len(chunkLists)
-
-            dc = sorted(dc, key=lambda x:x.chunkPosition)
-
-            for j in self._generateLightsIter(dc):
-                yield j
-
-            for ch in dc:
-                ch.compress();
-        timeDelta = datetime.now() - startTime;
-
-        if len(dirtyChunks):
-            info(u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta / len(dirtyChunks) or 0))
-
-        return;
-
-    def _generateLightsIter(self, dirtyChunks):
-        conserveMemory = False
-        la = array(self.materials.lightAbsorption)
-
-            #[d.genFastLights() for d in dirtyChunks]
-        dirtyChunks = set(dirtyChunks)
-
-
-        info(u"Lighting {0} chunks".format(len(dirtyChunks)))
-        for i, chunk in enumerate(dirtyChunks):
-            try:
-                chunk.load();
-            except (ChunkNotPresent, ChunkMalformed):
-                continue;
-            chunk.chunkChanged();
-            yield i, len(dirtyChunks) * 14
-            assert chunk.dirty and chunk.needsLighting
-
-        for ch in list(dirtyChunks):
-            #relight all blocks in neighboring chunks in case their light source disappeared.
-            cx, cz = ch.chunkPosition
-            for dx, dz in itertools.product((-1, 0, 1), (-1, 0, 1)):
-                try:
-                    ch = self.getChunk (cx + dx, cz + dz)
-                except (ChunkNotPresent, ChunkMalformed):
-                    continue
-                dirtyChunks.add(ch);
-
-        dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
-
-        for i, chunk in enumerate(dirtyChunks):
-            chunk.BlockLight[:] = self.materials.lightEmission[chunk.Blocks];
-
-            if conserveMemory:
-                chunk.compress();
-
-        zeroChunk = ZeroChunk(self.Height)
-        zeroChunk.BlockLight[:] = 0;
-        zeroChunk.SkyLight[:] = 0;
-
-
-        la[18] = 0; #for normal light dispersal, leaves absorb the same as empty air.
-        startingDirtyChunks = dirtyChunks
-
-        oldLeftEdge = zeros((1, 16, self.Height), 'uint8');
-        oldBottomEdge = zeros((16, 1, self.Height), 'uint8');
-        oldChunk = zeros((16, 16, self.Height), 'uint8');
-        if self.dimNo == -1:
-            lights = ("BlockLight",)
-        else:
-            lights = ("BlockLight", "SkyLight")
-        info(u"Dispersing light...")
-
-        for light in lights:
-          j = 0
-          workTotal = 0
-          estimatedTotals = [len(startingDirtyChunks)] * 14
-          zerochunkLight = getattr(zeroChunk, light);
-
-          newDirtyChunks = list(startingDirtyChunks);
-
-          for i in range(14):
-            if len(newDirtyChunks) == 0: break
-
-            info(u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks)));
-
-            """
-            propagate light!
-            for each of the six cardinal directions, figure a new light value for 
-            adjoining blocks by reducing this chunk's light by light absorption and fall off. 
-            compare this new light value against the old light value and update with the maximum.
-            
-            we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.  
-            we do an extra cycle because lights sent across edges may lag by one cycle.
-            """
-            newDirtyChunks = set(newDirtyChunks)
-            newDirtyChunks.discard(zeroChunk)
-
-            dirtyChunks = sorted(newDirtyChunks, key=lambda x:x.chunkPosition)
-
-            newDirtyChunks = list();
-
-
-            for chunk in dirtyChunks:
-                #xxx code duplication
-                yield (workTotal + j, sum(estimatedTotals))
-                j += 1
-                (cx, cz) = chunk.chunkPosition
-                neighboringChunks = {};
-                try:
-                    chunk.load();
-                except (ChunkNotPresent, ChunkMalformed), e:
-                    print "Chunk error during relight, chunk skipped: ", e
-                    continue;
-
-                for dir, dx, dz in ((FaceXDecreasing, -1, 0),
-                                      (FaceXIncreasing, 1, 0),
-                                      (FaceZDecreasing, 0, -1),
-                                      (FaceZIncreasing, 0, 1)):
-                    try:
-                        neighboringChunks[dir] = self.getChunk(cx + dx, cz + dz)
-                    except (ChunkNotPresent, ChunkMalformed):
-                        neighboringChunks[dir] = zeroChunk;
-
-
-                chunkLa = la[chunk.Blocks] + 1;
-                chunkLight = getattr(chunk, light);
-                oldChunk[:] = chunkLight[:]
-
-
-                nc = neighboringChunks[FaceXDecreasing]
-                ncLight = getattr(nc, light);
-                oldLeftEdge[:] = ncLight[15:16, :, 0:self.Height] #save the old left edge 
-
-                #left edge
-                newlight = (chunkLight[0:1, :, :self.Height] - la[nc.Blocks[15:16, :, 0:self.Height]]) - 1
-                newlight[newlight > 15] = 0;
-
-                ncLight[15:16, :, 0:self.Height] = maximum(ncLight[15:16, :, 0:self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[1:16, :, 0:self.Height] - chunkLa[0:15, :, 0:self.Height])
-                newlight[newlight > 15] = 0; #light went negative;
-
-                chunkLight[0:15, :, 0:self.Height] = maximum(chunkLight[0:15, :, 0:self.Height], newlight)
-
-                #right edge
-                nc = neighboringChunks[FaceXIncreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[0:1, :, :self.Height] - chunkLa[15:16, :, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[15:16, :, 0:self.Height] = maximum(chunkLight[15:16, :, 0:self.Height], newlight)
-
-
-                #right edge
-                nc = neighboringChunks[FaceXIncreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = (chunkLight[15:16, :, 0:self.Height] - la[nc.Blocks[0:1, :, 0:self.Height]]) - 1
-                newlight[newlight > 15] = 0;
-
-                ncLight[0:1, :, 0:self.Height] = maximum(ncLight[0:1, :, 0:self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[0:15, :, 0:self.Height] - chunkLa[1:16, :, 0:self.Height])
-                newlight[newlight > 15] = 0;
-
-                chunkLight[1:16, :, 0:self.Height] = maximum(chunkLight[1:16, :, 0:self.Height], newlight)
-
-                #left edge
-                nc = neighboringChunks[FaceXDecreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[15:16, :, :self.Height] - chunkLa[0:1, :, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[0:1, :, 0:self.Height] = maximum(chunkLight[0:1, :, 0:self.Height], newlight)
-
-                zerochunkLight[:] = 0;
-
-                #check if the left edge changed and dirty or compress the chunk appropriately
-                if (oldLeftEdge != ncLight[15:16, :, :self.Height]).any():
-                    #chunk is dirty
-                    newDirtyChunks.append(nc)
-
-                #bottom edge
-                nc = neighboringChunks[FaceZDecreasing]
-                ncLight = getattr(nc, light);
-                oldBottomEdge[:] = ncLight[:, 15:16, :self.Height] # save the old bottom edge
-
-                newlight = (chunkLight[:, 0:1, :self.Height] - la[nc.Blocks[:, 15:16, :self.Height]]) - 1
-                newlight[newlight > 15] = 0;
-
-                ncLight[:, 15:16, :self.Height] = maximum(ncLight[:, 15:16, :self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[:, 1:16, :self.Height] - chunkLa[:, 0:15, :self.Height])
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 0:15, :self.Height] = maximum(chunkLight[:, 0:15, :self.Height], newlight)
-
-                #top edge
-                nc = neighboringChunks[FaceZIncreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[:, 0:1, :self.Height] - chunkLa[:, 15:16, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 15:16, 0:self.Height] = maximum(chunkLight[:, 15:16, 0:self.Height], newlight)
-
-
-                #top edge  
-                nc = neighboringChunks[FaceZIncreasing]
-
-                ncLight = getattr(nc, light);
-
-                newlight = (chunkLight[:, 15:16, :self.Height] - la[nc.Blocks[:, 0:1, :self.Height]]) - 1
-                newlight[newlight > 15] = 0;
-
-                ncLight[:, 0:1, :self.Height] = maximum(ncLight[:, 0:1, :self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[:, 0:15, :self.Height] - chunkLa[:, 1:16, :self.Height])
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 1:16, :self.Height] = maximum(chunkLight[:, 1:16, :self.Height], newlight)
-
-                #bottom edge
-                nc = neighboringChunks[FaceZDecreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[:, 15:16, :self.Height] - chunkLa[:, 0:1, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 0:1, 0:self.Height] = maximum(chunkLight[:, 0:1, 0:self.Height], newlight)
-
-                zerochunkLight[:] = 0;
-
-                if (oldBottomEdge != ncLight[:, 15:16, :self.Height]).any():
-                    newDirtyChunks.append(nc)
-
-                newlight = (chunkLight[:, :, 0:self.Height - 1] - chunkLa[:, :, 1:self.Height])
-                newlight[newlight > 15] = 0;
-                chunkLight[:, :, 1:self.Height] = maximum(chunkLight[:, :, 1:self.Height], newlight)
-
-                newlight = (chunkLight[:, :, 1:self.Height] - chunkLa[:, :, 0:self.Height - 1])
-                newlight[newlight > 15] = 0;
-                chunkLight[:, :, 0:self.Height - 1] = maximum(chunkLight[:, :, 0:self.Height - 1], newlight)
-                zerochunkLight[:] = 0;
-
-                if (oldChunk != chunkLight).any():
-                    newDirtyChunks.append(chunk);
-
-            workTotal += j
-            estimatedTotals[i:] = [j] * (14 - i)
-            j = 0
-
-        for ch in startingDirtyChunks:
-            ch.needsLighting = False;
-
     def addEntity(self, entityTag):
         assert isinstance(entityTag, TAG_Compound)
         x, y, z = map(lambda x:int(floor(x)), Entity.pos(entityTag))
@@ -2433,246 +2699,6 @@ class MCInfdevOldLevel(EntityLevel):
 
         info("Removed {0} tile entities".format(count))
         return count;
-
-    def fillBlocks(self, box, blockInfo, blocksToReplace=[]):
-        return exhaust(self.fillBlocksIter(box, blockInfo, blocksToReplace))
-        
-    def fillBlocksIter(self, box, blockInfo, blocksToReplace=[]):
-        if box is None:
-            chunkIterator = self.getAllChunkSlices()
-            box = self.bounds
-        else:
-            chunkIterator = self.getChunkSlices(box)
-
-        #shouldRetainData = (not blockInfo.hasAlternate and not any([b.hasAlternate for b in blocksToReplace]))
-        #if shouldRetainData:
-        #    info( "Preserving data bytes" )
-        shouldRetainData = False #xxx old behavior overwrote blockdata with 0 when e.g. replacing water with lava
-       
-        info("Replacing {0} with {1}".format(blocksToReplace, blockInfo))
-
-        changesLighting = True
-
-        if len(blocksToReplace):
-            blocktable = self.blockReplaceTable(blocksToReplace)
-            shouldRetainData = all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
-        
-            newAbsorption = self.materials.lightAbsorption[blockInfo.ID]
-            oldAbsorptions = [self.materials.lightAbsorption[b.ID] for b in blocksToReplace]
-            changesLighting = False
-            for a in oldAbsorptions:
-                if a != newAbsorption: changesLighting = True;
-
-            newEmission = self.materials.lightEmission[blockInfo.ID]
-            oldEmissions = [self.materials.lightEmission[b.ID] for b in blocksToReplace]
-            for a in oldEmissions:
-                if a != newEmission: changesLighting = True;
-
-
-        i = 0;
-        skipped = 0
-        replaced = 0;
-        
-        for (chunk, slices, point) in chunkIterator:
-            i += 1;
-            if i % 100 == 0:
-                info(u"Chunk {0}...".format(i))
-            yield i, box.chunkCount
-                
-            blocks = chunk.Blocks[slices]
-            data = chunk.Data[slices]
-            mask = slice(None)
-
-            needsLighting = changesLighting;
-
-            if len(blocksToReplace):
-                mask = blocktable[blocks, data]
-
-                blockCount = mask.sum()
-                replaced += blockCount;
-
-                #don't waste time relighting and copying if the mask is empty
-                if blockCount:
-                    blocks[:][mask] = blockInfo.ID
-                    if not shouldRetainData:
-                        data[mask] = blockInfo.blockData
-                else:
-                    skipped += 1;
-                    needsLighting = False;
-
-                def include(tileEntity):
-                    p = TileEntity.pos(tileEntity)
-                    x, y, z = map(lambda a, b, c:(a - b) - c, p, point, box.origin)
-                    return not ((p in box) and mask[x, z, y])
-
-                chunk.TileEntities.value[:] = filter(include, chunk.TileEntities)
-
-
-
-            else:
-                blocks[:] = blockInfo.ID
-                if not shouldRetainData:
-                    data[:] = blockInfo.blockData
-                chunk.removeTileEntitiesInBox(box)
-
-            chunk.chunkChanged(needsLighting);
-
-
-        if len(blocksToReplace):
-            info(u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))
-
-    def sourceMaskFunc(self, blocksToCopy):
-        if blocksToCopy is not None:
-            typemask = zeros((256) , dtype='bool')
-            typemask[blocksToCopy] = 1;
-            def sourceMask(sourceBlocks):
-                return typemask[sourceBlocks]
-        else:
-            def sourceMask(_sourceBlocks):
-                return slice(None, None)
-        return sourceMask
-
-    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
-        #assumes destination point and bounds have already been checked.
-        (sx, sy, sz) = sourceBox.origin
-
-        start = datetime.now();
-
-        sourceMask = self.sourceMaskFunc(blocksToCopy)
-
-
-        destBox = BoundingBox(destinationPoint, sourceBox.size)
-
-        i = 0;
-        chunkCount = float(destBox.chunkCount)
-
-        for (chunk, slices, point) in self.getChunkSlices(destBox, create=create):
-            i += 1;
-            yield (i, chunkCount)
-
-            if i % 100 == 0:
-                info("Chunk {0}...".format(i))
-
-            blocks = chunk.Blocks[slices];
-
-            localSourceCorner2 = (
-                sx + point[0] + blocks.shape[0],
-                sy + blocks.shape[2],
-                sz + point[2] + blocks.shape[1],
-            )
-
-            sourceBlocks = sourceLevel.Blocks[sx + point[0]:localSourceCorner2[0],
-                                              sz + point[2]:localSourceCorner2[2],
-                                              sy:localSourceCorner2[1]]
-            #sourceBlocks = filterTable[sourceBlocks]
-            mask = sourceMask(sourceBlocks)
-
-            #for small level slices, reduce the destination area
-            x, z, y = sourceBlocks.shape
-            blocks = blocks[0:x, 0:z, 0:y]
-
-            sourceData = None
-            if hasattr(sourceLevel, 'Data'):
-                #indev or schematic
-                sourceData = sourceLevel.Data[sx + point[0]:localSourceCorner2[0],
-                                              sz + point[2]:localSourceCorner2[2],
-                                              sy:localSourceCorner2[1]]
-
-            data = chunk.Data[slices][0:x, 0:z, 0:y]
-
-
-
-            convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
-
-            blocks[mask] = convertedSourceBlocks[mask]
-            if convertedSourceData is not None:
-                data[mask] = (convertedSourceData[:, :, :])[mask]
-                data[mask] &= 0xf;
-
-            chunk.chunkChanged();
-
-
-        d = datetime.now() - start;
-        if i:
-            info("Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i))
-
-            #chunk.compress(); #xxx find out why this trashes changes to tile entities
-
-    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
-        """ copy blocks between two infinite levels by looping through the 
-        destination's chunks. make a sub-box of the source level for each chunk
-        and copy block and entities in the sub box to the dest chunk."""
-
-        #assumes destination point and bounds have already been checked.
-        destBox = BoundingBox(destinationPoint, sourceBox.size)
-        chunkCount = destBox.chunkCount
-        i = 0
-        sourceMask = self.sourceMaskFunc(blocksToCopy)
-        
-        def subbox(slices, point):
-            size = [s.stop - s.start for s in slices]
-            size[1], size[2] = size[2], size[1]
-            return BoundingBox([p + a for p, a in zip(point, sourceBox.origin)], size)
-            
-        def shouldCreateFunc(slices, point):
-            box = subbox(slices, point)
-            b = any(list(sourceLevel.containsChunk(*c) for c in box.chunkPositions)) #any() won't take a generator-expression :(
-            #if b == False:
-            #    print 'Skipped ', list(box.chunkPositions)
-            return b
-            
-        for chunk, slices, point in self.getChunkSlices(destBox, create=(create and shouldCreateFunc)):
-            i += 1
-            yield (i, chunkCount)
-            if i % 100 == 0:
-                info("Chunk {0}...".format(i))
-
-            dstblocks = chunk.Blocks[slices]
-            dstdata = chunk.Data[slices]
-            sourceSubBox = subbox(slices, point)
-            for srcchunk, srcslices, srcpoint in sourceLevel.getChunkSlices(sourceSubBox):
-                srcpoint = srcpoint[0], srcpoint[2], srcpoint[1]
-                sourceBlocks = srcchunk.Blocks[srcslices]
-                sourceData = srcchunk.Data[srcslices]
-                mask = sourceMask(sourceBlocks)
-                convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
-
-                dstslices = [slice(p, p + (s.stop - s.start)) for p, s in zip(srcpoint, srcslices)]
-                dstblocks[dstslices][mask] = convertedSourceBlocks[mask]
-                if convertedSourceData is not None:
-                    dstdata[dstslices][mask] = convertedSourceData[mask]
-
-            chunk.chunkChanged()
-
-
-
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
-        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
-
-    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
-        (x, y, z) = destinationPoint;
-        (lx, ly, lz) = sourceBox.size
-        #sourcePoint, sourcePoint1 = sourceBox
-
-        sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
-        #needs work xxx
-        info(u"Copying {0} blocks from {1} to {2}" .format (ly * lz * lx, sourceBox, destinationPoint))
-        startTime = datetime.now()
-
-        if(not isinstance(sourceLevel, MCInfdevOldLevel)):
-            for i in self.copyBlocksFromFiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
-                yield i
-
-
-        else:
-            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
-                yield i
-
-        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
-            yield i
-        info("Duration: {0}".format(datetime.now() - startTime))
-        #self.saveInPlace()
-
 
     def containsPoint(self, x, y, z):
         if y < 0 or y > 127: return False;

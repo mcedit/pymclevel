@@ -24,6 +24,60 @@ def extractLightMap(materials, blocks, heightMap = None):
     heightMap[heightMap<255] += 1;
     return heightMap
 
+def getSlices(box, height):
+    """ call this method to iterate through a large slice of the world by 
+        visiting each chunk and indexing its data with a subslice.
+    
+    this returns an iterator, which yields 3-tuples containing:
+    +  a pair of chunk coordinates (cx,cz), 
+    +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays, 
+    +  a x,y,z triplet representing the relative location of this subslice within the requested world slice.
+    
+    Note the different order of the coordinates between the 'slices' triplet
+    and the 'offset' triplet. x,z,y ordering is used only
+    to index arrays, since it reflects the order of the blocks in memory.
+    In all other places, including an entity's 'Pos', the order is x,y,z. 
+    """
+    
+    #when yielding slices of chunks on the edge of the box, adjust the 
+    #slices by an offset
+    minxoff, minzoff = box.minx - (box.mincx << 4), box.minz - (box.mincz << 4);
+    maxxoff, maxzoff = box.maxx - (box.maxcx << 4) + 16, box.maxz - (box.maxcz << 4) + 16;
+
+    newMinY = 0
+    if box.miny < 0:
+        newMinY = -box.miny
+    miny = max(0, box.miny)
+    maxy = min(height, box.maxy)
+
+    for cx in range(box.mincx, box.maxcx):
+        localMinX = 0
+        localMaxX = 16
+        if cx == box.mincx:
+            localMinX = minxoff
+
+        if cx == box.maxcx - 1:
+            localMaxX = maxxoff
+        newMinX = localMinX + (cx << 4) - box.minx
+        newMaxX = localMaxX + (cx << 4) - box.minx
+
+
+        for cz in range(box.mincz, box.maxcz):
+            localMinZ = 0
+            localMaxZ = 16
+            if cz == box.mincz:
+                localMinZ = minzoff
+            if cz == box.maxcz - 1:
+                localMaxZ = maxzoff
+            newMinZ = localMinZ + (cz << 4) - box.minz
+            newMaxZ = localMaxZ + (cz << 4) - box.minz
+            slices, point = (
+                (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(miny, maxy)),
+                (newMinX, newMinY, newMinZ)
+            )
+            
+            yield (cx,cz), slices, point
+            
 
 class MCLevel(object):
     """ MCLevel is an abstract class providing many routines to the different level types, 
@@ -191,76 +245,14 @@ class MCLevel(object):
 
             yield (chunk, slices, (xPos * 16 - x, 0, zPos * 16 - z))
 
-    def getChunkSlicesCreating(self, box): 
-        return self.getChunkSlices(box, create=True)
+    def _getSlices(self, box):
+        return getSlices(box, self.Height)
+    
+    def getChunkSlices(self, box):
+        return ((self.getChunk(*cPos), slices, point) 
+                for cPos, slices, point in getSlices(box, self.Height)
+                if self.containsChunk(*cPos))
         
-    def getChunkSlices(self, box, create=False):
-        """ call this method to iterate through a large slice of the world by 
-            visiting each chunk and indexing its data with a subslice.
-        
-        this returns an iterator, which yields 3-tuples containing:
-        +  an InfdevChunk object, 
-        +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays, 
-        +  a x,y,z triplet representing the relative location of this subslice within the requested world slice.
-        
-        Note the different order of the coordinates between the 'slices' triplet
-        and the 'offset' triplet. x,z,y ordering is used only
-        to index arrays, since it reflects the order of the blocks in memory.
-        In all other places, including an entity's 'Pos', the order is x,y,z. 
-        
-        'create' controls whether to create absent chunks or skip over them.
-        create can be False, True, or a function of (slices, point) 
-        """
-        level = self
-
-        #when yielding slices of chunks on the edge of the box, adjust the 
-        #slices by an offset
-        minxoff, minzoff = box.minx - (box.mincx << 4), box.minz - (box.mincz << 4);
-        maxxoff, maxzoff = box.maxx - (box.maxcx << 4) + 16, box.maxz - (box.maxcz << 4) + 16;
-
-        newMinY = 0
-        if box.miny < 0:
-            newMinY = -box.miny
-        miny = max(0, box.miny)
-        maxy = min(self.Height, box.maxy)
-
-        for cx in range(box.mincx, box.maxcx):
-            localMinX = 0
-            localMaxX = 16
-            if cx == box.mincx:
-                localMinX = minxoff
-
-            if cx == box.maxcx - 1:
-                localMaxX = maxxoff
-            newMinX = localMinX + (cx << 4) - box.minx
-            newMaxX = localMaxX + (cx << 4) - box.minx
-
-
-            for cz in range(box.mincz, box.maxcz):
-                localMinZ = 0
-                localMaxZ = 16
-                if cz == box.mincz:
-                    localMinZ = minzoff
-                if cz == box.maxcz - 1:
-                    localMaxZ = maxzoff
-                newMinZ = localMinZ + (cz << 4) - box.minz
-                newMaxZ = localMaxZ + (cz << 4) - box.minz
-                slices, point = (
-                    (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(miny, maxy)),
-                    (newMinX, newMinY, newMinZ)
-                )
-                
-                if not level.containsChunk(cx,cz):
-                    if create and hasattr(level, 'createChunk'):
-                        if not hasattr(create, "__call__") or create(slices, point):
-                            level.createChunk(cx,cz)
-                        else:
-                            continue
-                    else:
-                        continue;
-                chunk = level.getChunk(cx,cz)
-                yield chunk, slices, point
-
 
     def containsPoint(self, x, y, z):
         return (x >= 0 and x < self.Width and
