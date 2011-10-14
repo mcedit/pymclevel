@@ -180,6 +180,7 @@ from infiniteworld import *
 from java import *
 from level import *
 from schematic import *
+from pocket import *
 
 import sys
 
@@ -192,15 +193,13 @@ import sys
 #    )
 #    
 
+class LoadingError(RuntimeError): pass
 
 def fromFile(filename, loadInfinite=True):
     ''' The preferred method for loading Minecraft levels of any type.
     pass False to loadInfinite if you'd rather not load infdev levels.
     '''
     info(u"Identifying " + filename)
-
-    class LoadingError(RuntimeError): pass
-
 
     if not filename:
         raise IOError, "File not found: " + filename
@@ -212,6 +211,9 @@ def fromFile(filename, loadInfinite=True):
         lev = ZipSchematic(filename);
         info("Detected zipped Infdev level")
         return lev
+
+    if (PocketWorld._isLevel(filename)):
+        return PocketWorld(filename)
 
     if (MCInfdevOldLevel._isLevel(filename)):
         info(u"Detected Infdev level.dat")
