@@ -164,10 +164,12 @@ this way.
             import hashlib
             return (hashlib.md5(f.read()).hexdigest())
 
+    broken_versions = ["Beta 1.9 Prerelease {0}".format(i) for i in (1,2,3)]
+    
     @property
     def latestVersion(self):
         if len(self.versions) == 0: return None
-        return max(self.versions, key=alphanum_key)
+        return max( (v for v in self.versions if v not in self.broken_versions), key=alphanum_key)
 
     def getJarfile(self, version=None):
         if len(self.versions) == 0:
