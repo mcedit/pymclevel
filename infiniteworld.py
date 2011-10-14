@@ -872,6 +872,19 @@ class InfdevChunk(EntityLevel):
         if Entities not in chunkTag[Level]:
             chunkTag[Level][Entities] = TAG_List();
 
+    def addEntity(self, entityTag):
+        
+        def doubleize(name):
+            if name in entityTag:
+                m = entityTag[name]
+                entityTag[name] = TAG_List([TAG_Double(i.value) for i in m])
+        
+        doubleize("Motion")
+        doubleize("Position")
+        
+        self.dirty = True
+        return super(InfdevChunk, self).addEntity(entityTag)
+        
     def removeEntitiesInBox(self, box):
         self.dirty = True;
         return super(InfdevChunk, self).removeEntitiesInBox(box)
