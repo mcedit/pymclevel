@@ -344,8 +344,9 @@ class MCServerChunkGenerator(object):
         
         proc = self.runServer(tempDir)
         while proc.poll() is None:
-            line = proc.stderr.readline()
-            yield line.strip()
+            line = proc.stderr.readline().strip()
+            info(line)
+            yield line
             
             if "[INFO] Done" in line:
                 proc.stdin.write("stop\n")
