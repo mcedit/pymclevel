@@ -2915,7 +2915,7 @@ class MCAlphaDimension (MCInfdevOldLevel):
         if not os.path.exists(self.worldDir):
             os.mkdir(self.worldDir)
 
-    dimensionNames = { -1: "Nether", 3: "Aether"};
+    dimensionNames = { -1: "Nether", 1: "The End", 3: "Aether"};
     @property
     def displayName(self):
         return u"{0} ({1})".format(self.parentWorld.displayName, self.dimensionNames[self.dimNo])
