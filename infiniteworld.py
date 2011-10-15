@@ -787,8 +787,8 @@ class InfdevChunk(EntityLevel):
 
     def genFastLights(self):
         self.SkyLight[:] = 0;
-        if self.world.dimNo == -1:
-            return #no light in nether
+        if self.world.dimNo in (-1, 1):
+            return #no light in nether or the end
 
         blocks = self.Blocks;
         la = self.world.materials.lightAbsorption
