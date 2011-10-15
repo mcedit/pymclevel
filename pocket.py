@@ -315,15 +315,16 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
         if not os.path.isdir(filename):
             filename = os.path.dirname(filename)
         self.filename = filename
+        self.dimensions = {}
         
         self.chunkFile = PocketChunksFile(os.path.join(filename, "chunks.dat"))
-        self.loadedChunks = {}
+        self._loadedChunks = {}
         
     def getChunk(self, cx, cz):
-        c = self.loadedChunks.get( (cx,cz) )
+        c = self._loadedChunks.get( (cx,cz) )
         if c is None:
             c = self.chunkFile.loadChunk(cx, cz, self)
-            self.loadedChunks[cx,cz] = c
+            self._loadedChunks[cx,cz] = c
         return c
     
     @classmethod
@@ -338,9 +339,11 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
         return all([os.path.exists(os.path.join(filename, f)) for f in clp])    
         
     def saveInPlace(self):
-        for chunk in self.loadedChunks.itervalues():
-            self.chunkFile.saveChunk(chunk)
-    
+        for chunk in self._loadedChunks.itervalues():
+            #if chunk.dirty:
+                self.chunkFile.saveChunk(chunk)
+                #chunk.dirty = False
+            
     def containsChunk(self, cx, cz):
         if cx>31 or cz>31 or cx < 0 or cz < 0: return False
         return self.chunkFile.getOffset(cx,cz) != 0
@@ -351,6 +354,8 @@ class PocketChunk(InfdevChunk):
     HeightMap = FakeChunk.HeightMap
     Entities = TileEntities = property(lambda self: TAG_List())
     
+    dirty = False
+    filename = "chunks.dat"
     
     def __init__(self, cx, cz, data, world):
         self.chunkPosition = (cx,cz)
@@ -365,6 +370,9 @@ class PocketChunk(InfdevChunk):
         self.unpackChunkData()
         self.shapeChunkData()
     
+    def isLoaded(self): return True
+    
+    def load(self): pass
     def decompress(self): pass
     def compress(self): pass
     
@@ -395,7 +403,7 @@ class PocketChunk(InfdevChunk):
         def packData(dataArray):
             assert dataArray.shape[2] == self.world.Height;
 
-            data = dataArray.reshape(16, 16, self.world.Height / 2, 2)
+            data = array(dataArray).reshape(16, 16, self.world.Height / 2, 2)
             data[..., 1] <<= 4
             data[..., 1] |= data[..., 0]
             return array(data[:, :, :, 1])
@@ -406,4 +414,4 @@ class PocketChunk(InfdevChunk):
                        packData(self.SkyLight).tostring(),
                        packData(self.BlockLight).tostring(),
                        ])
-        
+

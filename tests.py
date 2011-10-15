@@ -254,9 +254,14 @@ class TestPocket(unittest.TestCase):
         
     def testPocket(self):
         level = self.level.level
-        alphalevel = self.alphalevel.level
+#        alphalevel = self.alphalevel.level
         print "Chunk count", len(level.allChunks)
-        level.copyBlocksFrom(alphalevel, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
+        chunk = level.getChunk(1,5)
+        a = array(chunk.SkyLight)
+        level.saveInPlace()
+        assert (a == chunk.SkyLight).all()
+        
+#        level.copyBlocksFrom(alphalevel, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         #assert((level.Blocks[0:64, 0:64, 0:64] == alphalevel.Blocks[0:64, 0:64, 0:64]).all())
         
         

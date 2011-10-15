@@ -35,7 +35,7 @@ SizeOnDisk = 'SizeOnDisk' #maybe update this?
 Time = 'Time'
 Player = 'Player'
 
-__all__ = ["ZeroChunk", "InfdevChunk", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
+__all__ = ["ZeroChunk", "InfdevChunk", "ChunkedLevelMixin", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
 
 import re
 
@@ -531,22 +531,21 @@ class InfdevChunk(EntityLevel):
                 format=["???", "gzip", "deflate"][self.compressMode])
         else:
             return self.chunkFilename
+            
+    dirty = False;
+    needsLighting = False
+    compressedTag = None
+    root_tag = None
+            
     def __init__(self, world, chunkPosition, create=False):
         self.world = world;
-        #self.materials = self.world.materials
         self.chunkPosition = chunkPosition;
         self.chunkFilename = world.chunkFilename(*chunkPosition)
-        #self.filename = "UNUSED" + world.chunkFilename(*chunkPosition);
-        #self.filename = "REGION FILE (chunk {0})".format(chunkPosition)
-        self.compressedTag = None
-        self.root_tag = None
-        self.dirty = False;
-        self.needsLighting = False
+        
         if self.world.version:
             self.compressMode = MCRegionFile.VERSION_DEFLATE
         else:
             self.compressMode = MCRegionFile.VERSION_GZIP
-
 
         if create:
             self.create();
@@ -777,9 +776,7 @@ class InfdevChunk(EntityLevel):
         the chunk. Pass False for calcLighting if you know your changes will 
         not change any lights."""
 
-        if self.compressedTag == None and self.root_tag == None:
-            #unloaded chunk
-            return;
+        if not self.isLoaded(): return;
 
         self.dirty = True;
         self.needsLighting = calcLighting or self.needsLighting;
@@ -1708,7 +1705,10 @@ class ChunkedLevelMixin(object):
     
     def generateLights(self, dirtyChunks=None):
         return exhaust(self.generateLightsIter(dirtyChunks))
-
+    
+    def _getChunkUnloaded(self, cx, cz):
+        return self.getChunk(cx,cz)
+        
     def generateLightsIter(self, dirtyChunks=None):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
         if none, generate lights for all chunks that need lighting
@@ -1719,7 +1719,7 @@ class ChunkedLevelMixin(object):
         if dirtyChunks is None:
             dirtyChunks = (ch for ch in self._loadedChunks.itervalues() if ch.needsLighting)
         else:
-            dirtyChunks = (self._makeChunk(*c) for c in dirtyChunks if self.containsChunk(*c))
+            dirtyChunks = (self._getChunkUnloaded(*c) for c in dirtyChunks if self.containsChunk(*c))
 
         dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
 
@@ -1814,7 +1814,7 @@ class ChunkedLevelMixin(object):
 
         for i, chunk in enumerate(dirtyChunks):
             chunk.BlockLight[:] = self.materials.lightEmission[chunk.Blocks];
-
+            chunk.dirty = True
             if conserveMemory:
                 chunk.compress();
 
@@ -2591,7 +2591,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
 
 
-    def _makeChunk(self, cx, cz):
+    def _getChunkUnloaded(self, cx, cz):
         """return the InfdevChunk object at the given position. because loading
         the chunk is done later, accesses to chunk attributes may 
         raise ChunkMalformed"""
@@ -2627,7 +2627,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         decompression and unpacking is done lazily."""
 
 
-        c = self._makeChunk(cx, cz)
+        c = self._getChunkUnloaded(cx, cz)
         c.load();
         if not (cx, cz) in self._loadedChunks:
             raise ChunkMalformed, "Chunk {0} malformed".format((cx, cz))
