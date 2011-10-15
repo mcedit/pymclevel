@@ -488,7 +488,9 @@ def extractSchematicFrom(sourceLevel, box, entities=True):
 
 def extractSchematicFromIter(sourceLevel, box, entities=True):
     p = sourceLevel.adjustExtractionParameters(box);
-    if p is None: return
+    if p is None: 
+        yield None
+        return
     newbox, destPoint = p
 
     tempSchematic = MCSchematic(shape=box.size)
