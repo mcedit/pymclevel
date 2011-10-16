@@ -7,7 +7,7 @@ import struct
 class PocketChunksFile(object):
     holdFileOpen = False #if False, reopens and recloses the file on each access
     SECTOR_BYTES = 4096
-    CHUNK_HEADER_SIZE = SECTOR_BYTES
+    CHUNK_HEADER_SIZE = 4
     
     @property
     def file(self):
@@ -272,7 +272,7 @@ class PocketChunksFile(object):
             debug("REGION: Writing sector {0}".format(sectorNumber))
 
             f.seek(sectorNumber * self.SECTOR_BYTES)
-            f.write(struct.pack("<I", len(data)));# // chunk length
+            f.write(struct.pack("<I", len(data) + self.CHUNK_HEADER_SIZE));# // chunk length
             f.write(data);# // chunk data
             #f.flush()
 
@@ -398,7 +398,8 @@ class PocketChunk(InfdevChunk):
         self.SkyLight.shape = (chunkSize, chunkSize, self.world.Height)
         self.BlockLight.shape = (chunkSize, chunkSize, self.world.Height)
         self.Data.shape = (chunkSize, chunkSize, self.world.Height)
-        
+    
+    zeros = "\0" * 256
     def _savedData(self):
         def packData(dataArray):
             assert dataArray.shape[2] == self.world.Height;
@@ -413,5 +414,6 @@ class PocketChunk(InfdevChunk):
                        packData(self.Data).tostring(),
                        packData(self.SkyLight).tostring(),
                        packData(self.BlockLight).tostring(),
+                       self.zeros, 
                        ])
 
