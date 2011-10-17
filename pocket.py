@@ -1,5 +1,5 @@
 from mclevelbase import *
-from pymclevel.level import FakeChunk
+from level import FakeChunk
 import struct
 
 #values are usually little-endian, unlike Minecraft PC
