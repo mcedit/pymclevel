@@ -1,5 +1,6 @@
 from mclevelbase import *
 from level import FakeChunk
+from pocketmaterials import pocketMaterials
 import struct
 
 #values are usually little-endian, unlike Minecraft PC
@@ -306,6 +307,8 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
     
     isInfinite = True # Wrong. isInfinite actually means 'isChunked' and should be changed
     loadedChunks = None
+
+    materials = pocketMaterials
     
     @property
     def allChunks(self):
