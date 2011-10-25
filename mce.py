@@ -1323,11 +1323,13 @@ class mce(object):
                 searchNumber = int(searchName)
             except ValueError:
                 searchNumber = None
+                matches = self.level.materials.blocksMatching(searchName)
             else:
-                print "{0:3}: {1}".format(searchNumber, self.level.materials.names[searchNumber])
-                return
+                matches = [b for b in self.level.materials.allBlocks if b.ID == searchNumber]
+#                print "{0:3}: {1}".format(searchNumber, self.level.materials.names[searchNumber])
+ #               return
 
-            matches = self.level.materials.blocksMatching(searchName)
+            
         else:
             matches = self.level.materials.allBlocks
 
