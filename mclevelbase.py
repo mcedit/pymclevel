@@ -9,7 +9,7 @@ from datetime import datetime
 from StringIO import StringIO
 from copy import deepcopy
 import itertools
-from contextlib import closing
+from contextlib import closing, contextmanager
 import gzip
 
 from numpy import *
@@ -36,9 +36,6 @@ Blocks = "Blocks"
 Data = "Data"
 Inventory = 'Inventory'
 
-#entities
-
-from contextlib import contextmanager
 
 @contextmanager
 def notclosing(f):
@@ -79,15 +76,24 @@ import sys
 
 if sys.platform == "win32":
     #not sure why win32com is needed if the %APPDATA% var is available
+    
     try:
         import win32com.client
         objShell = win32com.client.Dispatch("WScript.Shell")
         appDataDir = objShell.SpecialFolders("AppData")
-        minecraftDir = os.path.join(appDataDir, u".minecraft")
     except Exception, e:
         print "Error while getting AppData folder using WScript.Shell.SpecialFolders: {0!r}".format(e)
-        appDataDir = os.environ['APPDATA'].decode(sys.getfilesystemencoding());
-        minecraftDir = os.path.join(appDataDir, u".minecraft")
+        try:
+            from win32com.shell import shell, shellcon
+            appDataDir = shell.SHGetPathFromIDListEx (
+                shell.SHGetSpecialFolderLocation (0, shellcon.CSIDL_APPDATA)
+            )
+        except Exception, e:
+            print "Error while getting AppData folder using SHGetSpecialFolderLocation: {0!r}".format(e)
+            
+            appDataDir = os.environ['APPDATA'].decode(sys.getfilesystemencoding());
+            
+    minecraftDir = os.path.join(appDataDir, u".minecraft")
 
 elif sys.platform == "darwin":
     appDataDir = os.path.expanduser(u"~/Library/Application Support")
@@ -97,7 +103,7 @@ elif sys.platform == "darwin":
 else:
     appDataDir = os.path.expanduser(u"~")
     minecraftDir = os.path.expanduser(u"~/.minecraft")
-    minecraftDir.decode(sys.getfilesystemencoding());
+    
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
 

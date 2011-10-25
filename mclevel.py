@@ -186,12 +186,8 @@ import sys
 
 
  
-#if sys.platform == "win32":
-#    from win32com.shell import shell, shellcon
-#    saveFileDir = shell.SHGetPathFromIDListEx (
-#    shell.SHGetSpecialFolderLocation (0, shellcon.CSIDL_APPDATA)
-#    )
-#    
+
+    
 
 class LoadingError(RuntimeError): pass
 
