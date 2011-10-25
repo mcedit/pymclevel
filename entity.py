@@ -3,7 +3,10 @@ Created on Jul 23, 2011
 
 @author: Rio
 '''
-from mclevelbase import *
+#from mclevelbase import *
+from nbt import *
+import nbt
+from copy import deepcopy
 
 __all__ = "Entity, TileEntity".split(", ")
 
