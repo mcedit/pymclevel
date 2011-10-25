@@ -274,6 +274,8 @@ class ItemType (object):
         self.imagefile = imagefile
         self.imagecoords = imagecoords
         self.maxdamage = maxdamage
+        self.damagevalue = damagevalue
+        self.stacksize = stacksize
     def __repr__(self):
         return "ItemType({0}, '{1}')".format(self.id, self.name)
     def __str__(self):
@@ -338,8 +340,9 @@ class Items (object):
 
         item = self.itemtypes.get((id, 0))
         if item: return item
-
-        raise ItemNotFound, "Item {0}:{1} not found".format(id, damage)
+        
+        return ItemType(id, "Unknown Item {0}:{1}".format(id, damage), damagevalue=damage)
+        #raise ItemNotFound, "Item {0}:{1} not found".format(id, damage)
 
 class ItemNotFound(KeyError): pass
 
