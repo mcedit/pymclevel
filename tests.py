@@ -76,7 +76,7 @@ class TestIndevLevel(unittest.TestCase):
 
     def testFill(self):
         indevlevel = self.indevlevel.level
-        indevlevel.fillBlocks(BoundingBox((0, 0, 0), (64, 64, 64,)), indevlevel.materials.Sand, [indevlevel.materials.Rock, indevlevel.materials.Dirt])
+        indevlevel.fillBlocks(BoundingBox((0, 0, 0), (64, 64, 64,)), indevlevel.materials.Sand, [indevlevel.materials.Stone, indevlevel.materials.Dirt])
         indevlevel.saveInPlace()
 
 

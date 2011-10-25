@@ -306,6 +306,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
     
     isInfinite = True # Wrong. isInfinite actually means 'isChunked' and should be changed
     loadedChunks = None
+    materials = pocketMaterials
     
     @property
     def allChunks(self):

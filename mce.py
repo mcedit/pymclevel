@@ -460,7 +460,7 @@ class mce(object):
 
         for blockID in range(256):
             block = self.level.materials.blockWithID(blockID, 0)
-            if block.hasAlternate:
+            if block.hasVariants:
                 for data in range(16):
                     i = (data << 8) + blockID
                     if blockCounts[i]:
@@ -1012,7 +1012,7 @@ class mce(object):
                                 self.level.materials.Obsidian,
                                 self.level.materials.Fire,
                                 self.level.materials.LavaActive,
-                                self.level.materials.LavaStill,
+                                self.level.materials.Lava,
                                 ]
                               )
         self.needsSave = True;

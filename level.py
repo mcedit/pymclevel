@@ -8,6 +8,7 @@ Created on Jul 22, 2011
 from mclevelbase import *
 import tempfile
 from collections import defaultdict
+import materials
 
 def extractLightMap(materials, blocks, heightMap = None):
     """Computes the HeightMap array for a chunk, which stores the lowest 
@@ -324,7 +325,7 @@ class MCLevel(object):
     def blockReplaceTable(self, blocksToReplace):
         blocktable = zeros((256, 16), dtype='bool')
         for b in blocksToReplace:
-            if b.hasAlternate:
+            if b.hasVariants:
                 blocktable[b.ID, b.blockData] = True
             else:
                 blocktable[b.ID] = True
@@ -412,7 +413,7 @@ class MCLevel(object):
             mask = typemask[convertedSourceBlocks]
 
         blocks[mask] = convertedSourceBlocks[mask]
-        if hasattr(self, 'Data'):
+        if hasattr(self, 'Data') and hasattr(sourceLevel, 'Data'):
             data = self.Data[destx, destz, desty]
             data[mask] = convertedSourceData[mask]
 
@@ -521,45 +522,10 @@ class MCLevel(object):
         for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
             yield i
 
-    # --- Wool Color Conversion ---
-    classicWoolMask = zeros((256,), dtype='bool')
-    classicWoolMask[range(21, 37)] = True;
-
-    classicToAlphaWoolTypes = range(21) + [
-        0xE, #"Red", (21)
-        0x1, #"Orange",
-        0x4, #"Yellow",
-        0x5, #"Light Green",
-        0xD, #"Green",
-        0x9, #"Aqua",
-        0x3, #"Cyan",
-        0xB, #"Blue",
-        0xA, #"Purple",
-        0xA, #"Indigo",
-        0x2, #"Violet",
-        0x2, #"Magenta",
-        0x6, #"Pink",
-        0x7, #"Black",
-        0x8, #"Gray",
-        0x0, #"White",
-    ]
-    classicToAlphaWoolTypes = array(classicToAlphaWoolTypes, dtype='uint8')
 
     def convertBlocksFromLevel(self, sourceLevel, blocks, blockData):
-        convertedBlocks = sourceLevel.materials.conversionTables[self.materials][blocks]
-        if blockData is None:
-            blockData = zeros_like(convertedBlocks)
-
-        convertedBlockData = array(blockData)
-
-        if sourceLevel.materials is classicMaterials and self.materials is alphaMaterials:
-            woolMask = self.classicWoolMask[blocks]
-            woolBlocks = blocks[woolMask]
-            convertedBlockData[woolMask] = self.classicToAlphaWoolTypes[woolBlocks]
-
-        return convertedBlocks, convertedBlockData
-
-
+        return materials.convertBlocks(self.materials, sourceLevel.materials, blocks, blockData)
+        
     def saveInPlace(self):
         self.saveToFile(self.filename);
 

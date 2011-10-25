@@ -1626,7 +1626,7 @@ class ChunkedLevelMixin(object):
         else:
             chunkIterator = self.getChunkSlices(box)
 
-        #shouldRetainData = (not blockInfo.hasAlternate and not any([b.hasAlternate for b in blocksToReplace]))
+        #shouldRetainData = (not blockInfo.hasVariants and not any([b.hasVariants for b in blocksToReplace]))
         #if shouldRetainData:
         #    info( "Preserving data bytes" )
         shouldRetainData = False #xxx old behavior overwrote blockdata with 0 when e.g. replacing water with lava
