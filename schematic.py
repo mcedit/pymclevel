@@ -176,7 +176,7 @@ class MCSchematic (EntityLevel):
             if Materials in root_tag:
                 self.materials = namedMaterials[self.Materials]
             else:
-                root_tag[Materials] = self.materials.name
+                root_tag[Materials] = TAG_String(self.materials.name)
             self.shapeChunkData();
 
         else:
