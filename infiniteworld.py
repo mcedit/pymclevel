@@ -409,7 +409,10 @@ class MCServerChunkGenerator(object):
         startLength = len(chunks)
         while len(chunks):
             centercx, centercz = chunks[0]
-
+            #assume the generator always generates at least an 11x11 chunk square.
+            centercx += 5
+            centercz += 5
+            
             #boxedChunks = [cPos for cPos in chunks if inBox(cPos)]
             missingChunks = []
 
