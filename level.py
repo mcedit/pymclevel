@@ -10,6 +10,9 @@ import tempfile
 from collections import defaultdict
 import materials
 
+log = logging.getLogger(__name__)
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
+
 def extractLightMap(materials, blocks, heightMap = None):
     """Computes the HeightMap array for a chunk, which stores the lowest 
     y-coordinate of each column where the sunlight is still at full strength."""
