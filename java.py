@@ -8,6 +8,9 @@ from mclevelbase import *
 
 import re
 
+log = logging.getLogger(__name__)
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
+
 
 class MCJavaLevel(MCLevel):
 

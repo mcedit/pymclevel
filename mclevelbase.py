@@ -13,7 +13,7 @@ from contextlib import closing, contextmanager
 import gzip
 
 from numpy import *
-from logging import warn, error, info, debug
+import logging
 
 import nbt
 from nbt import *
@@ -24,6 +24,9 @@ from entity import *
 
 from faces import *
 #String constants for common tag names
+
+log = logging.getLogger(__name__)
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 Entities = "Entities"
 TileEntities = "TileEntities"

@@ -63,6 +63,9 @@ TAG_Compound "MinecraftLevel"
 """
 from mclevelbase import *
 
+log = logging.getLogger(__name__)
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
+
 MinecraftLevel = "MinecraftLevel"
 
 Environment = "Environment"
