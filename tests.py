@@ -15,17 +15,22 @@ import tempfile
 import logging
 import shutil
 import os
+from os.path import join
 import numpy
 from numpy import *
 from logging import info
 from pymclevel.infiniteworld import MCServerChunkGenerator
 #logging.basicConfig(format=u'%(levelname)s:%(message)s')
 #logging.getLogger().level = logging.INFO
-
+def mktemp(suffix):
+    td = tempfile.mkdtemp(suffix)
+    os.rmdir(td)
+    return td
+    
 class TempLevel(object):
     def __init__(self, filename):
         if not os.path.exists(filename):
-            filename = os.path.join("testfiles", filename)
+            filename = join("testfiles", filename)
 #def tempCopy(filename):
         if os.path.isdir(filename):
             tmpname = tempfile.mkdtemp(os.path.basename(filename))
@@ -98,9 +103,11 @@ class TestJavaLevel(unittest.TestCase):
 
 class TestAlphaLevelCreate(unittest.TestCase):
     def testCreate(self):
-        temppath = tempfile.mktemp("AlphaCreate")
+        temppath = mktemp("AlphaCreate")
         self.alphaLevel = MCInfdevOldLevel(filename=temppath, create=True);
-
+        self.alphaLevel.close()
+        shutil.rmtree(temppath)
+        
 class TestAlphaLevel(unittest.TestCase):
     def setUp(self):
         #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
@@ -194,7 +201,8 @@ class TestSchematics(unittest.TestCase):
         #info("Schematic from indev")
 
         size = (64, 64, 64)
-        schematic = MCSchematic(shape=size, filename="hell.schematic", mats='Classic');
+        temp = mktemp("testcreate.schematic")
+        schematic = MCSchematic(shape=size, filename=temp, mats='Classic');
         level = self.indevlevel.level
 
         self.failUnlessRaises(ValueError, lambda:(
@@ -224,6 +232,9 @@ class TestSchematics(unittest.TestCase):
             except ValueError:
                 pass
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
+        schematic.close()
+        os.remove(temp)
+        
     def testRotate(self):
         level = self.indevlevel.level
         schematic = level.extractSchematic(level.bounds)
@@ -236,7 +247,9 @@ class TestSchematics(unittest.TestCase):
         box = BoundingBox((0, 0, 0), (64, 64, 64,))
         zs = level.extractZipSchematic(box)
         assert(box.chunkCount == zs.chunkCount)
-
+        zs.close()
+        os.remove(zs.filename)
+        
     def testINVEditChests(self):
         info("INVEdit chest")
         invFile = fromFile("schematics/Chests/TinkerersBox.inv");
