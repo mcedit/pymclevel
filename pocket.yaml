@@ -163,17 +163,34 @@ blocks:
     tex: [5, 3] # The "correct" one is actually [4, 3] but with the current
                 # transparency rendering issues, this one looks better.
     opacity: 1
-#    data:
-#      0:
-#        name: Leaves
-#        tex: [5, 3]
-#      1:
-#        name: Pine Leaves
-#        aka: Spruce Leaves
-#        tex: [5, 8]
-#      2:
-#        name: Birch Leaves
-#        tex: [5, 3]
+    data:
+      0:
+        name: Leaves
+        mapcolor: [60, 192, 41]
+        tex: [5, 3]
+      1:
+        name: Pine Leaves
+        aka: Spruce Leaves
+        mapcolor: [74, 131, 66]
+        tex: [5, 8]
+      2:
+        name: Birch Leaves
+        mapcolor: [89, 151, 76]
+        tex: [5, 3]
+      
+      4: # bit 0x4 - "Decaying"
+        name: Leaves (Decaying)
+        mapcolor: [60, 192, 41]
+        tex: [5, 3]
+      5:
+        name: Pine Leaves (Decaying)
+        aka: Spruce Leaves
+        mapcolor: [74, 131, 66]
+        tex: [5, 8]
+      6:
+        name: Birch Leaves (Decaying)
+        mapcolor: [89, 151, 76]
+        tex: [5, 3]
 #    
 #  - id: 19
 #    idStr: SPONGE
@@ -817,6 +834,7 @@ blocks:
   - id: 108
     tex: [1, 14]
     name: Light Grey Wool
+    aka: White Wool
     mapcolor: [166, 166, 166]
     
   - id: 109
