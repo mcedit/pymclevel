@@ -65,7 +65,8 @@ class MCMaterials(object):
         self.blockTextures = zeros((256, 16, 6, 2), dtype='uint8')
         self.blockTextures[:] = self.defaultTexture
         self.names = [[defaultName] * 16 for i in range(256)]
-        self.aka = [[""] * 16] * 256
+        self.aka = [[""] * 16 for i in range(256)]
+        
         self.type = [["NORMAL"] * 16] * 256
         self.blocksByType = defaultdict(list)
         self.allBlocks = []
