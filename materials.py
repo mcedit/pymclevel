@@ -47,7 +47,7 @@ class Block(object):
             r = self.materials.names[self.ID]
         else:
             r = getattr(self.materials, attr)[self.ID]
-        if attr in ("name", "aka", "color"):
+        if attr in ("name", "aka", "color", "type"):
             r = r[self.blockData]
         return r
             
