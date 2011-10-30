@@ -105,7 +105,13 @@ class MCMaterials(object):
             return self[key]
         except KeyError:
             return default
-            
+    
+    def __len__(self):
+        return len(self.allBlocks)
+        
+    def __iter__(self):
+        return iter(self.allBlocks) 
+        
     def __getitem__(self, key):
         """ Let's be magic. If we get a string, return the first block whose 
             name matches exactly. If we get a (id, data) pair or an id, return
