@@ -61,6 +61,8 @@ class MCMaterials(object):
     
     def __init__(self, defaultName="Unused Block"):
         object.__init__(self)
+        self.yamlDatas = []
+        
         self.defaultName = defaultName
 
         self.blockTextures = zeros((256, 16, 6, 2), dtype='uint8')
@@ -161,6 +163,7 @@ class MCMaterials(object):
                 traceback.print_exc()
                 
     def addYamlBlocks(self, blockyaml):
+        self.yamlDatas.append(blockyaml)
         for block in blockyaml['blocks']:
             try:
                 self.addYamlBlock(block)
