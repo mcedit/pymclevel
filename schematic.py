@@ -139,9 +139,9 @@ class MCSchematic (EntityLevel):
         """ shape is (x,y,z) for a new level's shape.  if none, takes
         root_tag as a TAG_Compound for an existing schematic file.  if
         none, tries to read the tag from filename.  if none, results
-        are undefined. materials can be a MCMaterials instance, or
-        "Classic" or "Alpha" to indicate allowable blocks. The default is
-        Alpha.
+        are undefined. materials can be a MCMaterials instance, or one of 
+        "Classic", "Alpha", "Pocket" to indicate allowable blocks. The default
+        is Alpha.
 
         block coordinate order in the file is y,z,x to use the same code as classic/indev levels.  
         in hindsight, this was a completely arbitrary decision.
@@ -497,8 +497,7 @@ def extractSchematicFromIter(sourceLevel, box, entities=True):
         return
     newbox, destPoint = p
 
-    tempSchematic = MCSchematic(shape=box.size)
-    tempSchematic.materials = sourceLevel.materials
+    tempSchematic = MCSchematic(shape=box.size, mats=sourceLevel.materials)
     for i in tempSchematic.copyBlocksFromIter(sourceLevel, newbox, destPoint, entities=entities):
         yield i
 
