@@ -405,6 +405,13 @@ blocks:
     aka: Step
     mapcolor: [200, 200, 200]
     tex: [5, 0]
+    tex_direction:
+      TOP: [6, 0]
+      BOTTOM: [6, 0]
+      FORWARD: [5, 0]
+      BACKWARD: [5, 0]
+      SIDES: [5, 0]
+      
 #    data:
 #      0: 
 #        tex: [5, 0]
@@ -431,6 +438,13 @@ blocks:
     aka: Half Step
     mapcolor: [200, 200, 200]
     tex: [6, 0]
+    tex_direction:
+      TOP: [6, 0]
+      BOTTOM: [6, 0]
+      FORWARD: [5, 0]
+      BACKWARD: [5, 0]
+      SIDES: [5, 0]
+      
     type: HALFHEIGHT
 #    data:
 #      0: 
@@ -833,13 +847,13 @@ blocks:
     
   - id: 108
     tex: [1, 14]
-    name: Light Grey Wool
+    name: Light Gray Wool
     aka: White Wool
     mapcolor: [166, 166, 166]
     
   - id: 109
     tex: [2, 7]
-    name: Grey Wool
+    name: Gray Wool
     mapcolor: [66, 66, 66]
     
   - id: 110
@@ -860,6 +874,7 @@ blocks:
   - id: 113
     tex: [2, 11]
     name: Light Blue Wool
+    aka: Aqua Wool
     mapcolor: [104, 139, 212]
     
   - id: 114

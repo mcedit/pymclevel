@@ -242,12 +242,26 @@ blocks:
     aka: Step
     mapcolor: [200, 200, 200]
     tex: [5, 0]
+    tex_direction:
+      TOP: [6, 0]
+      BOTTOM: [6, 0]
+      FORWARD: [5, 0]
+      BACKWARD: [5, 0]
+      SIDES: [5, 0]
+      
     
   - id: 44
     name: Stone Slab
     aka: Single Half Step
     mapcolor: [200, 200, 200]
     tex: [6, 0]
+    tex_direction:
+      TOP: [6, 0]
+      BOTTOM: [6, 0]
+      FORWARD: [5, 0]
+      BACKWARD: [5, 0]
+      SIDES: [5, 0]
+      
     
   - id: 45
     name: Brick

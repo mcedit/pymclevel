@@ -659,12 +659,10 @@ blocks:
       7: 
         tex: [2, 7]
         name: Gray Wool
-        aka: Grey Wool
         mapcolor: [66, 66, 66]
       8: 
         tex: [1, 14]
         name: Light Gray Wool
-        aka: Light Grey Wool
         mapcolor: [166, 166, 166]
       9: 
         tex: [1, 13]
@@ -745,7 +743,14 @@ blocks:
     name: Double Slab
     aka: Step
     mapcolor: [200, 200, 200]
-    tex: [5, 0]
+    tex: [6, 0]
+    tex_direction:
+      TOP: [6, 0]
+      BOTTOM: [6, 0]
+      FORWARD: [5, 0]
+      BACKWARD: [5, 0]
+      SIDES: [5, 0]
+      
     data:
       0: 
         tex: [5, 0]
@@ -772,6 +777,13 @@ blocks:
     aka: Half Step
     mapcolor: [200, 200, 200]
     tex: [6, 0]
+    tex_direction:
+      TOP: [6, 0]
+      BOTTOM: [6, 0]
+      FORWARD: [5, 0]
+      BACKWARD: [5, 0]
+      SIDES: [5, 0]
+      
     data:
       0: 
         tex: [6, 0]
