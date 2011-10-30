@@ -364,8 +364,7 @@ blocks:
     opacity: 0
   
   - id: 38
-    idStr: RED_ROSE
-    name: Rose
+    name: Cyan Flower
     mapcolor: [255, 0, 0]
     tex: [12, 0]
     type: DECORATION_CROSS
