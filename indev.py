@@ -89,10 +89,10 @@ __all__ = ["MCIndevLevel"]
 
 
 class MCIndevLevel(EntityLevel):
-
     """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis 
     swapping to be consistent with infinite levels."""
 
+    materials = indevMaterials
     def setPlayerSpawnPosition(self, pos, player=None):
         assert len(pos) == 3
         self.Spawn = array(pos);

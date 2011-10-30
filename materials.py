@@ -342,6 +342,11 @@ defineShroomFaces(Red, 100, "Red")
 classicMaterials = MCMaterials(defaultName = "Not present in Classic");
 classicMaterials.name = "Classic"
 classicMaterials.addYamlBlocksFromFile("classic.yaml")
+
+indevMaterials = MCMaterials(defaultName = "Not present in Indev");
+indevMaterials.name = "Indev"
+indevMaterials.addYamlBlocksFromFile("classic.yaml")
+indevMaterials.addYamlBlocksFromFile("indev.yaml")
     
 pocketMaterials = MCMaterials()
 pocketMaterials.name = "Pocket"
@@ -713,7 +718,7 @@ def guessFilterTable(matsFrom, matsTo):
             
     return filters , unavailable
 
-allMaterials = (alphaMaterials, classicMaterials, pocketMaterials)
+allMaterials = (alphaMaterials, classicMaterials, pocketMaterials, indevMaterials)
 
 _conversionFuncs = {}
 def conversionFunc(destMats, sourceMats):
@@ -740,6 +745,6 @@ def convertBlocks(destMats, sourceMats, blocks, blockData):
     
     return conversionFunc(destMats, sourceMats)(blocks, blockData)
     
-namedMaterials = dict((i.name, i) for i in (alphaMaterials, classicMaterials, pocketMaterials))
+namedMaterials = dict((i.name, i) for i in allMaterials)
 
-__all__ = "pocketMaterials, alphaMaterials, classicMaterials, namedMaterials, MCMaterials".split(", ")
+__all__ = "indevMaterials, pocketMaterials, alphaMaterials, classicMaterials, namedMaterials, MCMaterials".split(", ")
