@@ -93,6 +93,10 @@ class MCMaterials(object):
     def __repr__(self):
         return "<MCMaterials ({0})>".format(self.name)
     
+    @property
+    def AllStairs(self):
+        return [b for b in self.allBlocks if b.name.endswith("Stairs")]
+
     def get(self, key, default = None):
         try:
             return self[key]
@@ -265,7 +269,6 @@ alphaMaterials.addYamlBlocksFromFile("minecraft.yaml")
 
 
 
-alphaMaterials.AllStairs = [b for b in alphaMaterials.allBlocks if b.name.endswith("Stairs")]
 
 
 # --- Special treatment for some blocks ---
