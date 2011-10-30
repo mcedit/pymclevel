@@ -623,7 +623,7 @@ blocks:
   
   - id: 35
     idStr: WOOL
-    name: Wool
+    name: White Wool
     mapcolor: [222, 222, 222]
     tex: [0, 4]
     data:
@@ -1484,7 +1484,7 @@ blocks:
 
   - id: 121
     idStr: ENDER_STONE
-    name: Ender Stone
+    name: End Stone
     mapcolor: [235, 248, 182]
     tex: [15, 10]
 
