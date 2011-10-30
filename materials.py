@@ -1,11 +1,12 @@
 
 from numpy import zeros, arange, array, zeros_like, rollaxis, indices, s_
 import traceback
-from os.path import exists
+from os.path import exists, join
 from collections import defaultdict
 from pprint import pformat
 
 import sys, os
+
 NOTEX = (0xB0, 0x80)
 
 import yaml
@@ -138,8 +139,17 @@ class MCMaterials(object):
     
     
     def addYamlBlocksFromFile(self, filename):
-        moduleDirs = set((os.path.dirname(m.__file__) for m in sys.modules.itervalues() if m and hasattr(m, '__file__')))
-        for f in [fn for fn in [filename] + [os.path.join(f, filename) for f in moduleDirs] if os.path.exists(fn)]:
+        info("Looking for %s", filename)
+        moduleDirs = set((os.path.dirname(m.__file__) 
+                          for m in sys.modules.itervalues() 
+                          if m and hasattr(m, '__file__')))
+                          
+        filenames = ([join(p, filename) for p in sys.path] 
+                   + [filename] 
+                   + [os.path.join(f, filename) for f in moduleDirs])
+                    
+        for f in [fn for fn in filenames if os.path.exists(fn)]:
+            info("  Looking in %s", f)
             try:
                 info("Loading block info from %s", f)
                 blockyaml = yaml.load(open(f))
