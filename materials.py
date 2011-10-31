@@ -31,6 +31,7 @@ class Block(object):
         return str(self)
     
     def __cmp__(self, other):
+        if not isinstance(other, Block): return False
         key = lambda a:a and (a.ID, a.blockData)
         return cmp( key(self), key(other))
         
