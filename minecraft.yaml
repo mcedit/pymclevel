@@ -744,16 +744,16 @@ blocks:
     aka: Step
     mapcolor: [200, 200, 200]
     tex: [6, 0]
-    tex_direction:
-      TOP: [6, 0]
-      BOTTOM: [6, 0]
-      FORWARD: [5, 0]
-      BACKWARD: [5, 0]
-      SIDES: [5, 0]
-      
     data:
       0: 
         tex: [5, 0]
+        tex_direction:
+          TOP: [6, 0]
+          BOTTOM: [6, 0]
+          FORWARD: [5, 0]
+          BACKWARD: [5, 0]
+          SIDES: [5, 0]
+          
         name: Double Stone Slab
       1: 
         tex: [0, 12]
@@ -777,16 +777,16 @@ blocks:
     aka: Half Step
     mapcolor: [200, 200, 200]
     tex: [6, 0]
-    tex_direction:
-      TOP: [6, 0]
-      BOTTOM: [6, 0]
-      FORWARD: [5, 0]
-      BACKWARD: [5, 0]
-      SIDES: [5, 0]
-      
     data:
       0: 
         tex: [6, 0]
+        tex_direction:
+          TOP: [6, 0]
+          BOTTOM: [6, 0]
+          FORWARD: [5, 0]
+          BACKWARD: [5, 0]
+          SIDES: [5, 0]
+          
         name: Stone Slab
       1: 
         tex: [0, 12]
