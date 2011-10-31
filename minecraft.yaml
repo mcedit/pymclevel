@@ -930,14 +930,15 @@ blocks:
     mapcolor: [146, 192, 0]
     tex: [15, 5]
     type: CROPS
-    tex_extra:
-      smaller_1: [14, 5]
-      smaller_2: [13, 5]
-      smaller_3: [12, 5]
-      smaller_4: [11, 5]
-      smaller_5: [10, 5]
-      smaller_6: [9, 5]
-      smaller_7: [8, 5]
+    data:
+      0: {tex: [8, 5]}
+      1: {tex: [9, 5]}
+      2: {tex: [10, 5]}
+      3: {tex: [11, 5]}
+      4: {tex: [12, 5]}
+      5: {tex: [13, 5]}
+      6: {tex: [14, 5]}
+      7: {tex: [15, 5]}
     opacity: 0
     
   - id: 60
