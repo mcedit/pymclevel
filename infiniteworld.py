@@ -1835,7 +1835,7 @@ class ChunkedLevelMixin(object):
         oldLeftEdge = zeros((1, 16, self.Height), 'uint8');
         oldBottomEdge = zeros((16, 1, self.Height), 'uint8');
         oldChunk = zeros((16, 16, self.Height), 'uint8');
-        if self.dimNo == -1:
+        if self.dimNo in (-1, 1):
             lights = ("BlockLight",)
         else:
             lights = ("BlockLight", "SkyLight")
