@@ -180,7 +180,16 @@ class MCIndevLevel(EntityLevel):
             if not Entities in root_tag:
                 root_tag[Entities] = TAG_List();
             self.Entities = root_tag[Entities]
-
+            
+            #xxx fixup Motion and Pos to match infdev format
+            def numbersToDoubles(ent):
+                for attr in "Motion", "Pos":
+                    if attr in ent:
+                        ent[attr] = TAG_List([TAG_Double(t.value) for t in ent[attr]])
+            for ent in self.Entities:
+                numbersToDoubles(ent)
+                
+            
             if not TileEntities in root_tag:
                 root_tag[TileEntities] = TAG_List();
             self.TileEntities = root_tag[TileEntities]
@@ -269,7 +278,15 @@ class MCIndevLevel(EntityLevel):
 
         self.root_tag[Map] = mapTag;
         self.root_tag[Map]
-
+        
+        #fix up Entities imported from Alpha worlds
+        def numbersToFloats(ent):
+            for attr in "Motion", "Pos":
+                if attr in ent:
+                    ent[attr] = TAG_List([TAG_Double(t.value) for t in ent[attr]])
+        for ent in self.Entities:
+            numbersToFloats(ent)
+            
         #fix up TileEntities imported from Alpha worlds.
         for ent in self.TileEntities:
             if "Pos" not in ent and all(c in ent for c in 'xyz'):
