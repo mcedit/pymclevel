@@ -58,7 +58,7 @@ blocks:
     tex: [2, 3]
   
   - id: 57
-    name: Block Of Diamond
+    name: Block of Diamond
     mapcolor: [45, 166, 152]
     tex: [8, 1]
   
