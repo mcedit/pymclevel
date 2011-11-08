@@ -453,7 +453,7 @@ class MCServerChunkGenerator(object):
     lowMemory = False
     @classmethod
     def _runServer(cls, startingDir, jarfile):
-        print "Starting server {0} in {1}".format(jarfile, startingDir)
+        print u"Starting server {0} in {1}".format(jarfile, startingDir)
         if cls.lowMemory:   memflags = []
         else:               memflags = ["-Xmx1024M", "-Xms1024M", ]
         
