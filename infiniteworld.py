@@ -1855,6 +1855,12 @@ class ChunkedLevelMixin(object):
             lights = ("BlockLight", "SkyLight")
         info(u"Dispersing light...")
         
+        def clipLight(light):
+            #light arrays are all uint8 by default, so when results go negative
+            #they become large instead.  reinterpret as signed int using view()
+            #and then clip to range
+            light.view('int8').clip(0, 15, light)
+            
         for j, light in enumerate(lights):
             zerochunkLight = getattr(zeroChunk, light);
             newDirtyChunks = list(startingDirtyChunks);
@@ -1890,7 +1896,7 @@ class ChunkedLevelMixin(object):
     
                 newDirtyChunks = list();
     
-    
+                
                 for chunk in dirtyChunks:
                     (cx, cz) = chunk.chunkPosition
                     neighboringChunks = {};
@@ -1922,24 +1928,24 @@ class ChunkedLevelMixin(object):
                     
                     #left edge
                     newlight = (chunkLight[0:1, :, :self.Height] - la[nc.Blocks[15:16, :, 0:self.Height]])
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
                     
-                    ncLight[15:16, :, 0:self.Height] = maximum(ncLight[15:16, :, 0:self.Height], newlight)
+                    maximum(ncLight[15:16, :, 0:self.Height], newlight, ncLight[15:16, :, 0:self.Height])
     
                     #chunk body
                     newlight = (chunkLight[1:16, :, 0:self.Height] - chunkLa[0:15, :, 0:self.Height])
-                    newlight[newlight > 15] = 0; #light went negative;
+                    clipLight(newlight)
     
-                    chunkLight[0:15, :, 0:self.Height] = maximum(chunkLight[0:15, :, 0:self.Height], newlight)
+                    maximum(chunkLight[0:15, :, 0:self.Height], newlight, chunkLight[0:15, :, 0:self.Height])
     
                     #right edge
                     nc = neighboringChunks[FaceXIncreasing]
                     ncLight = getattr(nc, light);
     
                     newlight = ncLight[0:1, :, :self.Height] - chunkLa[15:16, :, 0:self.Height]
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    chunkLight[15:16, :, 0:self.Height] = maximum(chunkLight[15:16, :, 0:self.Height], newlight)
+                    maximum(chunkLight[15:16, :, 0:self.Height], newlight, chunkLight[15:16, :, 0:self.Height])
     
                     ### Spread light toward +X
                     
@@ -1948,26 +1954,27 @@ class ChunkedLevelMixin(object):
                     ncLight = getattr(nc, light);
     
                     newlight = (chunkLight[15:16, :, 0:self.Height] - la[nc.Blocks[0:1, :, 0:self.Height]])
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    ncLight[0:1, :, 0:self.Height] = maximum(ncLight[0:1, :, 0:self.Height], newlight)
+                    maximum(ncLight[0:1, :, 0:self.Height], newlight, ncLight[0:1, :, 0:self.Height])
     
                     #chunk body
                     newlight = (chunkLight[0:15, :, 0:self.Height] - chunkLa[1:16, :, 0:self.Height])
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    chunkLight[1:16, :, 0:self.Height] = maximum(chunkLight[1:16, :, 0:self.Height], newlight)
+                    maximum(chunkLight[1:16, :, 0:self.Height], newlight, chunkLight[1:16, :, 0:self.Height])
     
                     #left edge
                     nc = neighboringChunks[FaceXDecreasing]
                     ncLight = getattr(nc, light);
     
                     newlight = ncLight[15:16, :, :self.Height] - chunkLa[0:1, :, 0:self.Height]
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    chunkLight[0:1, :, 0:self.Height] = maximum(chunkLight[0:1, :, 0:self.Height], newlight)
+                    maximum(chunkLight[0:1, :, 0:self.Height], newlight, chunkLight[0:1, :, 0:self.Height])
     
-                    zerochunkLight[:] = 0;
+                    zerochunkLight[:] = 0; #zero the zero chunk after each direction
+                    # so the lights it absorbed don't affect the next pass
     
                     #check if the left edge changed and dirty or compress the chunk appropriately
                     if (oldLeftEdge != ncLight[15:16, :, :self.Height]).any():
@@ -1982,24 +1989,24 @@ class ChunkedLevelMixin(object):
                     oldBottomEdge[:] = ncLight[:, 15:16, :self.Height] # save the old bottom edge
     
                     newlight = (chunkLight[:, 0:1, :self.Height] - la[nc.Blocks[:, 15:16, :self.Height]])
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    ncLight[:, 15:16, :self.Height] = maximum(ncLight[:, 15:16, :self.Height], newlight)
+                    maximum(ncLight[:, 15:16, :self.Height], newlight, ncLight[:, 15:16, :self.Height])
     
                     #chunk body
                     newlight = (chunkLight[:, 1:16, :self.Height] - chunkLa[:, 0:15, :self.Height])
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    chunkLight[:, 0:15, :self.Height] = maximum(chunkLight[:, 0:15, :self.Height], newlight)
+                    maximum(chunkLight[:, 0:15, :self.Height], newlight, chunkLight[:, 0:15, :self.Height])
     
                     #top edge
                     nc = neighboringChunks[FaceZIncreasing]
                     ncLight = getattr(nc, light);
     
                     newlight = ncLight[:, 0:1, :self.Height] - chunkLa[:, 15:16, 0:self.Height]
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    chunkLight[:, 15:16, 0:self.Height] = maximum(chunkLight[:, 15:16, 0:self.Height], newlight)
+                    maximum(chunkLight[:, 15:16, 0:self.Height], newlight, chunkLight[:, 15:16, 0:self.Height])
     
                     ### Spread light toward +Z
                     
@@ -2009,24 +2016,24 @@ class ChunkedLevelMixin(object):
                     ncLight = getattr(nc, light);
     
                     newlight = (chunkLight[:, 15:16, :self.Height] - la[nc.Blocks[:, 0:1, :self.Height]])
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    ncLight[:, 0:1, :self.Height] = maximum(ncLight[:, 0:1, :self.Height], newlight)
+                    maximum(ncLight[:, 0:1, :self.Height], newlight, ncLight[:, 0:1, :self.Height])
     
                     #chunk body
                     newlight = (chunkLight[:, 0:15, :self.Height] - chunkLa[:, 1:16, :self.Height])
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    chunkLight[:, 1:16, :self.Height] = maximum(chunkLight[:, 1:16, :self.Height], newlight)
+                    maximum(chunkLight[:, 1:16, :self.Height], newlight, chunkLight[:, 1:16, :self.Height])
     
                     #bottom edge
                     nc = neighboringChunks[FaceZDecreasing]
                     ncLight = getattr(nc, light);
     
                     newlight = ncLight[:, 15:16, :self.Height] - chunkLa[:, 0:1, 0:self.Height]
-                    newlight[newlight > 15] = 0;
+                    clipLight(newlight)
     
-                    chunkLight[:, 0:1, 0:self.Height] = maximum(chunkLight[:, 0:1, 0:self.Height], newlight)
+                    maximum(chunkLight[:, 0:1, 0:self.Height], newlight, chunkLight[:, 0:1, 0:self.Height])
     
                     zerochunkLight[:] = 0;
     
@@ -2034,14 +2041,13 @@ class ChunkedLevelMixin(object):
                         newDirtyChunks.append(nc)
     
                     newlight = (chunkLight[:, :, 0:self.Height - 1] - chunkLa[:, :, 1:self.Height])
-                    newlight[newlight > 15] = 0;
-                    chunkLight[:, :, 1:self.Height] = maximum(chunkLight[:, :, 1:self.Height], newlight)
+                    clipLight(newlight)
+                    maximum(chunkLight[:, :, 1:self.Height], newlight, chunkLight[:, :, 1:self.Height])
     
                     newlight = (chunkLight[:, :, 1:self.Height] - chunkLa[:, :, 0:self.Height - 1])
-                    newlight[newlight > 15] = 0;
-                    chunkLight[:, :, 0:self.Height - 1] = maximum(chunkLight[:, :, 0:self.Height - 1], newlight)
-                    zerochunkLight[:] = 0;
-    
+                    clipLight(newlight)
+                    maximum(chunkLight[:, :, 0:self.Height - 1], newlight, chunkLight[:, :, 0:self.Height - 1])
+                    
                     if (oldChunk != chunkLight).any():
                         newDirtyChunks.append(chunk);
                         
