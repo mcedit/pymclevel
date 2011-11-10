@@ -158,9 +158,9 @@ class MCMaterials(object):
                    + [os.path.join(f, filename) for f in moduleDirs])
                     
         for f in [fn for fn in filenames if os.path.exists(fn)]:
-            info("  Looking in %s", f)
+            info(u"  Looking in %s", f)
             try:
-                info("Loading block info from %s", f)
+                info(u"Loading block info from %s", f)
                 blockyaml = yaml.load(open(f))
                 self.addYamlBlocks(blockyaml)
                 
