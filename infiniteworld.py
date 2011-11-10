@@ -1768,18 +1768,24 @@ class ChunkedLevelMixin(object):
 
         if len(chunkLists) > 1:
             info(u"Using {0} batches to conserve memory.".format(len(chunkLists)))
-
-        i = 0
-        for dc in chunkLists:
-            i += 1;
+        #batchSize = min(len(a) for a in chunkLists)
+        estimatedTotals = [len(a) * 32 for a in chunkLists]
+        workDone = 0
+        
+        for i, dc in enumerate(chunkLists):
             info(u"Batch {0}/{1}".format(i, len(chunkLists)))
-            yield i, len(chunkLists)
-
+            
             dc = sorted(dc, key=lambda x:x.chunkPosition)
-
-            for j in self._generateLightsIter(dc):
-                yield j
-
+            workTotal = sum(estimatedTotals)
+            t = 0
+            for c,t,p in self._generateLightsIter(dc):
+                
+                yield c+workDone,t + workTotal - estimatedTotals[i], p
+                
+                
+            estimatedTotals[i] = t
+            workDone += t
+            
             for ch in dc:
                 ch.compress();
         timeDelta = datetime.now() - startTime;
@@ -1796,17 +1802,24 @@ class ChunkedLevelMixin(object):
         
         dirtyChunks = set(dirtyChunks)
 
-
-        info(u"Lighting {0} chunks".format(len(dirtyChunks)))
+        workDone = 0
+        workTotal = len(dirtyChunks) * 29
+        
+        progressInfo = (u"Lighting {0} chunks".format(len(dirtyChunks)))
+        info(progressInfo)
+        
         for i, chunk in enumerate(dirtyChunks):
             try:
                 chunk.load();
             except (ChunkNotPresent, ChunkMalformed):
                 continue;
             chunk.chunkChanged();
-            yield i, len(dirtyChunks) * 14
+            yield i, workTotal, progressInfo
             assert chunk.dirty and chunk.needsLighting
-
+        
+        workDone += len(dirtyChunks)
+        workTotal = len(dirtyChunks)
+        
         for ch in list(dirtyChunks):
             #relight all blocks in neighboring chunks in case their light source disappeared.
             cx, cz = ch.chunkPosition
@@ -1818,7 +1831,8 @@ class ChunkedLevelMixin(object):
                 dirtyChunks.add(ch);
 
         dirtyChunks = sorted(dirtyChunks, key=lambda x:x.chunkPosition)
-
+        workTotal += len(dirtyChunks) * 28
+        
         for i, chunk in enumerate(dirtyChunks):
             chunk.BlockLight[:] = self.materials.lightEmission[chunk.Blocks];
             chunk.dirty = True
@@ -1840,198 +1854,207 @@ class ChunkedLevelMixin(object):
         else:
             lights = ("BlockLight", "SkyLight")
         info(u"Dispersing light...")
-
-        for light in lights:
-          j = 0
-          workTotal = 0
-          estimatedTotals = [len(startingDirtyChunks)] * 14
-          zerochunkLight = getattr(zeroChunk, light);
-
-          newDirtyChunks = list(startingDirtyChunks);
-
-          for i in range(14):
-            if len(newDirtyChunks) == 0: break
-
-            info(u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks)));
-
-            """
-            propagate light!
-            for each of the six cardinal directions, figure a new light value for 
-            adjoining blocks by reducing this chunk's light by light absorption and fall off. 
-            compare this new light value against the old light value and update with the maximum.
+        
+        for j, light in enumerate(lights):
+            zerochunkLight = getattr(zeroChunk, light);
+            newDirtyChunks = list(startingDirtyChunks);
             
-            we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.  
-            we do an extra cycle because lights sent across edges may lag by one cycle.
-            """
-            newDirtyChunks = set(newDirtyChunks)
-            newDirtyChunks.discard(zeroChunk)
-
-            dirtyChunks = sorted(newDirtyChunks, key=lambda x:x.chunkPosition)
-
-            newDirtyChunks = list();
-
-
-            for chunk in dirtyChunks:
-                #xxx code duplication
-                yield (workTotal + j, sum(estimatedTotals))
-                j += 1
-                (cx, cz) = chunk.chunkPosition
-                neighboringChunks = {};
-                try:
-                    chunk.load();
-                except (ChunkNotPresent, ChunkMalformed), e:
-                    print "Chunk error during relight, chunk skipped: ", e
-                    continue;
-
-                for dir, dx, dz in ((FaceXDecreasing, -1, 0),
-                                      (FaceXIncreasing, 1, 0),
-                                      (FaceZDecreasing, 0, -1),
-                                      (FaceZIncreasing, 0, 1)):
+            work = 0
+            
+            for i in range(14):
+                if len(newDirtyChunks) == 0: 
+                    workTotal -= len(startingDirtyChunks) * (14 - i)
+                    break
+    
+                progressInfo = u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks))
+                info(progressInfo)
+    
+                """
+                propagate light!
+                for each of the six cardinal directions, figure a new light value for 
+                adjoining blocks by reducing this chunk's light by light absorption and fall off. 
+                compare this new light value against the old light value and update with the maximum.
+                
+                we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.  
+                we do an extra cycle because lights sent across edges may lag by one cycle.
+                
+                xxx this can be optimized by finding the highest and lowest blocks 
+                that changed after one pass, and only calculating changes for that
+                vertical slice on the next pass. newDirtyChunks would have to be a 
+                list of (cPos, miny, maxy) tuples or a cPos : (miny, maxy) dict
+                """
+                newDirtyChunks = set(newDirtyChunks)
+                newDirtyChunks.discard(zeroChunk)
+    
+                dirtyChunks = sorted(newDirtyChunks, key=lambda x:x.chunkPosition)
+    
+                newDirtyChunks = list();
+    
+    
+                for chunk in dirtyChunks:
+                    (cx, cz) = chunk.chunkPosition
+                    neighboringChunks = {};
                     try:
-                        neighboringChunks[dir] = self.getChunk(cx + dx, cz + dz)
-                    except (ChunkNotPresent, ChunkMalformed):
-                        neighboringChunks[dir] = zeroChunk;
-
-
-                chunkLa = la[chunk.Blocks];
-                chunkLight = getattr(chunk, light);
-                oldChunk[:] = chunkLight[:]
-
-                ### Spread light toward -X
+                        chunk.load();
+                    except (ChunkNotPresent, ChunkMalformed), e:
+                        print "Chunk error during relight, chunk skipped: ", e
+                        continue;
+    
+                    for dir, dx, dz in ((FaceXDecreasing, -1, 0),
+                                          (FaceXIncreasing, 1, 0),
+                                          (FaceZDecreasing, 0, -1),
+                                          (FaceZIncreasing, 0, 1)):
+                        try:
+                            neighboringChunks[dir] = self.getChunk(cx + dx, cz + dz)
+                        except (ChunkNotPresent, ChunkMalformed):
+                            neighboringChunks[dir] = zeroChunk;
+    
+    
+                    chunkLa = la[chunk.Blocks];
+                    chunkLight = getattr(chunk, light);
+                    oldChunk[:] = chunkLight[:]
+    
+                    ### Spread light toward -X
+                    
+                    nc = neighboringChunks[FaceXDecreasing]
+                    ncLight = getattr(nc, light);
+                    oldLeftEdge[:] = ncLight[15:16, :, 0:self.Height] #save the old left edge 
+                    
+                    #left edge
+                    newlight = (chunkLight[0:1, :, :self.Height] - la[nc.Blocks[15:16, :, 0:self.Height]])
+                    newlight[newlight > 15] = 0;
+                    
+                    ncLight[15:16, :, 0:self.Height] = maximum(ncLight[15:16, :, 0:self.Height], newlight)
+    
+                    #chunk body
+                    newlight = (chunkLight[1:16, :, 0:self.Height] - chunkLa[0:15, :, 0:self.Height])
+                    newlight[newlight > 15] = 0; #light went negative;
+    
+                    chunkLight[0:15, :, 0:self.Height] = maximum(chunkLight[0:15, :, 0:self.Height], newlight)
+    
+                    #right edge
+                    nc = neighboringChunks[FaceXIncreasing]
+                    ncLight = getattr(nc, light);
+    
+                    newlight = ncLight[0:1, :, :self.Height] - chunkLa[15:16, :, 0:self.Height]
+                    newlight[newlight > 15] = 0;
+    
+                    chunkLight[15:16, :, 0:self.Height] = maximum(chunkLight[15:16, :, 0:self.Height], newlight)
+    
+                    ### Spread light toward +X
+                    
+                    #right edge
+                    nc = neighboringChunks[FaceXIncreasing]
+                    ncLight = getattr(nc, light);
+    
+                    newlight = (chunkLight[15:16, :, 0:self.Height] - la[nc.Blocks[0:1, :, 0:self.Height]])
+                    newlight[newlight > 15] = 0;
+    
+                    ncLight[0:1, :, 0:self.Height] = maximum(ncLight[0:1, :, 0:self.Height], newlight)
+    
+                    #chunk body
+                    newlight = (chunkLight[0:15, :, 0:self.Height] - chunkLa[1:16, :, 0:self.Height])
+                    newlight[newlight > 15] = 0;
+    
+                    chunkLight[1:16, :, 0:self.Height] = maximum(chunkLight[1:16, :, 0:self.Height], newlight)
+    
+                    #left edge
+                    nc = neighboringChunks[FaceXDecreasing]
+                    ncLight = getattr(nc, light);
+    
+                    newlight = ncLight[15:16, :, :self.Height] - chunkLa[0:1, :, 0:self.Height]
+                    newlight[newlight > 15] = 0;
+    
+                    chunkLight[0:1, :, 0:self.Height] = maximum(chunkLight[0:1, :, 0:self.Height], newlight)
+    
+                    zerochunkLight[:] = 0;
+    
+                    #check if the left edge changed and dirty or compress the chunk appropriately
+                    if (oldLeftEdge != ncLight[15:16, :, :self.Height]).any():
+                        #chunk is dirty
+                        newDirtyChunks.append(nc)
+                    
+                    ### Spread light toward -Z
+                    
+                    #bottom edge
+                    nc = neighboringChunks[FaceZDecreasing]
+                    ncLight = getattr(nc, light);
+                    oldBottomEdge[:] = ncLight[:, 15:16, :self.Height] # save the old bottom edge
+    
+                    newlight = (chunkLight[:, 0:1, :self.Height] - la[nc.Blocks[:, 15:16, :self.Height]])
+                    newlight[newlight > 15] = 0;
+    
+                    ncLight[:, 15:16, :self.Height] = maximum(ncLight[:, 15:16, :self.Height], newlight)
+    
+                    #chunk body
+                    newlight = (chunkLight[:, 1:16, :self.Height] - chunkLa[:, 0:15, :self.Height])
+                    newlight[newlight > 15] = 0;
+    
+                    chunkLight[:, 0:15, :self.Height] = maximum(chunkLight[:, 0:15, :self.Height], newlight)
+    
+                    #top edge
+                    nc = neighboringChunks[FaceZIncreasing]
+                    ncLight = getattr(nc, light);
+    
+                    newlight = ncLight[:, 0:1, :self.Height] - chunkLa[:, 15:16, 0:self.Height]
+                    newlight[newlight > 15] = 0;
+    
+                    chunkLight[:, 15:16, 0:self.Height] = maximum(chunkLight[:, 15:16, 0:self.Height], newlight)
+    
+                    ### Spread light toward +Z
+                    
+                    #top edge  
+                    nc = neighboringChunks[FaceZIncreasing]
+    
+                    ncLight = getattr(nc, light);
+    
+                    newlight = (chunkLight[:, 15:16, :self.Height] - la[nc.Blocks[:, 0:1, :self.Height]])
+                    newlight[newlight > 15] = 0;
+    
+                    ncLight[:, 0:1, :self.Height] = maximum(ncLight[:, 0:1, :self.Height], newlight)
+    
+                    #chunk body
+                    newlight = (chunkLight[:, 0:15, :self.Height] - chunkLa[:, 1:16, :self.Height])
+                    newlight[newlight > 15] = 0;
+    
+                    chunkLight[:, 1:16, :self.Height] = maximum(chunkLight[:, 1:16, :self.Height], newlight)
+    
+                    #bottom edge
+                    nc = neighboringChunks[FaceZDecreasing]
+                    ncLight = getattr(nc, light);
+    
+                    newlight = ncLight[:, 15:16, :self.Height] - chunkLa[:, 0:1, 0:self.Height]
+                    newlight[newlight > 15] = 0;
+    
+                    chunkLight[:, 0:1, 0:self.Height] = maximum(chunkLight[:, 0:1, 0:self.Height], newlight)
+    
+                    zerochunkLight[:] = 0;
+    
+                    if (oldBottomEdge != ncLight[:, 15:16, :self.Height]).any():
+                        newDirtyChunks.append(nc)
+    
+                    newlight = (chunkLight[:, :, 0:self.Height - 1] - chunkLa[:, :, 1:self.Height])
+                    newlight[newlight > 15] = 0;
+                    chunkLight[:, :, 1:self.Height] = maximum(chunkLight[:, :, 1:self.Height], newlight)
+    
+                    newlight = (chunkLight[:, :, 1:self.Height] - chunkLa[:, :, 0:self.Height - 1])
+                    newlight[newlight > 15] = 0;
+                    chunkLight[:, :, 0:self.Height - 1] = maximum(chunkLight[:, :, 0:self.Height - 1], newlight)
+                    zerochunkLight[:] = 0;
+    
+                    if (oldChunk != chunkLight).any():
+                        newDirtyChunks.append(chunk);
+                        
+                    work += 1
+                    yield workDone + work, workTotal, progressInfo
+                    
+                workDone += work
+                workTotal -= len(startingDirtyChunks)
+                workTotal += work
                 
-                nc = neighboringChunks[FaceXDecreasing]
-                ncLight = getattr(nc, light);
-                oldLeftEdge[:] = ncLight[15:16, :, 0:self.Height] #save the old left edge 
-                
-                #left edge
-                newlight = (chunkLight[0:1, :, :self.Height] - la[nc.Blocks[15:16, :, 0:self.Height]])
-                newlight[newlight > 15] = 0;
-                
-                ncLight[15:16, :, 0:self.Height] = maximum(ncLight[15:16, :, 0:self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[1:16, :, 0:self.Height] - chunkLa[0:15, :, 0:self.Height])
-                newlight[newlight > 15] = 0; #light went negative;
-
-                chunkLight[0:15, :, 0:self.Height] = maximum(chunkLight[0:15, :, 0:self.Height], newlight)
-
-                #right edge
-                nc = neighboringChunks[FaceXIncreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[0:1, :, :self.Height] - chunkLa[15:16, :, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[15:16, :, 0:self.Height] = maximum(chunkLight[15:16, :, 0:self.Height], newlight)
-
-                ### Spread light toward +X
-                
-                #right edge
-                nc = neighboringChunks[FaceXIncreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = (chunkLight[15:16, :, 0:self.Height] - la[nc.Blocks[0:1, :, 0:self.Height]])
-                newlight[newlight > 15] = 0;
-
-                ncLight[0:1, :, 0:self.Height] = maximum(ncLight[0:1, :, 0:self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[0:15, :, 0:self.Height] - chunkLa[1:16, :, 0:self.Height])
-                newlight[newlight > 15] = 0;
-
-                chunkLight[1:16, :, 0:self.Height] = maximum(chunkLight[1:16, :, 0:self.Height], newlight)
-
-                #left edge
-                nc = neighboringChunks[FaceXDecreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[15:16, :, :self.Height] - chunkLa[0:1, :, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[0:1, :, 0:self.Height] = maximum(chunkLight[0:1, :, 0:self.Height], newlight)
-
-                zerochunkLight[:] = 0;
-
-                #check if the left edge changed and dirty or compress the chunk appropriately
-                if (oldLeftEdge != ncLight[15:16, :, :self.Height]).any():
-                    #chunk is dirty
-                    newDirtyChunks.append(nc)
-                
-                ### Spread light toward -Z
-                
-                #bottom edge
-                nc = neighboringChunks[FaceZDecreasing]
-                ncLight = getattr(nc, light);
-                oldBottomEdge[:] = ncLight[:, 15:16, :self.Height] # save the old bottom edge
-
-                newlight = (chunkLight[:, 0:1, :self.Height] - la[nc.Blocks[:, 15:16, :self.Height]])
-                newlight[newlight > 15] = 0;
-
-                ncLight[:, 15:16, :self.Height] = maximum(ncLight[:, 15:16, :self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[:, 1:16, :self.Height] - chunkLa[:, 0:15, :self.Height])
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 0:15, :self.Height] = maximum(chunkLight[:, 0:15, :self.Height], newlight)
-
-                #top edge
-                nc = neighboringChunks[FaceZIncreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[:, 0:1, :self.Height] - chunkLa[:, 15:16, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 15:16, 0:self.Height] = maximum(chunkLight[:, 15:16, 0:self.Height], newlight)
-
-                ### Spread light toward +Z
-                
-                #top edge  
-                nc = neighboringChunks[FaceZIncreasing]
-
-                ncLight = getattr(nc, light);
-
-                newlight = (chunkLight[:, 15:16, :self.Height] - la[nc.Blocks[:, 0:1, :self.Height]])
-                newlight[newlight > 15] = 0;
-
-                ncLight[:, 0:1, :self.Height] = maximum(ncLight[:, 0:1, :self.Height], newlight)
-
-                #chunk body
-                newlight = (chunkLight[:, 0:15, :self.Height] - chunkLa[:, 1:16, :self.Height])
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 1:16, :self.Height] = maximum(chunkLight[:, 1:16, :self.Height], newlight)
-
-                #bottom edge
-                nc = neighboringChunks[FaceZDecreasing]
-                ncLight = getattr(nc, light);
-
-                newlight = ncLight[:, 15:16, :self.Height] - chunkLa[:, 0:1, 0:self.Height]
-                newlight[newlight > 15] = 0;
-
-                chunkLight[:, 0:1, 0:self.Height] = maximum(chunkLight[:, 0:1, 0:self.Height], newlight)
-
-                zerochunkLight[:] = 0;
-
-                if (oldBottomEdge != ncLight[:, 15:16, :self.Height]).any():
-                    newDirtyChunks.append(nc)
-
-                newlight = (chunkLight[:, :, 0:self.Height - 1] - chunkLa[:, :, 1:self.Height])
-                newlight[newlight > 15] = 0;
-                chunkLight[:, :, 1:self.Height] = maximum(chunkLight[:, :, 1:self.Height], newlight)
-
-                newlight = (chunkLight[:, :, 1:self.Height] - chunkLa[:, :, 0:self.Height - 1])
-                newlight[newlight > 15] = 0;
-                chunkLight[:, :, 0:self.Height - 1] = maximum(chunkLight[:, :, 0:self.Height - 1], newlight)
-                zerochunkLight[:] = 0;
-
-                if (oldChunk != chunkLight).any():
-                    newDirtyChunks.append(chunk);
-
-            workTotal += j
-            estimatedTotals[i:] = [j] * (14 - i)
-            j = 0
-
+                work = 0
+          
+            
         for ch in startingDirtyChunks:
             ch.needsLighting = False;
 
