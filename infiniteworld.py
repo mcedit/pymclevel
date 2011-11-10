@@ -308,9 +308,9 @@ class MCServerChunkGenerator(object):
         else:
             properties = {}
 
-        if level.RandomSeed in self.tempWorldCache:
-            tempWorld = self.tempWorldCache[level.RandomSeed]
-        else:
+        tempWorld = self.tempWorldCache.get((self.serverVersion, level.RandomSeed))
+        
+        if tempWorld is None:
             if not os.path.exists(tempDir):
                 os.makedirs(tempDir)
                 self.createReadme()
@@ -322,7 +322,7 @@ class MCServerChunkGenerator(object):
             tempWorld = MCInfdevOldLevel(tempWorldDir, create=True, random_seed=level.RandomSeed)
             del tempWorld.version # for compatibility with older servers. newer ones will set it again without issue.
 
-            self.tempWorldCache[level.RandomSeed] = tempWorld
+            self.tempWorldCache[self.serverVersion, level.RandomSeed] = tempWorld
 
 
         if level.dimNo == 0:
