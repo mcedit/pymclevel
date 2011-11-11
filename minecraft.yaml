@@ -435,6 +435,12 @@ blocks:
         name: Birch Leaves
         mapcolor: [89, 151, 76]
         tex: [5, 3]
+      3:
+        name: Leaves
+        mapcolor: [74, 131, 66]
+        tex: [5, 3]
+        aka: Off-color
+        
       4: # bit 0x4 - "Permanent"
         name: Leaves (Permanent)
         mapcolor: [60, 192, 41]
@@ -448,7 +454,12 @@ blocks:
         name: Birch Leaves (Permanent)
         mapcolor: [89, 151, 76]
         tex: [5, 3]
-        
+      7:
+        name: Leaves (Permanent)
+        mapcolor: [74, 131, 66]
+        tex: [5, 3]
+        aka: Off-color   
+             
       8: # bit 0x8 - "Decaying"
         name: Leaves (Decaying)
         mapcolor: [60, 192, 41]
@@ -462,7 +473,13 @@ blocks:
         name: Birch Leaves (Decaying)
         mapcolor: [89, 151, 76]
         tex: [5, 3]
-    
+      11:
+        name: Leaves (Decaying)
+        mapcolor: [74, 131, 66]
+        tex: [5, 3]
+        aka: Off-color   
+             
+      
   - id: 19
     idStr: SPONGE
     name: Sponge
