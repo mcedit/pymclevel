@@ -61,6 +61,19 @@ class TileEntity(object):
         "Trap" : 9,
         "Cauldron": 4,
     }
+    slotNames = {
+        "Furnace": {
+            0: "Raw",
+            1: "Fuel",
+            2: "Product"
+        },
+        "Cauldron": {
+            0: "Potion",
+            1: "Potion",
+            2: "Potion",
+            3: "Reagent",
+        }
+    }
     @classmethod
     def Create(cls, tileEntityID, **kw):
         tileEntityTag = TAG_Compound()
