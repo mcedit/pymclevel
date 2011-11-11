@@ -160,7 +160,7 @@ this way.
             self.versions.append(version)
 
     def jarfileForVersion(self, v):
-        return os.path.join(self.cacheDir, v, "minecraft_server.jar")
+        return os.path.join(self.cacheDir, v, "minecraft_server.jar").encode(sys.getfilesystemencoding())
     def checksumForVersion(self, v):
         jf = self.jarfileForVersion(v)
         with file(jf, "rb") as f:
@@ -453,7 +453,7 @@ class MCServerChunkGenerator(object):
     lowMemory = False
     @classmethod
     def _runServer(cls, startingDir, jarfile):
-        print u"Starting server {0} in {1}".format(jarfile, startingDir)
+        info("Starting server %s in %s", jarfile, startingDir)
         if cls.lowMemory:   memflags = []
         else:               memflags = ["-Xmx1024M", "-Xms1024M", ]
         
@@ -1781,8 +1781,8 @@ class ChunkedLevelMixin(object):
             for c,t,p in self._generateLightsIter(dc):
                 
                 yield c+workDone,t + workTotal - estimatedTotals[i], p
-                
-                
+               
+            
             estimatedTotals[i] = t
             workDone += t
             
