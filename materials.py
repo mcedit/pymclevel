@@ -7,7 +7,7 @@ from pprint import pformat
 
 import sys, os
 
-NOTEX = (0xB0, 0x80)
+NOTEX = (0xB0, 0xE0)
 
 import yaml
 
