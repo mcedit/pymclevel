@@ -2900,7 +2900,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         playerTag = self.getPlayerTag(player)
 
         # Check for the Abilities tag.  It will be missing in worlds from before
-        # Beta 1.9 Prelease 5.
+        # Beta 1.9 Prerelease 5.
         if not 'abilities' in playerTag:
             playerTag['abilities'] = TAG_Compound()
 
