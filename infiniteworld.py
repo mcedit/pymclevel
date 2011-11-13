@@ -2896,6 +2896,44 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         yp = y, p;
         return array(yp);
 
+    def setPlayerAbilities(self, gametype, player="Player"):
+        playerTag = self.getPlayerTag(player)
+
+        # Check for the Abilities tag.  It will be missing in worlds from before
+        # Beta 1.9 Prelease 5.
+        if not 'abilities' in playerTag:
+            playerTag['abilities'] = TAG_Compound()
+
+        # Assumes creative (1) is the only mode with these abilities set,
+        # which is true for now.  Future game modes may not hold this to be
+        # true, however.
+        if gametype == 1:
+            playerTag['abilities']['instabuild'] = TAG_Byte(1)
+            playerTag['abilities']['mayfly'] = TAG_Byte(1)
+            playerTag['abilities']['invulnerable'] = TAG_Byte(1)
+        else:
+            playerTag['abilities']['flying'] = TAG_Byte(0)
+            playerTag['abilities']['instabuild'] = TAG_Byte(0)
+            playerTag['abilities']['mayfly'] = TAG_Byte(0)
+            playerTag['abilities']['invulnerable'] = TAG_Byte(0)
+
+    def setPlayerGameType(self, gametype, player="Player"):
+        playerTag = self.getPlayerTag(player)
+        # This annoyingly works differently between single- and multi-player.
+        if player == "Player":
+            self.GameType = gametype
+            self.setPlayerAbilities(gametype, player)
+        else:
+            playerTag['playerGameType'] = TAG_Int(gametype)
+            self.setPlayerAbilities(gametype, player)
+
+    def getPlayerGameType(self, player="Player"):
+        if player == "Player":
+            return self.GameType
+        else:
+            playerTag = self.getPlayerTag(player)
+            return playerTag["playerGameType"].value
+
 class MCAlphaDimension (MCInfdevOldLevel):
     def __init__(self, parentWorld, dimNo, create=False):
         filename = os.path.join(parentWorld.worldDir, "DIM" + str(int(dimNo)))
