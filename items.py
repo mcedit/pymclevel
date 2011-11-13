@@ -389,6 +389,8 @@ class Items (object):
                     id, name, imagefile, imagecoords = fields[0:4]
                     if len(fields) > 4:
                         info = fields[4]
+                        if info[0] == '(':
+                            info = info[1:-1]
                         if info[0] == 'x':
                             stacksize = int(info[1:])
                         elif info[0] == '+':
