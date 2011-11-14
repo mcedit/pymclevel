@@ -57,7 +57,7 @@ class mce(object):
        {commandPrefix}worldsize       
        {commandPrefix}heightmap <filename>
        {commandPrefix}randomseed [ <seed> ]
-       {commandPrefix}gametype [ <gametype> ]
+       {commandPrefix}gametype [ <player> [ <gametype> ] ]
        
     Editor commands:
        {commandPrefix}save 
