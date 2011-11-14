@@ -2958,7 +2958,8 @@ class MCAlphaDimension (MCInfdevOldLevel):
     dimensionNames = { -1: "Nether", 1: "The End"};
     @property
     def displayName(self):
-        return u"{0} ({1})".format(self.parentWorld.displayName, self.dimensionNames[self.dimNo])
+        return u"{0} ({1})".format(self.parentWorld.displayName, 
+                                   self.dimensionNames.get(self.dimNo, "Dimension %d" % self.dimNo))
 
     def saveInPlace(self, saveSelf=False):
         """saving the dimension will save the parent world, which will save any
