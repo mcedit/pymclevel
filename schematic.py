@@ -15,7 +15,73 @@ Materials = 'Materials'
 __all__ = ['MCSchematic', 'INVEditChest']
 class MCSchematic (EntityLevel):
     materials = alphaMaterials
+    def __init__(self, shape=None, root_tag=None, filename=None, mats='Alpha'):
+        """ shape is (x,y,z) for a new level's shape.  if none, takes
+        root_tag as a TAG_Compound for an existing schematic file.  if
+        none, tries to read the tag from filename.  if none, results
+        are undefined. materials can be a MCMaterials instance, or one of 
+        "Classic", "Alpha", "Pocket" to indicate allowable blocks. The default
+        is Alpha.
 
+        block coordinate order in the file is y,z,x to use the same code as classic/indev levels.  
+        in hindsight, this was a completely arbitrary decision.
+        
+        the Entities and TileEntities are nbt.TAG_List objects containing TAG_Compounds.
+        this makes it easy to copy entities without knowing about their insides.
+        
+        rotateLeft swaps the axes of the different arrays.  because of this, the Width, Height, and Length
+        reflect the current dimensions of the schematic rather than the ones specified in the NBT structure.
+        I'm not sure what happens when I try to re-save a rotated schematic.
+        """
+
+        #if(shape != None):
+        #    self.setShape(shape)
+
+
+        if filename:
+            self.filename = filename
+            if None is root_tag:
+                try:
+                    root_tag = nbt.load(filename)
+                except IOError, e:
+                    error(u"Failed to load file {0}".format (e))
+
+        else:
+            self.filename = None
+
+        if mats in namedMaterials:
+            self.materials = namedMaterials[mats];
+        else:
+            assert(isinstance(mats, MCMaterials))
+            self.materials = mats
+
+        if root_tag:
+            self.root_tag = root_tag;
+            if Materials in root_tag:
+                self.materials = namedMaterials[self.Materials]
+            else:
+                root_tag[Materials] = TAG_String(self.materials.name)
+            self.shapeChunkData();
+
+        else:
+            assert shape != None
+            root_tag = TAG_Compound(name="Schematic")
+            root_tag[Height] = TAG_Short(shape[1])
+            root_tag[Length] = TAG_Short(shape[2])
+            root_tag[Width] = TAG_Short(shape[0])
+
+            root_tag[Entities] = TAG_List()
+            root_tag[TileEntities] = TAG_List()
+            root_tag["Materials"] = TAG_String(self.materials.name);
+
+            root_tag[Blocks] = TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+            root_tag[Data] = TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+
+            self.root_tag = root_tag;
+
+        self.dataIsPacked = True;
+
+    
     def __str__(self):
         return u"MCSchematic(shape={0}, materials={2}, filename=\"{1}\")".format(self.size, self.filename or u"", self.Materials)
 
@@ -134,72 +200,6 @@ class MCSchematic (EntityLevel):
     def _isTagLevel(cls, root_tag):
         return "Schematic" == root_tag.name
 
-
-    def __init__(self, shape=None, root_tag=None, filename=None, mats='Alpha'):
-        """ shape is (x,y,z) for a new level's shape.  if none, takes
-        root_tag as a TAG_Compound for an existing schematic file.  if
-        none, tries to read the tag from filename.  if none, results
-        are undefined. materials can be a MCMaterials instance, or one of 
-        "Classic", "Alpha", "Pocket" to indicate allowable blocks. The default
-        is Alpha.
-
-        block coordinate order in the file is y,z,x to use the same code as classic/indev levels.  
-        in hindsight, this was a completely arbitrary decision.
-        
-        the Entities and TileEntities are nbt.TAG_List objects containing TAG_Compounds.
-        this makes it easy to copy entities without knowing about their insides.
-        
-        rotateLeft swaps the axes of the different arrays.  because of this, the Width, Height, and Length
-        reflect the current dimensions of the schematic rather than the ones specified in the NBT structure.
-        I'm not sure what happens when I try to re-save a rotated schematic.
-        """
-
-        #if(shape != None):
-        #    self.setShape(shape)
-
-
-        if filename:
-            self.filename = filename
-            if None is root_tag:
-                try:
-                    root_tag = nbt.load(filename)
-                except IOError, e:
-                    error(u"Failed to load file {0}".format (e))
-
-        else:
-            self.filename = None
-
-        if mats in namedMaterials:
-            self.materials = namedMaterials[mats];
-        else:
-            assert(isinstance(mats, MCMaterials))
-            self.materials = mats
-
-        if root_tag:
-            self.root_tag = root_tag;
-            if Materials in root_tag:
-                self.materials = namedMaterials[self.Materials]
-            else:
-                root_tag[Materials] = TAG_String(self.materials.name)
-            self.shapeChunkData();
-
-        else:
-            assert shape != None
-            root_tag = TAG_Compound(name="Schematic")
-            root_tag[Height] = TAG_Short(shape[1])
-            root_tag[Length] = TAG_Short(shape[2])
-            root_tag[Width] = TAG_Short(shape[0])
-
-            root_tag[Entities] = TAG_List()
-            root_tag[TileEntities] = TAG_List()
-            root_tag["Materials"] = TAG_String(self.materials.name);
-
-            root_tag[Blocks] = TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
-            root_tag[Data] = TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
-
-            self.root_tag = root_tag;
-
-        self.dataIsPacked = True;
 
     def shapeChunkData(self):
         w = self.root_tag[Width].value
