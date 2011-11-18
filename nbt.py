@@ -52,13 +52,19 @@ class TAG_Value(object):
     def delName(self):
             self._name = ""
     name = property(getName, setName, delName, "Change the TAG's name.    Coerced to a string.")
-
-    def __init__(self, value=0, name=None, data=""):
+    
+    @classmethod
+    def load_from(cls, data, data_cursor):
+        data = data[data_cursor:]
+        (value,) = struct.unpack_from(cls.fmt, data);
+        self = cls(value=value)
+        return self, data_cursor + struct.calcsize(self.fmt)
+        
+    def __init__(self, value=0, name=None):
         self.name = name
-        if(data == ""):
-                self.value = value
-        else:
-                (self.value,) = struct.unpack_from(self.fmt, data);
+        self.value = value
+        
+            
 
     def __repr__(self):
         return "%s( \"%s\" ): %s" % (str(self.__class__), self.name, repr(self.value))
@@ -72,8 +78,6 @@ class TAG_Value(object):
         else:
             return  " " * indent + "%s: %s" % (str(self.__class__.__name__), self.value)
 
-    def nbt_length(self):
-        return struct.calcsize(self.fmt);
 
     def write_tag(self, buf):
         buf.write(struct.pack(TAGfmt, self.tag))
@@ -177,17 +181,20 @@ class TAG_Byte_Array(TAG_Value):
                 self.value)
         else:
             return  " " * indent + "%s: %s %s" % (str(self.__class__.__name__), str(self.value.shape), self.value)
-
-    def __init__(self, value=zeros(0, uint8), name=None, data=""):
-        self.name = name
-        if(data == ""):
-            self.value = value;
-        else:
-            (string_len,) = struct.unpack_from(">I", data);
-            self.value = fromstring(data[4:string_len + 4], 'uint8');
-
-    def nbt_length(self) :
-        return len(self.value) + 4;
+    
+    @classmethod
+    def load_from(cls, data, data_cursor):
+        data = data[data_cursor:]
+        (string_len,) = struct.unpack_from(">I", data);
+        value = fromstring(data[4:string_len + 4], 'uint8');
+        self = cls(value)
+        return self, data_cursor + string_len + 4
+        
+    def __init__(self, value=zeros(0, uint8), name=None):
+        if name:
+            self.name = name
+        self.value = value;
+        
 
     def write_value(self, buf):
         #print self.value
@@ -199,18 +206,19 @@ class TAG_Int_Array(TAG_Byte_Array):
     tag = 11;
     def dataType(self, value):
         return array(value, '>u4')
-
-    def __init__(self, value=zeros(0, ">u4"), name=None, data=""):
+    
+    @classmethod
+    def load_from(cls, data, data_cursor):
+        data = data[data_cursor:]
+        (string_len,) = struct.unpack_from(">I", data);
+        value = fromstring(data[4:string_len * 4 + 4], '>u4')
+        self = cls(value)
+        return self, data_cursor + len(self.value) * 4 + 4;
+        
+    def __init__(self, value=zeros(0, ">u4"), name=None):
         self.name = name
-        if(data == ""):
-            self.value = value;
-        else:
-            (string_len,) = struct.unpack_from(">I", data);
-            self.value = fromstring(data[4:string_len * 4 + 4], '>u4')
+        self.value = value;
 
-
-    def nbt_length(self) :
-        return len(self.value) * 4 + 4;
 
     def write_value(self, buf):
         #print self.value
@@ -223,17 +231,18 @@ class TAG_Short_Array(TAG_Int_Array):
     def dataType(self, value):
         return array(value, '>u2')
 
-    def __init__(self, value=zeros(0, ">u2"), name=None, data=""):
+    @classmethod
+    def load_from(cls, data, data_cursor):
+        data = data[data_cursor:]
+        (string_len,) = struct.unpack_from(">I", data);
+        value = fromstring(data[4:string_len * 2 + 4], '>u2')
+        self = cls(value)
+        return self, data_cursor + len(self.value) * 2 + 4;
+        
+    def __init__(self, value=zeros(0, ">u2"), name=None):
         self.name = name
-        if(data == ""):
-            self.value = value;
-        else:
-            (string_len,) = struct.unpack_from(">I", data);
-            self.value = fromstring(data[4:string_len * 2 + 4], '>u2')
+        self.value = value;
 
-
-    def nbt_length(self) :
-        return len(self.value) * 2 + 4;
 
     def write_value(self, buf):
         #print self.value
@@ -242,30 +251,35 @@ class TAG_Short_Array(TAG_Int_Array):
 
 class TAG_String(TAG_Value):
     """String in UTF-8
-    The data parameter should either be a 'unicode' or an ascii-encoded 'str'
+    The value parameter must be a 'unicode' or a UTF-8 encoded 'str'
     """
 
     tag = 8;
     fmt = ">h%ds"
-    dataType = unicode
+    dataType = lambda self, s: isinstance(s, unicode) and s.encode('utf-8') or s
 
-    def __init__(self, value="", name=None, data=""):
-        self.name = name
-        if(data == ""):
-            self.value = value
-        else:
-            (string_len,) = struct.unpack_from(">H", data);
-            self.value = data[2:string_len + 2].tostring().decode('utf-8');
+    @classmethod
+    def load_from(cls, data, data_cursor):
+        data = data[data_cursor:]
+        (string_len,) = struct.unpack_from(">H", data);
+        value = data[2:string_len + 2].tostring();
+        self = cls(value)
+        return self, data_cursor + string_len + 2;
 
-    def nbt_length(self) :
-        return len(self.value.encode('utf-8')) + 2;
+    def __init__(self, value="", name=None):
+        if name:
+            self.name = name
+        self.value = value
 
     def write_value(self, buf):
-        u8value = self.value.encode('utf-8')
+        u8value = self._value
         buf.write(struct.pack(self.fmt % (len(u8value),), len(u8value), u8value))
 
-
-
+    @property
+    def unicodeValue(self):
+        return self.value.decode('utf-8')
+    
+            
 
 class TAG_Compound(TAG_Value, collections.MutableMapping):
     """A heterogenous list of named tags. Names must be unique within
@@ -285,44 +299,38 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
 
     def pretty_string(self, indent=0):
         if self.name:
-            pretty = " " * indent + "%s( \"%s\" ):\n" % (str(self.__class__.__name__), self.name)
+            pretty = " " * indent + "%s( \"%s\" ): %d items\n" % (str(self.__class__.__name__), self.name, len(self.value))
         else:
-            pretty = " " * indent + "%s():\n" % (str(self.__class__.__name__))
+            pretty = " " * indent + "%s(): %d items\n" % (str(self.__class__.__name__), len(self.value))
         indent += 4
         for tag in self.value:
             pretty += tag.pretty_string(indent) + "\n"
         return pretty
 
+    @classmethod
+    def load_from(cls, data, data_cursor):
+        self = cls()
+        while data_cursor < len(data):
+            tag_type = data[data_cursor];
+            data_cursor += 1
+            if(tag_type == 0):
+                break
 
-    def __init__(self, value=[], name="", data=""):
+            tag, data_cursor = load_named(data, data_cursor, tag_type)
+
+            self._value.append(tag);
+        
+        return self, data_cursor
+        
+    def __init__(self, value=[], name=""):
 
         self.name = name;
         if value.__class__ == ''.__class__:
             self.name = value;
             value = [];
-        self.value = []
-        if(data == ""):
-            self.value += value;
-        else:
-
-            data_cursor = 0;
-
-            while data_cursor < len(data):
-                tag_type = data[data_cursor];
-                data_cursor += 1;
-                if(tag_type == 0):
-                    break;
-
-                assert_type(tag_type, data_cursor)
-
-
-                data_cursor, tag = load_named(data, data_cursor, tag_type)
-
-                self.value.append(tag);
-
-
-    def nbt_length(self):
-        return sum(x.nbt_length() + len(x.name) + 3 for x in self.value) + 1;
+        self.value = value;
+        
+            
 
     def write_value(self, buf):
         for i in self.value:
@@ -350,7 +358,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         elif isinstance(v, basestring):
             v = TAG_String(v)
 
-        if not (v.__class__ in tag_handlers.values()): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
+        if not (v.__class__ in tag_classes.values()): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
         """remove any items already named "k".    """
         olditems = filter(lambda x:x.name == k, self.value)
         for i in olditems: self.value.remove(i)
@@ -394,41 +402,39 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         for tag in self.value:
             pretty += tag.pretty_string(indent) + "\n"
         return pretty
+    
+    @classmethod
+    def load_from(cls, data, data_cursor):
+        self = cls()
+        self.list_type = data[data_cursor];
+        
+        data_cursor += 1;
 
-    def __init__(self, value=[], name=None, data=None, list_type=TAG_Compound):
+        list_length, data_cursor = TAG_Int.load_from(data, data_cursor)
+        list_length = list_length.value
+
+
+        for i in range(list_length):
+
+            tag, data_cursor = tag_classes[self.list_type].load_from(data, data_cursor)
+            self.append(tag);
+        
+        return self, data_cursor
+        
+    def __init__(self, value=[], name=None, list_type=TAG_Compound):
         #can be created from a list of tags in value, with an optional
         #name, or created from raw tag data, or created with list_type
         #taken from a TAG class or instance
 
         self.name = name
-        self.value = [];
         self.list_type = list_type.tag
 
-        if(data == None):
-            if(len(value)):
-                self.list_type = value[0].tag;
-                value = filter(lambda x:x.__class__ == value[0].__class__, value)
+        if(len(value)):
+            self.list_type = value[0].tag;
+            value = filter(lambda x:x.__class__ == value[0].__class__, value)
 
-            self.value = value
-
-        else:
-            data_cursor = 0;
-
-            self.list_type = data[data_cursor];
-            assert_type(self.list_type, data_cursor);
-
-            data_cursor += 1;
-
-            list_length = TAG_Int(data=data[data_cursor:])
-            data_cursor += list_length.nbt_length()
-            list_length = list_length.value
-
-
-            for i in range(list_length):
-
-                tag = tag_handlers[self.list_type](data=data[data_cursor:])
-                self.append(tag);
-                data_cursor += tag.nbt_length()
+        self.value = value
+            
 
     """ collection methods """
     def __iter__(self):             return iter(self.value)
@@ -437,8 +443,8 @@ class TAG_List(TAG_Value, collections.MutableSequence):
     def __len__(self):                return len(self.value)
 
     def __setitem__(self, i, v):
-        if v.__class__ != tag_handlers[self.list_type]:
-            raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_handlers[self.list_type]))
+        if v.__class__ != tag_classes[self.list_type]:
+            raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_classes[self.list_type]))
         v.name = ""
         self.value[i] = v;
 
@@ -446,17 +452,14 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         del self.value[i]
 
     def insert(self, i, v):
-            if not v.tag in tag_handlers: raise TypeError("Not a tag type: %s" % (v,))
+            if not v.tag in tag_classes: raise TypeError("Not a tag type: %s" % (v,))
             if len(self) == 0:
                     self.list_type = v.tag
             else:
-                    if v.__class__ != tag_handlers[self.list_type]: raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_handlers[self.list_type]))
+                    if v.__class__ != tag_classes[self.list_type]: raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_classes[self.list_type]))
 
             v.name = ""
             self.value.insert(i, v);
-
-    def nbt_length(self):
-        return 5 + sum(x.nbt_length() for x in self.value)
 
     def write_value(self, buf):
         buf.write(struct.pack(TAGfmt, self.list_type))
@@ -465,7 +468,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
             i.write_value(buf)
 
 
-tag_handlers = {
+tag_classes = {
     1 : TAG_Byte,
     2 : TAG_Short,
     3 : TAG_Int,
@@ -479,9 +482,6 @@ tag_handlers = {
     11: TAG_Int_Array,
     12: TAG_Short_Array,
     };
-
-def assert_type(t, offset) :
-    if not t in tag_handlers: raise ValueError("Unexpected tag type %d at %d" % (t, offset));
 
 import zlib
 def gunzip(data):
@@ -502,13 +502,13 @@ def loadFile(filename):
     return load(buf=fromstring(data, 'uint8'));
 
 def load_named(data, data_cursor, tag_type):
-    tag_name = TAG_String(data=data[data_cursor:])
-    data_cursor += tag_name.nbt_length()
+    tag_name, data_cursor = TAG_String.load_from(data, data_cursor)
     tag_name = tag_name.value
 
-    tag = tag_handlers[tag_type](data=data[data_cursor:], name=tag_name)
-    data_cursor += tag.nbt_length()
-    return data_cursor, tag
+    tag, data_cursor = tag_classes[tag_type].load_from(data, data_cursor)
+    tag.name = tag_name
+    
+    return tag, data_cursor
 
 def load(filename="", buf=None):
     """Unserialize data from an entire NBT file and return the 
@@ -529,7 +529,7 @@ def load(filename="", buf=None):
         raise NBTFormatError, 'Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type);
     data_cursor += 1;
 
-    data_cursor, tag = load_named(data, data_cursor, tag_type)
+    tag, data_cursor = load_named(data, data_cursor, tag_type)
 
     return tag;
 
@@ -537,7 +537,7 @@ def load(filename="", buf=None):
 
 def loadtest():
     "Load an indev level."
-    level = load("hell.mclevel");
+    level = load("testfiles/hell.mclevel");
 
     """The root tag must have a name, and so must any tag within a TAG_Compound"""
     print level.name
@@ -667,6 +667,6 @@ def runtests():
 if(__name__ == "__main__") :
     runtests()
 
-__all__ = [a.__name__ for a in tag_handlers.itervalues()] + ["loadFile", "gunzip"]
+__all__ = [a.__name__ for a in tag_classes.itervalues()] + ["loadFile", "gunzip"]
 
 
