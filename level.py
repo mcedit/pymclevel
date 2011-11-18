@@ -422,12 +422,15 @@ class MCLevel(object):
 
 
     def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+        return exhaust(self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy))
 
+    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         if blocksToCopy is not None:
             typemask = zeros((256) , dtype='bool')
             typemask[blocksToCopy] = True;
-
-        for (chunk, slices, point) in sourceLevel.getChunkSlices(sourceBox):
+        
+        
+        for i, (chunk, slices, point) in enumerate(sourceLevel.getChunkSlices(sourceBox)):
             point = map(lambda a, b:a + b, point, destinationPoint)
             point = point[0], point[2], point[1]
             mask = slice(None, None)
@@ -447,9 +450,10 @@ class MCLevel(object):
             if hasattr(self, 'Data'):
                 data = self.Data[ destSlices ];
                 data[mask] = convertedSourceData[mask]
-
-                #self.Data[ destSlices ][mask] = chunk.Data[slices][mask]
-
+            
+            yield i
+            
+            
 
 
     def adjustCopyParameters(self, sourceLevel, sourceBox, destinationPoint):
@@ -510,7 +514,8 @@ class MCLevel(object):
 
 
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
-
+        yield
+        
         if min(sourceBox.size) <= 0:
             print "Empty source box, aborting"
             return;
@@ -520,8 +525,8 @@ class MCLevel(object):
         if not (sourceLevel.isInfinite):
             self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
         else:
-            self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
-
+            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy):
+                yield i
         for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
             yield i
 
