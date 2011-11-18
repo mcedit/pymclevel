@@ -2521,7 +2521,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     chunk.root_tag = nbt.load(buf=data)
 
         except Exception, e:
-            raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e)
+            raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e), sys.exc_info()[2]
 
 
     def _saveChunk(self, chunk):
