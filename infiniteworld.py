@@ -359,6 +359,11 @@ class MCServerChunkGenerator(object):
             yield line
             
             if "[INFO] Done" in line:
+                for i in range(15):
+                    # process tile ticks
+                    yield "%2d/%2d: Simulating the world for a little bit..." % (i, 15)
+                    
+                    time.sleep(1)
                 proc.stdin.write("stop\n")
                 proc.wait()
                 break
