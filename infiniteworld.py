@@ -422,40 +422,41 @@ class MCServerChunkGenerator(object):
         tempWorld, tempDir = self.tempWorldForLevel(level)
 
         startLength = len(chunks)
+        minRadius = 5
+        maxRadius = 20
+        
         while len(chunks):
-            centercx, centercz = chunks[0]
+            centercx, centercz = chunks.pop()
             #assume the generator always generates at least an 11x11 chunk square.
-            centercx += 5
-            centercz += 5
+            centercx += minRadius
+            centercz += minRadius
             
             #boxedChunks = [cPos for cPos in chunks if inBox(cPos)]
-            missingChunks = []
-
+            
             print "Generating {0} chunks out of {1} starting from {2}".format("XXX", len(chunks), (centercx, centercz))
             yield startLength - len(chunks), startLength
 
             #chunks = [c for c in chunks if not inBox(c)]
-
+            
             for p in self.generateAtPositionIter(tempWorld, tempDir, centercx, centercz):
                 yield startLength - len(chunks), startLength, p
             
+            doneChunks = set()
             i=0
-            for cx, cz in chunks:
-                if tempWorld.containsChunk(cx, cz) and tempWorld.getChunk(cx,cz).TerrainPopulated:
+            for cx, cz in itertools.product(
+                            xrange(centercx-maxRadius, centercx+maxRadius),
+                            xrange(centercz-maxRadius, centercz+maxRadius)):
+                if (not level.containsChunk(cx,cz)
+                    and tempWorld.containsChunk(cx, cz) 
+                    and tempWorld.getChunk(cx,cz).TerrainPopulated):
                     self.copyChunkAtPosition(tempWorld, level, cx, cz)
                     i+= 1
                     yield startLength - len(chunks) + i, startLength
-                else:
-                    missingChunks.append((cx, cz))
+                doneChunks.add((cx,cz))
+            
+            chunks = [c for c in chunks if c not in doneChunks] #xxxxxxxx stupid
                 
-            [(cx,cz) for (cx,cz) in chunks if tempWorld.containsChunk(cx,cz)]
-            if len(chunks) == len(missingChunks):
-                raise ChunkNotPresent, "Asked the generator to create {0} chunks and it didn't create any of them!".format(len(missingChunks))
-            else:
-                print "Generated {0} chunks.".format(len(chunks) - len(missingChunks))
-                
-            chunks = missingChunks
-
+            
         level.saveInPlace()
 
             
