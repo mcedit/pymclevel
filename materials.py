@@ -156,7 +156,9 @@ class MCMaterials(object):
         filenames = ([join(p, filename) for p in sys.path] 
                    + [filename] 
                    + [os.path.join(f, filename) for f in moduleDirs])
-                    
+        root = os.environ.get("YAML_ROOT", None)
+        if root: filenames.insert(0, join(root, filename))
+             
         for f in [fn for fn in filenames if os.path.exists(fn)]:
             info(u"  Looking in %s", f)
             try:
