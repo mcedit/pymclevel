@@ -119,13 +119,14 @@ this way.
     def reloadVersions(self):
         cacheDirList = os.listdir(self.cacheDir)
         self.versions = list(reversed(sorted([v for v in cacheDirList if os.path.exists(self.jarfileForVersion(v))], key=alphanum_key)))
-
-        for f in cacheDirList:
-            p = os.path.join(self.cacheDir, f)
-            if f.startswith("minecraft_server") and f.endswith(".jar") and os.path.isfile(p):
-                print "Unclassified minecraft_server.jar found in cache dir. Discovering version number..."
-                self.cacheNewVersion(p)
-                os.remove(p)
+        
+        if MCServerChunkGenerator.javaExe:
+            for f in cacheDirList:
+                p = os.path.join(self.cacheDir, f)
+                if f.startswith("minecraft_server") and f.endswith(".jar") and os.path.isfile(p):
+                    print "Unclassified minecraft_server.jar found in cache dir. Discovering version number..."
+                    self.cacheNewVersion(p)
+                    os.remove(p)
 
 
         print "Minecraft_Server.jar storage initialized."
@@ -204,33 +205,7 @@ def saveProperties(filename, properties):
         for k, v in properties.iteritems():
             f.write("{0}={1}\n".format(k, v))
 
-class MCServerChunkGenerator(object):
-    """Generates chunks using minecraft_server.jar. Uses a ServerJarStorage to 
-    store different versions of minecraft_server.jar in an application support
-    folder. 
-    
-    
-    
-        from pymclevel import *
-        
-    Example usage:
-        
-        gen = MCServerChunkGenerator() # with no arguments, use the newest 
-                                       # server version in the cache, or download
-                                       # the newest one automatically
-        level = loadWorldNamed("MyWorld")
-        
-        gen.generateChunkInLevel(level, 12, 24)
-        
-        
-    Using an older version:
-    
-        gen = MCServerChunkGenerator("Beta 1.6.5")
-        
-    """
-    defaultJarStorage = None
-
-
+def findJava():
     if sys.platform == "win32":
         javaExe = which("java.exe")
         if javaExe is None:
@@ -260,6 +235,38 @@ class MCServerChunkGenerator(object):
                 print "Error while locating java.exe using the Registry: ", repr(e)
     else:
         javaExe = which("java")
+    
+    return javaExe
+    
+class MCServerChunkGenerator(object):
+    """Generates chunks using minecraft_server.jar. Uses a ServerJarStorage to 
+    store different versions of minecraft_server.jar in an application support
+    folder. 
+    
+    
+    
+        from pymclevel import *
+        
+    Example usage:
+        
+        gen = MCServerChunkGenerator() # with no arguments, use the newest 
+                                       # server version in the cache, or download
+                                       # the newest one automatically
+        level = loadWorldNamed("MyWorld")
+        
+        gen.generateChunkInLevel(level, 12, 24)
+        
+        
+    Using an older version:
+    
+        gen = MCServerChunkGenerator("Beta 1.6.5")
+        
+    """
+    defaultJarStorage = None
+
+
+            
+    javaExe = findJava()
     jarStorage = None
     tempWorldCache = {}
 
