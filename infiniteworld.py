@@ -155,14 +155,14 @@ this way.
         versionDir = os.path.join(self.cacheDir, version)
 
         i = 1
-        versionDir2 = versionDir
-        while os.path.exists(versionDir2):
-            versionDir2 = versionDir + str(i)
+        newVersionDir = versionDir
+        while os.path.exists(newVersionDir):
+            newVersionDir = versionDir + " (" + str(i) + ")"
             i += 1
 
-        os.mkdir(versionDir2)
+        os.mkdir(newVersionDir)
 
-        shutil.copy2(filename, os.path.join(versionDir, "minecraft_server.jar"))
+        shutil.copy2(filename, os.path.join(newVersionDir, "minecraft_server.jar"))
 
         if version not in self.versions:
             self.versions.append(version)
