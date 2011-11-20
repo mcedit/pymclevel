@@ -515,6 +515,15 @@ class MCServerChunkGenerator(object):
         proc.wait()
         shutil.rmtree(tempdir)
         if ";)" in version: version = version.replace(";)", "") #Damnit, Jeb!
+        # Versions like "0.2.1" are alphas, and versions like "1.0.0" without "Beta" are releases
+        if version[0] == "0":
+            version = "Alpha " + version
+        try:
+            if int(version[0]) > 0:
+                version = "Release " + version
+        except ValueError:
+            pass
+            
         return version
 
 _zeros = {}
