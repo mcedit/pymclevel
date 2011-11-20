@@ -148,7 +148,7 @@ class MCMaterials(object):
     
     
     def addYamlBlocksFromFile(self, filename):
-        info("Looking for %s", filename)
+        info(u"Looking for %s", filename)
         moduleDirs = set((os.path.dirname(m.__file__) 
                           for m in sys.modules.itervalues() 
                           if m and hasattr(m, '__file__')))
@@ -168,7 +168,7 @@ class MCMaterials(object):
                 
                 break;
             except Exception, e:
-                warn("Exception while loading block info from %s: %s", f, e)
+                warn(u"Exception while loading block info from %s: %s", f, e)
                 traceback.print_exc()
                 
     def addYamlBlocks(self, blockyaml):
@@ -177,9 +177,9 @@ class MCMaterials(object):
             try:
                 self.addYamlBlock(block)
             except Exception, e:
-                warn("Exception while parsing block: %s", e)
+                warn(u"Exception while parsing block: %s", e)
                 traceback.print_exc()
-                warn("Block definition: \n%s", pformat(block))
+                warn(u"Block definition: \n%s", pformat(block))
                     
             
     
