@@ -6,7 +6,10 @@ Created on Jul 23, 2011
 #from mclevel import fromFile, loadWorldNumber, BoundingBox
 #from infiniteworld import MCInfdevOldLevel
 #from schematic import MCSchematic
-from pymclevel import *
+try:
+    from pymclevel import *
+except ImportError:
+    from __init__ import *
 
 import itertools
 import traceback
@@ -16,9 +19,11 @@ import logging
 import shutil
 import os
 from os.path import join
+import time
+
 import numpy
 from numpy import *
-from pymclevel.infiniteworld import MCServerChunkGenerator
+#from pymclevel.infiniteworld import MCServerChunkGenerator
 
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
@@ -29,26 +34,22 @@ def mktemp(suffix):
     td = tempfile.mkdtemp(suffix)
     os.rmdir(td)
     return td
-    
+
 class TempLevel(object):
-    def __init__(self, filename):
+    def __init__(self, filename, createFunc = None):
         if not os.path.exists(filename):
             filename = join("testfiles", filename)
-#def tempCopy(filename):
-        if os.path.isdir(filename):
-            tmpname = tempfile.mkdtemp(os.path.basename(filename))
-            os.rmdir(tmpname)
-            shutil.copytree(filename, tmpname)
+        tmpname = mktemp(os.path.basename(filename))
+        if os.path.exists(filename):
+            if os.path.isdir(filename):
+                shutil.copytree(filename, tmpname)
+            else:
+                shutil.copy(filename, tmpname)
         else:
-            fd, tmpname = tempfile.mkstemp(os.path.basename(filename))
-            os.close(fd)
-            os.unlink(tmpname)
-            shutil.copy(filename, tmpname)
-
+            createFunc(tmpname)
         self.tmpname = tmpname
         self.level = fromFile(tmpname)
 
-#def tempRemove(filename):
     def __del__(self):
         self.level.close()
         del self.level
@@ -59,6 +60,136 @@ class TempLevel(object):
         else:
             os.unlink(filename)
 
+class TestNBT(unittest.TestCase):
+        
+    def testLoad(self):
+        "Load an indev level."
+        level = nbt.load("testfiles/hell.mclevel");
+    
+        """The root tag must have a name, and so must any tag within a TAG_Compound"""
+        print level.name
+    
+        """Use the [] operator to look up subtags of a TAG_Compound."""
+        print level["Environment"]["SurroundingGroundHeight"].value;
+    
+    
+        """Numeric, string, and bytearray types have a value 
+        that can be accessed and changed. """
+        print level["Map"]["Blocks"].value
+    
+        return level;
+    
+    def testCreate(self):
+        "Create an indev level."
+    
+        "The root of an NBT file is always a TAG_Compound."
+        level = TAG_Compound(name="MinecraftLevel")
+    
+        "Subtags of a TAG_Compound are automatically named when you use the [] operator."
+        level["About"] = TAG_Compound()
+        level["About"]["Author"] = TAG_String("codewarrior")
+    
+        level["Environment"] = TAG_Compound()
+        level["Environment"]["SkyBrightness"] = TAG_Byte(16)
+        level["Environment"]["SurroundingWaterHeight"] = TAG_Short(32)
+    
+        "You can also create and name a tag before adding it to the compound."
+        spawn = TAG_List((TAG_Short(100), TAG_Short(45), TAG_Short(55)))
+        spawn.name = "Spawn"
+    
+        mapTag = TAG_Compound()
+        mapTag.add(spawn);
+        mapTag.name = "Map"
+        level.add(mapTag)
+    
+        "I think it looks more familiar with [] syntax."
+    
+        l, w, h = 128, 128, 128
+        mapTag["Height"] = TAG_Short(h) # y dimension
+        mapTag["Length"] = TAG_Short(l) # z dimension
+        mapTag["Width"] = TAG_Short(w) # x dimension
+    
+        "Byte arrays are stored as numpy.uint8 arrays. "
+    
+        mapTag["Blocks"] = TAG_Byte_Array()
+        mapTag["Blocks"].value = zeros(l * w * h, dtype=uint8) #create lots of air!
+    
+        "The blocks array is indexed (y,z,x) for indev levels, so reshape the blocks"
+        mapTag["Blocks"].value.shape = (h, l, w);
+    
+        "Replace the bottom layer of the indev level with wood"
+        mapTag["Blocks"].value[0, :, :] = 5;
+    
+        "This is a great way to learn the power of numpy array slicing and indexing."
+        
+        mapTag["Data"] = TAG_Byte_Array()
+        mapTag["Data"].value = zeros(l * w * h, dtype=uint8)
+    
+        return level;
+    
+    def testModify(self):
+        level = self.testCreate();
+    
+        "Most of the value types work as expected. Here, we replace the entire tag with a TAG_String"
+        level["About"]["Author"] = TAG_String("YARRR~!");
+    
+        "Because the tag type usually doesn't change, "
+        "we can replace the string tag's value instead of replacing the entire tag."
+        level["About"]["Author"].value = "Stew Pickles"
+    
+        "Remove members of a TAG_Compound using del, similar to a python dict."
+        del(level["About"]);
+    
+        "Replace all of the wood blocks with gold using a boolean index array"
+        blocks = level["Map"]["Blocks"].value
+        blocks[blocks == 5] = 41;
+    
+    
+    def testSave(self):
+    
+        level = self.testCreate()
+        level["Environment"]["SurroundingWaterHeight"].value += 6;
+    
+        "Save the entire TAG structure to a different file."
+        atlantis = TempLevel("atlantis.mclevel", createFunc = level.save)
+        
+    
+    def testErrors(self):
+        """
+        attempt to name elements of a TAG_List
+        named list elements are not allowed by the NBT spec, 
+        so we must discard any names when writing a list.
+        """
+    
+        level = self.testCreate();
+        level["Map"]["Spawn"][0].name = "Torg Potter"
+        sio = StringIO()
+        level.save(buf=sio)
+        newlevel = nbt.load(buf=sio.getvalue())
+    
+        n = newlevel["Map"]["Spawn"][0].name
+        if(n): print "Named list element failed: %s" % n;
+    
+        """
+        attempt to delete non-existent TAG_Compound elements
+        this generates a KeyError like a python dict does.
+        """
+        level = self.testCreate();
+        try:
+            del level["DEADBEEF"]
+        except KeyError:
+            pass
+        else:
+            assert False
+    
+    def testSpeed(self):
+        d = join("testfiles", "TileTicks_chunks")
+        files = [join(d, f) for f in os.listdir(d)]
+        startTime = time.time()
+        for f in files[:20]:
+            n = nbt.load(f)
+        print "Duration: ", time.time() - startTime
+        
 class TestIndevLevel(unittest.TestCase):
     def setUp(self):
         self.srclevel = TempLevel("hell.mclevel")
