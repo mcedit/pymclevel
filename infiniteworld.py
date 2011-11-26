@@ -13,7 +13,7 @@ import subprocess
 import sys
 import urllib
 import tempfile
-
+from os.path import join, dirname, basename
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
@@ -195,6 +195,8 @@ class JavaNotFound(RuntimeError): pass
 class VersionNotFound(RuntimeError): pass
 
 def readProperties(filename):
+    if not os.path.exists(filename): return {}
+    
     with file(filename) as f:
         properties = dict((line.split("=", 2) for line in (l.strip() for l in f) if not line.startswith("#")))
 
@@ -317,11 +319,8 @@ class MCServerChunkGenerator(object):
         #tempDir = tempfile.mkdtemp("mclevel_servergen")
         tempDir = os.path.join(self.worldCacheDir, self.jarStorage.checksumForVersion(self.serverVersion), str(level.RandomSeed))
         propsFile = os.path.join(tempDir, "server.properties")
-        if os.path.exists(propsFile):
-            properties = readProperties(propsFile)
-        else:
-            properties = {}
-
+        properties = readProperties(propsFile)
+        
         tempWorld = self.tempWorldCache.get((self.serverVersion, level.RandomSeed))
         
         if tempWorld is None:
@@ -330,7 +329,7 @@ class MCServerChunkGenerator(object):
                 self.createReadme()
 
             worldName = "world"
-            worldName = properties.setdefault("world-name", worldName)
+            worldName = properties.setdefault("level-name", worldName)
 
             tempWorldDir = os.path.join(tempDir, worldName)
             tempWorld = MCInfdevOldLevel(tempWorldDir, create=True, random_seed=level.RandomSeed)
@@ -354,11 +353,12 @@ class MCServerChunkGenerator(object):
     def generateAtPosition(self, tempWorld, tempDir, cx, cz):
         return exhaust(self.generateAtPositionIter(tempWorld, tempDir, cx, cz))
         
-    def generateAtPositionIter(self, tempWorld, tempDir, cx, cz):
+    def generateAtPositionIter(self, tempWorld, tempDir, cx, cz, simulate = False):
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
         tempWorld.saveInPlace()
         tempWorld.unloadRegions()
         
+        startTime = time.time()
         proc = self.runServer(tempDir)
         while proc.poll() is None:
             line = proc.stderr.readline().strip()
@@ -366,11 +366,16 @@ class MCServerChunkGenerator(object):
             yield line
             
             if "[INFO] Done" in line:
-                for i in range(15):
-                    # process tile ticks
-                    yield "%2d/%2d: Simulating the world for a little bit..." % (i, 15)
+                if simulate:
+                    duration = time.time() - startTime
                     
-                    time.sleep(1)
+                    simSeconds = int(duration) + 1
+                    
+                    for i in range(simSeconds):
+                        # process tile ticks
+                        yield "%2d/%2d: Simulating the world for a little bit..." % (i, simSeconds)
+                        time.sleep(1)
+                        
                 proc.stdin.write("stop\n")
                 proc.wait()
                 break
@@ -421,10 +426,42 @@ class MCServerChunkGenerator(object):
         self.generateAtPosition(tempWorld, tempDir, cx, cz)
         self.copyChunkAtPosition(tempWorld, level, cx, cz)
 
+    minRadius = 5
+    maxRadius = 20
+    
+    def createLevel(self, level, box, simulate = False, **kw):
+        return exhaust(self.createLevelIter(level, box, simulate, **kw))
+        
+    def createLevelIter(self, level, box, simulate = False, **kw):
+        if isinstance(level, basestring):
+            filename = level
+            level = MCInfdevOldLevel(filename, create=True, **kw)
+            
+        assert isinstance(level, MCInfdevOldLevel)
+        minRadius = self.minRadius
+        
+        genPositions = list(itertools.product(
+                       xrange(box.mincx, box.maxcx, minRadius * 2),
+                       xrange(box.mincz, box.maxcz, minRadius * 2)))
+        
+        for i, (cx,cz) in enumerate(genPositions):
+            info("Generating at %s" % ((cx,cz),))
+            parentDir = dirname(level.worldDir)
+            propsFile = join(parentDir, "server.properties")
+            props = readProperties(join(dirname(self.serverJarFile), "server.properties"))
+            props["level-name"] = basename(level.worldDir)
+            props["server-port"] = int(32767 + random.random() * 32700)
+            saveProperties(propsFile, props)
+            
+            for p in self.generateAtPositionIter(level, parentDir, cx, cz, simulate):
+                yield i, len(genPositions), p
+                
+        level.unloadRegions()
+                       
     def generateChunksInLevel(self, level, chunks):
         return exhaust(self.generateChunksInLevelIter(level, chunks))
 
-    def generateChunksInLevelIter(self, level, chunks):
+    def generateChunksInLevelIter(self, level, chunks, simulate = False):
         assert isinstance(level, MCInfdevOldLevel)
         tempWorld, tempDir = self.tempWorldForLevel(level)
 
@@ -445,7 +482,7 @@ class MCServerChunkGenerator(object):
 
             #chunks = [c for c in chunks if not inBox(c)]
             
-            for p in self.generateAtPositionIter(tempWorld, tempDir, centercx, centercz):
+            for p in self.generateAtPositionIter(tempWorld, tempDir, centercx, centercz, simulate):
                 yield startLength - len(chunks), startLength, p
             
             doneChunks = set()
@@ -560,9 +597,10 @@ class InfdevChunk(EntityLevel):
             rx, rz = cx >> 5, cz >> 5
             rf = self.world.regionFiles[rx, rz]
             offset = rf.getOffset(cx & 0x1f, cz & 0x1f)
-            return u"{region} index {index} sector {sector} format {format}".format(
+            return u"{region} index {index} sector {sector} length {length} format {format}".format(
                 region=os.path.basename(self.world.regionFilename(rx, rz)),
                 sector=offset >> 8,
+                length = offset & 0xff,
                 index=4 * ((cx & 0x1f) + ((cz & 0x1f) * 32)),
                 format=["???", "gzip", "deflate"][self.compressMode])
         else:
@@ -691,14 +729,14 @@ class InfdevChunk(EntityLevel):
             except Exception, e:
                 error(u"Malformed NBT data in file: {0} ({1})".format(self.filename, e))
                 if self.world: self.world.malformedChunk(*self.chunkPosition);
-                raise ChunkMalformed, self.filename
+                raise ChunkMalformed, (e,), sys.exc_info()[2]
 
             try:
                 self.shapeChunkData()
             except KeyError, e:
                 error(u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e))
                 if self.world: self.world.malformedChunk(*self.chunkPosition);
-                raise ChunkMalformed, self.filename
+                raise ChunkMalformed, (e,), sys.exc_info()[2]
 
             self.dataIsPacked = True;
         self.world.chunkDidDecompress(self);
@@ -782,7 +820,7 @@ class InfdevChunk(EntityLevel):
             except Exception, e:
                 error(u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e))
                 if self.world: self.world.malformedChunk(*self.chunkPosition);
-                raise ChunkMalformed, self.filename, sys.exc_info()[2]
+                raise ChunkMalformed, (e,), sys.exc_info()[2]
 
             self.world.chunkDidLoad(self)
             self.world.chunkDidDecompress(self);
