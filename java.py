@@ -62,7 +62,10 @@ class MCJavaLevel(MCLevel):
 
     def __init__(self, filename, data):
         self.filename = filename;
+        if isinstance(data, basestring):
+            data = fromstring(data, dtype='uint8')
         self.filedata = data;
+            
         #try to take x,z,y from the filename
         r = re.findall("\d+", os.path.basename(filename))
         if r and len(r) >= 3:
@@ -77,7 +80,7 @@ class MCJavaLevel(MCLevel):
 
         blockCount = h * l * w
         if blockCount > data.shape[0]:
-            raise ValueError, "Level file does not contain enough blocks! Try putting the size into the filename, e.g. server_level_{w}_{l}_{h}.dat".format(w=w, l=l, h=h);
+            raise ValueError, "Level file does not contain enough blocks! (size {s}) Try putting the size into the filename, e.g. server_level_{w}_{l}_{h}.dat".format(w=w, l=l, h=h, s=data.shape);
 
 
         blockOffset = data.shape[0] - blockCount

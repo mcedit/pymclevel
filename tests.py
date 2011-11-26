@@ -6,6 +6,7 @@ Created on Jul 23, 2011
 #from mclevel import fromFile, loadWorldNumber, BoundingBox
 #from infiniteworld import MCInfdevOldLevel
 #from schematic import MCSchematic
+#import errorreporting # annotate tracebacks with call arguments
 try:
     from pymclevel import *
 except ImportError:
@@ -23,7 +24,7 @@ import time
 
 import numpy
 from numpy import *
-#from pymclevel.infiniteworld import MCServerChunkGenerator
+from infiniteworld import MCServerChunkGenerator
 
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
@@ -169,7 +170,7 @@ class TestNBT(unittest.TestCase):
     
         n = newlevel["Map"]["Spawn"][0].name
         if(n): print "Named list element failed: %s" % n;
-    
+        
         """
         attempt to delete non-existent TAG_Compound elements
         this generates a KeyError like a python dict does.
@@ -186,9 +187,11 @@ class TestNBT(unittest.TestCase):
         d = join("testfiles", "TileTicks_chunks")
         files = [join(d, f) for f in os.listdir(d)]
         startTime = time.time()
-        for f in files[:20]:
-            n = nbt.load(f)
+        for i in range(20):
+            for f in files[:40]:
+                n = nbt.load(f)
         print "Duration: ", time.time() - startTime
+        #print "NBT: ", n
         
 class TestIndevLevel(unittest.TestCase):
     def setUp(self):
@@ -317,7 +320,16 @@ class TestAlphaLevel(unittest.TestCase):
 
         level.generateLights();
         level.saveInPlace();
-
+    
+    def testRecompress(self):
+        cx,cz = -3, -1
+        level = self.alphalevel.level
+        ch = level.getChunk(cx,cz)
+        ch.dirty = True
+        level.saveInPlace()
+        ch.Blocks
+        print ch.root_tag
+        
     def testPlayerSpawn(self):
         level = self.alphalevel.level
 

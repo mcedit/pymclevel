@@ -40,12 +40,8 @@ class MCSchematic (EntityLevel):
 
         if filename:
             self.filename = filename
-            if None is root_tag:
-                try:
-                    root_tag = nbt.load(filename)
-                except IOError, e:
-                    error(u"Failed to load file {0}".format (e))
-
+            if None is root_tag and os.path.exists(filename):
+                root_tag = nbt.load(filename)
         else:
             self.filename = None
 
@@ -120,16 +116,16 @@ class MCSchematic (EntityLevel):
 
 
         try:
-            self.root_tag = nbt.load(buf=fromstring(data, dtype='uint8'));
+            self.root_tag = nbt.load(buf=data);
         except Exception, e:
             error(u"Malformed NBT data in schematic file: {0} ({1})".format(self.filename, e))
-            raise ChunkMalformed, self.filename
+            raise ChunkMalformed, (e,self.filename), sys.exc_info()[2]
 
         try:
             self.shapeChunkData()
         except KeyError, e:
             error(u"Incorrect schematic format in file: {0} ({1})".format(self.filename, e))
-            raise ChunkMalformed, self.filename
+            raise ChunkMalformed, (e,self.filename), sys.exc_info()[2]
         pass
 
         self.dataIsPacked = True;

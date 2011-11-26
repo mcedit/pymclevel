@@ -255,8 +255,8 @@ def fromFile(filename, loadInfinite=True):
             compressed = False;
             unzippedData = rawdata
 
-    data = fromstring(unzippedData, dtype='uint8')
-
+    #data = 
+    data = unzippedData
     if MCJavaLevel._isDataLevel(data):
         info(u"Detected compressed Java-style level")
         lev = MCJavaLevel(filename, data);
@@ -265,15 +265,17 @@ def fromFile(filename, loadInfinite=True):
 
     try:
         root_tag = nbt.load(buf=data);
+        
     except Exception, e:
         info(u"Error during NBT load: {0!r}".format(e))
+        info(traceback.format_exc())
         info(u"Fallback: Detected compressed flat block array, yzx ordered ")
         try:
             lev = MCJavaLevel(filename, data);
             lev.compressed = compressed;
             return lev;
         except Exception, e2:
-            raise LoadingError, ("Multiple errors encountered", e, e2)
+            raise LoadingError, ("Multiple errors encountered", e, e2), sys.exc_info()[2]
 
     else:
         if(MCIndevLevel._isTagLevel(root_tag)):
@@ -288,8 +290,6 @@ def fromFile(filename, loadInfinite=True):
             return INVEditChest(root_tag=root_tag, filename=filename);
 
 
-    #it must be a plain array of blocks. see if MCJavaLevel handles it.
-
     raise IOError, "Cannot detect file type."
 
 
@@ -301,16 +301,3 @@ def loadWorldNumber(i):
     #deprecated
     filename = u"{0}{1}{2}{3}{1}".format(saveFileDir, os.sep, u"World", i)
     return fromFile(filename)
-#
-#from formats import *
-#from box import BoundingBox
-#
-####xxxxx CHECK RESULTS
-#
-##import cProfile   
-#if __name__=="__main__":
-#    #cProfile.run('testmain()');
-#    logging.basicConfig(format=u'%(levelname)s:%(message)s')
-#    logging.getLogger().level = logging.INFO
-#    
-#    testmain();
