@@ -143,10 +143,10 @@ this way.
         except Exception, e:
             print "Error downloading server: {0!r}".format(e)
             return
+        
+        self.cacheNewVersion(filename, allowDuplicate=False)
 
-        self.cacheNewVersion(filename)
-
-    def cacheNewVersion(self, filename):
+    def cacheNewVersion(self, filename, allowDuplicate=True):
         """ Finds the version number from the server jar at filename and copies
         it into the proper subfolder of the server jar cache folder"""
 
@@ -157,6 +157,8 @@ this way.
         i = 1
         newVersionDir = versionDir
         while os.path.exists(newVersionDir):
+            if not allowDuplicate: return
+            
             newVersionDir = versionDir + " (" + str(i) + ")"
             i += 1
 
