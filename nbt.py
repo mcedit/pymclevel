@@ -22,7 +22,7 @@ import collections
 import itertools
 import struct
 import gzip
-import StringIO;
+from cStringIO import StringIO;
 import os;
 from contextlib import closing
 from numpy import array, zeros, uint8, fromstring
@@ -98,7 +98,7 @@ class TAG_Value(object):
         self.write_value(buf)
 
     def saveGzipped(self, filename, compresslevel=1):
-        sio = StringIO.StringIO();
+        sio = StringIO();
         #atomic write
         try: os.rename(filename, filename + ".old");
         except Exception, e:
@@ -489,10 +489,8 @@ def gunzip(data):
     return zlib.decompress(data[10:], -zlib.MAX_WBITS)
 
 def loadFile(filename):
-    #sio = StringIO.StringIO();
     with file(filename, "rb") as f:
         inputdata = f.read()
-    #inputGz = gzip.GzipFile(filename, mode="rb")
     data = inputdata
     try:
         data = gunzip(inputdata)
@@ -535,6 +533,6 @@ def load(filename="", buf=None):
 
 
 
-__all__ = [a.__name__ for a in tag_classes.itervalues()] + ["loadFile", "gunzip"]
+__all__ = [a.__name__ for a in tag_classes.itervalues()] + ["load", "loadFile", "gunzip"]
 
 
