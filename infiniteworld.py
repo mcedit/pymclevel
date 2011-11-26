@@ -2989,7 +2989,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def setPlayerOrientation(self, yp, player="Player"):
         self.getPlayerTag(player)["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
 
-    def playerOrientation(self, player="Player"):
+    def getPlayerOrientation(self, player="Player"):
         """ returns (yaw, pitch) """
         yp = map(lambda x:x.value, self.getPlayerTag(player)["Rotation"]);
         y, p = yp;

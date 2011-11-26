@@ -115,7 +115,7 @@ class MCIndevLevel(EntityLevel):
             if x["id"].value == "LocalPlayer":
                 x["Rotation"] = TAG_List([TAG_Float(p) for p in yp])
 
-    def playerOrientation(self, player="Ignored"):
+    def getPlayerOrientation(self, player="Ignored"):
         """ returns (yaw, pitch) """
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":

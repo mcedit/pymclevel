@@ -556,7 +556,7 @@ class MCLevel(object):
     def setPlayerOrientation(self, yp, player="Player"):
         pass
 
-    def playerOrientation(self, player="Player"):
+    def getPlayerOrientation(self, player="Player"):
         return (-45., 0.)
 
 
