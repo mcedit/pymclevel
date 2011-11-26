@@ -428,7 +428,16 @@ class TestServerGen(unittest.TestCase):
     def setUp(self):
         #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
         self.alphalevel = TempLevel("PyTestWorld")
-
+    
+    def testCreate(self):
+        gen = MCServerChunkGenerator()
+        print "Version: ", gen.serverVersion
+        
+        def _testCreate(filename):
+            gen.createLevel(filename, BoundingBox((-128, 0, -128), (128, 128, 128)))
+            
+        t = TempLevel("ServerCreate", createFunc=_testCreate)
+        
     def testServerGen(self):
         gen = MCServerChunkGenerator()
         print "Version: ", gen.serverVersion
