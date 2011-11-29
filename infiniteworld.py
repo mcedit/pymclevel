@@ -468,11 +468,14 @@ class MCServerChunkGenerator(object):
         tempWorld, tempDir = self.tempWorldForLevel(level)
 
         startLength = len(chunks)
-        minRadius = 5
-        maxRadius = 20
+        minRadius = self.minRadius
+        maxRadius = self.maxRadius
+        chunks = set(chunks)
         
         while len(chunks):
+            length = len(chunks)
             centercx, centercz = chunks.pop()
+            chunks.add((centercx, centercz))
             #assume the generator always generates at least an 11x11 chunk square.
             centercx += minRadius
             centercz += minRadius
@@ -487,22 +490,25 @@ class MCServerChunkGenerator(object):
             for p in self.generateAtPositionIter(tempWorld, tempDir, centercx, centercz, simulate):
                 yield startLength - len(chunks), startLength, p
             
-            doneChunks = set()
             i=0
             for cx, cz in itertools.product(
                             xrange(centercx-maxRadius, centercx+maxRadius),
                             xrange(centercz-maxRadius, centercz+maxRadius)):
-                if (not level.containsChunk(cx,cz)
+                if level.containsChunk(cx,cz):
+                    chunks.discard((cx,cz))
+                elif ((cx,cz) in chunks
                     and tempWorld.containsChunk(cx, cz) 
-                    and tempWorld.getChunk(cx,cz).TerrainPopulated):
+                    and tempWorld.getChunk(cx,cz).TerrainPopulated
+                    ):
                     self.copyChunkAtPosition(tempWorld, level, cx, cz)
                     i+= 1
-                    yield startLength - len(chunks) + i, startLength
-                doneChunks.add((cx,cz))
+                    chunks.discard((cx,cz))
+                    yield startLength - len(chunks), startLength
             
-            chunks = [c for c in chunks if c not in doneChunks] #xxxxxxxx stupid
+            if length == len(chunks):
+                print "No chunks were generated. Aborting."
+                break
                 
-            
         level.saveInPlace()
 
             
