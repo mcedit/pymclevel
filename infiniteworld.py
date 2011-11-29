@@ -2305,7 +2305,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.Width = 0
         self.Height = 128 #subject to change?
         self.playerTagCache = {}
-
+        self.players = []
         if not os.path.exists(filename):
             if not create:
                 raise IOError, 'File not found'
@@ -2346,11 +2346,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             pass
 
         self.playersDir = os.path.join(self.worldDir, "players");
-
+        
         if os.path.isdir(self.playersDir):
             self.players = [x[:-4] for x in os.listdir(self.playersDir) if x.endswith(".dat")]
-
-
+        if "Player" in self.root_tag["Data"]: 
+            self.players.append("Player")
 
         self.preloadDimensions();
         #self.preloadChunkPositions();
@@ -2954,7 +2954,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 #multiplayer world, found this player
                 playerTag = self.playerTagCache.get(playerFilePath)
                 if playerTag is None:
-                    playerTag = nbt.loadFile(playerFilePath)
+                    playerTag = nbt.load(playerFilePath)
                     self.playerTagCache[playerFilePath] = playerTag
                 return playerTag
 
