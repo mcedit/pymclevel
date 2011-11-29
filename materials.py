@@ -149,14 +149,9 @@ class MCMaterials(object):
     
     def addYamlBlocksFromFile(self, filename):
         info(u"Looking for %s", filename)
-        moduleDirs = set((os.path.dirname(m.__file__) 
-                          for m in sys.modules.itervalues() 
-                          if m and hasattr(m, '__file__')))
-                          
-        filenames = ([join(p, filename) for p in sys.path] 
-                   + [filename] 
-                   + [os.path.join(f, filename) for f in moduleDirs])
-        root = os.environ.get("YAML_ROOT", None)
+        filenames = [filename] + [join(p, filename) for p in sys.path]
+                   
+        root = os.environ.get("YAML_ROOT", None) #used by MCEdit
         if root: filenames.insert(0, join(root, filename))
              
         for f in [fn for fn in filenames if os.path.exists(fn)]:
