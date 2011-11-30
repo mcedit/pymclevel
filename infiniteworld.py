@@ -3045,9 +3045,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 class MCAlphaDimension (MCInfdevOldLevel):
     def __init__(self, parentWorld, dimNo, create=False):
         filename = os.path.join(parentWorld.worldDir, "DIM" + str(int(dimNo)))
+        self.parentWorld = parentWorld;
         MCInfdevOldLevel.__init__(self, filename, create)
         self.dimNo = dimNo
-        self.parentWorld = parentWorld;
         self.filename = parentWorld.filename
         self.playersDir = parentWorld.playersDir;
         self.players = parentWorld.players
