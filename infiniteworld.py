@@ -513,6 +513,8 @@ class MCServerChunkGenerator(object):
 
             
     def runServer(self, startingDir):
+        if isinstance(startingDir, unicode): startingDir = startingDir.encode(sys.getfilesystemencoding())
+    
         return self._runServer(startingDir, self.serverJarFile)
 
     lowMemory = False
