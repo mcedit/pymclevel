@@ -262,6 +262,8 @@ class TAG_Compound(_TAG_Compound, collections.MutableMapping):
         _TAG_Compound.__init__(self, value, name)
     def save(self, filename = "", buf = None):
         save_root_tag(self, filename, buf)
+    def saveGzipped(self, filename, compresslevel=1):
+        save_root_tag(self, filename)
         
 cdef class TAG_Int_Array(TAG_Array):
     cdef char _tagID(self): return  TAG_INT_ARRAY
@@ -314,10 +316,10 @@ def load(buf=None, filename=None):
     return load_buffer(try_gunzip(buf))
 
 cdef class load_ctx:
-    cdef unsigned long offset
+    cdef size_t offset
     cdef char * buffer
-    cdef unsigned long size
-    cdef int require(self, int s) except -1:
+    cdef size_t size
+    cdef int require(self, size_t s) except -1:
         #print "Asked for ", s
         if s > self.size - self.offset:
             raise NBTFormatError, "NBT Stream too short. Asked for %d, only had %d" % (s, (self.size - self.offset))
