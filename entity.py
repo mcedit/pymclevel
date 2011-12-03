@@ -105,7 +105,7 @@ class TileEntity(object):
 
 
 class Entity(object):
-    knownIDs = [ "Creeper",
+    monsters = [ "Creeper",
                  "Skeleton",
                  "Spider",
                  "CaveSpider",
@@ -127,13 +127,29 @@ class Entity(object):
                  "Villager",
                  "LavaSlime",
                  ]
+    projectiles = ["Arrow", 
+                   "Snowball", 
+                   "Egg", 
+                   "Fireball", 
+                   "SmallFireball", 
+                   "ThrownEnderpearl",
+                   ]
+                   
+    items =    [ "Item",
+                 "XPOrb",
+                 "Painting",
+                 "EnderCrystal",
+                 ]
+    vehicles = [ "Minecart", "Boat" ]
+    tiles = ["PrimedTnt", "FallingSand"]
+    
     @classmethod
     def Create(cls, entityID, **kw):
         entityTag = TAG_Compound()
         entityTag[id] = TAG_String(entityID)
         Entity.setpos(entityTag, (0, 0, 0))
         return entityTag
-
+       
     @classmethod
     def pos(cls, tag):
         if Pos not in tag:
