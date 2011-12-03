@@ -353,6 +353,7 @@ class PocketChunk(InfdevChunk):
     Blocks = Data = SkyLight = BlockLight = None
     
     HeightMap = FakeChunk.HeightMap
+    
     Entities = TileEntities = property(lambda self: TAG_List())
     
     dirty = False
@@ -366,7 +367,8 @@ class PocketChunk(InfdevChunk):
         self.Blocks, data = data[:32768], data[32768:]
         self.Data, data = data[:16384], data[16384:]
         self.SkyLight, data = data[:16384], data[16384:]
-        self.BlockLight = data[:16384]
+        self.BlockLight, data = data[:16384], data[16384:]
+        self.DirtyColumns = data[:256]
         
         self.unpackChunkData()
         self.shapeChunkData()
@@ -399,7 +401,9 @@ class PocketChunk(InfdevChunk):
         self.SkyLight.shape = (chunkSize, chunkSize, self.world.Height)
         self.BlockLight.shape = (chunkSize, chunkSize, self.world.Height)
         self.Data.shape = (chunkSize, chunkSize, self.world.Height)
-    
+        self.DirtyColumns.shape = chunkSize, chunkSize
+        
+        
     zeros = "\0" * 256
     def _savedData(self):
         def packData(dataArray):
@@ -410,11 +414,13 @@ class PocketChunk(InfdevChunk):
             data[..., 1] |= data[..., 0]
             return array(data[:, :, :, 1])
 
-            
+        if self.dirty:
+            self.DirtyColumns[:] = 16
+                
         return "".join([self.Blocks.tostring(), 
                        packData(self.Data).tostring(),
                        packData(self.SkyLight).tostring(),
                        packData(self.BlockLight).tostring(),
-                       self.zeros, 
+                       self.DirtyColumns.tostring(),
                        ])
 
