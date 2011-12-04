@@ -415,7 +415,10 @@ class PocketChunk(InfdevChunk):
             return array(data[:, :, :, 1])
 
         if self.dirty:
-            self.DirtyColumns[:] = 16
+            #elements of DirtyColumns are bitfields. Each bit corresponds to a
+            #16-block segment of the column. We set all of the bits because
+            #we only track modifications at the chunk level.
+            self.DirtyColumns[:] = 255
                 
         return "".join([self.Blocks.tostring(), 
                        packData(self.Data).tostring(),
