@@ -558,6 +558,9 @@ def extractAnySchematic(level, box):
     
 def extractAnySchematicIter(level, box):
     try:
+        if box.chunkCount > MCInfdevOldLevel.decompressedChunkLimit:
+            raise MemoryError
+            
         for i in level.extractSchematicIter(box):
             yield i
     except MemoryError:
