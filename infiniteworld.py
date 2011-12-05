@@ -1067,7 +1067,10 @@ class MCRegionFile(object):
         if MCRegionFile.holdFileOpen:
             self._file.close()
             self._file = None
-
+    
+    def __del__(self):
+        self.close()
+        
     def __init__(self, path, regionCoords):
         self.path = path
         self.regionCoords = regionCoords
@@ -2363,9 +2366,6 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.preloadDimensions();
         #self.preloadChunkPositions();
     
-    def __del__(self):
-        self.close()
-        
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
 
         if create:
