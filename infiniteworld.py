@@ -13,6 +13,7 @@ import subprocess
 import sys
 import urllib
 import tempfile
+import weakref
 from os.path import join, dirname, basename
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
@@ -636,7 +637,16 @@ class InfdevChunk(EntityLevel):
         else:
             if not world.containsChunk(*chunkPosition):
                 raise ChunkNotPresent("Chunk {0} not found", self.chunkPosition)
-
+    
+    _world = None
+    @property
+    def world(self):
+        if self._world:
+            return self._world()
+    @world.setter
+    def world(self, val):
+        self._world = weakref.ref(val)
+        
     @property
     def materials(self):
         return self.world.materials
@@ -2231,6 +2241,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         return self.bounds.size
 
     def close(self):
+        """ Immediately closes any filehandles opened by the world, discards all
+        changes and unloads all chunks and region files. """
         for rf in (self.regionFiles or {}).values():
             rf.close();
 
@@ -3047,7 +3059,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 class MCAlphaDimension (MCInfdevOldLevel):
     def __init__(self, parentWorld, dimNo, create=False):
         filename = os.path.join(parentWorld.worldDir, "DIM" + str(int(dimNo)))
-        self.parentWorld = parentWorld;
+        self._parentWorld = weakref.ref(parentWorld);
         MCInfdevOldLevel.__init__(self, filename, create)
         self.dimNo = dimNo
         self.filename = parentWorld.filename
@@ -3055,6 +3067,13 @@ class MCAlphaDimension (MCInfdevOldLevel):
         self.players = parentWorld.players
         self.playerTagCache = parentWorld.playerTagCache
         
+    _parentWorld = None
+    @property
+    def parentWorld(self):
+        if self._parentWorld:
+            return self._parentWorld()
+        
+            
     @property
     def root_tag(self): return self.parentWorld.root_tag;
 
