@@ -6,6 +6,7 @@ from collections import defaultdict
 from pprint import pformat
 
 import sys, os
+import pkg_resources
 
 NOTEX = (0xB0, 0xE0)
 
@@ -148,24 +149,16 @@ class MCMaterials(object):
     
     
     def addYamlBlocksFromFile(self, filename):
-        info(u"Looking for %s", filename)
-        filenames = [filename] + [join(p, filename) for p in sys.path]
-                   
-        root = os.environ.get("YAML_ROOT", None) #used by MCEdit
-        if root: filenames.insert(0, join(root, filename))
-             
-        for f in [fn for fn in filenames if os.path.exists(fn)]:
-            info(u"  Looking in %s", f)
-            try:
-                info(u"Loading block info from %s", f)
-                blockyaml = yaml.load(open(f))
-                self.addYamlBlocks(blockyaml)
-                
-                break;
-            except Exception, e:
-                warn(u"Exception while loading block info from %s: %s", f, e)
-                traceback.print_exc()
-                
+        f = pkg_resources.resource_stream(__name__, filename)
+        try:
+            info(u"Loading block info from %s", f)
+            blockyaml = yaml.load(f)
+            self.addYamlBlocks(blockyaml)
+ 
+        except Exception, e:
+            warn(u"Exception while loading block info from %s: %s", f, e)
+            traceback.print_exc()
+            
     def addYamlBlocks(self, blockyaml):
         self.yamlDatas.append(blockyaml)
         for block in blockyaml['blocks']:
