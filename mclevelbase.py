@@ -17,7 +17,7 @@ import logging
 
 import nbt
 from nbt import *
-from box import BoundingBox
+from box import BoundingBox, FloatBox
 from materials import *
 import blockrotation
 from entity import *
