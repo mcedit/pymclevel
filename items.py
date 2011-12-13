@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 logger = logging.getLogger(__file__)
 
@@ -372,13 +373,20 @@ class Items (object):
                 items_txt = self.items_txt
 
         self.itemtypes = {};
-
+        self.itemgroups = []
+        
         for line in items_txt.split("\n"):
             try:
                 line = line.strip()
                 if len(line) == 0: continue
                 if line[0] == "#": continue;
-                if line[0] == "~": continue; #groups
+                if line[0] == "~": 
+                    fields = line.split()
+                    name, icon, items = fields[1:4]
+                    items = items.split(",")
+                    self.itemgroups.append((name, icon, items))
+                    continue;
+                    
                 stacksize = 64
                 damagevalue = None
                 maxdamage = 0
