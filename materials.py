@@ -6,7 +6,6 @@ from collections import defaultdict
 from pprint import pformat
 
 import sys, os
-import pkg_resources
 
 NOTEX = (0xB0, 0xE0)
 
@@ -149,7 +148,13 @@ class MCMaterials(object):
     
     
     def addYamlBlocksFromFile(self, filename):
-        f = pkg_resources.resource_stream(__name__, filename)
+        try:
+            import pkg_resources
+
+            f = pkg_resources.resource_stream(__name__, filename)
+        except (ImportError, IOError):
+            root = os.environ.get("PYMCLEVEL_YAML_ROOT", "pymclevel") #fall back to cwd as last resort
+            f = file(join(root, filename))
         try:
             info(u"Loading block info from %s", f)
             blockyaml = yaml.load(f)
