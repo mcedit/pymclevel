@@ -38,7 +38,11 @@ SizeOnDisk = 'SizeOnDisk' #maybe update this?
 Time = 'Time'
 Player = 'Player'
 
+DIM_NETHER = -1
+DIM_END = 1
+
 __all__ = ["ZeroChunk", "InfdevChunk", "ChunkedLevelMixin", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
+
 
 import re
 
@@ -853,7 +857,10 @@ class InfdevChunk(EntityLevel):
         return self.isLoaded() and self.root_tag == None
 
     def generateHeightMap(self):
-        extractLightMap(self.materials, self.Blocks, self.HeightMap)
+        if self.world.dimNo == DIM_NETHER:
+            self.HeightMap[:] = 0
+        else:
+            extractLightMap(self.materials, self.Blocks, self.HeightMap)
          
     def chunkChanged(self, calcLighting=True):
         """ You are required to call this function after you are done modifying
