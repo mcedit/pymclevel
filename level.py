@@ -15,17 +15,35 @@ warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 def extractLightMap(materials, blocks, heightMap = None):
     """Computes the HeightMap array for a chunk, which stores the lowest 
-    y-coordinate of each column where the sunlight is still at full strength."""
+    y-coordinate of each column where the sunlight is still at full strength.
+    The HeightMap array is indexed z,x contrary to the blocks array which is x,z,y"""
     
+    lightAbsorption = materials.lightAbsorption[blocks]
+    heightMap = extractHeights(lightAbsorption, heightMap)
+    heightMap.swapaxes(0, 1)
+
+def extractHeights(array, heightMap = None):
+    """ Given an array of bytes shaped (x, z, y), return the coordinates of the highest
+    non-zero value in each y-column into heightMap
+    """
+
+    #The fastest way I've found to do this is to make a boolean array with >0,
+    # then turn it upside down with ::-1 and use argmax to get the _first_ nonzero
+    # from each column.
+
     if heightMap is None:
         heightMap = zeros((16, 16), 'uint8')
-        
-    heightMap[:] = 0;
 
-    lightAbsorption = materials.lightAbsorption[blocks]
-    axes = lightAbsorption.nonzero()
-    heightMap[axes[1], axes[0]] = axes[2]; #assumes the y-indices come out in increasing order
-    heightMap[heightMap<255] += 1;
+
+    heights = argmax((array>0)[..., ::-1], 2)
+    heights = array.shape[2] - heights
+
+    #if the entire column is air, argmax finds the first air block and the result is a top height column
+    #top height columns won't ever have air in the top block so we can find air columns by checking for both
+    heights[(array[..., -1]==0) & (heights == array.shape[2])] = 0
+
+    heightMap[:] = heights.swapaxes(0, 1)
+
     return heightMap
 
 def getSlices(box, height):
