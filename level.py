@@ -21,6 +21,7 @@ def extractLightMap(materials, blocks, heightMap = None):
     lightAbsorption = materials.lightAbsorption[blocks]
     heightMap = extractHeights(lightAbsorption, heightMap)
     heightMap.swapaxes(0, 1)
+    return heightMap
 
 def extractHeights(array, heightMap = None):
     """ Given an array of bytes shaped (x, z, y), return the coordinates of the highest
