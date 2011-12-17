@@ -268,13 +268,28 @@ class MCLevel(object):
             yield (chunk, slices, (xPos * 16 - x, 0, zPos * 16 - z))
 
     def _getSlices(self, box):
-        return getSlices(box, self.Height)
+        if box == self.bounds:
+            info("All chunks selected! Selecting %s chunks instead of %s", self.chunkCount, box.chunkCount)
+            y = box.miny
+            slices = slice(0, 16), slice(0, 16), slice(0, box.maxy)
+
+            def getAllSlices():
+                for cPos in self.allChunks:
+                    x, z = cPos
+                    x *= 16
+                    z *= 16
+                    x -= box.minx
+                    z -= box.minz
+                    yield cPos, slices, (x, y, z)
+            return getAllSlices()
+        else:
+            return getSlices(box, self.Height)
     
     def getChunkSlices(self, box):
-        return ((self.getChunk(*cPos), slices, point) 
-                for cPos, slices, point in getSlices(box, self.Height)
+        return ((self.getChunk(*cPos), slices, point)
+                for cPos, slices, point in self._getSlices(box)
                 if self.containsChunk(*cPos))
-        
+
 
     def containsPoint(self, x, y, z):
         return (x >= 0 and x < self.Width and
