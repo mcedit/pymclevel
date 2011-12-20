@@ -87,6 +87,7 @@ Spawn = "Spawn"
 
 __all__ = ["MCIndevLevel"]
 
+from level import EntityLevel, extractLightMap
 
 class MCIndevLevel(EntityLevel):
     """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis 

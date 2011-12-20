@@ -298,6 +298,7 @@ class PocketChunksFile(object):
         return coords
         
 from infiniteworld import InfdevChunk, ChunkedLevelMixin
+from level import MCLevel
 
 class PocketWorld(ChunkedLevelMixin, MCLevel):
     Height = 128

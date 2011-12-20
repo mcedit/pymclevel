@@ -17,6 +17,8 @@ from os.path import join, dirname, basename
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
+from level import MCLevel, EntityLevel, extractLightMap
+
 #infinite
 Level = 'Level'
 BlockData = 'BlockData'
