@@ -13,17 +13,25 @@ import materials
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
-def extractLightMap(materials, blocks, heightMap = None):
+def computeChunkHeightMap(materials, blocks, HeightMap = None):
     """Computes the HeightMap array for a chunk, which stores the lowest 
     y-coordinate of each column where the sunlight is still at full strength.
-    The HeightMap array is indexed z,x contrary to the blocks array which is x,z,y"""
+    The HeightMap array is indexed z,x contrary to the blocks array which is x,z,y.
+
+    If HeightMap is passed, fills it with the result and returns it. Otherwise, returns a
+    new array.
+    """
     
     lightAbsorption = materials.lightAbsorption[blocks]
-    heightMap = extractHeights(lightAbsorption, heightMap)
-    heightMap.swapaxes(0, 1)
-    return heightMap
+    heights = extractHeights(lightAbsorption)
+    heights = heights.swapaxes(0, 1)
+    if HeightMap is None:
+        return heights
+    else:
+        HeightMap[:] = heights
+        return HeightMap
 
-def extractHeights(array, heightMap = None):
+def extractHeights(array):
     """ Given an array of bytes shaped (x, z, y), return the coordinates of the highest
     non-zero value in each y-column into heightMap
     """
@@ -32,8 +40,8 @@ def extractHeights(array, heightMap = None):
     # then turn it upside down with ::-1 and use argmax to get the _first_ nonzero
     # from each column.
 
-    if heightMap is None:
-        heightMap = zeros((16, 16), 'uint8')
+    w, h = array.shape[:2]
+    heightMap = zeros((w, h), 'uint8')
 
 
     heights = argmax((array>0)[..., ::-1], 2)
@@ -43,7 +51,7 @@ def extractHeights(array, heightMap = None):
     #top height columns won't ever have air in the top block so we can find air columns by checking for both
     heights[(array[..., -1]==0) & (heights == array.shape[2])] = 0
 
-    heightMap[:] = heights.swapaxes(0, 1)
+    heightMap[:] = heights
 
     return heightMap
 
@@ -776,6 +784,6 @@ class FakeChunk(EntityLevel):
         if hasattr(self, "_heightMap"):
             return self._heightMap
             
-        self._heightMap = extractLightMap(self.materials, self.Blocks)
+        self._heightMap = computeChunkHeightMap(self.materials, self.Blocks)
         return self._heightMap
         

@@ -17,7 +17,7 @@ from os.path import join, dirname, basename
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
-from level import MCLevel, EntityLevel, extractLightMap
+from level import MCLevel, EntityLevel, computeChunkHeightMap
 
 #infinite
 Level = 'Level'
@@ -862,7 +862,7 @@ class InfdevChunk(EntityLevel):
         if self.world.dimNo == DIM_NETHER:
             self.HeightMap[:] = 0
         else:
-            extractLightMap(self.materials, self.Blocks, self.HeightMap)
+            computeChunkHeightMap(self.materials, self.Blocks, self.HeightMap)
          
     def chunkChanged(self, calcLighting=True):
         """ You are required to call this function after you are done modifying
