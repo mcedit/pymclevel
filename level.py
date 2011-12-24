@@ -772,13 +772,14 @@ class EntityLevel(MCLevel):
 
         return self._fakeEntities[cx, cz]
 
-class FakeChunk(EntityLevel):
+class ChunkBase(EntityLevel):
     def load(self):pass
     def compress(self):pass
-    def __init__(self):pass
     def chunkChanged(self):pass
     @property
     def materials(self): return self.world.materials
+
+class FakeChunk(ChunkBase):
     @property
     def HeightMap(self):
         if hasattr(self, "_heightMap"):

@@ -585,11 +585,11 @@ def ZeroChunk(height=512):
     if z is None:
         z = _zeros[height] = _ZeroChunk(height)
     return z
-    
-class _ZeroChunk(object):
+
+from level import ChunkBase
+
+class _ZeroChunk(ChunkBase):
     " a placebo for neighboring-chunk routines "
-    def compress(self): pass
-    def load(self): pass
     def __init__(self, height=512):
         zeroChunk = zeros((16, 16, height), uint8)
         whiteLight = zeroChunk + 15;
@@ -598,7 +598,8 @@ class _ZeroChunk(object):
         self.SkyLight = whiteLight
         self.Data = zeroChunk
 
-class InfdevChunk(EntityLevel):
+
+class InfdevChunk(ChunkBase):
     """ This is a 16x16xH chunk in an (infinite) world.
     The properties Blocks, Data, SkyLight, BlockLight, and Heightmap 
     are ndarrays containing the respective blocks in the chunk file.

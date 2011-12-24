@@ -5,6 +5,7 @@ Created on Jul 22, 2011
 '''
 __all__ = ["MCJavaLevel"]
 from mclevelbase import *
+from level import MCLevel
 
 import re
 

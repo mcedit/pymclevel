@@ -297,7 +297,7 @@ class PocketChunksFile(object):
         coords = ((i % 32, i // 32) for i in indexes)
         return coords
         
-from infiniteworld import InfdevChunk, ChunkedLevelMixin
+from infiniteworld import ChunkBase, ChunkedLevelMixin
 from level import MCLevel
 
 class PocketWorld(ChunkedLevelMixin, MCLevel):
@@ -350,7 +350,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
         if cx>31 or cz>31 or cx < 0 or cz < 0: return False
         return self.chunkFile.getOffset(cx,cz) != 0
         
-class PocketChunk(InfdevChunk):
+class PocketChunk(ChunkBase):
     Blocks = Data = SkyLight = BlockLight = None
     
     HeightMap = FakeChunk.HeightMap
