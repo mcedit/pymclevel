@@ -1033,7 +1033,8 @@ class InfdevChunk(ChunkBase):
         """True or False. If False, the game will populate the chunk with 
         ores and vegetation on next load"""
         self.root_tag[Level]["TerrainPopulated"].value = val;
-
+        self.dirty = True
+        
 class dequeset(object):
     def __init__(self):
         self.deque = deque();
