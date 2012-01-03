@@ -379,6 +379,9 @@ class PocketChunk(ChunkBase):
     def load(self): pass
     def decompress(self): pass
     def compress(self): pass
+
+    @property
+    def TerrainPopulated(self): return True;
     
     def unpackChunkData(self):
         for key in ('SkyLight', 'BlockLight', 'Data'):
