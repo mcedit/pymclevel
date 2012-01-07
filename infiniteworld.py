@@ -623,8 +623,6 @@ class InfdevChunk(ChunkBase):
         else:
             return self.chunkFilename
             
-    dirty = False;
-    needsLighting = False
     compressedTag = None
     root_tag = None
             

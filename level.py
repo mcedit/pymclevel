@@ -773,6 +773,9 @@ class EntityLevel(MCLevel):
         return self._fakeEntities[cx, cz]
 
 class ChunkBase(EntityLevel):
+    dirty = False
+    needsLighting = False
+
     def load(self):pass
     def compress(self):pass
     def chunkChanged(self):pass
