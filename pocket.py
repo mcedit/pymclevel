@@ -297,8 +297,8 @@ class PocketChunksFile(object):
         coords = ((i % 32, i // 32) for i in indexes)
         return coords
         
-from infiniteworld import ChunkBase, ChunkedLevelMixin
-from level import MCLevel
+from infiniteworld import ChunkedLevelMixin
+from level import MCLevel, LightedChunk
 
 class PocketWorld(ChunkedLevelMixin, MCLevel):
     Height = 128
@@ -342,15 +342,15 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
         
     def saveInPlace(self):
         for chunk in self._loadedChunks.itervalues():
-            #if chunk.dirty:
+            if chunk.dirty:
                 self.chunkFile.saveChunk(chunk)
-                #chunk.dirty = False
+                chunk.dirty = False
             
     def containsChunk(self, cx, cz):
         if cx>31 or cz>31 or cx < 0 or cz < 0: return False
         return self.chunkFile.getOffset(cx,cz) != 0
         
-class PocketChunk(ChunkBase):
+class PocketChunk(LightedChunk):
     Blocks = Data = SkyLight = BlockLight = None
     
     HeightMap = FakeChunk.HeightMap
@@ -403,9 +403,7 @@ class PocketChunk(ChunkBase):
         self.BlockLight.shape = (chunkSize, chunkSize, self.world.Height)
         self.Data.shape = (chunkSize, chunkSize, self.world.Height)
         self.DirtyColumns.shape = chunkSize, chunkSize
-        
-        
-    zeros = "\0" * 256
+
     def _savedData(self):
         def packData(dataArray):
             assert dataArray.shape[2] == self.world.Height;

@@ -17,7 +17,7 @@ from os.path import join, dirname, basename
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
-from level import MCLevel, EntityLevel, computeChunkHeightMap
+from level import LightedChunk, EntityLevel, computeChunkHeightMap
 
 #infinite
 Level = 'Level'
@@ -599,7 +599,7 @@ class _ZeroChunk(ChunkBase):
         self.Data = zeroChunk
 
 
-class InfdevChunk(ChunkBase):
+class InfdevChunk(LightedChunk):
     """ This is a 16x16xH chunk in an (infinite) world.
     The properties Blocks, Data, SkyLight, BlockLight, and Heightmap 
     are ndarrays containing the respective blocks in the chunk file.
@@ -862,42 +862,6 @@ class InfdevChunk(ChunkBase):
             self.HeightMap[:] = 0
         else:
             computeChunkHeightMap(self.materials, self.Blocks, self.HeightMap)
-         
-    def chunkChanged(self, calcLighting=True):
-        """ You are required to call this function after you are done modifying
-        the chunk. Pass False for calcLighting if you know your changes will 
-        not change any lights."""
-
-        if not self.isLoaded(): return;
-
-        self.dirty = True;
-        self.needsLighting = calcLighting or self.needsLighting;
-        self.generateHeightMap();
-        if calcLighting:
-            self.genFastLights()
-
-    def genFastLights(self):
-        self.SkyLight[:] = 0;
-        if self.world.dimNo in (-1, 1):
-            return #no light in nether or the end
-
-        blocks = self.Blocks;
-        la = self.world.materials.lightAbsorption
-        skylight = self.SkyLight;
-        heightmap = self.HeightMap;
-
-        for x, z in itertools.product(xrange(16), xrange(16)):
-
-            skylight[x, z, heightmap[z, x]:] = 15
-            lv = 15;
-            for y in reversed(range(heightmap[z, x])):
-                lv -= (la[blocks[x, z, y]] or 1)
-
-                if lv <= 0:
-                    break;
-                skylight[x, z, y] = lv;
-
-
 
     def unpackChunkData(self):
         if not self.dataIsPacked: return

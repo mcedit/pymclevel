@@ -775,10 +775,13 @@ class EntityLevel(MCLevel):
 class ChunkBase(EntityLevel):
     dirty = False
     needsLighting = False
+    Blocks = Data = SkyLight = BlockLight = HeightMap = NotImplemented #override these!
 
     def load(self):pass
     def compress(self):pass
-    def chunkChanged(self):pass
+    def chunkChanged(self, needsLighting = True):
+        self.dirty = True
+        self.needsLighting = needsLighting or self.needsLighting
     @property
     def materials(self): return self.world.materials
 
@@ -790,4 +793,44 @@ class FakeChunk(ChunkBase):
             
         self._heightMap = computeChunkHeightMap(self.materials, self.Blocks)
         return self._heightMap
-        
+
+class LightedChunk(ChunkBase):
+    def isLoaded(self): return True
+
+    def generateHeightMap(self):
+        computeChunkHeightMap(self.materials, self.Blocks, self.HeightMap)
+
+    def chunkChanged(self, calcLighting=True):
+        """ You are required to call this function after you are done modifying
+        the chunk. Pass False for calcLighting if you know your changes will
+        not change any lights."""
+
+        if not self.isLoaded(): return;
+
+        self.dirty = True;
+        self.needsLighting = calcLighting or self.needsLighting;
+        self.generateHeightMap();
+        if calcLighting:
+            self.genFastLights()
+
+    def genFastLights(self):
+        self.SkyLight[:] = 0;
+        if self.world.dimNo in (-1, 1):
+            return #no light in nether or the end
+
+        blocks = self.Blocks;
+        la = self.world.materials.lightAbsorption
+        skylight = self.SkyLight;
+        heightmap = self.HeightMap;
+
+        for x, z in itertools.product(xrange(16), xrange(16)):
+
+            skylight[x, z, heightmap[z, x]:] = 15
+            lv = 15;
+            for y in reversed(range(heightmap[z, x])):
+                lv -= (la[blocks[x, z, y]] or 1)
+
+                if lv <= 0:
+                    break;
+                skylight[x, z, y] = lv;
+
