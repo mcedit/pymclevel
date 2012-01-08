@@ -26,7 +26,7 @@ def computeChunkHeightMap(materials, blocks, HeightMap = None):
     heights = extractHeights(lightAbsorption)
     heights = heights.swapaxes(0, 1)
     if HeightMap is None:
-        return heights
+        return heights.astype('uint8')
     else:
         HeightMap[:] = heights
         return HeightMap
@@ -41,7 +41,7 @@ def extractHeights(array):
     # from each column.
 
     w, h = array.shape[:2]
-    heightMap = zeros((w, h), 'uint8')
+    heightMap = zeros((w, h), 'uint16')
 
 
     heights = argmax((array>0)[..., ::-1], 2)
