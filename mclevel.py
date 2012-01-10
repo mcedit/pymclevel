@@ -205,18 +205,18 @@ def fromFile(filename, loadInfinite=True):
     if not os.path.exists(filename):
         raise IOError, "File not found: " + filename
 
-    if (ZipSchematic._isLevel(filename)):
+    if ZipSchematic._isLevel(filename):
         info("Zipfile found, attempting zipped infinite level")
         lev = ZipSchematic(filename);
         info("Detected zipped Infdev level")
         return lev
 
-    if (PocketWorld._isLevel(filename)):
+    if PocketWorld._isLevel(filename):
         return PocketWorld(filename)
 
-    if (MCInfdevOldLevel._isLevel(filename)):
+    if MCInfdevOldLevel._isLevel(filename):
         info(u"Detected Infdev level.dat")
-        if (loadInfinite):
+        if loadInfinite:
             return MCInfdevOldLevel(filename=filename);
         else:
             raise ValueError, "Asked to load {0} which is an infinite level, loadInfinite was False".format(os.path.basename(filename));
@@ -278,14 +278,14 @@ def fromFile(filename, loadInfinite=True):
             raise LoadingError, ("Multiple errors encountered", e, e2), sys.exc_info()[2]
 
     else:
-        if(MCIndevLevel._isTagLevel(root_tag)):
+        if MCIndevLevel._isTagLevel(root_tag):
             info(u"Detected Indev .mclevel")
             return MCIndevLevel(root_tag, filename)
-        if(MCSchematic._isTagLevel(root_tag)):
+        if MCSchematic._isTagLevel(root_tag):
             info(u"Detected Schematic.")
             return MCSchematic(root_tag=root_tag, filename=filename)
 
-        if (INVEditChest._isTagLevel(root_tag)):
+        if INVEditChest._isTagLevel(root_tag):
             info(u"Detected INVEdit inventory file")
             return INVEditChest(root_tag=root_tag, filename=filename);
 

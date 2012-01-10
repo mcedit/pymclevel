@@ -177,7 +177,7 @@ class MCLevel(object):
     @property
     def size(self):
         "Returns the level's dimensions as a tuple (X,Y,Z)"
-        return (self.Width, self.Height, self.Length)
+        return self.Width, self.Height, self.Length
 
     @property
     def bounds(self):
@@ -230,7 +230,7 @@ class MCLevel(object):
 
     def _getFakeChunkEntities(self, cx, cz):
         """Returns Entities, TileEntities"""
-        return ([], [])
+        return [], []
 
     def getChunk(self, cx, cz):
         """Synthesize a FakeChunk object representing the chunk at the given
@@ -453,7 +453,7 @@ class MCLevel(object):
         mask = slice(None, None)
 
         if not (blocksToCopy is None):
-            typemask = zeros((256) , dtype='bool')
+            typemask = zeros(256, dtype='bool')
             typemask[blocksToCopy] = True;
             mask = typemask[convertedSourceBlocks]
 
@@ -468,7 +468,7 @@ class MCLevel(object):
 
     def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         if blocksToCopy is not None:
-            typemask = zeros((256) , dtype='bool')
+            typemask = zeros(256, dtype='bool')
             typemask[blocksToCopy] = True;
         
         
@@ -564,7 +564,7 @@ class MCLevel(object):
 
         info(u"Copying {0} blocks from {1} to {2}" .format (sourceBox.volume, sourceBox, destinationPoint))
 
-        if not (sourceLevel.isInfinite):
+        if not sourceLevel.isInfinite:
             self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
         else:
             for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy):
@@ -584,7 +584,7 @@ class MCLevel(object):
         pass;
 
     def getPlayerPosition(self, player="Player"):
-        return (8, self.Height * 0.75, 8);
+        return 8, self.Height * 0.75, 8;
 
     def getPlayerDimension(self, player="Player"): return 0;
     def setPlayerDimension(self, d, player="Player"): return;
@@ -599,7 +599,7 @@ class MCLevel(object):
         pass
 
     def getPlayerOrientation(self, player="Player"):
-        return (-45., 0.)
+        return -45., 0.
 
 
     # --- Dummy Lighting Methods ---

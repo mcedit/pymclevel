@@ -207,7 +207,7 @@ class PocketChunksFile(object):
         sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1;
         if sectorsNeeded >= 256: return
 
-        if (sectorNumber != 0 and sectorsAllocated >= sectorsNeeded):
+        if sectorNumber != 0 and sectorsAllocated >= sectorsNeeded:
             debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
             self.writeSector(sectorNumber, data, format)
         else:

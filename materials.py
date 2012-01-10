@@ -804,7 +804,7 @@ def conversionFunc(destMats, sourceMats):
     return func
 
 def convertBlocks(destMats, sourceMats, blocks, blockData):
-    if sourceMats == destMats: return (blocks, blockData)
+    if sourceMats == destMats: return blocks, blockData
     
     return conversionFunc(destMats, sourceMats)(blocks, blockData)
     

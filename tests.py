@@ -169,7 +169,7 @@ class TestNBT(unittest.TestCase):
         newlevel = nbt.load(buf=sio.getvalue())
     
         n = newlevel["Map"]["Spawn"][0].name
-        if(n): print "Named list element failed: %s" % n;
+        if n: print "Named list element failed: %s" % n;
         
         """
         attempt to delete non-existent TAG_Compound elements

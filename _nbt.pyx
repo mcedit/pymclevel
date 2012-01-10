@@ -84,7 +84,7 @@ cdef class TAG_Value:
             self._name = val
     
     def __reduce__(self):
-        return (self.__class__, (self.value, self._name))
+        return self.__class__, (self.value, self._name)
         
 cdef class TAG_Number(TAG_Value):
     pass
@@ -280,7 +280,7 @@ cdef class TAG_Short_Array(TAG_Array):
 
 #cdef int needswap = (sys.byteorder == "little")
 cdef swab(void * vbuf, int nbytes):
-    cdef unsigned char * buf = <unsigned char *>(vbuf)
+    cdef unsigned char * buf = <unsigned char *> vbuf
     #print "Swapping ", nbytes, "bytes"
     #for i in range(nbytes): print buf[i],
     #print "to", 

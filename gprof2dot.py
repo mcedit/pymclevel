@@ -808,7 +808,7 @@ class GprofParser(Parser):
                 value = int(value)
             elif self._float_re.match(value):
                 value = float(value)
-            attrs[name] = (value)
+            attrs[name] = value
         return Struct(attrs)
 
     _cg_header_re = re.compile(
@@ -2222,7 +2222,7 @@ class Theme:
         g **= self.gamma
         b **= self.gamma
 
-        return (r, g, b)
+        return r, g, b
 
     def _hue_to_rgb(self, m1, m2, h):
         if h < 0.0:

@@ -187,7 +187,7 @@ class mce(object):
 
                     except ValueError:
                         raise UsageError, "Error decoding point input (expected a number)."
-                return (x, y, z)
+                return x, y, z
 
         except IndexError:
             raise UsageError, "Error decoding point input (expected more values)."
@@ -207,7 +207,7 @@ class mce(object):
         except IndexError:
             raise UsageError, "Error decoding point input (expected more values)."
 
-        return (x, y, z)
+        return x, y, z
 
     def readBlockInfo(self, command):
         keyword = command.pop(0)
@@ -638,7 +638,7 @@ class mce(object):
     """
         level = self.level
         assert(isinstance(level, mclevel.MCInfdevOldLevel))
-        assert(level.version)
+        assert level.version
         def getFreeSectors(rf):
             runs = []
             start = None

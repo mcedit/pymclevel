@@ -248,7 +248,7 @@ class MCIndevLevel(EntityLevel):
 
     def decodePos(self, v):
         b = 10;
-        m = (1 << b) - 1; return (v & m, (v >> b) & m, (v >> (2 * b)))
+        m = (1 << b) - 1; return v & m, (v >> b) & m, (v >> (2 * b))
     def encodePos(self, x, y, z):
         b = 10;
         return x + (y << b) + (z << (2 * b))

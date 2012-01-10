@@ -842,7 +842,7 @@ class Scanner(object):
                     "expected a digit or ' ', but found %r"
                     % self.peek().encode('utf-8'),
                     self.get_mark())
-        return (major, minor)
+        return major, minor
 
     def scan_yaml_directive_number(self, start_mark):
         # See the specification for details.
@@ -866,7 +866,7 @@ class Scanner(object):
         while self.peek() == u' ':
             self.forward()
         prefix = self.scan_tag_directive_prefix(start_mark)
-        return (handle, prefix)
+        return handle, prefix
 
     def scan_tag_directive_handle(self, start_mark):
         # See the specification for details.

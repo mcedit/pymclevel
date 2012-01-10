@@ -141,7 +141,7 @@ class Emitter(object):
                 level = -1
             if level < 0:
                 return False
-        return (len(self.events) < count+1)
+        return len(self.events) < count+1
 
     def increase_indent(self, flow=False, indentless=False):
         self.indents.append(self.indent)

@@ -82,13 +82,13 @@ class TAG_Value(object):
     def write_tag(self, buf):
         buf.write(struct.pack(TAGfmt, self.tag))
     def write_name(self, buf):
-        if(self.name != None):
+        if self.name != None:
             TAG_String(self.name).write_value(buf)
     def write_value(self, buf):
         buf.write(struct.pack(self.fmt, self.value))
 
     def save(self, filename="", buf=None):
-        if(filename):
+        if filename:
             self.saveGzipped(filename);
             return;
         "Save the tagged element to a file."
@@ -313,7 +313,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         while data_cursor < len(data):
             tag_type = data[data_cursor];
             data_cursor += 1
-            if(tag_type == 0):
+            if tag_type == 0:
                 break
 
             tag, data_cursor = load_named(data, data_cursor, tag_type)
@@ -358,7 +358,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         elif isinstance(v, basestring):
             v = TAG_String(v)
 
-        if not (v.__class__ in tag_classes.values()): raise TypeError("Invalid type %s for TAG_Compound" % (v.__class__))
+        if not (v.__class__ in tag_classes.values()): raise TypeError("Invalid type %s for TAG_Compound" % v.__class__)
         """remove any items already named "k".    """
         olditems = filter(lambda x:x.name == k, self.value)
         for i in olditems: self.value.remove(i)
@@ -429,7 +429,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         self.name = name
         self.list_type = list_type.tag
 
-        if(len(value)):
+        if len(value):
             self.list_type = value[0].tag;
             value = filter(lambda x:x.__class__ == value[0].__class__, value)
 

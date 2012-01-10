@@ -30,30 +30,30 @@ class MCJavaLevel(MCLevel):
 
 
     def guessSize(self, data):
-        if(data.shape[0] <= (32 * 32 * 64) * 2):
+        if data.shape[0] <= (32 * 32 * 64) * 2:
             warn(u"Can't guess the size of a {0} byte level".format(data.shape[0]))
             raise IOError, "MCJavaLevel attempted for smaller than 64 blocks cubed"
-        if(data.shape[0] > (32 * 32 * 64) * 2):
+        if data.shape[0] > (32 * 32 * 64) * 2:
             Width = 64
             Length = 64
             Height = 64
-        if(data.shape[0] > (64 * 64 * 64) * 2):
+        if data.shape[0] > (64 * 64 * 64) * 2:
             Width = 128
             Length = 128
             Height = 64
-        if(data.shape[0] > (128 * 128 * 64) * 2):
+        if data.shape[0] > (128 * 128 * 64) * 2:
             Width = 256
             Length = 256
             Height = 64
-        if(data.shape[0] > (256 * 256 * 64) * 2): #could also be 256*256*256
+        if data.shape[0] > (256 * 256 * 64) * 2: #could also be 256*256*256
             Width = 512
             Length = 512
             Height = 64
-        if(data.shape[0] > 512 * 512 * 64 * 2): # just to load shadowmarch castle
+        if data.shape[0] > 512 * 512 * 64 * 2: # just to load shadowmarch castle
             Width = 512
             Length = 512
             Height = 256
-        return (Width, Length, Height)
+        return Width, Length, Height
 
     @classmethod
     def _isDataLevel(cls, data):
@@ -89,7 +89,7 @@ class MCJavaLevel(MCLevel):
         blocks = data[blockOffset:blockOffset + blockCount]
 
         maxBlockType = 64 #maximum allowed in classic
-        while(max(blocks[-4096:]) > maxBlockType):
+        while max(blocks[-4096:]) > maxBlockType:
             #guess the block array by starting at the end of the file
             #and sliding the blockCount-sized window back until it
             #looks like every block has a valid blockNumber

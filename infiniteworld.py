@@ -181,7 +181,7 @@ this way.
         jf = self.jarfileForVersion(v)
         with file(jf, "rb") as f:
             import hashlib
-            return (hashlib.md5(f.read()).hexdigest())
+            return hashlib.md5(f.read()).hexdigest()
 
     broken_versions = ["Beta 1.9 Prerelease {0}".format(i) for i in (1,2,3)]
     
@@ -356,7 +356,7 @@ class MCServerChunkGenerator(object):
         properties["server-port"] = int(32767 + random.random() * 32700)
         saveProperties(propsFile, properties)
 
-        return (tempWorld, tempDir)
+        return tempWorld, tempDir
 
     def generateAtPosition(self, tempWorld, tempDir, cx, cz):
         return exhaust(self.generateAtPositionIter(tempWorld, tempDir, cx, cz))
@@ -1220,7 +1220,7 @@ class MCRegionFile(object):
         length = struct.unpack_from(">I", data)[0]
         format = struct.unpack_from("B", data, 4)[0]
         data = data[5:length + 5]
-        return (format, data)
+        return format, data
 
     def _decompressSectors(self, format, data):
         if format == self.VERSION_GZIP:
@@ -1253,7 +1253,7 @@ class MCRegionFile(object):
         sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1;
         if sectorsNeeded >= 256: return
 
-        if (sectorNumber != 0 and sectorsAllocated >= sectorsNeeded):
+        if sectorNumber != 0 and sectorsAllocated >= sectorsNeeded:
             debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
             self.writeSector(sectorNumber, data, format)
         else:
@@ -1365,7 +1365,7 @@ def base36(n):
 
     work = []
 
-    while(n):
+    while n:
         n, digit = divmod(n, 36)
         work.append(base36alphabet[digit])
 
@@ -1510,7 +1510,7 @@ class ChunkedLevelMixin(object):
 
     def sourceMaskFunc(self, blocksToCopy):
         if blocksToCopy is not None:
-            typemask = zeros((256) , dtype='bool')
+            typemask = zeros(256, dtype='bool')
             typemask[blocksToCopy] = 1;
             def sourceMask(sourceBlocks):
                 return typemask[sourceBlocks]
@@ -2465,10 +2465,10 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self._allChunks = set()
 
         for dirname in worldDirs:
-            if(dirname in self.dirhashes):
+            if dirname in self.dirhashes:
                 subdirs = os.listdir(os.path.join(self.worldDir, dirname));
                 for subdirname in subdirs:
-                    if(subdirname in self.dirhashes):
+                    if subdirname in self.dirhashes:
                         filenames = os.listdir(os.path.join(self.worldDir, dirname, subdirname));
                         #def fullname(filename):
                             #return os.path.join(self.worldDir, dirname, subdirname, filename);
@@ -2602,7 +2602,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         n = self
         n = n % 64;
         s = u"";
-        if(n >= 36):
+        if n >= 36:
             s += u"1";
             n -= 36;
         s += u"0123456789abcdefghijklmnopqrstuvwxyz"[n]
@@ -2613,7 +2613,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def regionFilename(self, rx, rz):
         s = os.path.join(self.regionDir,
-                                     "r.%s.%s.mcr" % ((rx), (rz)));
+                                     "r.%s.%s.mcr" % (rx, rz));
         return s;
 
     def chunkFilename(self, x, z):
