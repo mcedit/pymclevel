@@ -2586,10 +2586,6 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def discardAllChunks(self):
         """ clear lots of memory, fast. """
 
-    def chunkFilenameAt(self, x, y, z):
-        cx = x >> 4
-        cz = z >> 4
-        return self._loadedChunks.get((cx, cz)).filename
 
 
     def dirhash(self, n):
@@ -2613,10 +2609,15 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                                      "r.%s.%s.mcr" % (rx, rz))
         return s
 
-    def chunkFilename(self, x, z):
-        s = os.path.join(self.worldDir, self.dirhash(x), self.dirhash(z),
-                                     "c.%s.%s.dat" % (base36(x), base36(z)))
+    def chunkFilename(self, cx, cz):
+        s = os.path.join(self.worldDir, self.dirhash(cx), self.dirhash(cz),
+                                     "c.%s.%s.dat" % (base36(cx), base36(cz)))
         return s
+    
+    def chunkFilenameAt(self, x, y, z):
+        cx = x >> 4
+        cz = z >> 4
+        return self._loadedChunks.get((cx, cz)).filename
 
     def extractChunksInBox(self, box, parentFolder):
         for cx, cz in box.chunkPositions:
