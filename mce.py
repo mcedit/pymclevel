@@ -134,7 +134,7 @@ class mce(object):
         "box",
     ]
     debug = False
-    needsSave = False;
+    needsSave = False
 
     def readInt(self, command):
         try:
@@ -144,10 +144,10 @@ class mce(object):
         return val
 
     def prettySplit(self, command):
-        cmdstring = " ".join(command);
+        cmdstring = " ".join(command)
 
-        lex = shlex.shlex(cmdstring);
-        lex.whitespace_split = True;
+        lex = shlex.shlex(cmdstring)
+        lex.whitespace_split = True
         lex.whitespace += "(),"
 
         command[:] = list(lex)
@@ -221,8 +221,7 @@ class mce(object):
 
             #eat up more words that possibly specify a block.  stop eating when 0 matching blocks.
             while len(command):
-                newMatches = self.level.materials.blocksMatching(keyword + " " + command[0]);
-
+                newMatches = self.level.materials.blocksMatching(keyword + " " + command[0])
 
                 if len(newMatches) == 1:
                     blockInfo = newMatches[0]
@@ -230,7 +229,7 @@ class mce(object):
                     matches = newMatches
                     keyword = keyword + " " + command.pop(0)
                 else:
-                    break;
+                    break
 
 
 
@@ -244,7 +243,7 @@ class mce(object):
                 blockInfo = self.level.materials.blockWithID(blockID, data)
 
             except ValueError:
-                blockInfo = None;
+                blockInfo = None
 
         if blockInfo is None:
                 print "Ambiguous block specifier: ", keyword
@@ -260,14 +259,14 @@ class mce(object):
         return blockInfo
 
     def readBlocksToCopy(self, command):
-        blocksToCopy = range(256);
+        blocksToCopy = range(256)
         while len(command):
-            word = command.pop();
+            word = command.pop()
             if word == "noair":
-                blocksToCopy.remove(0);
+                blocksToCopy.remove(0)
             if word == "nowater":
-                blocksToCopy.remove(8);
-                blocksToCopy.remove(9);
+                blocksToCopy.remove(8)
+                blocksToCopy.remove(9)
 
         return blocksToCopy
 
@@ -306,7 +305,8 @@ class mce(object):
     This refers to a point 5 blocks above codewarrior's head. 
     
     """
-        raise UsageError;
+        raise UsageError
+
     def _debug(self, command):
         self.debug = not self.debug
         print "Debug", ("disabled", "enabled")[self.debug]
@@ -319,7 +319,7 @@ class mce(object):
     """
         if len(command):
             try:
-                logging.getLogger().level = int(command[0]);
+                logging.getLogger().level = int(command[0])
             except ValueError:
                 raise UsageError, "Cannot understand numeric input."
         else:
@@ -336,19 +336,19 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("clone")
-            return;
+            return
 
-        box = self.readBox(command);
+        box = self.readBox(command)
 
         destPoint = self.readPoint(command)
 
         destPoint = map(int, map(floor, destPoint))
-        blocksToCopy = self.readBlocksToCopy(command);
+        blocksToCopy = self.readBlocksToCopy(command)
 
-        tempSchematic = self.level.extractSchematic(box);
-        self.level.copyBlocksFrom(tempSchematic, BoundingBox((0, 0, 0), box.origin), destPoint, blocksToCopy);
+        tempSchematic = self.level.extractSchematic(box)
+        self.level.copyBlocksFrom(tempSchematic, BoundingBox((0, 0, 0), box.origin), destPoint, blocksToCopy)
 
-        self.needsSave = True;
+        self.needsSave = True
         print "Cloned 0 blocks."
 
     def _fill(self, command):
@@ -362,7 +362,7 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("fill")
-            return;
+            return
 
         blockInfo = self.readBlockInfo(command)
 
@@ -376,7 +376,7 @@ class mce(object):
         self.level.fillBlocks(box, blockInfo)
 
 
-        self.needsSave = True;
+        self.needsSave = True
         print "Filled {0} blocks.".format("all" if box is None else box.volume)
 
     def _replace(self, command):
@@ -391,7 +391,7 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("replace")
-            return;
+            return
 
         blockInfo = self.readBlockInfo(command)
 
@@ -409,7 +409,7 @@ class mce(object):
 
         self.level.fillBlocks(box, newBlockInfo, blocksToReplace=[blockInfo])
 
-        self.needsSave = True;
+        self.needsSave = True
         print "Done."
 
     def _createchest(self, command):
@@ -421,13 +421,13 @@ class mce(object):
     """
         point = map(lambda x: int(floor(float(x))), self.readPoint(command))
         itemID = self.readInt(command)
-        count = 64;
+        count = 64
         if len(command):
             count = self.readInt(command)
 
-        chest = mclevel.MCSchematic.chestWithItemID(itemID, count);
-        self.level.copyBlocksFrom(chest, chest.bounds, point);
-        self.needsSave = True;
+        chest = mclevel.MCSchematic.chestWithItemID(itemID, count)
+        self.level.copyBlocksFrom(chest, chest.bounds, point)
+        self.needsSave = True
 
     def _analyze(self, command):
         """
@@ -438,7 +438,7 @@ class mce(object):
     world select menu.  
     """
         blockCounts = zeros((4096,), 'uint64')
-        sizeOnDisk = 0;
+        sizeOnDisk = 0
 
         print "Analyzing {0} chunks...".format(self.level.chunkCount)
         #for input to bincount, create an array of uint16s by 
@@ -446,15 +446,15 @@ class mce(object):
 
 
         for i, cPos in enumerate(self.level.allChunks, 1):
-            ch = self.level.getChunk(*cPos);
+            ch = self.level.getChunk(*cPos)
             btypes = numpy.array(ch.Data.ravel(), dtype='uint16')
             btypes <<= 8
             btypes += ch.Blocks.ravel()
             counts = bincount(btypes)
 
             blockCounts[:counts.shape[0]] += counts
-            sizeOnDisk += ch.compressedSize();
-            ch.unload();
+            sizeOnDisk += ch.compressedSize()
+            ch.unload()
             if i % 100 == 0:
                 logging.info("Chunk {0}...".format(i))
 
@@ -467,14 +467,14 @@ class mce(object):
                         idstring = "({id}:{data})".format(id=blockID, data=data)
 
                         print "{idstring:9} {name:30}: {count:<10}".format(
-                            idstring=idstring, name=self.level.materials.blockWithID(blockID, data).name, count=blockCounts[i]);
+                            idstring=idstring, name=self.level.materials.blockWithID(blockID, data).name, count=blockCounts[i])
 
             else:
                 count = int(sum(blockCounts[(d << 8) + blockID] for d in range(16)))
                 if count:
                     idstring = "({id})".format(id=blockID)
                     print "{idstring:9} {name:30}: {count:<10}".format(
-                          idstring=idstring, name=self.level.materials.blockWithID(blockID, 0).name, count=count);
+                          idstring=idstring, name=self.level.materials.blockWithID(blockID, 0).name, count=count)
 
         print "Size on disk: {0:.3}MB".format(sizeOnDisk / 1048576.0)
         self.level.SizeOnDisk = sizeOnDisk
@@ -489,12 +489,12 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("export")
-            return;
+            return
 
         filename = command.pop(0)
         box = self.readBox(command)
 
-        tempSchematic = self.level.extractSchematic(box);
+        tempSchematic = self.level.extractSchematic(box)
 
         tempSchematic.saveToFile(filename)
 
@@ -516,7 +516,7 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("import")
-            return;
+            return
 
         filename = command.pop(0)
         destPoint = self.readPoint(command)
@@ -526,10 +526,9 @@ class mce(object):
 
         destBox = BoundingBox(destPoint, importLevel.size)
 
-        self.level.copyBlocksFrom(importLevel, importLevel.bounds, destPoint, blocksToCopy, create=True);
+        self.level.copyBlocksFrom(importLevel, importLevel.bounds, destPoint, blocksToCopy, create=True)
 
-
-        self.needsSave = True;
+        self.needsSave = True
         print "Imported {0} blocks.".format(importLevel.bounds.volume)
 
     def _player(self, command):
@@ -546,17 +545,17 @@ class mce(object):
             print "Players: "
             for player in self.level.players:
                 print "    {0}: {1}".format(player, self.level.getPlayerPosition(player))
-            return;
+            return
 
         player = command.pop(0)
         if len(command) == 0:
             print "Player {0}: {1}".format(player, self.level.getPlayerPosition(player))
-            return;
+            return
 
         point = self.readPoint(command)
         self.level.setPlayerPosition(point, player)
 
-        self.needsSave = True;
+        self.needsSave = True
         print "Moved player {0} to {1}".format(player, point)
 
     def _spawn(self, command):
@@ -570,12 +569,12 @@ class mce(object):
             point = self.readPoint(command)
             point = map(int, map(floor, point))
 
-            self.level.setPlayerSpawnPosition(point);
+            self.level.setPlayerSpawnPosition(point)
 
-            self.needsSave = True;
+            self.needsSave = True
             print "Moved spawn point to ", point
         else:
-            print "Spawn point: ", self.level.playerSpawnPosition();
+            print "Spawn point: ", self.level.playerSpawnPosition()
 
     def _dumpsigns(self, command):
         """
@@ -602,34 +601,34 @@ class mce(object):
         else:
             filename = self.level.displayName + ".signs"
 
-        outFile = codecs.open(filename, "w", encoding='utf-8');
+        outFile = codecs.open(filename, "w", encoding='utf-8')
 
         print "Dumping signs..."
-        signCount = 0;
+        signCount = 0
 
         for i, cPos in enumerate(self.level.allChunks):
             try:
-                chunk = self.level.getChunk(*cPos);
+                chunk = self.level.getChunk(*cPos)
             except mclevel.ChunkMalformed:
-                continue;
+                continue
 
             for tileEntity in chunk.TileEntities:
                 if tileEntity["id"].value == "Sign":
-                    signCount += 1;
+                    signCount += 1
 
-                    outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n");
+                    outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n")
                     for i in range(4):
-                        outFile.write(tileEntity["Text{0}".format(i + 1)].value + u"\n");
+                        outFile.write(tileEntity["Text{0}".format(i + 1)].value + u"\n")
 
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
 
-            chunk.unload();
+            chunk.unload()
 
-        print "Dumped {0} signs to {1}".format(signCount, filename);
+        print "Dumped {0} signs to {1}".format(signCount, filename)
 
-        outFile.close();
-    
+        outFile.close()
+
     def _region(self, command):
         """
     region [rx rz]
@@ -765,22 +764,22 @@ class mce(object):
         else:
             filename = self.level.displayName + ".chests"
 
-        outFile = file(filename, "w");
+        outFile = file(filename, "w")
 
         print "Dumping chests..."
-        chestCount = 0;
+        chestCount = 0
 
         for i, cPos in enumerate(self.level.allChunks):
             try:
-                chunk = self.level.getChunk(*cPos);
+                chunk = self.level.getChunk(*cPos)
             except mclevel.ChunkMalformed:
-                continue;
+                continue
 
             for tileEntity in chunk.TileEntities:
                 if tileEntity["id"].value == "Chest":
-                    chestCount += 1;
+                    chestCount += 1
 
-                    outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n");
+                    outFile.write(str(map(lambda x:tileEntity[x].value, "xyz")) + "\n")
                     itemsTag = tileEntity["Items"]
                     if len(itemsTag):
                         for itemTag in itemsTag:
@@ -793,18 +792,18 @@ class mce(object):
                                 itemname = "Unknown Item {0}".format(itemTag)
                             except Exception, e:
                                 itemname = repr(e)
-                            outFile.write("{0} {1}\n".format(itemTag["Count"].value, itemname));
+                            outFile.write("{0} {1}\n".format(itemTag["Count"].value, itemname))
                     else:
                         outFile.write("Empty Chest\n")
 
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
 
-            chunk.unload();
+            chunk.unload()
 
-        print "Dumped {0} chests to {1}".format(chestCount, filename);
+        print "Dumped {0} chests to {1}".format(chestCount, filename)
 
-        outFile.close();
+        outFile.close()
 
     def _removeentities(self, command):
         """
@@ -827,11 +826,11 @@ class mce(object):
     
     Known Dynamic Tile Entity IDs: PrimedTnt FallingSand
     """
-        removedEntities = {};
+        removedEntities = {}
 
         if len(command):
             if command[0].lower() == "except":
-                command.pop(0);
+                command.pop(0)
                 print "Removing all entities except ", command
                 def match(entityID):
                     return not (entityID.lower() in matchWords)
@@ -849,32 +848,32 @@ class mce(object):
 
         for cx, cz in self.level.allChunks:
             chunk = self.level.getChunk(cx, cz)
-            entitiesRemoved = 0;
+            entitiesRemoved = 0
 
             for entity in list(chunk.Entities):
                 entityID = entity["id"].value
 
                 if match(entityID):
-                    removedEntities[entityID] = removedEntities.get(entityID, 0) + 1;
+                    removedEntities[entityID] = removedEntities.get(entityID, 0) + 1
 
                     chunk.Entities.remove(entity)
-                    entitiesRemoved += 1;
+                    entitiesRemoved += 1
 
             if entitiesRemoved:
                 chunk.chunkChanged(False)
 
-            chunk.compress();
-            chunk.save();
-            chunk.unload();
+            chunk.compress()
+            chunk.save()
+            chunk.unload()
 
         if len(removedEntities) == 0:
             print "No entities to remove."
         else:
             print "Removed entities:"
             for entityID in sorted(removedEntities.keys()):
-                print "  {0}: {1:6}".format(entityID, removedEntities[entityID]);
+                print "  {0}: {1:6}".format(entityID, removedEntities[entityID])
 
-        self.needsSave = True;
+        self.needsSave = True
 
     def _createchunks(self, command):
         """
@@ -886,7 +885,7 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("createchunks")
-            return;
+            return
 
         box = self.readBox(command)
 
@@ -894,7 +893,7 @@ class mce(object):
 
         print "Created {0} chunks." .format(len(chunksCreated))
 
-        self.needsSave = True;
+        self.needsSave = True
 
     def _deletechunks(self, command):
         """
@@ -905,7 +904,7 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("deletechunks")
-            return;
+            return
 
         box = self.readBox(command)
 
@@ -922,15 +921,15 @@ class mce(object):
     """
         if len(command) == 0:
             self.printUsage("prune")
-            return;
+            return
 
         box = self.readBox(command)
 
-        i = 0;
+        i = 0
         for cx, cz in list(self.level.allChunks):
             if cx < box.mincx or cx >= box.maxcx or cz < box.mincz or cz >= box.maxcz:
                 self.level.deleteChunk(cx, cz)
-                i += 1;
+                i += 1
 
         print "Pruned {0} chunks." .format(i)
 
@@ -951,7 +950,7 @@ class mce(object):
         self.level.generateLights(chunks)
 
         print "Relit 0 chunks."
-        self.needsSave = True;
+        self.needsSave = True
 
     def _create(self, command):
         """
@@ -968,9 +967,9 @@ class mce(object):
         if len(command) < 1:
             raise UsageError, "Expected a filename"
 
-        filename = command[0];
+        filename = command[0]
         if not os.path.exists(filename):
-            os.mkdir(filename);
+            os.mkdir(filename)
 
         if not os.path.isdir(filename):
             raise IOError, "{0} already exists".format(filename)
@@ -978,9 +977,9 @@ class mce(object):
         if mclevel.MCInfdevOldLevel.isLevel(filename):
             raise IOError, "{0} is already a Minecraft Alpha world".format(filename)
 
-        level = mclevel.MCInfdevOldLevel(filename, create=True);
+        level = mclevel.MCInfdevOldLevel(filename, create=True)
 
-        self.level = level;
+        self.level = level
 
 
     def _degrief(self, command):
@@ -996,7 +995,7 @@ class mce(object):
     
     Also see removeEntities
     """
-        box = self.level.bounds;
+        box = self.level.bounds
         box.miny = 32
         if len(command):
             try:
@@ -1015,7 +1014,7 @@ class mce(object):
                                 self.level.materials.Lava,
                                 ]
                               )
-        self.needsSave = True;
+        self.needsSave = True
 
     def _time(self, command):
         """
@@ -1025,23 +1024,23 @@ class mce(object):
     "evening", "midnight", or a time of day such as 8:02, 12:30 PM, or 16:45.
     """
         ticks = self.level.Time
-        timeOfDay = ticks % 24000;
-        ageInTicks = ticks - timeOfDay;
+        timeOfDay = ticks % 24000
+        ageInTicks = ticks - timeOfDay
         if len(command) == 0:
 
             days = ageInTicks / 24000
-            hours = timeOfDay / 1000;
+            hours = timeOfDay / 1000
             clockHours = (hours + 6) % 24
 
             ampm = ("AM", "PM")[clockHours > 11]
 
-            minutes = (timeOfDay % 1000) / 60;
+            minutes = (timeOfDay % 1000) / 60
 
             print "It is {0}:{1:02} {2} on Day {3}".format(clockHours % 12 or 12, minutes, ampm, days)
         else:
             times = { "morning":6, "noon":12, "evening":18, "midnight":24 }
-            word = command[0];
-            minutes = 0;
+            word = command[0]
+            minutes = 0
 
             if word in times:
                 hours = times[word]
@@ -1054,19 +1053,19 @@ class mce(object):
                     else:
                         hours = int(word)
                 except Exception, e:
-                    raise UsageError, ("Cannot interpret time, ", e);
+                    raise UsageError, ("Cannot interpret time, ", e)
 
                 if len(command) > 1:
                     if command[1].lower() == "pm":
-                        hours += 12;
+                        hours += 12
 
-            ticks = ageInTicks + hours * 1000 + minutes * 1000 / 60 - 6000;
+            ticks = ageInTicks + hours * 1000 + minutes * 1000 / 60 - 6000
             if ticks < 0: ticks += 18000
 
             ampm = ("AM", "PM")[hours > 11 and hours < 24]
             print "Changed time to {0}:{1:02} {2}".format(hours % 12 or 12, minutes, ampm)
             self.level.Time = ticks
-            self.needsSave = True;
+            self.needsSave = True
 
     def _randomseed(self, command):
         """
@@ -1077,11 +1076,11 @@ class mce(object):
     """
         if len(command):
             try:
-                seed = long(command[0]);
+                seed = long(command[0])
             except ValueError:
                 raise UsageError, "Expected a long integer."
 
-            self.level.RandomSeed = seed;
+            self.level.RandomSeed = seed
             self.needsSave = True
         else:
             print "Random Seed: ", self.level.RandomSeed
@@ -1120,13 +1119,13 @@ class mce(object):
     Computes and prints the dimensions of the world.  For infinite worlds, 
     also prints the most negative corner.
     """
-        bounds = self.level.bounds;
+        bounds = self.level.bounds
         if isinstance(self.level, mclevel.MCInfdevOldLevel):
-            print "\nWorld size: \n  {0[0]:7} north to south\n  {0[2]:7} east to west\n".format(bounds.size);
-            print "Smallest and largest points: ({0[0]},{0[2]}), ({1[0]},{1[2]})".format(bounds.origin, bounds.maximum);
+            print "\nWorld size: \n  {0[0]:7} north to south\n  {0[2]:7} east to west\n".format(bounds.size)
+            print "Smallest and largest points: ({0[0]},{0[2]}), ({1[0]},{1[2]})".format(bounds.origin, bounds.maximum)
 
         else:
-            print "\nWorld size: \n  {0[0]:7} wide\n  {0[1]:7} tall\n  {0[2]:7} long\n".format(bounds.size);
+            print "\nWorld size: \n  {0[0]:7} wide\n  {0[1]:7} tall\n  {0[2]:7} long\n".format(bounds.size)
 
     def _heightmap(self, command):
         """
@@ -1180,7 +1179,7 @@ class mce(object):
                     c = self.level.getChunk(cx, cz)
 
                     imgarray = numpy.asarray(greyimg.crop((cz * 16, cx * 16, cz * 16 + 16, cx * 16 + 16)))
-                    imgarray = imgarray / 2; #scale to 0-127
+                    imgarray = imgarray / 2 #scale to 0-127
 
                     for x in range(16):
                         for z in range(16):
@@ -1210,12 +1209,12 @@ class mce(object):
                     logging.info("%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"), cx, cz))
 
             logging.info("Done with mapping!")
-            self.needsSave = True;
+            self.needsSave = True
             stop = datetime.datetime.now()
             logging.info("Took %s." % str(stop - start))
 
             spawnz = width / 2
-            spawnx = height / 2;
+            spawnx = height / 2
             spawny = greyimg.getpixel((spawnx, spawnz))
             logging.info("You probably want to change your spawn point. I suggest {0}".format((spawnx, spawny, spawnz)))
 
@@ -1245,10 +1244,10 @@ class mce(object):
     """
         if len(command) == 0 or not (command[0].lower() in ("yes", "no")):
             if raw_input("Save before exit? ").lower() in ("yes", "y", "1", "true"):
-                self._save(command);
-                raise SystemExit;
+                self._save(command)
+                raise SystemExit
         if len(command) and command[0].lower == "yes":
-            self._save(command);
+            self._save(command)
 
         raise SystemExit
 
@@ -1258,8 +1257,8 @@ class mce(object):
     def _save(self, command):
         if self.needsSave:
             self.level.generateLights()
-            self.level.saveInPlace();
-            self.needsSave = False;
+            self.level.saveInPlace()
+            self.needsSave = False
 
     def _load(self, command):
         """
@@ -1272,7 +1271,7 @@ class mce(object):
         self.loadWorld(command[0])
 
     def _reload(self, command):
-        self.level = mclevel.fromFile(self.level.filename);
+        self.level = mclevel.fromFile(self.level.filename)
 
     def _dimension(self, command):
         """
@@ -1289,27 +1288,27 @@ class mce(object):
             if command[0].lower() in ("earth", "overworld", "parent"):
                 if self.level.parentWorld:
                     self.level = self.level.parentWorld
-                    return;
+                    return
                 else:
                     print "You are already on earth."
-                    return;
+                    return
 
             elif command[0].lower() in ("hell", "nether", "slip"):
                 dimNo = -1
             else:
-                dimNo = self.readInt(command);
+                dimNo = self.readInt(command)
 
             if dimNo in self.level.dimensions:
                 self.level = self.level.dimensions[dimNo]
-                return;
+                return
 
         if self.level.parentWorld:
-            print u"Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName);
+            print u"Parent world: {0} ('dimension parent' to return)".format(self.level.parentWorld.displayName)
 
         if len(self.level.dimensions):
             print u"Dimensions in {0}:".format(self.level.displayName)
             for k in self.level.dimensions:
-                print "{0}: {1}".format(k, mclevel.MCAlphaDimension.dimensionNames.get(k, "Unknown"));
+                print "{0}: {1}".format(k, mclevel.MCAlphaDimension.dimensionNames.get(k, "Unknown"))
 
     def _help(self, command):
         if len(command):
@@ -1351,14 +1350,14 @@ class mce(object):
 
     def printUsage(self, command=""):
         if command.lower() in self.commands:
-            print "Usage: ", self.commandUsage(command.lower());
+            print "Usage: ", self.commandUsage(command.lower())
         else:
-            print self.__doc__.format(commandPrefix=("", "mce.py <world> ")[not self.batchMode]);
+            print self.__doc__.format(commandPrefix=("", "mce.py <world> ")[not self.batchMode])
 
 
     def printUsageAndQuit(self):
-        self.printUsage();
-        raise SystemExit;
+        self.printUsage()
+        raise SystemExit
 
     def loadWorld(self, world):
 
@@ -1375,7 +1374,7 @@ class mce(object):
 
     level = None
 
-    batchMode = False;
+    batchMode = False
 
     def run(self):
         logging.basicConfig(format=u'%(levelname)s:%(message)s')
@@ -1391,15 +1390,15 @@ class mce(object):
 
             if len(sys.argv) and sys.argv[0].lower() == "create":
                 #accept the syntax, "mce world3 create"
-                self._create([world]);
-                print "Created world {0}".format(world);
+                self._create([world])
+                print "Created world {0}".format(world)
 
                 sys.exit(0)
             else:
                 self.loadWorld(world)
         else:
-            self.batchMode = True;
-            self.printUsage();
+            self.batchMode = True
+            self.printUsage()
 
             while True:
                 try:
@@ -1407,27 +1406,24 @@ class mce(object):
                     self.loadWorld(world)
                 except EOFError, e:
                     print "End of input."
-                    raise SystemExit;
+                    raise SystemExit
                 except Exception, e:
-                    print "Cannot open {0}: {1}".format(world, e);
+                    print "Cannot open {0}: {1}".format(world, e)
                 else:
-                    break;
-
-
-
+                    break
 
         if len(sys.argv):
             #process one command from command line
             try:
                 self.processCommand(" ".join(sys.argv))
             except UsageError:
-                self.printUsageAndQuit();
-            self._save([]);
+                self.printUsageAndQuit()
+            self._save([])
 
         else:
             #process many commands on standard input, maybe interactively
             command = [""]
-            self.batchMode = True;
+            self.batchMode = True
             while True:
                 try:
                     command = raw_input(u"{0}> ".format(self.level.displayName))
@@ -1436,19 +1432,19 @@ class mce(object):
 
                 except EOFError, e:
                     print "End of file. Saving automatically."
-                    self._save([]);
-                    raise SystemExit;
+                    self._save([])
+                    raise SystemExit
                 except Exception, e:
                     if self.debug:
-                        traceback.print_exc();
-                    print 'Exception during command: {0!r}'.format(e);
+                        traceback.print_exc()
+                    print 'Exception during command: {0!r}'.format(e)
                     print "Use 'debug' to enable tracebacks."
 
                     #self.printUsage();
 
 
     def processCommand(self, command):
-        command = command.strip();
+        command = command.strip()
 
         if len(command) == 0: return
 
@@ -1458,14 +1454,14 @@ class mce(object):
 
         keyword = commandWords.pop(0).lower()
         if not keyword in self.commands:
-            matches = filter(lambda x:x.startswith(keyword), self.commands);
+            matches = filter(lambda x:x.startswith(keyword), self.commands)
             if len(matches) == 1:
-                keyword = matches[0];
+                keyword = matches[0]
             elif len(matches):
                 print "Ambiguous command. Matches: "
                 for k in matches:
-                    print "  ", k;
-                return;
+                    print "  ", k
+                return
             else:
                 raise UsageError, "Command {0} not recognized.".format(keyword)
 

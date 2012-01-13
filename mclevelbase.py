@@ -42,18 +42,21 @@ Inventory = 'Inventory'
 
 @contextmanager
 def notclosing(f):
-    yield f;
-    
+    yield f
+
+
 def decompress_first(func):
     def dec_first(self, *args, **kw):
-        self.decompress();
-        return func(self, *args, **kw);
+        self.decompress()
+        return func(self, *args, **kw)
+
     dec_first.__doc__ = func.__doc__
     return dec_first
 def unpack_first(func):
     def upk_first(self, *args, **kw):
-        self.unpackChunkData();
-        return func(self, *args, **kw);
+        self.unpackChunkData()
+        return func(self, *args, **kw)
+
     upk_first.__doc__ = func.__doc__
     return upk_first
 
@@ -94,15 +97,15 @@ if sys.platform == "win32":
         except Exception, e:
             print "Error while getting AppData folder using SHGetSpecialFolderLocation: {0!r}".format(e)
             
-            appDataDir = os.environ['APPDATA'].decode(sys.getfilesystemencoding());
-            
+            appDataDir = os.environ['APPDATA'].decode(sys.getfilesystemencoding())
+
     minecraftDir = os.path.join(appDataDir, u".minecraft")
 
 elif sys.platform == "darwin":
     appDataDir = os.path.expanduser(u"~/Library/Application Support")
     
     minecraftDir = os.path.join(appDataDir, u"minecraft")
-    minecraftDir.decode(sys.getfilesystemencoding());
+    minecraftDir.decode(sys.getfilesystemencoding())
 else:
     appDataDir = os.path.expanduser(u"~")
     minecraftDir = os.path.expanduser(u"~/.minecraft")

@@ -43,7 +43,7 @@ cdef cwrite(obj, char * buf, size_t len):
     return PycStringIO.cwrite(obj, buf, len)
     
 import sys
-import os;
+import os
 from os.path import exists
 from contextlib import closing
 
@@ -439,7 +439,7 @@ cdef load_compound(load_ctx ctx):
         ctx.offset += 1
         if tagID == TAG_END:
             #print "TAG_END at ", ctx.offset
-            break;
+            break
         else:
             name = load_string(ctx)
             tag = load_tag(tagID, ctx)

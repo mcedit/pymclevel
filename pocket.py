@@ -204,7 +204,7 @@ class PocketChunksFile(object):
 
         data = chunk._savedData()
         
-        sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1;
+        sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1
         if sectorsNeeded >= 256: return
 
         if sectorNumber != 0 and sectorsAllocated >= sectorsNeeded:
@@ -272,20 +272,20 @@ class PocketChunksFile(object):
             debug("REGION: Writing sector {0}".format(sectorNumber))
 
             f.seek(sectorNumber * self.SECTOR_BYTES)
-            f.write(struct.pack("<I", len(data) + self.CHUNK_HEADER_SIZE));# // chunk length
-            f.write(data);# // chunk data
+            f.write(struct.pack("<I", len(data) + self.CHUNK_HEADER_SIZE))# // chunk length
+            f.write(data)# // chunk data
             #f.flush()
 
     def containsChunk(self, cx,cz):
         return self.getOffset(cx,cz) != 0
         
     def getOffset(self, cx, cz):
-        cx &= 0x1f;
+        cx &= 0x1f
         cz &= 0x1f
         return self.offsets[cx + cz * 32]
 
     def setOffset(self, cx, cz, offset):
-        cx &= 0x1f;
+        cx &= 0x1f
         cz &= 0x1f
         self.offsets[cx + cz * 32] = offset
         with self.file as f:

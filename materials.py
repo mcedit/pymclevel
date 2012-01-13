@@ -278,7 +278,7 @@ class MCMaterials(object):
            
                 
     
-alphaMaterials = MCMaterials(defaultName="Future Block!");
+alphaMaterials = MCMaterials(defaultName="Future Block!")
 alphaMaterials.name = "Alpha"
 alphaMaterials.addYamlBlocksFromFile("minecraft.yaml")
 
@@ -335,11 +335,11 @@ def defineShroomFaces(Shroom, id, name):
 defineShroomFaces(Brown, 99, "Brown")
 defineShroomFaces(Red, 100, "Red")
 
-classicMaterials = MCMaterials(defaultName = "Not present in Classic");
+classicMaterials = MCMaterials(defaultName = "Not present in Classic")
 classicMaterials.name = "Classic"
 classicMaterials.addYamlBlocksFromFile("classic.yaml")
 
-indevMaterials = MCMaterials(defaultName = "Not present in Indev");
+indevMaterials = MCMaterials(defaultName = "Not present in Indev")
 indevMaterials.name = "Indev"
 indevMaterials.addYamlBlocksFromFile("classic.yaml")
 indevMaterials.addYamlBlocksFromFile("indev.yaml")

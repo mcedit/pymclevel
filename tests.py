@@ -65,21 +65,20 @@ class TestNBT(unittest.TestCase):
         
     def testLoad(self):
         "Load an indev level."
-        level = nbt.load("testfiles/hell.mclevel");
-    
+        level = nbt.load("testfiles/hell.mclevel")
+
         """The root tag must have a name, and so must any tag within a TAG_Compound"""
         print level.name
     
         """Use the [] operator to look up subtags of a TAG_Compound."""
-        print level["Environment"]["SurroundingGroundHeight"].value;
-    
-    
+        print level["Environment"]["SurroundingGroundHeight"].value
+
         """Numeric, string, and bytearray types have a value 
-        that can be accessed and changed. """
+  that can be accessed and changed. """
         print level["Map"]["Blocks"].value
     
-        return level;
-    
+        return level
+
     def testCreate(self):
         "Create an indev level."
     
@@ -99,7 +98,7 @@ class TestNBT(unittest.TestCase):
         spawn.name = "Spawn"
     
         mapTag = TAG_Compound()
-        mapTag.add(spawn);
+        mapTag.add(spawn)
         mapTag.name = "Map"
         level.add(mapTag)
     
@@ -116,41 +115,41 @@ class TestNBT(unittest.TestCase):
         mapTag["Blocks"].value = zeros(l * w * h, dtype=uint8) #create lots of air!
     
         "The blocks array is indexed (y,z,x) for indev levels, so reshape the blocks"
-        mapTag["Blocks"].value.shape = (h, l, w);
-    
+        mapTag["Blocks"].value.shape = (h, l, w)
+
         "Replace the bottom layer of the indev level with wood"
-        mapTag["Blocks"].value[0, :, :] = 5;
-    
+        mapTag["Blocks"].value[0, :, :] = 5
+
         "This is a great way to learn the power of numpy array slicing and indexing."
         
         mapTag["Data"] = TAG_Byte_Array()
         mapTag["Data"].value = zeros(l * w * h, dtype=uint8)
     
-        return level;
-    
+        return level
+
     def testModify(self):
-        level = self.testCreate();
-    
+        level = self.testCreate()
+
         "Most of the value types work as expected. Here, we replace the entire tag with a TAG_String"
-        level["About"]["Author"] = TAG_String("YARRR~!");
-    
+        level["About"]["Author"] = TAG_String("YARRR~!")
+
         "Because the tag type usually doesn't change, "
         "we can replace the string tag's value instead of replacing the entire tag."
         level["About"]["Author"].value = "Stew Pickles"
     
         "Remove members of a TAG_Compound using del, similar to a python dict."
-        del(level["About"]);
-    
+        del(level["About"])
+
         "Replace all of the wood blocks with gold using a boolean index array"
         blocks = level["Map"]["Blocks"].value
-        blocks[blocks == 5] = 41;
-    
-    
+        blocks[blocks == 5] = 41
+
+
     def testSave(self):
     
         level = self.testCreate()
-        level["Environment"]["SurroundingWaterHeight"].value += 6;
-    
+        level["Environment"]["SurroundingWaterHeight"].value += 6
+
         "Save the entire TAG structure to a different file."
         atlantis = TempLevel("atlantis.mclevel", createFunc = level.save)
         
@@ -162,7 +161,7 @@ class TestNBT(unittest.TestCase):
         so we must discard any names when writing a list.
         """
     
-        level = self.testCreate();
+        level = self.testCreate()
         level["Map"]["Spawn"][0].name = "Torg Potter"
         sio = StringIO()
         level.save(buf=sio)
@@ -175,7 +174,7 @@ class TestNBT(unittest.TestCase):
         attempt to delete non-existent TAG_Compound elements
         this generates a KeyError like a python dict does.
         """
-        level = self.testCreate();
+        level = self.testCreate()
         try:
             del level["DEADBEEF"]
         except KeyError:
@@ -241,7 +240,7 @@ class TestJavaLevel(unittest.TestCase):
 class TestAlphaLevelCreate(unittest.TestCase):
     def testCreate(self):
         temppath = mktemp("AlphaCreate")
-        self.alphaLevel = MCInfdevOldLevel(filename=temppath, create=True);
+        self.alphaLevel = MCInfdevOldLevel(filename=temppath, create=True)
         self.alphaLevel.close()
         shutil.rmtree(temppath)
         
@@ -281,10 +280,10 @@ class TestAlphaLevel(unittest.TestCase):
         indevlevel = self.indevlevel.level
         level = self.alphalevel.level
 
-        schem = fromFile("schematics/CreativeInABox.schematic");
-        level.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 64, 0));
+        schem = fromFile("schematics/CreativeInABox.schematic")
+        level.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 64, 0))
         schem = MCSchematic(shape=(1, 1, 3))
-        schem.copyBlocksFrom(level, BoundingBox((0, 64, 0), (1, 1, 3)), (0, 0, 0));
+        schem.copyBlocksFrom(level, BoundingBox((0, 64, 0), (1, 1, 3)), (0, 0, 0))
         convertedSourceBlocks, convertedSourceData = schem.convertBlocksFromLevel(level, schem.Blocks, schem.Data)
         assert (level.getChunk(0, 0).Blocks[0:1, 0:3, 64:65] == convertedSourceBlocks).all()
 
@@ -292,35 +291,35 @@ class TestAlphaLevel(unittest.TestCase):
         level = self.alphalevel.level
 
         for x, z in itertools.product(xrange(-1, 3), xrange(-1, 2)):
-            level.deleteChunk(x, z);
+            level.deleteChunk(x, z)
             level.createChunk(x, z)
 
     def testFill(self):
         level = self.alphalevel.level
 
-        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks);
+        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks)
         c = level.getChunk(0, 0)
         assert (c.Blocks == 5).all()
 
     def testReplace(self):
         level = self.alphalevel.level
 
-        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks, [level.materials.Dirt, level.materials.Grass]);
+        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks, [level.materials.Dirt, level.materials.Grass])
 
     def testSaveRelight(self):
         indevlevel = self.indevlevel.level
         level = self.alphalevel.level
 
-        cx, cz = -3, -1;
+        cx, cz = -3, -1
 
-        level.deleteChunk(cx, cz);
+        level.deleteChunk(cx, cz)
 
-        level.createChunk(cx, cz);
+        level.createChunk(cx, cz)
         level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (32, 64, 32,)), (-96, 32, 0))
 
-        level.generateLights();
-        level.saveInPlace();
-    
+        level.generateLights()
+        level.saveInPlace()
+
     def testRecompress(self):
         cx,cz = -3, -1
         level = self.alphalevel.level
@@ -348,7 +347,7 @@ class TestSchematics(unittest.TestCase):
 
         size = (64, 64, 64)
         temp = mktemp("testcreate.schematic")
-        schematic = MCSchematic(shape=size, filename=temp, mats='Classic');
+        schematic = MCSchematic(shape=size, filename=temp, mats='Classic')
         level = self.indevlevel.level
 
         self.failUnlessRaises(ValueError, lambda:(
@@ -357,16 +356,16 @@ class TestSchematics(unittest.TestCase):
 
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         assert((schematic.Blocks[0:64, 0:64, 0:64] == level.Blocks[0:64, 0:64, 0:64]).all())
-        schematic.compress();
+        schematic.compress()
 
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (-32, -32, -32))
         assert((schematic.Blocks[0:32, 0:32, 0:32] == level.Blocks[32:64, 32:64, 32:64]).all())
 
-        schematic.compress();
+        schematic.compress()
 
-        schematic.saveInPlace();
+        schematic.saveInPlace()
 
-        schem = fromFile("schematics/CreativeInABox.schematic");
+        schem = fromFile("schematics/CreativeInABox.schematic")
         tempSchematic = MCSchematic(shape=(1, 1, 3))
         tempSchematic.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 0, 0))
 
@@ -398,7 +397,7 @@ class TestSchematics(unittest.TestCase):
         
     def testINVEditChests(self):
         info("INVEdit chest")
-        invFile = fromFile("schematics/Chests/TinkerersBox.inv");
+        invFile = fromFile("schematics/Chests/TinkerersBox.inv")
         info("Blocks: %s", invFile.Blocks)
         info("Data: %s", invFile.Data)
         info("Entities: %s", invFile.Entities)

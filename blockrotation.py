@@ -29,7 +29,7 @@ def genericNorthSouthFlip(cls):
     rotation[cls.North] = cls.South
     return rotation
 
-rotationClasses = [];
+rotationClasses = []
 
 def genericFlipRotation(cls):
     cls.rotateLeft = genericRotation(cls)
@@ -411,10 +411,10 @@ def rotationTypeTable():
     return table
     
 class BlockRotation:
-    rotateLeft = masterRotationTable("rotateLeft");
-    flipEastWest = masterRotationTable("flipEastWest");
-    flipNorthSouth = masterRotationTable("flipNorthSouth");
-    flipVertical = masterRotationTable("flipVertical");
+    rotateLeft = masterRotationTable("rotateLeft")
+    flipEastWest = masterRotationTable("flipEastWest")
+    flipNorthSouth = masterRotationTable("flipNorthSouth")
+    flipVertical = masterRotationTable("flipVertical")
     typeTable = rotationTypeTable()
     
 def SameRotationType(blocktype1, blocktype2):

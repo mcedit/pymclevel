@@ -372,7 +372,7 @@ class Items (object):
                 logger.info( "Using internal data." )
                 items_txt = self.items_txt
 
-        self.itemtypes = {};
+        self.itemtypes = {}
         self.itemgroups = []
         
         for line in items_txt.split("\n"):
@@ -385,15 +385,15 @@ class Items (object):
                     name, icon, items = fields[1:4]
                     items = items.split(",")
                     self.itemgroups.append((name, icon, items))
-                    continue;
-                    
+                    continue
+
                 stacksize = 64
                 damagevalue = None
                 maxdamage = 0
 
-                fields = line.split();
+                fields = line.split()
                 if len(fields) >= 4:
-                    maxdamage = None;
+                    maxdamage = None
                     id, name, imagefile, imagecoords = fields[0:4]
                     if len(fields) > 4:
                         info = fields[4]
@@ -405,9 +405,9 @@ class Items (object):
                             maxdamage = int(info[1:])
                         else:
                             damagevalue = int(info)
-                    id = int(id);
-                    name = name.replace("_", " ");
-                    imagecoords = imagecoords.split(",");
+                    id = int(id)
+                    name = name.replace("_", " ")
+                    imagecoords = imagecoords.split(",")
 
                     self.itemtypes[(id, damagevalue)] = ItemType(id, name, imagefile, imagecoords, maxdamage, damagevalue, stacksize)
             except Exception, e:
@@ -432,5 +432,5 @@ class Items (object):
 
 class ItemNotFound(KeyError): pass
 
-items = Items();
+items = Items()
 

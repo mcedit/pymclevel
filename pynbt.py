@@ -22,8 +22,8 @@ import collections
 import itertools
 import struct
 import gzip
-from cStringIO import StringIO;
-import os;
+from cStringIO import StringIO
+import os
 from contextlib import closing
 from numpy import array, zeros, uint8, fromstring
 TAGfmt = ">b"
@@ -34,8 +34,8 @@ class TAG_Value(object):
     """Simple values. Subclasses override fmt to change the type and size. 
     Subclasses may set dataType instead of overriding setValue for automatic data type coercion"""
 
-    fmt = ">b";
-    tag = -1; #error!
+    fmt = ">b"
+    tag = -1 #error!
 
     _value = None
     def getValue(self):
@@ -56,7 +56,7 @@ class TAG_Value(object):
     @classmethod
     def load_from(cls, data, data_cursor):
         data = data[data_cursor:]
-        (value,) = struct.unpack_from(cls.fmt, data);
+        (value,) = struct.unpack_from(cls.fmt, data)
         self = cls(value=value)
         return self, data_cursor + struct.calcsize(self.fmt)
         
@@ -89,8 +89,8 @@ class TAG_Value(object):
 
     def save(self, filename="", buf=None):
         if filename:
-            self.saveGzipped(filename);
-            return;
+            self.saveGzipped(filename)
+            return
         "Save the tagged element to a file."
         if self.name == None: self.name = "" #root tag must have name
         self.write_tag(buf)
@@ -98,7 +98,7 @@ class TAG_Value(object):
         self.write_value(buf)
 
     def saveGzipped(self, filename, compresslevel=1):
-        sio = StringIO();
+        sio = StringIO()
         #atomic write
         try: os.rename(filename, filename + ".old");
         except Exception, e:
@@ -106,18 +106,18 @@ class TAG_Value(object):
             pass
 
         with closing(gzip.GzipFile(fileobj=sio, mode="wb", compresslevel=compresslevel)) as outputGz:
-                self.save(buf=outputGz);
-                outputGz.flush();
+                self.save(buf=outputGz)
+                outputGz.flush()
 
         #print len(sio.getvalue());
         try:
                 with open(filename, 'wb') as f:
-                        f.write(sio.getvalue());
+                        f.write(sio.getvalue())
         except:
             try:
-                os.rename(filename + ".old", filename,);
+                os.rename(filename + ".old", filename,)
             except Exception, e:
-                print e;
+                print e
                 return
 
         try: os.remove(filename + ".old");
@@ -126,34 +126,34 @@ class TAG_Value(object):
             pass;
 
 class TAG_Byte(TAG_Value):
-    tag = 1;
-    fmt = ">b";
+    tag = 1
+    fmt = ">b"
     dataType = int
 
 class TAG_Short(TAG_Value):
-    tag = 2;
-    fmt = ">h";
+    tag = 2
+    fmt = ">h"
     dataType = int
 
 class TAG_Int(TAG_Value):
-    tag = 3;
-    fmt = ">i";
+    tag = 3
+    fmt = ">i"
     dataType = int
 
 class TAG_Long(TAG_Value):
-    tag = 4;
-    fmt = ">q";
+    tag = 4
+    fmt = ">q"
     dataType = long
 
 class TAG_Float(TAG_Value):
-    tag = 5;
-    fmt = ">f";
+    tag = 5
+    fmt = ">f"
     dataType = float
 
 
 class TAG_Double(TAG_Value):
-    tag = 6;
-    fmt = ">d";
+    tag = 6
+    fmt = ">d"
     dataType = float
 
 
@@ -161,7 +161,7 @@ class TAG_Byte_Array(TAG_Value):
     """Like a string, but for binary data.    four length bytes instead of
     two.    value is a numpy array, and you can change its elements"""
 
-    tag = 7;
+    tag = 7
     fmt = ">i%ds"
 
     def dataType(self, value):
@@ -185,16 +185,16 @@ class TAG_Byte_Array(TAG_Value):
     @classmethod
     def load_from(cls, data, data_cursor):
         data = data[data_cursor:]
-        (string_len,) = struct.unpack_from(">I", data);
-        value = fromstring(data[4:string_len + 4], 'uint8');
+        (string_len,) = struct.unpack_from(">I", data)
+        value = fromstring(data[4:string_len + 4], 'uint8')
         self = cls(value)
         return self, data_cursor + string_len + 4
         
     def __init__(self, value=zeros(0, uint8), name=None):
         if name:
             self.name = name
-        self.value = value;
-        
+        self.value = value
+
 
     def write_value(self, buf):
         #print self.value
@@ -203,21 +203,22 @@ class TAG_Byte_Array(TAG_Value):
 
 class TAG_Int_Array(TAG_Byte_Array):
     """An array of ints"""
-    tag = 11;
+    tag = 11
+
     def dataType(self, value):
         return array(value, '>u4')
     
     @classmethod
     def load_from(cls, data, data_cursor):
         data = data[data_cursor:]
-        (string_len,) = struct.unpack_from(">I", data);
+        (string_len,) = struct.unpack_from(">I", data)
         value = fromstring(data[4:string_len * 4 + 4], '>u4')
         self = cls(value)
-        return self, data_cursor + len(self.value) * 4 + 4;
-        
+        return self, data_cursor + len(self.value) * 4 + 4
+
     def __init__(self, value=zeros(0, ">u4"), name=None):
         self.name = name
-        self.value = value;
+        self.value = value
 
 
     def write_value(self, buf):
@@ -227,21 +228,22 @@ class TAG_Int_Array(TAG_Byte_Array):
 
 class TAG_Short_Array(TAG_Int_Array):
     """An array of ints"""
-    tag = 12;
+    tag = 12
+
     def dataType(self, value):
         return array(value, '>u2')
 
     @classmethod
     def load_from(cls, data, data_cursor):
         data = data[data_cursor:]
-        (string_len,) = struct.unpack_from(">I", data);
+        (string_len,) = struct.unpack_from(">I", data)
         value = fromstring(data[4:string_len * 2 + 4], '>u2')
         self = cls(value)
-        return self, data_cursor + len(self.value) * 2 + 4;
-        
+        return self, data_cursor + len(self.value) * 2 + 4
+
     def __init__(self, value=zeros(0, ">u2"), name=None):
         self.name = name
-        self.value = value;
+        self.value = value
 
 
     def write_value(self, buf):
@@ -254,17 +256,17 @@ class TAG_String(TAG_Value):
     The value parameter must be a 'unicode' or a UTF-8 encoded 'str'
     """
 
-    tag = 8;
+    tag = 8
     fmt = ">h%ds"
     dataType = lambda self, s: isinstance(s, unicode) and s.encode('utf-8') or s
 
     @classmethod
     def load_from(cls, data, data_cursor):
         data = data[data_cursor:]
-        (string_len,) = struct.unpack_from(">H", data);
-        value = data[2:string_len + 2].tostring();
+        (string_len,) = struct.unpack_from(">H", data)
+        value = data[2:string_len + 2].tostring()
         self = cls(value)
-        return self, data_cursor + string_len + 2;
+        return self, data_cursor + string_len + 2
 
     def __init__(self, value="", name=None):
         if name:
@@ -286,7 +288,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
     the TAG_Compound. Add tags to the compound using the subscript
     operator [].    This will automatically name the tags."""
 
-    tag = 10;
+    tag = 10
 
     def dataType(self, val):
             for i in val:
@@ -311,26 +313,25 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
     def load_from(cls, data, data_cursor):
         self = cls()
         while data_cursor < len(data):
-            tag_type = data[data_cursor];
+            tag_type = data[data_cursor]
             data_cursor += 1
             if tag_type == 0:
                 break
 
             tag, data_cursor = load_named(data, data_cursor, tag_type)
 
-            self._value.append(tag);
-        
+            self._value.append(tag)
+
         return self, data_cursor
         
     def __init__(self, value=[], name=""):
 
-        self.name = name;
+        self.name = name
         if value.__class__ == ''.__class__:
-            self.name = value;
-            value = [];
-        self.value = value;
-        
-            
+            self.name = value
+            value = []
+        self.value = value
+
 
     def write_value(self, buf):
         for i in self.value:
@@ -343,7 +344,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         #if(len(hits)): return hits[0];
         for key in self.value:
                 if key.name == k: return key
-        raise KeyError("Key {0} not found in tag {1}".format(k, self));
+        raise KeyError("Key {0} not found in tag {1}".format(k, self))
 
     def __iter__(self):             return itertools.imap(lambda x:x.name, self.value);
     def __contains__(self, k):return k in map(lambda x:x.name, self.value);
@@ -362,13 +363,14 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         """remove any items already named "k".    """
         olditems = filter(lambda x:x.name == k, self.value)
         for i in olditems: self.value.remove(i)
-        self.value.append(v);
-        v.name = k;
+        self.value.append(v)
+        v.name = k
 
     def __delitem__(self, k): self.value.__delitem__(self.value.index(self[k]));
 
     def add(self, v):
-        self[v.name] = v;
+        self[v.name] = v
+
 
 class TAG_List(TAG_Value, collections.MutableSequence):
 
@@ -379,7 +381,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
     
     Empty lists in the wild have been seen with type TAG_Byte"""
 
-    tag = 9;
+    tag = 9
 
     def dataType(self, val):
         if val:
@@ -406,9 +408,9 @@ class TAG_List(TAG_Value, collections.MutableSequence):
     @classmethod
     def load_from(cls, data, data_cursor):
         self = cls()
-        self.list_type = data[data_cursor];
-        
-        data_cursor += 1;
+        self.list_type = data[data_cursor]
+
+        data_cursor += 1
 
         list_length, data_cursor = TAG_Int.load_from(data, data_cursor)
         list_length = list_length.value
@@ -417,8 +419,8 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         for i in range(list_length):
 
             tag, data_cursor = tag_classes[self.list_type].load_from(data, data_cursor)
-            self.append(tag);
-        
+            self.append(tag)
+
         return self, data_cursor
         
     def __init__(self, value=[], name=None, list_type=TAG_Compound):
@@ -430,7 +432,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         self.list_type = list_type.tag
 
         if len(value):
-            self.list_type = value[0].tag;
+            self.list_type = value[0].tag
             value = filter(lambda x:x.__class__ == value[0].__class__, value)
 
         self.value = value
@@ -446,7 +448,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         if v.__class__ != tag_classes[self.list_type]:
             raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_classes[self.list_type]))
         v.name = ""
-        self.value[i] = v;
+        self.value[i] = v
 
     def __delitem__(self, i):
         del self.value[i]
@@ -459,7 +461,7 @@ class TAG_List(TAG_Value, collections.MutableSequence):
                     if v.__class__ != tag_classes[self.list_type]: raise TypeError("Invalid type %s for TAG_List(%s)" % (v.__class__, tag_classes[self.list_type]))
 
             v.name = ""
-            self.value.insert(i, v);
+            self.value.insert(i, v)
 
     def write_value(self, buf):
         buf.write(struct.pack(TAGfmt, self.list_type))
@@ -481,7 +483,7 @@ tag_classes = {
     10: TAG_Compound,
     11: TAG_Int_Array,
     12: TAG_Short_Array,
-    };
+    }
 
 import zlib
 def gunzip(data):
@@ -497,7 +499,8 @@ def loadFile(filename):
     except IOError:
         print "File %s not zipped" % filename
 
-    return load(buf=fromstring(data, 'uint8'));
+    return load(buf=fromstring(data, 'uint8'))
+
 
 def load_named(data, data_cursor, tag_type):
     tag_name, data_cursor = TAG_String.load_from(data, data_cursor)
@@ -516,21 +519,20 @@ def load(filename="", buf=None):
     if filename and isinstance(filename, (str, unicode)):
         return loadFile(filename)
     if isinstance(buf, str): buf = fromstring(buf, uint8)
-    data = buf;
+    data = buf
     #if buf != None: data = buf
     if not len(buf):
         raise NBTFormatError, "Asked to load root tag of zero length"
 
-    data_cursor = 0;
-    tag_type = data[data_cursor];
+    data_cursor = 0
+    tag_type = data[data_cursor]
     if tag_type != 10:
-        raise NBTFormatError, 'Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type);
-    data_cursor += 1;
+        raise NBTFormatError, 'Not an NBT file with a root TAG_Compound (found {0})'.format(tag_type)
+    data_cursor += 1
 
     tag, data_cursor = load_named(data, data_cursor, tag_type)
 
-    return tag;
-
+    return tag
 
 
 __all__ = [a.__name__ for a in tag_classes.itervalues()] + ["load", "loadFile", "gunzip"]

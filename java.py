@@ -20,13 +20,15 @@ class MCJavaLevel(MCLevel):
     def blockDataAt(self, *args): return 0;
     @property
     def Height(self):
-        return self.Blocks.shape[2];
+        return self.Blocks.shape[2]
+
     @property
     def Length(self):
-        return self.Blocks.shape[1];
+        return self.Blocks.shape[1]
+
     @property
     def Width(self):
-        return self.Blocks.shape[0];
+        return self.Blocks.shape[0]
 
 
     def guessSize(self, data):
@@ -63,27 +65,26 @@ class MCJavaLevel(MCLevel):
                 data[3] == 0x88)
 
     def __init__(self, filename, data):
-        self.filename = filename;
+        self.filename = filename
         if isinstance(data, basestring):
             data = fromstring(data, dtype='uint8')
-        self.filedata = data;
-            
+        self.filedata = data
+
         #try to take x,z,y from the filename
         r = re.findall("\d+", os.path.basename(filename))
         if r and len(r) >= 3:
             (w, l, h) = map(int, r[-3:])
             if w * l * h > data.shape[0]:
                 info("Not enough blocks for size " + str((w, l, h)))
-                w, l, h = self.guessSize(data);
+                w, l, h = self.guessSize(data)
         else:
-            w, l, h = self.guessSize(data);
+            w, l, h = self.guessSize(data)
 
         info(u"MCJavaLevel created for potential level of size " + str((w, l, h)))
 
         blockCount = h * l * w
         if blockCount > data.shape[0]:
-            raise ValueError, "Level file does not contain enough blocks! (size {s}) Try putting the size into the filename, e.g. server_level_{w}_{l}_{h}.dat".format(w=w, l=l, h=h, s=data.shape);
-
+            raise ValueError, "Level file does not contain enough blocks! (size {s}) Try putting the size into the filename, e.g. server_level_{w}_{l}_{h}.dat".format(w=w, l=l, h=h, s=data.shape)
 
         blockOffset = data.shape[0] - blockCount
         blocks = data[blockOffset:blockOffset + blockCount]
@@ -93,46 +94,46 @@ class MCJavaLevel(MCLevel):
             #guess the block array by starting at the end of the file
             #and sliding the blockCount-sized window back until it
             #looks like every block has a valid blockNumber
-            blockOffset -= 1;
+            blockOffset -= 1
             blocks = data[blockOffset:blockOffset + blockCount]
 
             if blockOffset <= -data.shape[0]:
                 raise IOError, "Can't find a valid array of blocks <= #%d" % maxBlockType
 
-        self.Blocks = blocks;
-        self.blockOffset = blockOffset;
-        blocks.shape = (w, l, h);
-        blocks.strides = (1, w, w * l);
+        self.Blocks = blocks
+        self.blockOffset = blockOffset
+        blocks.shape = (w, l, h)
+        blocks.strides = (1, w, w * l)
 
 
     def saveInPlace(self):
 
         s = StringIO()
         if self.compressed:
-            g = gzip.GzipFile(fileobj=s, mode='wb');
+            g = gzip.GzipFile(fileobj=s, mode='wb')
         else:
-            g = s;
+            g = s
 
-        g.write(self.filedata.tostring());
-        g.flush();
+        g.write(self.filedata.tostring())
+        g.flush()
         g.close()
 
         try:
-            os.rename(self.filename, self.filename + ".old");
+            os.rename(self.filename, self.filename + ".old")
         except Exception, e:
             pass;
 
         try:
             with open(self.filename, 'wb') as f:
-                f.write(s.getvalue());
+                f.write(s.getvalue())
         except Exception, e:
             info(u"Error while saving java level in place: {0}".format(e))
             try:os.remove(self.filename);
             except: pass
-            os.rename(self.filename + ".old", self.filename);
+            os.rename(self.filename + ".old", self.filename)
 
         try:
-            os.remove(self.filename + ".old");
+            os.remove(self.filename + ".old")
         except Exception, e:
             pass;
 

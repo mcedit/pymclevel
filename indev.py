@@ -96,10 +96,10 @@ class MCIndevLevel(EntityLevel):
     materials = indevMaterials
     def setPlayerSpawnPosition(self, pos, player=None):
         assert len(pos) == 3
-        self.Spawn = array(pos);
+        self.Spawn = array(pos)
 
     def playerSpawnPosition(self, player=None):
-        return self.Spawn;
+        return self.Spawn
 
     def setPlayerPosition(self, pos, player="Ignored"):
         for x in self.root_tag["Entities"]:
@@ -109,7 +109,7 @@ class MCIndevLevel(EntityLevel):
     def getPlayerPosition(self, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                return array(map(lambda x:x.value, x["Pos"]));
+                return array(map(lambda x:x.value, x["Pos"]))
 
     def setPlayerOrientation(self, yp, player="Ignored"):
         for x in self.root_tag["Entities"]:
@@ -120,22 +120,22 @@ class MCIndevLevel(EntityLevel):
         """ returns (yaw, pitch) """
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                return array(map(lambda x:x.value, x["Rotation"]));
+                return array(map(lambda x:x.value, x["Rotation"]))
 
     def setBlockDataAt(self, x, y, z, newdata):
         if x < 0 or y < 0 or z < 0: return 0
         if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
-        self.Data[x, z, y] = (newdata & 0xf);
+        self.Data[x, z, y] = (newdata & 0xf)
 
     def blockDataAt(self, x, y, z):
         if x < 0 or y < 0 or z < 0: return 0
         if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
-        return self.Data[x, z, y];
+        return self.Data[x, z, y]
 
     def blockLightAt(self, x, y, z):
         if x < 0 or y < 0 or z < 0: return 0
         if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
-        return self.BlockLight[x, z, y];
+        return self.BlockLight[x, z, y]
 
     def __repr__(self):
         return u"MCIndevLevel({0}): {1}W {2}L {3}H".format(self.filename, self.Width, self.Length, self.Height)
@@ -151,13 +151,12 @@ class MCIndevLevel(EntityLevel):
         self.Blocks = array([], uint8)
         self.Data = array([], uint8)
         self.Spawn = (0, 0, 0)
-        self.filename = filename;
-
+        self.filename = filename
 
         if root_tag:
 
-            self.root_tag = root_tag;
-            mapTag = root_tag[Map];
+            self.root_tag = root_tag
+            mapTag = root_tag[Map]
             self.Width = mapTag[Width].value
             self.Length = mapTag[Length].value
             self.Height = mapTag[Height].value
@@ -176,10 +175,10 @@ class MCIndevLevel(EntityLevel):
 
             self.Data >>= 4
 
-            self.Spawn = [mapTag[Spawn][i].value for i in range(3)];
+            self.Spawn = [mapTag[Spawn][i].value for i in range(3)]
 
             if not Entities in root_tag:
-                root_tag[Entities] = TAG_List();
+                root_tag[Entities] = TAG_List()
             self.Entities = root_tag[Entities]
             
             #xxx fixup Motion and Pos to match infdev format
@@ -192,7 +191,7 @@ class MCIndevLevel(EntityLevel):
                 
             
             if not TileEntities in root_tag:
-                root_tag[TileEntities] = TAG_List();
+                root_tag[TileEntities] = TAG_List()
             self.TileEntities = root_tag[TileEntities]
             #xxx fixup TileEntities positions to match infdev format
             for te in self.TileEntities:
@@ -233,51 +232,51 @@ class MCIndevLevel(EntityLevel):
 
 
     def rotateLeft(self):
-        MCLevel.rotateLeft(self);
+        MCLevel.rotateLeft(self)
 
-        self.Data = swapaxes(self.Data, 1, 0)[:, ::-1, :]; #x=y; y=-x
+        self.Data = swapaxes(self.Data, 1, 0)[:, ::-1, :] #x=y; y=-x
 
         torchRotation = array([0, 4, 3, 1, 2, 5,
                                6, 7,
 
-                               8, 9, 10, 11, 12, 13, 14, 15]);
+                               8, 9, 10, 11, 12, 13, 14, 15])
 
         torchIndexes = (self.Blocks == self.materials.Torch.ID)
         info(u"Rotating torches: {0}".format(len(torchIndexes.nonzero()[0])))
         self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
 
     def decodePos(self, v):
-        b = 10;
+        b = 10
         m = (1 << b) - 1; return v & m, (v >> b) & m, (v >> (2 * b))
     def encodePos(self, x, y, z):
-        b = 10;
+        b = 10
         return x + (y << b) + (z << (2 * b))
 
     def saveToFile(self, filename=None):
         if filename == None: filename = self.filename;
         if filename == None:
             warn(u"Attempted to save an unnamed file in place")
-            return; #you fool!
+            return #you fool!
 
-        self.Data <<= 4;
+        self.Data <<= 4
         self.Data |= (self.BlockLight & 0xf)
 
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
 
-        mapTag = TAG_Compound(name=Map);
-        mapTag[Width] = TAG_Short(self.Width);
-        mapTag[Height] = TAG_Short(self.Height);
-        mapTag[Length] = TAG_Short(self.Length);
-        mapTag[Blocks] = TAG_Byte_Array(self.Blocks);
-        mapTag[Data] = TAG_Byte_Array(self.Data);
+        mapTag = TAG_Compound(name=Map)
+        mapTag[Width] = TAG_Short(self.Width)
+        mapTag[Height] = TAG_Short(self.Height)
+        mapTag[Length] = TAG_Short(self.Length)
+        mapTag[Blocks] = TAG_Byte_Array(self.Blocks)
+        mapTag[Data] = TAG_Byte_Array(self.Data)
 
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
 
         mapTag[Spawn] = TAG_List([TAG_Short(i) for i in self.Spawn])
 
-        self.root_tag[Map] = mapTag;
+        self.root_tag[Map] = mapTag
         self.root_tag[Map]
         
         #fix up Entities imported from Alpha worlds
@@ -294,14 +293,14 @@ class MCIndevLevel(EntityLevel):
                 ent["Pos"] = TAG_Int(self.encodePos(ent['x'].value, ent['y'].value, ent['z'].value))
         #output_file = gzip.open(self.filename, "wb", compresslevel=1)
         try:
-            os.rename(filename, filename + ".old");
+            os.rename(filename, filename + ".old")
         except Exception, e:
             pass
 
         try:
-            self.root_tag.saveGzipped(filename);
+            self.root_tag.saveGzipped(filename)
         except:
-            os.rename(filename + ".old", filename);
+            os.rename(filename + ".old", filename)
 
         try: os.remove(filename + ".old");
         except Exception, e:

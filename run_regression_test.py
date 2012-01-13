@@ -76,7 +76,7 @@ def launch_subprocess(directory, arguments, env={}):
     #if sys.platform == "win32":
     newenv = {}
     newenv.update(os.environ)
-    newenv.update(env);
+    newenv.update(env)
 
     proc = subprocess.Popen((["python.exe"] if sys.platform == "win32" else []) + [
             "./mce.py",

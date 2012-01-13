@@ -207,7 +207,7 @@ def fromFile(filename, loadInfinite=True):
 
     if ZipSchematic._isLevel(filename):
         info("Zipfile found, attempting zipped infinite level")
-        lev = ZipSchematic(filename);
+        lev = ZipSchematic(filename)
         info("Detected zipped Infdev level")
         return lev
 
@@ -217,14 +217,14 @@ def fromFile(filename, loadInfinite=True):
     if MCInfdevOldLevel._isLevel(filename):
         info(u"Detected Infdev level.dat")
         if loadInfinite:
-            return MCInfdevOldLevel(filename=filename);
+            return MCInfdevOldLevel(filename=filename)
         else:
-            raise ValueError, "Asked to load {0} which is an infinite level, loadInfinite was False".format(os.path.basename(filename));
+            raise ValueError, "Asked to load {0} which is an infinite level, loadInfinite was False".format(os.path.basename(filename))
 
     if os.path.isdir(filename):
-        raise ValueError, "Folder {0} was not identified as a Minecraft level.".format(os.path.basename(filename));
+        raise ValueError, "Folder {0} was not identified as a Minecraft level.".format(os.path.basename(filename))
 
-    f = file(filename, 'rb');
+    f = file(filename, 'rb')
     rawdata = f.read()
     f.close()
     if len(rawdata) < 4:
@@ -240,40 +240,40 @@ def fromFile(filename, loadInfinite=True):
 
     if MCJavaLevel._isDataLevel(data):
         info(u"Detected Java-style level")
-        lev = MCJavaLevel(filename, data);
-        lev.compressed = False;
-        return lev;
+        lev = MCJavaLevel(filename, data)
+        lev.compressed = False
+        return lev
 
     #ungzdata = None
     compressed = True
-    unzippedData = None;
+    unzippedData = None
     try:
         unzippedData = gunzip(rawdata)
     except Exception, e:
         info(u"Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e))
         if unzippedData is None:
-            compressed = False;
+            compressed = False
             unzippedData = rawdata
 
     #data = 
     data = unzippedData
     if MCJavaLevel._isDataLevel(data):
         info(u"Detected compressed Java-style level")
-        lev = MCJavaLevel(filename, data);
-        lev.compressed = compressed;
-        return lev;
+        lev = MCJavaLevel(filename, data)
+        lev.compressed = compressed
+        return lev
 
     try:
-        root_tag = nbt.load(buf=data);
-        
+        root_tag = nbt.load(buf=data)
+
     except Exception, e:
         info(u"Error during NBT load: {0!r}".format(e))
         info(traceback.format_exc())
         info(u"Fallback: Detected compressed flat block array, yzx ordered ")
         try:
-            lev = MCJavaLevel(filename, data);
-            lev.compressed = compressed;
-            return lev;
+            lev = MCJavaLevel(filename, data)
+            lev.compressed = compressed
+            return lev
         except Exception, e2:
             raise LoadingError, ("Multiple errors encountered", e, e2), sys.exc_info()[2]
 
@@ -287,8 +287,7 @@ def fromFile(filename, loadInfinite=True):
 
         if INVEditChest._isTagLevel(root_tag):
             info(u"Detected INVEdit inventory file")
-            return INVEditChest(root_tag=root_tag, filename=filename);
-
+            return INVEditChest(root_tag=root_tag, filename=filename)
 
     raise IOError, "Cannot detect file type."
 

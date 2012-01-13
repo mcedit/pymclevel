@@ -24,7 +24,7 @@ class BoundingBox (object):
 
     def setMinx(self, x):
         self.size[0] -= x - self.origin[0]
-        self.origin[0] = x;
+        self.origin[0] = x
 
     def setMiny(self, y):
         self.size[1] -= y - self.origin[1]
@@ -37,30 +37,30 @@ class BoundingBox (object):
 
     def setMaxx(self, x):
         if x < self.origin[0]:
-            x = self.origin[0];
+            x = self.origin[0]
 
         self.size[0] = x - self.origin[0]
 
     def setMaxy(self, y):
         if y < self.origin[1]:
-            y = self.origin[1];
+            y = self.origin[1]
 
         self.size[1] = y - self.origin[1]
 
     def setMaxz(self, z):
         if z < self.origin[2]:
-            z = self.origin[2];
+            z = self.origin[2]
 
         self.size[2] = z - self.origin[2]
 
 
-    minx = property(getMinx, setMinx);
-    miny = property(getMiny, setMiny);
-    minz = property(getMinz, setMinz);
+    minx = property(getMinx, setMinx)
+    miny = property(getMiny, setMiny)
+    minz = property(getMinz, setMinz)
 
-    maxx = property(getMaxx, setMaxx);
-    maxy = property(getMaxy, setMaxy);
-    maxz = property(getMaxz, setMaxz);
+    maxx = property(getMaxx, setMaxx)
+    maxy = property(getMaxy, setMaxy)
+    maxz = property(getMaxz, setMaxz)
 
     def getMincx(self): return self.origin[0] >> 4;
     def getMincz(self): return self.origin[2] >> 4;
@@ -68,11 +68,11 @@ class BoundingBox (object):
     def getMaxcx(self): return ((self.origin[0] + self.size[0] - 1) >> 4) + 1;
     def getMaxcz(self): return ((self.origin[2] + self.size[2] - 1) >> 4) + 1;
 
-    mincx = property(getMincx, None, None, "The smallest chunk position contained in this box");
-    mincz = property(getMincz, None, None, "The smallest chunk position contained in this box");
+    mincx = property(getMincx, None, None, "The smallest chunk position contained in this box")
+    mincz = property(getMincz, None, None, "The smallest chunk position contained in this box")
 
-    maxcx = property(getMaxcx, None, None, "The largest chunk position contained in this box");
-    maxcz = property(getMaxcz, None, None, "The largest chunk position contained in this box");
+    maxcx = property(getMaxcx, None, None, "The largest chunk position contained in this box")
+    maxcz = property(getMaxcz, None, None, "The largest chunk position contained in this box")
 
     def getOrigin(self): return self._origin;
     def setOrigin(self, o): self._origin = list(o);
@@ -91,9 +91,9 @@ class BoundingBox (object):
     def setHeight(self, h): self.size[1] = max(0, self.type(h))
     def setLength(self, l): self.size[2] = max(0, self.type(l))
 
-    width = property(getWidth, setWidth, None, "The dimension along the X axis");
-    height = property(getHeight, setHeight, None, "The dimension along the Y axis");
-    length = property(getLength, setLength, None, "The dimension along the Z axis");
+    width = property(getWidth, setWidth, None, "The dimension along the X axis")
+    height = property(getHeight, setHeight, None, "The dimension along the Y axis")
+    length = property(getLength, setLength, None, "The dimension along the Z axis")
 
 
     def getMaximum(self): return map(lambda a, b:a + b, self._origin, self._size)
@@ -106,7 +106,8 @@ class BoundingBox (object):
     @property
     def chunkPositions(self):
         #iterate through all of the chunk positions within this selection box
-        return itertools.product(xrange(self.mincx, self.maxcx), xrange(self.mincz, self.maxcz));
+        return itertools.product(xrange(self.mincx, self.maxcx), xrange(self.mincz, self.maxcz))
+
     @property
     def chunkCount(self):
         return (self.maxcx - self.mincx) * (self.maxcz - self.mincz)
@@ -163,12 +164,12 @@ class BoundingBox (object):
 
 
     def __contains__(self, pos):
-        x, y, z = pos;
+        x, y, z = pos
         if x < self.minx or x >= self.maxx: return False
         if y < self.miny or y >= self.maxy: return False
         if z < self.minz or z >= self.maxz: return False
 
-        return True;
+        return True
 
     def __cmp__(self, b):
         return cmp((self.origin, self.size), (b.origin, b.size))
