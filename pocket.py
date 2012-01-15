@@ -85,6 +85,7 @@ class PocketChunksFile(object):
     
     def repair(self):
         pass
+#        
 #        lostAndFound = {}
 #        _freeSectors = [True] * len(self.freeSectors)
 #        _freeSectors[0] = _freeSectors[1] = False
@@ -185,7 +186,7 @@ class PocketChunksFile(object):
         debug("REGION LOAD %s,%s sector %s", cx, cz, sectorStart)
         return data
 
-    def loadChunk(self, cx, cz, world):
+    def _loadChunk(self, cx, cz, world):
         data = self._readChunk(cx, cz)
         if data is None: raise ChunkNotPresent, (cx, cz, self)
         
@@ -209,7 +210,7 @@ class PocketChunksFile(object):
 
         if sectorNumber != 0 and sectorsAllocated >= sectorsNeeded:
             debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
-            self.writeSector(sectorNumber, data, format)
+            self.writeSector(sectorNumber, data)
         else:
             # we need to allocate new sectors
 
@@ -241,7 +242,7 @@ class PocketChunksFile(object):
                 debug("REGION SAVE {0},{1}, reusing {2}b".format(cx, cz, len(data)))
                 sectorNumber = runStart
                 self.setOffset(cx, cz, sectorNumber << 8 | sectorsNeeded)
-                self.writeSector(sectorNumber, data, format)
+                self.writeSector(sectorNumber, data)
                 self.freeSectors[sectorNumber:sectorNumber + sectorsNeeded] = [False] * sectorsNeeded
 
             else:
@@ -264,17 +265,16 @@ class PocketChunksFile(object):
                 self.freeSectors += [False] * sectorsNeeded
 
                 self.setOffset(cx, cz, sectorNumber << 8 | sectorsNeeded)
-                self.writeSector(sectorNumber, data, format)
+                self.writeSector(sectorNumber, data)
 
 
-    def writeSector(self, sectorNumber, data, format):
+    def writeSector(self, sectorNumber, data):
         with self.file as f:
             debug("REGION: Writing sector {0}".format(sectorNumber))
 
             f.seek(sectorNumber * self.SECTOR_BYTES)
             f.write(struct.pack("<I", len(data) + self.CHUNK_HEADER_SIZE))# // chunk length
             f.write(data)# // chunk data
-            #f.flush()
 
     def containsChunk(self, cx,cz):
         return self.getOffset(cx,cz) != 0
@@ -306,7 +306,6 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
     Width = 512
     
     isInfinite = True # Wrong. isInfinite actually means 'isChunked' and should be changed
-    loadedChunks = None
     materials = pocketMaterials
     
     @property
@@ -328,7 +327,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
 
         c = self._loadedChunks.get( (cx,cz) )
         if c is None:
-            c = self.chunkFile.loadChunk(cx, cz, self)
+            c = self.chunkFile._loadChunk(cx, cz, self)
             self._loadedChunks[cx,cz] = c
         return c
     
@@ -380,9 +379,7 @@ class PocketChunk(LightedChunk):
     def isLoaded(self): return True
     
     def load(self): pass
-    def decompress(self): pass
-    def compress(self): pass
-    
+
     def unpackChunkData(self):
         for key in ('SkyLight', 'BlockLight', 'Data'):
             dataArray = getattr(self, key)

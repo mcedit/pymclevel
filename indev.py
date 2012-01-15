@@ -291,7 +291,6 @@ class MCIndevLevel(EntityLevel):
         for ent in self.TileEntities:
             if "Pos" not in ent and all(c in ent for c in 'xyz'):
                 ent["Pos"] = TAG_Int(self.encodePos(ent['x'].value, ent['y'].value, ent['z'].value))
-        #output_file = gzip.open(self.filename, "wb", compresslevel=1)
         try:
             os.rename(filename, filename + ".old")
         except Exception, e:

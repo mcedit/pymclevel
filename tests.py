@@ -31,6 +31,10 @@ warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 #logging.basicConfig(format=u'%(levelname)s:%(message)s')
 #logging.getLogger().level = logging.INFO
+if not tempfile.tempdir:
+    tempfile.tempdir = os.path.join(tempfile.gettempdir(), "pymclevel_tests")
+    os.mkdir(tempfile.tempdir)
+
 def mktemp(suffix):
     td = tempfile.mkdtemp(suffix)
     os.rmdir(td)
@@ -325,9 +329,20 @@ class TestAlphaLevel(unittest.TestCase):
         level = self.alphalevel.level
         ch = level.getChunk(cx,cz)
         ch.dirty = True
-        level.saveInPlace()
-        ch.Blocks
-        print ch.root_tag
+        ch.Data[:] = 13
+        d = {}
+        keys = 'Blocks Data SkyLight BlockLight'.split()
+        for key in keys:
+            d[key] = array(getattr(ch, key))
+            
+        for i in range(5):
+            level.saveInPlace()
+            ch = level.getChunk(cx,cz)
+            ch.dirty = True
+            assert (ch.Data == 13).all()
+            for key in keys:
+                assert (d[key] == getattr(ch, key)).all()
+            
         
     def testPlayerSpawn(self):
         level = self.alphalevel.level
@@ -335,7 +350,31 @@ class TestAlphaLevel(unittest.TestCase):
         level.setPlayerSpawnPosition((0, 64, 0), "Player")
         level.getPlayerPosition()
         level.players
-
+        
+    def testReload(self):
+        level = self.alphalevel.level
+        level.getChunk(0,0).Blocks[:] = 0xff
+        level.markDirtyChunk(0,0)
+        level.saveInPlace()
+        from pprint import pprint as pp
+        pp(level._compressedChunks)
+        pp(level._loadedChunks)
+        level.unloadRegions()
+        assert (level.getChunk(0,0).Blocks == 0xff).all()
+    
+    def testMemoryUsage(self):
+        level = self.alphalevel.level
+        #for x, z in itertools.product(range(1024), range(1024)):
+        for x in range(128):
+            print "Loaded:     ", len(level._loadedChunks)
+            print "Compressed: ", len(level._compressedChunks)
+            print "Dirty:      ", len(level.dirtyChunks)
+            print
+            for z in range(128):
+                if not level.containsChunk(x,z):
+                    level.createChunk(x,z)
+                level.getChunk(x,z)
+     
 class TestSchematics(unittest.TestCase):
     def setUp(self):
         #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
@@ -356,12 +395,10 @@ class TestSchematics(unittest.TestCase):
 
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         assert((schematic.Blocks[0:64, 0:64, 0:64] == level.Blocks[0:64, 0:64, 0:64]).all())
-        schematic.compress()
 
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (-32, -32, -32))
         assert((schematic.Blocks[0:32, 0:32, 0:32] == level.Blocks[32:64, 32:64, 32:64]).all())
 
-        schematic.compress()
 
         schematic.saveInPlace()
 
@@ -448,4 +485,6 @@ class TestServerGen(unittest.TestCase):
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
+    logging.basicConfig()
+    logging.getLogger().level = logging.INFO
     unittest.main()

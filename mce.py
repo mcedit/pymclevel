@@ -862,9 +862,7 @@ class mce(object):
             if entitiesRemoved:
                 chunk.chunkChanged(False)
 
-            chunk.compress()
             chunk.save()
-            chunk.unload()
 
         if len(removedEntities) == 0:
             print "No entities to remove."

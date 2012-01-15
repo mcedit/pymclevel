@@ -130,7 +130,6 @@ class MCLevel(object):
     materials = classicMaterials
     isInfinite = False
 
-    compressedTag = None
     root_tag = None
 
     Height = None
@@ -186,11 +185,6 @@ class MCLevel(object):
 
     def close(self): pass
 
-    # --- Compression ---
-    def compress(self): pass
-    def decompress(self):pass
-
-
     # --- Entity Methods ---
     def addEntity(self, entityTag): pass
     def addEntities(self, entities): pass
@@ -201,24 +195,16 @@ class MCLevel(object):
     def copyEntitiesFromIter(self, *args, **kw): yield;
     def removeEntitiesInBox(self, box): pass
     def removeTileEntitiesInBox(self, box): pass
-    
-    # --- Chunked Format Emulation ---
-    def compressChunk(self, cx, cz): pass
 
     @property
-    def loadedChunks(self):
+    def allChunks(self):
+        """Returns a synthetic list of chunk positions (xPos, zPos), to fake
+        being a chunked level format."""
         return itertools.product(xrange(0, self.Width + 15 >> 4), xrange(0, self.Length + 15 >> 4))
 
     @property
     def chunkCount(self):
         return (self.Width + 15 >> 4) * (self.Length + 15 >> 4)
-
-    @property
-    def allChunks(self):
-        """Returns a synthetic list of chunk positions (xPos, zPos), to fake 
-        being a chunked level format."""
-        return self.loadedChunks
-
 
     def getChunks(self, chunks=None):
         """ pass a list of chunk coordinate tuples to get an iterator yielding
@@ -777,7 +763,6 @@ class ChunkBase(EntityLevel):
     Blocks = Data = SkyLight = BlockLight = HeightMap = NotImplemented #override these!
 
     def load(self):pass
-    def compress(self):pass
     def chunkChanged(self, needsLighting = True):
         self.dirty = True
         self.needsLighting = needsLighting or self.needsLighting

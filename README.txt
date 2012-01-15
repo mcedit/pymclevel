@@ -97,17 +97,6 @@ INFO:Dispersing light...
 INFO:BlockLight Pass 0: 20 chunks
 INFO:BlockLight Pass 1: 2 chunks
 INFO:BlockLight Pass 2: 0 chunks
-INFO:BlockLight Pass 3: 0 chunks
-INFO:BlockLight Pass 4: 0 chunks
-INFO:BlockLight Pass 5: 0 chunks
-INFO:BlockLight Pass 6: 0 chunks
-INFO:BlockLight Pass 7: 0 chunks
-INFO:BlockLight Pass 8: 0 chunks
-INFO:BlockLight Pass 9: 0 chunks
-INFO:BlockLight Pass 10: 0 chunks
-INFO:BlockLight Pass 11: 0 chunks
-INFO:BlockLight Pass 12: 0 chunks
-INFO:BlockLight Pass 13: 0 chunks
 INFO:SkyLight Pass 0: 20 chunks
 INFO:SkyLight Pass 1: 22 chunks
 INFO:SkyLight Pass 2: 17 chunks
@@ -115,13 +104,6 @@ INFO:SkyLight Pass 3: 9 chunks
 INFO:SkyLight Pass 4: 7 chunks
 INFO:SkyLight Pass 5: 2 chunks
 INFO:SkyLight Pass 6: 0 chunks
-INFO:SkyLight Pass 7: 0 chunks
-INFO:SkyLight Pass 8: 0 chunks
-INFO:SkyLight Pass 9: 0 chunks
-INFO:SkyLight Pass 10: 0 chunks
-INFO:SkyLight Pass 11: 0 chunks
-INFO:SkyLight Pass 12: 0 chunks
-INFO:SkyLight Pass 13: 0 chunks
 INFO:Completed in 0:00:02.024000, 0:00:00.337333 per chunk
 INFO:Saved 20 chunks
 World4>
