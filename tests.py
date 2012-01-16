@@ -325,9 +325,20 @@ class TestAlphaLevel(unittest.TestCase):
         level = self.alphalevel.level
         ch = level.getChunk(cx,cz)
         ch.dirty = True
-        level.saveInPlace()
-        ch.Blocks
-        print ch.root_tag
+        ch.Data[:] = 13
+        d = {}
+        keys = 'Blocks Data SkyLight BlockLight'.split()
+        for key in keys:
+            d[key] = array(getattr(ch, key))
+            
+        for i in range(5):
+            level.saveInPlace()
+            ch = level.getChunk(cx,cz)
+            ch.dirty = True
+            assert (ch.Data == 13).all()
+            for key in keys:
+                assert (d[key] == getattr(ch, key)).all()
+            
         
     def testPlayerSpawn(self):
         level = self.alphalevel.level
