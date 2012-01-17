@@ -381,7 +381,7 @@ class TestSchematics(unittest.TestCase):
         tempSchematic.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 0, 0))
 
         info("Schematic from alpha")
-        level = loadWorldNumber(1)
+        level = self.alphalevel.level
         for cx, cz in itertools.product(xrange(0, 4), xrange(0, 4)):
             try:
                 level.createChunk(cx, cz)
