@@ -433,7 +433,18 @@ class TestPocket(unittest.TestCase):
 #        level.copyBlocksFrom(alphalevel, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         #assert((level.Blocks[0:64, 0:64, 0:64] == alphalevel.Blocks[0:64, 0:64, 0:64]).all())
         
-        
+    
+class TestAnvil(unittest.TestCase):
+    def setUp(self):
+        self.level = TempLevel("AnvilWorld")
+    
+    def testAnvil(self):
+        level = self.level.level
+        assert level.chunkCount
+        #print list(level.allChunks)
+        level.extractChunksInBox(level.bounds, "AnvilChunks")
+        chunk = level.getChunk(7,23)
+
 class TestServerGen(unittest.TestCase):
     def setUp(self):
         #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
