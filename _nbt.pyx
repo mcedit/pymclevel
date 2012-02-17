@@ -62,7 +62,7 @@ cdef char TAG_STRING = 8
 cdef char TAG_LIST = 9
 cdef char TAG_COMPOUND = 10
 cdef char TAG_INT_ARRAY = 11
-cdef char TAG_SHORT_ARRAY = 12
+#cdef char TAG_SHORT_ARRAY = 12
 
 class NBTFormatError (ValueError): 
     pass
@@ -271,12 +271,6 @@ cdef class TAG_Int_Array(TAG_Array):
     
     cdef save_value(self, buf):
         pass
-cdef class TAG_Short_Array(TAG_Array):
-    cdef char _tagID(self): return TAG_SHORT_ARRAY
-    cdef public object value
-
-    cdef save_value(self, buf):
-        pass
 
 #cdef int needswap = (sys.byteorder == "little")
 cdef swab(void * vbuf, int nbytes):
@@ -424,8 +418,20 @@ cdef load_bytearray(load_ctx ctx):
     ctx.require(length)
     ctx.offset += length
     return TAG_Byte_Array(fromstring(arr[:length], dtype='uint8', count=length))
-    
-    
+
+cdef load_intarray(load_ctx ctx):
+    ctx.require(4)
+    cdef unsigned int * ptr = <unsigned int *>(ctx.buffer + ctx.offset)
+    swab(ptr, 4)
+    cdef unsigned int length = ptr[0]
+    ctx.offset += 4
+    cdef char * arr = ctx.buffer + ctx.offset
+    #print "Bytearray", length, ctx.size - ctx.offset
+    ctx.require(length)
+    ctx.offset += length
+    return TAG_Int_Array(fromstring(arr[:length], dtype='>u4', count=length/4))
+
+
 ### --- load_compound ---
 cdef load_compound(load_ctx ctx):
     #print "load_compound buf=%d off=%d" % (ctx.buffer[0], ctx.offset)
@@ -510,9 +516,7 @@ cdef load_tag(char tagID, load_ctx ctx):
         
         
     if tagID == TAG_INT_ARRAY:
-        pass
-    if tagID == TAG_SHORT_ARRAY:
-        pass
+        return load_intarray(ctx)
 
 FILTER=''.join([(len(repr(chr(x)))==3) and chr(x) or '.' for x in range(256)])            
 def dump(src, length=8):
@@ -626,9 +630,5 @@ cdef save_tag_value(TAG_Value tag, object buf):
         
         
     if tagID == TAG_INT_ARRAY:
-        pass
-    if tagID == TAG_SHORT_ARRAY:
-        pass
-    
-    
+        (<TAG_Int_Array>tag).save_value(buf)
     
