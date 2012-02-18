@@ -162,7 +162,18 @@ cdef class TAG_Byte_Array(TAG_Array):
         
     cdef save_value(self, buf):
         save_byte_array(self.value, buf)
-    
+
+cdef class TAG_Int_Array(TAG_Array):
+    cdef char _tagID(self): return  TAG_INT_ARRAY
+    cdef public object value
+
+    def __init__(self, value = zeros((0,), 'uint32'), name = u""):
+        self.value = value
+        self.name = name
+        self.tagID = TAG_INT_ARRAY
+
+    cdef save_value(self, buf):
+        save_int_array(self.value, buf)
     
 cdef class TAG_String(TAG_Value):
     cdef unicode _value
@@ -264,13 +275,8 @@ class TAG_Compound(_TAG_Compound, collections.MutableMapping):
         save_root_tag(self, filename, buf)
     def saveGzipped(self, filename, compresslevel=1):
         save_root_tag(self, filename)
-        
-cdef class TAG_Int_Array(TAG_Array):
-    cdef char _tagID(self): return  TAG_INT_ARRAY
-    cdef public object value
-    
-    cdef save_value(self, buf):
-        pass
+
+
 
 #cdef int needswap = (sys.byteorder == "little")
 cdef swab(void * vbuf, int nbytes):
@@ -427,9 +433,10 @@ cdef load_intarray(load_ctx ctx):
     ctx.offset += 4
     cdef char * arr = ctx.buffer + ctx.offset
     #print "Bytearray", length, ctx.size - ctx.offset
-    ctx.require(length)
-    ctx.offset += length
-    return TAG_Int_Array(fromstring(arr[:length], dtype='>u4', count=length/4))
+    bytelength = length*4
+    ctx.require(bytelength)
+    ctx.offset += bytelength
+    return TAG_Int_Array(fromstring(arr[:bytelength], dtype='>u4', count=length))
 
 
 ### --- load_compound ---
@@ -566,6 +573,14 @@ cdef save_byte_array(object value, object buf):
     value = value.tostring()
     cdef char * s = value
     cdef unsigned int length = len(value)
+    swab(&length, 4)
+    cwrite(buf, <char *>&length, 4)
+    cwrite(buf, s, len(value))
+
+cdef save_int_array(object value, object buf):
+    value = value.tostring()
+    cdef char * s = value
+    cdef unsigned int length = len(value) / 4
     swab(&length, 4)
     cwrite(buf, <char *>&length, 4)
     cwrite(buf, s, len(value))

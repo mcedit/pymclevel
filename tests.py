@@ -445,6 +445,25 @@ class TestAnvil(unittest.TestCase):
         level.extractChunksInBox(level.bounds, "AnvilChunks")
         chunk = level.getChunk(7,23)
 
+    def testAnvilChunk(self):
+        """ Test modifying, saving, and loading the new TAG_Int_Array heightmap
+        added with the Anvil format.
+        """
+        chunk = nbt.load("testfiles/AnvilChunk.dat")
+
+        hm = chunk["Level"]["HeightMap"]
+        hm.value[2] = 500
+        oldhm = array(hm.value)
+
+        filename = mktemp("ChangedChunk")
+        chunk.save(filename)
+        changedChunk = nbt.load(filename)
+        os.unlink(filename)
+
+        eq = (changedChunk["Level"]["HeightMap"].value == oldhm)
+        assert eq.all()
+
+
 class TestServerGen(unittest.TestCase):
     def setUp(self):
         #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
