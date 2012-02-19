@@ -436,11 +436,10 @@ blocks:
         mapcolor: [89, 151, 76]
         tex: [5, 3]
       3:
-        name: Leaves
+        name: Jungle Leaves
         mapcolor: [74, 131, 66]
-        tex: [5, 3]
-        aka: Off-color
-        
+        tex: [5, 12]
+
       4: # bit 0x4 - "Permanent"
         name: Leaves (Permanent)
         mapcolor: [60, 192, 41]
@@ -455,10 +454,9 @@ blocks:
         mapcolor: [89, 151, 76]
         tex: [5, 3]
       7:
-        name: Leaves (Permanent)
+        name: Jungle Leaves (Permanent)
         mapcolor: [74, 131, 66]
-        tex: [5, 3]
-        aka: Off-color   
+        tex: [5, 12]
              
       8: # bit 0x8 - "Decaying"
         name: Leaves (Decaying)
@@ -474,10 +472,9 @@ blocks:
         mapcolor: [89, 151, 76]
         tex: [5, 3]
       11:
-        name: Leaves (Decaying)
+        name: Jungle Leaves (Decaying)
         mapcolor: [74, 131, 66]
-        tex: [5, 3]
-        aka: Off-color   
+        tex: [5, 12]
              
       
   - id: 19
