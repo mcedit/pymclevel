@@ -246,7 +246,6 @@ class TestAlphaLevelCreate(unittest.TestCase):
         
 class TestAlphaLevel(unittest.TestCase):
     def setUp(self):
-        #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
         self.indevlevel = TempLevel("hell.mclevel")
         self.alphalevel = TempLevel("PyTestWorld")
 
@@ -271,21 +270,25 @@ class TestAlphaLevel(unittest.TestCase):
     def testCopyConvertBlocks(self):
         indevlevel = self.indevlevel.level
         level = self.alphalevel.level
-        level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (256, 128, 256)), (-0, 0, 0))
+        cx, cz = level.allChunks.next()
+        level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (256, 128, 256)), (cx*16, 0, cz*16))
 
         convertedSourceBlocks, convertedSourceData = indevlevel.convertBlocksFromLevel(level, indevlevel.Blocks[0:16, 0:16, 0:indevlevel.Height], indevlevel.Data[0:16, 0:16, 0:indevlevel.Height])
-        assert (level.getChunk(0, 0).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
+        assert (level.getChunk(cx, cz).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
 
     def testImportSchematic(self):
         indevlevel = self.indevlevel.level
         level = self.alphalevel.level
+        cx, cz = level.allChunks.next()
+
 
         schem = fromFile("schematics/CreativeInABox.schematic")
-        level.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 64, 0))
-        schem = MCSchematic(shape=(1, 1, 3))
-        schem.copyBlocksFrom(level, BoundingBox((0, 64, 0), (1, 1, 3)), (0, 0, 0))
+        box = BoundingBox((cx*16, 64, cz*16), schem.bounds.size)
+        level.copyBlocksFrom(schem, schem.bounds, (0, 64, 0))
+        schem = MCSchematic(shape=schem.bounds.size)
+        schem.copyBlocksFrom(level, box, (0, 0, 0))
         convertedSourceBlocks, convertedSourceData = schem.convertBlocksFromLevel(level, schem.Blocks, schem.Data)
-        assert (level.getChunk(0, 0).Blocks[0:1, 0:3, 64:65] == convertedSourceBlocks).all()
+        assert (level.getChunk(cx, cz).Blocks[0:1, 0:3, 64:65] == convertedSourceBlocks).all()
 
     def testRecreateChunks(self):
         level = self.alphalevel.level
@@ -296,15 +299,17 @@ class TestAlphaLevel(unittest.TestCase):
 
     def testFill(self):
         level = self.alphalevel.level
+        cx, cz = level.allChunks.next()
+        box = BoundingBox((cx*16, 0, cz*16), (38, level.Height, 25))
+        level.fillBlocks(box , level.materials.WoodPlanks)
+        c = level.getChunk(cx, cz)
 
-        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks)
-        c = level.getChunk(0, 0)
         assert (c.Blocks == 5).all()
 
     def testReplace(self):
         level = self.alphalevel.level
 
-        level.fillBlocks(BoundingBox((-11, 0, -7), (38, 128, 25)) , level.materials.WoodPlanks, [level.materials.Dirt, level.materials.Grass])
+        level.fillBlocks(BoundingBox((-11, 0, -7), (38, level.Height, 25)) , level.materials.WoodPlanks, [level.materials.Dirt, level.materials.Grass])
 
     def testSaveRelight(self):
         indevlevel = self.indevlevel.level
@@ -321,10 +326,12 @@ class TestAlphaLevel(unittest.TestCase):
         level.saveInPlace()
 
     def testRecompress(self):
-        cx,cz = -3, -1
         level = self.alphalevel.level
+        cx,cz = level.allChunks.next()
+
         ch = level.getChunk(cx,cz)
         ch.dirty = True
+        ch.Blocks[:] = 6
         ch.Data[:] = 13
         d = {}
         keys = 'Blocks Data SkyLight BlockLight'.split()
@@ -434,16 +441,10 @@ class TestPocket(unittest.TestCase):
         #assert((level.Blocks[0:64, 0:64, 0:64] == alphalevel.Blocks[0:64, 0:64, 0:64]).all())
         
     
-class TestAnvil(unittest.TestCase):
+class TestAnvil(TestAlphaLevel):
     def setUp(self):
-        self.level = TempLevel("AnvilWorld")
-    
-    def testAnvil(self):
-        level = self.level.level
-        assert level.chunkCount
-        #print list(level.allChunks)
-        level.extractChunksInBox(level.bounds, "AnvilChunks")
-        chunk = level.getChunk(7,23)
+        self.indevlevel = TempLevel("hell.mclevel")
+        self.alphalevel = TempLevel("AnvilWorld")
 
     def testAnvilChunk(self):
         """ Test modifying, saving, and loading the new TAG_Int_Array heightmap

@@ -5,6 +5,7 @@ Created on Jul 22, 2011
 '''
 from mclevelbase import *
 from collections import deque
+import os
 import time
 import zlib
 import struct
@@ -39,6 +40,8 @@ RandomSeed = 'RandomSeed'
 SizeOnDisk = 'SizeOnDisk' #maybe update this?
 Time = 'Time'
 Player = 'Player'
+
+Sections = 'Sections'
 
 DIM_NETHER = -1
 DIM_END = 1
@@ -599,6 +602,22 @@ class _ZeroChunk(ChunkBase):
         self.Data = zeroChunk
 
 
+def unpackNibbleArray(dataArray):
+    s = dataArray.shape
+    unpackedData = zeros((s[0], s[1], s[2] * 2), dtype='uint8')
+
+    unpackedData[:, :, ::2] = dataArray
+    unpackedData[:, :, ::2] &= 0xf
+    unpackedData[:, :, 1::2] = dataArray
+    unpackedData[:, :, 1::2] >>= 4
+    return unpackedData
+
+def packNibbleArray(unpackedData):
+    packedData = unpackedData.reshape(16, 16, unpackedData.shape[2] / 2, 2)
+    packedData[..., 1] <<= 4
+    packedData[..., 1] |= packedData[..., 0]
+    return array(packedData[:, :, :, 1])
+
 class InfdevChunk(LightedChunk):
     """ This is a 16x16xH chunk in an (infinite) world.
     The properties Blocks, Data, SkyLight, BlockLight, and Heightmap 
@@ -721,8 +740,8 @@ class InfdevChunk(LightedChunk):
             if self.root_tag is not None:
                 self.sanitizeBlocks() #xxx
 
-            self.packChunkData()
-            self._compressChunk()
+                self.packChunkData()
+                self._compressChunk()
 
         self.world.chunkDidCompress(self)
 
@@ -796,11 +815,6 @@ class InfdevChunk(LightedChunk):
         levelTag[Entities] = TAG_List()
         levelTag[TileEntities] = TAG_List()
 
-        #levelTag["Creator"] = TAG_String("MCEdit-" + release.release);
-
-        #empty lists are seen in the wild with a list.TAG_type for a list of single bytes, 
-        #even though these contain TAG_Compounds 
-
         self.root_tag = chunkTag
         self.shapeChunkData()
         self.dataIsPacked = True
@@ -828,8 +842,7 @@ class InfdevChunk(LightedChunk):
             try:
                 self.world._loadChunk(self)
                 self.dataIsPacked = True
-                self.shapeChunkData()
-                self.unpackChunkData()
+                self.decompress()
 
             except Exception, e:
                 error(u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e))
@@ -867,21 +880,9 @@ class InfdevChunk(LightedChunk):
         """ for internal use.  call getChunk and compressChunk to load, compress, and unpack chunks automatically """
         for key in (SkyLight, BlockLight, Data):
             dataArray = self.root_tag[Level][key].value
-            s = dataArray.shape
-            assert s[2] == self.world.Height / 2;
-            #unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)  
+            assert dataArray.shape[2] == self.world.Height / 2;
 
-            unpackedData = zeros((s[0], s[1], s[2] * 2), dtype='uint8')
-
-            unpackedData[:, :, ::2] = dataArray
-            unpackedData[:, :, ::2] &= 0xf
-            unpackedData[:, :, 1::2] = dataArray
-            unpackedData[:, :, 1::2] >>= 4
-
-
-
-
-            self.root_tag[Level][key].value = unpackedData
+            self.root_tag[Level][key].value = unpackNibbleArray(dataArray)
             self.dataIsPacked = False
 
     def packChunkData(self):
@@ -894,10 +895,7 @@ class InfdevChunk(LightedChunk):
             dataArray = self.root_tag[Level][key].value
             assert dataArray.shape[2] == self.world.Height;
 
-            unpackedData = self.root_tag[Level][key].value.reshape(16, 16, self.world.Height / 2, 2)
-            unpackedData[..., 1] <<= 4
-            unpackedData[..., 1] |= unpackedData[..., 0]
-            self.root_tag[Level][key].value = array(unpackedData[:, :, :, 1])
+            self.root_tag[Level][key].value = packNibbleArray(self.root_tag[Level][key].value)
 
             self.dataIsPacked = True
 
@@ -996,7 +994,7 @@ class InfdevChunk(LightedChunk):
         ores and vegetation on next load"""
         self.root_tag[Level]["TerrainPopulated"].value = val
         self.dirty = True
-        
+
 class dequeset(object):
     def __init__(self):
         self.deque = deque()
@@ -1021,6 +1019,111 @@ class dequeset(object):
     def __getitem__(self, idx):
         return self.deque[idx]
 
+
+class AnvilChunk(InfdevChunk):
+    @property
+    @decompress_first
+    def Blocks(self):
+        return self._Blocks
+    @property
+    @decompress_first
+    def Data(self):
+        return self._Data
+    @property
+    @decompress_first
+    def SkyLight(self):
+        return self._SkyLight
+    @property
+    @decompress_first
+    def BlockLight(self):
+        return self._BlockLight
+
+    @property
+    def Height(self): return self.world.Height
+
+    def _decompressChunk(self):
+        super(AnvilChunk, self)._decompressChunk()
+
+        self._Blocks = zeros((16, 16, self.Height), 'uint8') #xxx uint16?
+        self._Data = zeros((16, 16, self.Height), 'uint8')
+        self._BlockLight = zeros((16, 16, self.Height), 'uint8')
+        self._SkyLight = zeros((16, 16, self.Height), 'uint8')
+        self._SkyLight[:] = 15
+
+        for sec in self.root_tag[Level][Sections]:
+            y = sec["Y"].value * 16
+            for name in Blocks, Data, SkyLight, BlockLight:
+                arr = getattr(self, name)
+                secarray = sec[name].value
+                if name is Blocks:
+                    secarray.shape = (16, 16, 16)
+                else:
+                    secarray.shape = (16, 16, 8)
+                    secarray = unpackNibbleArray(secarray)
+
+                arr[..., y:y+16] = secarray.swapaxes(0, 2)
+
+    def _compressChunk(self):
+        sections = self.root_tag[Level][Sections] = TAG_List()
+
+        for y in range(0, self.Height, 16):
+            sec = nbt.TAG_Compound()
+            for name in Blocks, Data, SkyLight, BlockLight:
+
+                arr = getattr(self, name)
+                secarray = arr[..., y:y+16].swapaxes(0, 2)
+                if name is Blocks:
+                    if not secarray.any(): break #detect empty sections here
+                else:
+                    secarray = packNibbleArray(secarray)
+
+                sec[name] = TAG_Byte_Array(array(secarray))
+
+            if len(sec):
+                sec["Y"] = TAG_Byte(y/16)
+                sections.append(sec)
+
+        super(AnvilChunk, self)._compressChunk()
+
+    def create(self):
+        (cx, cz) = self.chunkPosition
+        chunkTag = nbt.TAG_Compound()
+        chunkTag.name = ""
+        levelTag = nbt.TAG_Compound()
+        chunkTag[Level] = levelTag
+
+        levelTag[TerrainPopulated] = TAG_Byte(1)
+        levelTag[xPos] = TAG_Int(cx)
+        levelTag[zPos] = TAG_Int(cz)
+
+        levelTag[LastUpdate] = TAG_Long(0)
+
+        self._Blocks = zeros((16, 16, self.world.Height), uint8)
+        self._Data = zeros((16, 16, self.world.Height), uint8)
+        self._BlockLight = zeros((16, 16, self.world.Height), uint8)
+        self._SkyLight = zeros((16, 16, self.world.Height), uint8)
+        self._SkyLight[:] = 15
+
+        if self.world.Height <= 256:
+            levelTag[HeightMap] = TAG_Byte_Array()
+            levelTag[HeightMap].value = zeros((16, 16), uint8)
+        else:
+            levelTag[HeightMap] = TAG_Int_Array()
+            levelTag[HeightMap].value = zeros((16, 16), uint32).newbyteorder()
+
+
+        levelTag[Entities] = TAG_List()
+        levelTag[TileEntities] = TAG_List()
+
+        self.root_tag = chunkTag
+        self.dirty = True
+        self.save()
+
+    def shapeChunkData(self):
+        if self.root_tag:
+            self.root_tag[Level][HeightMap].value.shape = (16,16)
+    def packChunkData(self): pass
+    def unpackChunkData(self): pass
 
 class MCRegionFile(object):
     holdFileOpen = False #if False, reopens and recloses the file on each access
@@ -1210,11 +1313,10 @@ class MCRegionFile(object):
 
         data = self._readChunk(cx, cz)
         if data is None: raise ChunkNotPresent, (cx, cz, self)
-        chunk.compressedTag = data[5:]
 
-        format, data = self.decompressSectors(data)
-        chunk.root_tag = nbt.load(buf=data)
+        format, compressedData = self.unpackSectors(data)
         chunk.compressMode = format
+        chunk.compressedTag = compressedData
 
     def unpackSectors(self, data):
         length = struct.unpack_from(">I", data)[0]
@@ -2192,7 +2294,10 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     GameType = TagProperty('GameType', TAG_Int, lambda self:0) #0 for survival, 1 for creative
     GAMETYPE_SURVIVAL = 0
     GAMETYPE_CREATIVE = 1
-    
+
+    VERSION_MCR = 19132
+    VERSION_ANVIL = 19133
+
     _bounds = None
     @property
     def bounds(self):
@@ -2229,7 +2334,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
         self.root_tag = root_tag
-        root_tag[Data]['version'] = TAG_Int(19132)
+        root_tag[Data]['version'] = TAG_Int(self.VERSION_MCR)
 
         self.LastPlayed = long(last_played)
         self.RandomSeed = long(random_seed)
@@ -2325,6 +2430,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             self.Height = self.root_tag["Data"]["YLimit"].value
         except:
             pass
+        if self.version == self.VERSION_ANVIL:
+            self.Height = 256
+            self.chunkClass = AnvilChunk
+        else:
+            self.chunkClass = InfdevChunk
 
         self.playersDir = os.path.join(self.worldDir, "players")
 
@@ -2389,7 +2499,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         return self.getRegionFile(rx, rz)
 
     def preloadChunkPositions(self):
-        if self.version == 19132:
+        if self.version:
             self.preloadRegions()
         else:
             self.preloadChunkPaths()
@@ -2404,9 +2514,16 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             yield os.path.join(regionDir, filename)
 
     def loadRegionFile(self, filepath):
+        if self.version == self.VERSION_MCR:
+            EXTENSION = "mcr"
+        elif self.version == self.VERSION_ANVIL:
+            EXTENSION = "mca"
+        else:
+            raise NotImplementedError, "Unknown level version"
+
         filename = os.path.basename(filepath)
         bits = filename.split('.')
-        if len(bits) < 4 or bits[0] != 'r' or bits[3] != "mcr": return None
+        if len(bits) < 4 or bits[0] != 'r' or bits[3] != EXTENSION: return None
 
         try:
             rx, rz = map(int, bits[1:3])
@@ -2687,7 +2804,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             raise ChunkNotPresent, (cx, cz)
 
         if not (cx, cz) in self._loadedChunks:
-            self._loadedChunks[cx, cz] = InfdevChunk(self, (cx, cz))
+            self._loadedChunks[cx, cz] = self.chunkClass(self, (cx, cz))
 
         return self._loadedChunks[cx, cz]
 
@@ -2828,7 +2945,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if self._allChunks is not None:
             self._allChunks.add((cx, cz))
 
-        self._loadedChunks[cx, cz] = InfdevChunk(self, (cx, cz), create=True)
+        self._loadedChunks[cx, cz] = self.chunkClass(self, (cx, cz), create=True)
         self._bounds = None
 
     def createChunks(self, chunks):
