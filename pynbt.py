@@ -496,7 +496,7 @@ def loadFile(filename):
     data = inputdata
     try:
         data = gunzip(inputdata)
-    except IOError:
+    except (zlib.error, IOError):
         print "File %s not zipped" % filename
 
     return load(buf=fromstring(data, 'uint8'))
