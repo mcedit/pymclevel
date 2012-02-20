@@ -1104,12 +1104,8 @@ class AnvilChunk(InfdevChunk):
         self._SkyLight = zeros((16, 16, self.world.Height), uint8)
         self._SkyLight[:] = 15
 
-        if self.world.Height <= 256:
-            levelTag[HeightMap] = TAG_Byte_Array()
-            levelTag[HeightMap].value = zeros((16, 16), uint8)
-        else:
-            levelTag[HeightMap] = TAG_Int_Array()
-            levelTag[HeightMap].value = zeros((16, 16), uint32).newbyteorder()
+        levelTag[HeightMap] = TAG_Int_Array()
+        levelTag[HeightMap].value = zeros((16, 16), uint32).newbyteorder()
 
 
         levelTag[Entities] = TAG_List()
