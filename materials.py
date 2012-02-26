@@ -179,19 +179,21 @@ class MCMaterials(object):
     def addYamlBlock(self, kw):
         blockID = kw['id']
 
-        unused_yaml_properties = \
-        ['explored',
-         # 'id',
-         # 'idStr',
-         # 'mapcolor',
-         # 'name',
-         # 'tex',
-         ### 'tex_data',
-         # 'tex_direction',
-         ### 'tex_direction_data',
-         'tex_extra',
-         # 'type'
-         ]
+        # xxx unused_yaml_properties variable unused; needed for
+        #     documentation purpose of some sort?  -zothar
+        #unused_yaml_properties = \
+        #['explored',
+        # # 'id',
+        # # 'idStr',
+        # # 'mapcolor',
+        # # 'name',
+        # # 'tex',
+        # ### 'tex_data',
+        # # 'tex_direction',
+        # ### 'tex_direction_data',
+        # 'tex_extra',
+        # # 'type'
+        # ]
 
         for val, data in kw.get('data', {0: {}}).items():
             datakw = dict(kw)

@@ -2892,7 +2892,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         try:
             chunk = self.getChunk(x >> 4, z >> 4)
-        except (ChunkNotPresent, ChunkMalformed), e:
+        except (ChunkNotPresent, ChunkMalformed):
             return None
             # raise Error, can't find a chunk?
         chunk.addEntity(entityTag)

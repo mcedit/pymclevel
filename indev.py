@@ -299,7 +299,7 @@ class MCIndevLevel(EntityLevel):
         # output_file = gzip.open(self.filename, "wb", compresslevel=1)
         try:
             os.rename(filename, filename + ".old")
-        except Exception, e:
+        except Exception:
             pass
 
         try:
@@ -309,7 +309,7 @@ class MCIndevLevel(EntityLevel):
 
         try:
             os.remove(filename + ".old")
-        except Exception, e:
+        except Exception:
             pass
 
         self.BlockLight = self.Data & 0xf

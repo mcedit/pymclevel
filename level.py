@@ -91,7 +91,6 @@ def getSlices(box, height):
         if cx == box.maxcx - 1:
             localMaxX = maxxoff
         newMinX = localMinX + (cx << 4) - box.minx
-        newMaxX = localMaxX + (cx << 4) - box.minx
 
         for cz in range(box.mincz, box.maxcz):
             localMinZ = 0
@@ -101,7 +100,6 @@ def getSlices(box, height):
             if cz == box.maxcz - 1:
                 localMaxZ = maxzoff
             newMinZ = localMinZ + (cz << 4) - box.minz
-            newMaxZ = localMaxZ + (cz << 4) - box.minz
             slices, point = (
                 (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(miny, maxy)),
                 (newMinX, newMinY, newMinZ)
@@ -662,7 +660,6 @@ class EntityLevel(MCLevel):
         # if not self.hasEntities or not sourceLevel.hasEntities:
         #    return
         sourcePoint0 = sourceBox.origin
-        sourcePoint1 = sourceBox.maximum
 
         if sourceLevel.isInfinite:
             for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, entities):

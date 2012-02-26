@@ -1188,7 +1188,6 @@ class CallgrindParser(LineParser):
         _, values = line.split('=', 1)
         values = values.strip().split()
         calls = int(values[0])
-        call_position = values[1:]
         self.consume()
 
         self.parse_cost_line(calls)
@@ -1351,8 +1350,6 @@ class OprofileParser(LineParser):
             self.parse_entry()
 
         profile = Profile()
-
-        reverse_call_samples = {}
 
         # populate the profile
         profile[SAMPLES] = 0
@@ -1945,7 +1942,6 @@ class AQtimeParser(XmlParser):
         return table
 
     def parse_data(self):
-        rows = []
         attrs = self.element_start('DATA')
         table_id = int(attrs['TABLE_ID'])
         table_name, field_types, field_names = self.tables[table_id]

@@ -541,11 +541,8 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
 
     tempfolder = tempfile.mktemp("schematic")
     try:
-        done = False
         tempSchematic = MCInfdevOldLevel(tempfolder, create=True)
         tempSchematic.materials = sourceLevel.materials
-
-        destBox = BoundingBox(destPoint, sourceBox.size)
 
         for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True):
             yield i

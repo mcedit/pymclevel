@@ -527,8 +527,6 @@ class mce(object):
 
         importLevel = mclevel.fromFile(filename)
 
-        destBox = BoundingBox(destPoint, importLevel.size)
-
         self.level.copyBlocksFrom(importLevel, importLevel.bounds, destPoint, blocksToCopy, create=True)
 
         self.needsSave = True
@@ -681,9 +679,7 @@ class mce(object):
                     print "Region {rx},{rz} not found.".format(**locals())
                     return
 
-                used = rf.usedSectors
-                sectors = rf.sectorCount
-                print "Region {rx:6}, {rz:6}: {used}/{sectors} sectors".format(**locals())
+                print "Region {rx:6}, {rz:6}: {used}/{sectors} sectors".format(used=rf.usedSectors, sectors=rf.sectorCount)
                 print "Offset Table:"
                 for cx in range(32):
                     for cz in range(32):
@@ -715,8 +711,7 @@ class mce(object):
             level.allChunks
             coords = (r for r in level.regionFiles)
             for i, (rx, rz) in enumerate(coords):
-                count = level.regionFiles[rx, rz].chunkCount
-                print "({rx:6}, {rz:6}): {count}, ".format(**locals()),
+                print "({rx:6}, {rz:6}): {count}, ".format(count=level.regionFiles[rx, rz].chunkCount),
                 if i % 5 == 4:
                     print ""
 
@@ -1376,7 +1371,7 @@ class mce(object):
         logging.basicConfig(format=u'%(levelname)s:%(message)s')
         logging.getLogger().level = logging.INFO
 
-        appPath = sys.argv.pop(0)
+        sys.argv.pop(0)
 
         if len(sys.argv):
             world = sys.argv.pop(0)
