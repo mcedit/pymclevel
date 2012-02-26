@@ -5,8 +5,11 @@ Created on Jul 22, 2011
 '''
 from mclevelbase import *
 from collections import deque
+import nbt
+from datetime import datetime
 import os
 import time
+import traceback
 import zlib
 import struct
 import shutil
@@ -18,6 +21,8 @@ from os.path import join, dirname, basename
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
+import blockrotation
+from box import BoundingBox
 from level import LightedChunk, EntityLevel, computeChunkHeightMap
 
 # infinite
@@ -220,7 +225,7 @@ def readProperties(filename):
         return {}
 
     with file(filename) as f:
-        properties = dict((line.split("=", 2) for line in (l.strip() for l in f) if not line.startswith("# ")))
+        properties = dict((line.split("=", 2) for line in (l.strip() for l in f) if not line.startswith("#")))
 
     return properties
 

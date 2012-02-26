@@ -4,6 +4,7 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
+from box import BoundingBox
 from mclevelbase import *
 from collections import defaultdict
 import materials

@@ -171,6 +171,7 @@ Copyright 2010 David Rio Vierra
 """
 import os
 import logging
+import traceback
 from numpy import fromstring
 import nbt
 
