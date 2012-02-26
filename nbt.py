@@ -1,14 +1,12 @@
 try:
-    import os
     try:
-        import _nbt
         from _nbt import *
         print "Accelerated NBT module loaded."
     except ImportError:
         print "Import error loading precompiled _nbt extension. Trying pyximport..."
         import numpy
-        from pyximport import install; install(setup_args={'include_dirs':[numpy.get_include()]})
-        import _nbt
+        from pyximport import install
+        install(setup_args={'include_dirs': [numpy.get_include()]})
         from _nbt import *
         print "Accelerated NBT module loaded via pyximport."
 except ImportError, e:

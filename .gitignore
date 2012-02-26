@@ -15,3 +15,6 @@ build
 
 #profiling/outputs
 *.log
+
+# The "standard" virtualenv directory.
+ENV
