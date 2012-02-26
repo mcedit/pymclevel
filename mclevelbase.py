@@ -52,6 +52,8 @@ def decompress_first(func):
 
     dec_first.__doc__ = func.__doc__
     return dec_first
+
+
 def unpack_first(func):
     def upk_first(self, *args, **kw):
         self.unpackChunkData()
@@ -60,10 +62,21 @@ def unpack_first(func):
     upk_first.__doc__ = func.__doc__
     return upk_first
 
-class PlayerNotFound(Exception): pass
-class ChunkNotPresent(Exception): pass
-class RegionMalformed(Exception): pass
-class ChunkMalformed(ChunkNotPresent): pass
+
+class PlayerNotFound(Exception):
+    pass
+
+
+class ChunkNotPresent(Exception):
+    pass
+
+
+class RegionMalformed(Exception):
+    pass
+
+
+class ChunkMalformed(ChunkNotPresent):
+    pass
 
 
 def exhaust(_iter):
@@ -82,7 +95,7 @@ import sys
 
 if sys.platform == "win32":
     #not sure why win32com is needed if the %APPDATA% var is available
-    
+
     try:
         import win32com.client
         objShell = win32com.client.Dispatch("WScript.Shell")
@@ -96,20 +109,19 @@ if sys.platform == "win32":
             )
         except Exception, e:
             print "Error while getting AppData folder using SHGetSpecialFolderLocation: {0!r}".format(e)
-            
+
             appDataDir = os.environ['APPDATA'].decode(sys.getfilesystemencoding())
 
     minecraftDir = os.path.join(appDataDir, u".minecraft")
 
 elif sys.platform == "darwin":
     appDataDir = os.path.expanduser(u"~/Library/Application Support")
-    
+
     minecraftDir = os.path.join(appDataDir, u"minecraft")
     minecraftDir.decode(sys.getfilesystemencoding())
 else:
     appDataDir = os.path.expanduser(u"~")
     minecraftDir = os.path.expanduser(u"~/.minecraft")
-    
+
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
-

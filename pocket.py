@@ -2,16 +2,17 @@ from mclevelbase import *
 from level import FakeChunk
 import struct
 
-#values are usually little-endian, unlike Minecraft PC
+# values are usually little-endian, unlike Minecraft PC
+
 
 class PocketChunksFile(object):
-    holdFileOpen = False #if False, reopens and recloses the file on each access
+    holdFileOpen = False  # if False, reopens and recloses the file on each access
     SECTOR_BYTES = 4096
     CHUNK_HEADER_SIZE = 4
-    
+
     @property
     def file(self):
-        openfile = lambda:file(self.path, "rb+")
+        openfile = lambda: file(self.path, "rb+")
         if PocketChunksFile.holdFileOpen:
             if self._file is None:
                 self._file = openfile()
@@ -41,15 +42,13 @@ class PocketChunksFile(object):
                 filesize = self.SECTOR_BYTES
                 f.truncate(filesize)
 
-
             f.seek(0)
             offsetsData = f.read(self.SECTOR_BYTES)
-           
+
             self.freeSectors = [True] * (filesize / self.SECTOR_BYTES)
             self.freeSectors[0] = False
 
             self.offsets = fromstring(offsetsData, dtype='<u4')
-            
 
         needsRepair = False
 
@@ -59,7 +58,7 @@ class PocketChunksFile(object):
 
             for i in xrange(sector, sector + count):
                 if i >= len(self.freeSectors):
-                    #raise RegionMalformed, "Region file offset table points to sector {0} (past the end of the file)".format(i)
+                    # raise RegionMalformed("Region file offset table points to sector {0} (past the end of the file)".format(i))
                     print  "Region file offset table points to sector {0} (past the end of the file)".format(i)
                     needsRepair = True
                     break
@@ -73,16 +72,19 @@ class PocketChunksFile(object):
 
         info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
              file=os.path.basename(path), used=self.usedSectors, total=self.sectorCount, chunks=self.chunkCount))
-    
+
     @property
-    def usedSectors(self): return len(self.freeSectors) - sum(self.freeSectors)
-    
+    def usedSectors(self):
+        return len(self.freeSectors) - sum(self.freeSectors)
+
     @property
-    def sectorCount(self): return len(self.freeSectors)
-    
+    def sectorCount(self):
+        return len(self.freeSectors)
+
     @property
-    def chunkCount(self): return sum(self.offsets > 0)
-    
+    def chunkCount(self):
+        return sum(self.offsets > 0)
+
     def repair(self):
         pass
 #        lostAndFound = {}
@@ -103,12 +105,12 @@ class PocketChunksFile(object):
 #                try:
 #
 #                    if sectorStart + sectorCount > len(self.freeSectors):
-#                        raise RegionMalformed, "Offset {start}:{end} ({offset}) at index {index} pointed outside of the file".format(
+#                        raise RegionMalformed("Offset {start}:{end} ({offset}) at index {index} pointed outside of the file".format()
 #                            start=sectorStart, end=sectorStart + sectorCount, index=index, offset=offset)
 #
 #                    compressedData = self._readChunk(cx, cz)
 #                    if compressedData is None:
-#                        raise RegionMalformed, "Failed to read chunk data for {0}".format((cx, cz))
+#                        raise RegionMalformed("Failed to read chunk data for {0}".format((cx, cz)))
 #
 #                    format, data = self.decompressSectors(compressedData)
 #                    chunkTag = nbt.load(buf=data)
@@ -127,9 +129,9 @@ class PocketChunksFile(object):
 #                        lostAndFound[xPos, zPos] = (format, compressedData)
 #
 #                        if (xPos, zPos) != (cx, cz):
-#                            raise RegionMalformed, "Chunk {found} was found in the slot reserved for {expected}".format(found=(xPos, zPos), expected=(cx, cz))
+#                            raise RegionMalformed("Chunk {found} was found in the slot reserved for {expected}".format(found=(xPos, zPos), expected=(cx, cz)))
 #                        else:
-#                            raise RegionMalformed, "Chunk {found} (in slot {expected}) has overlapping sectors with another chunk!".format(found=(xPos, zPos), expected=(cx, cz))
+#                            raise RegionMalformed("Chunk {found} (in slot {expected}) has overlapping sectors with another chunk!".format(found=(xPos, zPos), expected=(cx, cz)))
 #
 #
 #
@@ -160,7 +162,7 @@ class PocketChunksFile(object):
 #                xPos = lev["xPos"].value
 #                zPos = lev["zPos"].value
 #                gzdata = InfdevChunk.compressTagGzip(chunkTag)
-#                #print chunkTag.pretty_string()
+#                # print chunkTag.pretty_string()
 #
 #                with file(os.path.join(folder, "c.{0}.{1}.dat".format(base36(xPos), base36(zPos))), "wb") as f:
 #                    f.write(gzdata)
@@ -169,11 +171,13 @@ class PocketChunksFile(object):
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx, cz)
-        if offset == 0: return None
+        if offset == 0:
+            return None
 
         sectorStart = offset >> 8
         numSectors = offset & 0xff
-        if numSectors == 0: return None
+        if numSectors == 0:
+            return None
 
         if sectorStart + numSectors > len(self.freeSectors):
             return None
@@ -187,15 +191,15 @@ class PocketChunksFile(object):
 
     def loadChunk(self, cx, cz, world):
         data = self._readChunk(cx, cz)
-        if data is None: raise ChunkNotPresent, (cx, cz, self)
-        
+        if data is None:
+            raise ChunkNotPresent((cx, cz, self))
+
         chunk = PocketChunk(cx, cz, data[4:], world)
         return chunk
 
-
     def saveChunk(self, chunk):
         cx, cz = chunk.chunkPosition
-        
+
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx, cz)
@@ -203,9 +207,10 @@ class PocketChunksFile(object):
         sectorsAllocated = offset & 0xff
 
         data = chunk._savedData()
-        
+
         sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1
-        if sectorsNeeded >= 256: return
+        if sectorsNeeded >= 256:
+            return
 
         if sectorNumber != 0 and sectorsAllocated >= sectorsNeeded:
             debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
@@ -213,7 +218,7 @@ class PocketChunksFile(object):
         else:
             # we need to allocate new sectors
 
-            # mark the sectors previously used for this chunk as free 
+            # mark the sectors previously used for this chunk as free
             for i in xrange(sectorNumber, sectorNumber + sectorsAllocated):
                 self.freeSectors[i] = True
 
@@ -266,19 +271,18 @@ class PocketChunksFile(object):
                 self.setOffset(cx, cz, sectorNumber << 8 | sectorsNeeded)
                 self.writeSector(sectorNumber, data, format)
 
-
     def writeSector(self, sectorNumber, data, format):
         with self.file as f:
             debug("REGION: Writing sector {0}".format(sectorNumber))
 
             f.seek(sectorNumber * self.SECTOR_BYTES)
-            f.write(struct.pack("<I", len(data) + self.CHUNK_HEADER_SIZE))# // chunk length
-            f.write(data)# // chunk data
-            #f.flush()
+            f.write(struct.pack("<I", len(data) + self.CHUNK_HEADER_SIZE))  # // chunk length
+            f.write(data)  # // chunk data
+            # f.flush()
 
-    def containsChunk(self, cx,cz):
-        return self.getOffset(cx,cz) != 0
-        
+    def containsChunk(self, cx, cz):
+        return self.getOffset(cx, cz) != 0
+
     def getOffset(self, cx, cz):
         cx &= 0x1f
         cz &= 0x1f
@@ -291,105 +295,116 @@ class PocketChunksFile(object):
         with self.file as f:
             f.seek(0)
             f.write(self.offsets.tostring())
-    
+
     def chunkCoords(self):
         indexes = (i for (i, offset) in enumerate(self.offsets) if offset)
         coords = ((i % 32, i // 32) for i in indexes)
         return coords
-        
+
 from infiniteworld import ChunkedLevelMixin
 from level import MCLevel, LightedChunk
+
 
 class PocketWorld(ChunkedLevelMixin, MCLevel):
     Height = 128
     Length = 512
     Width = 512
-    
-    isInfinite = True # Wrong. isInfinite actually means 'isChunked' and should be changed
+
+    isInfinite = True  # Wrong. isInfinite actually means 'isChunked' and should be changed
     loadedChunks = None
     materials = pocketMaterials
-    
+
     @property
     def allChunks(self):
         return list(self.chunkFile.chunkCoords())
-        
+
     def __init__(self, filename):
         if not os.path.isdir(filename):
             filename = os.path.dirname(filename)
         self.filename = filename
         self.dimensions = {}
-        
+
         self.chunkFile = PocketChunksFile(os.path.join(filename, "chunks.dat"))
         self._loadedChunks = {}
-        
-    def getChunk(self, cx, cz):
-        for p in cx,cz:
-            if not 0 <= p <= 31: raise ChunkNotPresent, (cx,cz, self)
 
-        c = self._loadedChunks.get( (cx,cz) )
+    def getChunk(self, cx, cz):
+        for p in cx, cz:
+            if not 0 <= p <= 31:
+                raise ChunkNotPresent((cx, cz, self))
+
+        c = self._loadedChunks.get( (cx, cz) )
         if c is None:
             c = self.chunkFile.loadChunk(cx, cz, self)
-            self._loadedChunks[cx,cz] = c
+            self._loadedChunks[cx, cz] = c
         return c
-    
+
     @classmethod
     def _isLevel(cls, filename):
         clp = ("chunks.dat", "level.dat", "player.dat")
-        
-        if not os.path.isdir(filename): 
+
+        if not os.path.isdir(filename):
             f = os.path.basename(filename)
-            if f not in clp: return False
+            if f not in clp:
+                return False
             filename = os.path.dirname(filename)
-        
-        return all([os.path.exists(os.path.join(filename, f)) for f in clp])    
-        
+
+        return all([os.path.exists(os.path.join(filename, f)) for f in clp])
+
     def saveInPlace(self):
         for chunk in self._loadedChunks.itervalues():
             if chunk.dirty:
                 self.chunkFile.saveChunk(chunk)
                 chunk.dirty = False
-            
+
     def containsChunk(self, cx, cz):
-        if cx>31 or cz>31 or cx < 0 or cz < 0: return False
-        return self.chunkFile.getOffset(cx,cz) != 0
-        
+        if cx > 31 or cz > 31 or cx < 0 or cz < 0:
+            return False
+        return self.chunkFile.getOffset(cx, cz) != 0
+
+
 class PocketChunk(LightedChunk):
     Blocks = Data = SkyLight = BlockLight = None
-    
+
     HeightMap = FakeChunk.HeightMap
-    
+
     Entities = TileEntities = property(lambda self: TAG_List())
-    
+
     dirty = False
     filename = "chunks.dat"
-    
+
     def __init__(self, cx, cz, data, world):
-        self.chunkPosition = (cx,cz)
+        self.chunkPosition = (cx, cz)
         self.world = world
         data = fromstring(data, dtype='uint8')
-        
+
         self.Blocks, data = data[:32768], data[32768:]
         self.Data, data = data[:16384], data[16384:]
         self.SkyLight, data = data[:16384], data[16384:]
         self.BlockLight, data = data[:16384], data[16384:]
         self.DirtyColumns = data[:256]
-        
+
         self.unpackChunkData()
         self.shapeChunkData()
-    
-    def isLoaded(self): return True
-    
-    def load(self): pass
-    def decompress(self): pass
-    def compress(self): pass
-    
+
+    def isLoaded(self):
+        return True
+
+    def load(self):
+        pass
+
+    def decompress(self):
+        pass
+
+    def compress(self):
+        pass
+
     def unpackChunkData(self):
         for key in ('SkyLight', 'BlockLight', 'Data'):
             dataArray = getattr(self, key)
             dataArray.shape = (16, 16, 64)
             s = dataArray.shape
-            #assert s[2] == self.world.Height / 2;
-            #unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)  
+            # assert s[2] == self.world.Height / 2
+            # unpackedData = insert(dataArray[...,newaxis], 0, 0, 3)
 
             unpackedData = zeros((s[0], s[1], s[2] * 2), dtype='uint8')
 
@@ -398,7 +413,7 @@ class PocketChunk(LightedChunk):
             unpackedData[:, :, 1::2] = dataArray
             unpackedData[:, :, 1::2] >>= 4
             setattr(self, key, unpackedData)
-            
+
     def shapeChunkData(self):
         chunkSize = 16
         self.Blocks.shape = (chunkSize, chunkSize, self.world.Height)
@@ -409,7 +424,7 @@ class PocketChunk(LightedChunk):
 
     def _savedData(self):
         def packData(dataArray):
-            assert dataArray.shape[2] == self.world.Height;
+            assert dataArray.shape[2] == self.world.Height
 
             data = array(dataArray).reshape(16, 16, self.world.Height / 2, 2)
             data[..., 1] <<= 4
@@ -417,15 +432,14 @@ class PocketChunk(LightedChunk):
             return array(data[:, :, :, 1])
 
         if self.dirty:
-            #elements of DirtyColumns are bitfields. Each bit corresponds to a
-            #16-block segment of the column. We set all of the bits because
-            #we only track modifications at the chunk level.
+            # elements of DirtyColumns are bitfields. Each bit corresponds to a
+            # 16-block segment of the column. We set all of the bits because
+            # we only track modifications at the chunk level.
             self.DirtyColumns[:] = 255
-                
-        return "".join([self.Blocks.tostring(), 
+
+        return "".join([self.Blocks.tostring(),
                        packData(self.Data).tostring(),
                        packData(self.SkyLight).tostring(),
                        packData(self.BlockLight).tostring(),
                        self.DirtyColumns.tostring(),
                        ])
-

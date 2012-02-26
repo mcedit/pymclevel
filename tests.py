@@ -3,10 +3,10 @@ Created on Jul 23, 2011
 
 @author: Rio
 '''
-#from mclevel import fromFile, loadWorldNumber, BoundingBox
-#from infiniteworld import MCInfdevOldLevel
-#from schematic import MCSchematic
-#import errorreporting # annotate tracebacks with call arguments
+# from mclevel import fromFile, loadWorldNumber, BoundingBox
+# from infiniteworld import MCInfdevOldLevel
+# from schematic import MCSchematic
+# import errorreporting  # annotate tracebacks with call arguments
 try:
     from pymclevel import *
 except ImportError:
@@ -29,12 +29,15 @@ from infiniteworld import MCServerChunkGenerator
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
-#logging.basicConfig(format=u'%(levelname)s:%(message)s')
-#logging.getLogger().level = logging.INFO
+# logging.basicConfig(format=u'%(levelname)s:%(message)s')
+# logging.getLogger().level = logging.INFO
+
+
 def mktemp(suffix):
     td = tempfile.mkdtemp(suffix)
     os.rmdir(td)
     return td
+
 
 class TempLevel(object):
     def __init__(self, filename, createFunc = None):
@@ -61,59 +64,60 @@ class TempLevel(object):
         else:
             os.unlink(filename)
 
+
 class TestNBT(unittest.TestCase):
-        
+
     def testLoad(self):
         "Load an indev level."
         level = nbt.load("testfiles/hell.mclevel")
 
         """The root tag must have a name, and so must any tag within a TAG_Compound"""
         print level.name
-    
+
         """Use the [] operator to look up subtags of a TAG_Compound."""
         print level["Environment"]["SurroundingGroundHeight"].value
 
-        """Numeric, string, and bytearray types have a value 
+        """Numeric, string, and bytearray types have a value
   that can be accessed and changed. """
         print level["Map"]["Blocks"].value
-    
+
         return level
 
     def testCreate(self):
         "Create an indev level."
-    
+
         "The root of an NBT file is always a TAG_Compound."
         level = TAG_Compound(name="MinecraftLevel")
-    
+
         "Subtags of a TAG_Compound are automatically named when you use the [] operator."
         level["About"] = TAG_Compound()
         level["About"]["Author"] = TAG_String("codewarrior")
-    
+
         level["Environment"] = TAG_Compound()
         level["Environment"]["SkyBrightness"] = TAG_Byte(16)
         level["Environment"]["SurroundingWaterHeight"] = TAG_Short(32)
-    
+
         "You can also create and name a tag before adding it to the compound."
         spawn = TAG_List((TAG_Short(100), TAG_Short(45), TAG_Short(55)))
         spawn.name = "Spawn"
-    
+
         mapTag = TAG_Compound()
         mapTag.add(spawn)
         mapTag.name = "Map"
         level.add(mapTag)
-    
+
         "I think it looks more familiar with [] syntax."
-    
+
         l, w, h = 128, 128, 128
-        mapTag["Height"] = TAG_Short(h) # y dimension
-        mapTag["Length"] = TAG_Short(l) # z dimension
-        mapTag["Width"] = TAG_Short(w) # x dimension
-    
+        mapTag["Height"] = TAG_Short(h)  # y dimension
+        mapTag["Length"] = TAG_Short(l)  # z dimension
+        mapTag["Width"] = TAG_Short(w)  # x dimension
+
         "Byte arrays are stored as numpy.uint8 arrays. "
-    
+
         mapTag["Blocks"] = TAG_Byte_Array()
-        mapTag["Blocks"].value = zeros(l * w * h, dtype=uint8) #create lots of air!
-    
+        mapTag["Blocks"].value = zeros(l * w * h, dtype=uint8)  # create lots of air!
+
         "The blocks array is indexed (y,z,x) for indev levels, so reshape the blocks"
         mapTag["Blocks"].value.shape = (h, l, w)
 
@@ -121,10 +125,10 @@ class TestNBT(unittest.TestCase):
         mapTag["Blocks"].value[0, :, :] = 5
 
         "This is a great way to learn the power of numpy array slicing and indexing."
-        
+
         mapTag["Data"] = TAG_Byte_Array()
         mapTag["Data"].value = zeros(l * w * h, dtype=uint8)
-    
+
         return level
 
     def testModify(self):
@@ -136,7 +140,7 @@ class TestNBT(unittest.TestCase):
         "Because the tag type usually doesn't change, "
         "we can replace the string tag's value instead of replacing the entire tag."
         level["About"]["Author"].value = "Stew Pickles"
-    
+
         "Remove members of a TAG_Compound using del, similar to a python dict."
         del(level["About"])
 
@@ -144,32 +148,31 @@ class TestNBT(unittest.TestCase):
         blocks = level["Map"]["Blocks"].value
         blocks[blocks == 5] = 41
 
-
     def testSave(self):
-    
+
         level = self.testCreate()
         level["Environment"]["SurroundingWaterHeight"].value += 6
 
         "Save the entire TAG structure to a different file."
         atlantis = TempLevel("atlantis.mclevel", createFunc = level.save)
-        
-    
+
     def testErrors(self):
         """
         attempt to name elements of a TAG_List
-        named list elements are not allowed by the NBT spec, 
+        named list elements are not allowed by the NBT spec,
         so we must discard any names when writing a list.
         """
-    
+
         level = self.testCreate()
         level["Map"]["Spawn"][0].name = "Torg Potter"
         sio = StringIO()
         level.save(buf=sio)
         newlevel = nbt.load(buf=sio.getvalue())
-    
+
         n = newlevel["Map"]["Spawn"][0].name
-        if n: print "Named list element failed: %s" % n;
-        
+        if n:
+            print "Named list element failed: %s" % n
+
         """
         attempt to delete non-existent TAG_Compound elements
         this generates a KeyError like a python dict does.
@@ -181,7 +184,7 @@ class TestNBT(unittest.TestCase):
             pass
         else:
             assert False
-    
+
     def testSpeed(self):
         d = join("testfiles", "TileTicks_chunks")
         files = [join(d, f) for f in os.listdir(d)]
@@ -190,8 +193,9 @@ class TestNBT(unittest.TestCase):
             for f in files[:40]:
                 n = nbt.load(f)
         print "Duration: ", time.time() - startTime
-        #print "NBT: ", n
-        
+        # print "NBT: ", n
+
+
 class TestIndevLevel(unittest.TestCase):
     def setUp(self):
         self.srclevel = TempLevel("hell.mclevel")
@@ -206,7 +210,7 @@ class TestIndevLevel(unittest.TestCase):
         schem = level.extractSchematic(level.bounds)
         level.copyBlocksFrom(schem, schem.bounds, (0, 0, 0))
 
-        #raise Failure 
+        # raise Failure
 
     def testCopy(self):
         info("Indev level")
@@ -234,7 +238,7 @@ class TestJavaLevel(unittest.TestCase):
         assert(numpy.array((indevlevel.Blocks[0:64, 0:64, 0:64]) == (creativelevel.Blocks[0:64, 0:64, 0:64])).all())
 
         creativelevel.saveInPlace()
-        #xxx old survival levels
+        # xxx old survival levels
 
 
 class TestAlphaLevelCreate(unittest.TestCase):
@@ -243,7 +247,8 @@ class TestAlphaLevelCreate(unittest.TestCase):
         self.alphaLevel = MCInfdevOldLevel(filename=temppath, create=True)
         self.alphaLevel.close()
         shutil.rmtree(temppath)
-        
+
+
 class TestAlphaLevel(unittest.TestCase):
     def setUp(self):
         self.indevlevel = TempLevel("hell.mclevel")
@@ -264,14 +269,15 @@ class TestAlphaLevel(unittest.TestCase):
         indevlevel = self.indevlevel.level
         level = self.alphalevel.level
 
-        for ch in list(level.allChunks): level.deleteChunk(*ch)
+        for ch in list(level.allChunks):
+            level.deleteChunk(*ch)
         level.createChunksInBox(BoundingBox((0, 0, 0), (32, 0, 32)))
 
     def testCopyConvertBlocks(self):
         indevlevel = self.indevlevel.level
         level = self.alphalevel.level
         cx, cz = level.allChunks.next()
-        level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (256, 128, 256)), (cx*16, 0, cz*16))
+        level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (256, 128, 256)), (cx * 16, 0, cz * 16))
 
         convertedSourceBlocks, convertedSourceData = indevlevel.convertBlocksFromLevel(level, indevlevel.Blocks[0:16, 0:16, 0:indevlevel.Height], indevlevel.Data[0:16, 0:16, 0:indevlevel.Height])
         assert (level.getChunk(cx, cz).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
@@ -281,9 +287,8 @@ class TestAlphaLevel(unittest.TestCase):
         level = self.alphalevel.level
         cx, cz = level.allChunks.next()
 
-
         schem = fromFile("schematics/CreativeInABox.schematic")
-        box = BoundingBox((cx*16, 64, cz*16), schem.bounds.size)
+        box = BoundingBox((cx * 16, 64, cz * 16), schem.bounds.size)
         level.copyBlocksFrom(schem, schem.bounds, (0, 64, 0))
         schem = MCSchematic(shape=schem.bounds.size)
         schem.copyBlocksFrom(level, box, (0, 0, 0))
@@ -300,7 +305,7 @@ class TestAlphaLevel(unittest.TestCase):
     def testFill(self):
         level = self.alphalevel.level
         cx, cz = level.allChunks.next()
-        box = BoundingBox((cx*16, 0, cz*16), (38, level.Height, 25))
+        box = BoundingBox((cx * 16, 0, cz * 16), (38, level.Height, 25))
         level.fillBlocks(box , level.materials.WoodPlanks)
         c = level.getChunk(cx, cz)
 
@@ -327,9 +332,9 @@ class TestAlphaLevel(unittest.TestCase):
 
     def testRecompress(self):
         level = self.alphalevel.level
-        cx,cz = level.allChunks.next()
+        cx, cz = level.allChunks.next()
 
-        ch = level.getChunk(cx,cz)
+        ch = level.getChunk(cx, cz)
         ch.dirty = True
         ch.Blocks[:] = 6
         ch.Data[:] = 13
@@ -337,16 +342,15 @@ class TestAlphaLevel(unittest.TestCase):
         keys = 'Blocks Data SkyLight BlockLight'.split()
         for key in keys:
             d[key] = array(getattr(ch, key))
-            
+
         for i in range(5):
             level.saveInPlace()
-            ch = level.getChunk(cx,cz)
+            ch = level.getChunk(cx, cz)
             ch.dirty = True
             assert (ch.Data == 13).all()
             for key in keys:
                 assert (d[key] == getattr(ch, key)).all()
-            
-        
+
     def testPlayerSpawn(self):
         level = self.alphalevel.level
 
@@ -354,21 +358,22 @@ class TestAlphaLevel(unittest.TestCase):
         level.getPlayerPosition()
         level.players
 
+
 class TestSchematics(unittest.TestCase):
     def setUp(self):
-        #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
+        # self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
         self.indevlevel = TempLevel("hell.mclevel")
         self.alphalevel = TempLevel("PyTestWorld")
 
     def testCreate(self):
-        #info("Schematic from indev")
+        # info("Schematic from indev")
 
         size = (64, 64, 64)
         temp = mktemp("testcreate.schematic")
         schematic = MCSchematic(shape=size, filename=temp, mats='Classic')
         level = self.indevlevel.level
 
-        self.failUnlessRaises(ValueError, lambda:(
+        self.failUnlessRaises(ValueError, lambda: (
             schematic.copyBlocksFrom(level, BoundingBox((-32, -32, -32), (64, 64, 64,)), (0, 0, 0))
         ))
 
@@ -397,7 +402,7 @@ class TestSchematics(unittest.TestCase):
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         schematic.close()
         os.remove(temp)
-        
+
     def testRotate(self):
         level = self.indevlevel.level
         schematic = level.extractSchematic(level.bounds)
@@ -412,7 +417,7 @@ class TestSchematics(unittest.TestCase):
         assert(box.chunkCount == zs.chunkCount)
         zs.close()
         os.remove(zs.filename)
-        
+
     def testINVEditChests(self):
         info("INVEdit chest")
         invFile = fromFile("schematics/Chests/TinkerersBox.inv")
@@ -420,27 +425,28 @@ class TestSchematics(unittest.TestCase):
         info("Data: %s", invFile.Data)
         info("Entities: %s", invFile.Entities)
         info("TileEntities: %s", invFile.TileEntities)
-        #raise SystemExit;
+        # raise SystemExit
+
 
 class TestPocket(unittest.TestCase):
     def setUp(self):
-        #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
+        # self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
         self.level = TempLevel("PocketWorld")
         self.alphalevel = TempLevel("PyTestWorld")
-        
+
     def testPocket(self):
         level = self.level.level
 #        alphalevel = self.alphalevel.level
         print "Chunk count", len(level.allChunks)
-        chunk = level.getChunk(1,5)
+        chunk = level.getChunk(1, 5)
         a = array(chunk.SkyLight)
         level.saveInPlace()
         assert (a == chunk.SkyLight).all()
-        
+
 #        level.copyBlocksFrom(alphalevel, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
-        #assert((level.Blocks[0:64, 0:64, 0:64] == alphalevel.Blocks[0:64, 0:64, 0:64]).all())
-        
-    
+        # assert((level.Blocks[0:64, 0:64, 0:64] == alphalevel.Blocks[0:64, 0:64, 0:64]).all())
+
+
 class TestAnvil(TestAlphaLevel):
     def setUp(self):
         self.indevlevel = TempLevel("hell.mclevel")
@@ -467,18 +473,18 @@ class TestAnvil(TestAlphaLevel):
 
 class TestServerGen(unittest.TestCase):
     def setUp(self):
-        #self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
+        # self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
         self.alphalevel = TempLevel("PyTestWorld")
-    
+
     def testCreate(self):
         gen = MCServerChunkGenerator()
         print "Version: ", gen.serverVersion
-        
+
         def _testCreate(filename):
             gen.createLevel(filename, BoundingBox((-128, 0, -128), (128, 128, 128)))
-            
+
         t = TempLevel("ServerCreate", createFunc=_testCreate)
-        
+
     def testServerGen(self):
         gen = MCServerChunkGenerator()
         print "Version: ", gen.serverVersion
@@ -489,5 +495,5 @@ class TestServerGen(unittest.TestCase):
         gen.generateChunksInLevel(level, [(120, 50), (121, 50), (122, 50), (123, 50), (244, 244), (244, 245), (244, 246)])
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

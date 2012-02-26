@@ -22,7 +22,6 @@ __author__ = "Jose Fonseca"
 
 __version__ = "1.0"
 
-
 import sys
 import math
 import os.path
@@ -30,7 +29,6 @@ import re
 import textwrap
 import optparse
 import xml.parsers.expat
-
 
 try:
     # Debugging helper module
@@ -42,11 +40,14 @@ except ImportError:
 def times(x):
     return u"%u\xd7" % (x,)
 
+
 def percentage(p):
-    return "%.02f%%" % (p*100.0,)
+    return "%.02f%%" % (p * 100.0,)
+
 
 def add(a, b):
     return a + b
+
 
 def equal(a, b):
     if a == b:
@@ -54,17 +55,18 @@ def equal(a, b):
     else:
         return None
 
+
 def fail(a, b):
     assert False
 
-
 tol = 2 ** -23
+
 
 def ratio(numerator, denominator):
     try:
-        ratio = float(numerator)/float(denominator)
+        ratio = float(numerator) / float(denominator)
     except ZeroDivisionError:
-        # 0/0 is undefined, but 1.0 yields more useful results
+        # 0 / 0 is undefined, but 1.0 yields more useful results
         return 1.0
     if ratio < 0.0:
         if ratio < -tol:
@@ -116,7 +118,6 @@ class Event(object):
         """Format an event value."""
         assert val is not None
         return self._formatter(val)
-
 
 CALLS = Event("Calls", 0, add, times)
 SAMPLES = Event("Samples", 0, add)
@@ -370,7 +371,7 @@ class Profile(Object):
         assert outevent not in call
         assert call.ratio is not None
         callee = self.functions[call.callee_id]
-        subtotal = call.ratio *self._integrate_function(callee, outevent, inevent)
+        subtotal = call.ratio * self._integrate_function(callee, outevent, inevent)
         call[outevent] = subtotal
         return subtotal
 
@@ -411,7 +412,7 @@ class Profile(Object):
                 self._call_ratios_cycle(cycle, callee, ranks, call_ratios, set())
                 partial = self._integrate_cycle_function(cycle, callee, call_ratio, partials, ranks, call_ratios, outevent, inevent)
                 assert partial == max(partials.values())
-                assert not total or abs(1.0 - partial/(call_ratio*total)) <= 0.001
+                assert not total or abs(1.0 - partial / (call_ratio * total)) <= 0.001
 
         return cycle[outevent]
 
@@ -437,18 +438,18 @@ class Profile(Object):
 
     def _integrate_cycle_function(self, cycle, function, partial_ratio, partials, ranks, call_ratios, outevent, inevent):
         if function not in partials:
-            partial = partial_ratio*function[inevent]
+            partial = partial_ratio * function[inevent]
             for call in function.calls.itervalues():
                 if call.callee_id != function.id:
                     callee = self.functions[call.callee_id]
                     if callee.cycle is not cycle:
                         assert outevent in call
-                        partial += partial_ratio*call[outevent]
+                        partial += partial_ratio * call[outevent]
                     else:
                         if ranks[callee] > ranks[function]:
                             callee_partial = self._integrate_cycle_function(cycle, callee, partial_ratio, partials, ranks, call_ratios, outevent, inevent)
                             call_ratio = ratio(call.ratio, call_ratios[callee])
-                            call_partial = call_ratio*callee_partial
+                            call_partial = call_ratio * callee_partial
                             try:
                                 call[outevent] += call_partial
                             except UndefinedEvent:
@@ -617,7 +618,6 @@ class LineParser(Parser):
         assert self.__line is not None
         return self.__eof
 
-
 XML_ELEMENT_START, XML_ELEMENT_END, XML_CHARACTER_DATA, XML_EOF = range(4)
 
 
@@ -687,7 +687,7 @@ class XmlTokenizer:
             self.character_data = ''
 
     def next(self):
-        size = 16*1024
+        size = 16 * 1024
         while self.index >= len(self.tokens) and not self.final:
             self.tokens = []
             self.index = 0
@@ -957,7 +957,7 @@ class GprofParser(Parser):
 
         # process call graph entries
         entry_lines = []
-        while line != '\014': # form feed
+        while line != '\014':  # form feed
             if line and not line.isspace():
                 if self._cg_sep_re.match(line):
                     self.parse_cg_entry(entry_lines)
@@ -1120,7 +1120,7 @@ class CallgrindParser(LineParser):
         if key == 'positions':
             self.num_positions = len(items)
             self.cost_positions = items
-            self.last_positions = [0]*self.num_positions
+            self.last_positions = [0] * self.num_positions
         return True
 
     def parse_cost_summary(self):
@@ -1268,7 +1268,6 @@ class CallgrindParser(LineParser):
             return None
         key, value = pair
         return value
-        
 
     def parse_keys(self, keys):
         line = self.lookahead()
@@ -1464,7 +1463,7 @@ class OprofileParser(LineParser):
 
     def match_separator(self):
         line = self.lookahead()
-        return line == '-'*len(line)
+        return line == '-' * len(line)
 
     def match_primary(self):
         line = self.lookahead()
@@ -1964,7 +1963,7 @@ class AQtimeParser(XmlParser):
         return table
 
     def parse_row(self, field_types):
-        row = [None]*len(field_types)
+        row = [None] * len(field_types)
         children = []
         self.element_start('ROW')
         while self.token.type == XML_ELEMENT_START:
@@ -2026,16 +2025,16 @@ class AQtimeParser(XmlParser):
         function = Function(self.build_id(fields), self.build_name(fields))
         function[TIME] = fields['Time']
         function[TOTAL_TIME] = fields['Time with Children']
-        #function[TIME_RATIO] = fields['% Time']/100.0
-        #function[TOTAL_TIME_RATIO] = fields['% with Children']/100.0
+        #function[TIME_RATIO] = fields['% Time'] / 100.0
+        #function[TOTAL_TIME_RATIO] = fields['% with Children'] / 100.0
         return function
 
     def build_call(self, fields):
         call = Call(self.build_id(fields))
         call[TIME] = fields['Time']
         call[TOTAL_TIME] = fields['Time with Children']
-        #call[TIME_RATIO] = fields['% Time']/100.0
-        #call[TOTAL_TIME_RATIO] = fields['% with Children']/100.0
+        #call[TIME_RATIO] = fields['% Time'] / 100.0
+        #call[TOTAL_TIME_RATIO] = fields['% with Children'] / 100.0
         return call
 
     def build_id(self, fields):
@@ -2093,7 +2092,7 @@ class PstatsParser:
                 call = Call(callee.id)
                 if isinstance(value, tuple):
                     for i in xrange(0, len(value), 4):
-                        nc, cc, tt, ct = value[i:i+4]
+                        nc, cc, tt, ct = value[i:i + 4]
                         if CALLS in call:
                             call[CALLS] += cc
                         else:
@@ -2106,7 +2105,7 @@ class PstatsParser:
 
                 else:
                     call[CALLS] = value
-                    call[TOTAL_TIME] = ratio(value, nc)*ct
+                    call[TOTAL_TIME] = ratio(value, nc) * ct
 
                 caller.add_call(call)
         #self.stats.print_stats()
@@ -2169,13 +2168,13 @@ class Theme:
         return self.fontsize(weight)
 
     def edge_penwidth(self, weight):
-        return max(weight*self.maxpenwidth, self.minpenwidth)
+        return max(weight * self.maxpenwidth, self.minpenwidth)
 
     def edge_arrowsize(self, weight):
         return 0.5 * math.sqrt(self.edge_penwidth(weight))
 
     def fontsize(self, weight):
-        return max(weight**2 * self.maxfontsize, self.minfontsize)
+        return max(weight ** 2 * self.maxfontsize, self.minfontsize)
 
     def color(self, weight):
         weight = min(max(weight, 0.0), 1.0)
@@ -2186,14 +2185,14 @@ class Theme:
         if self.skew < 0:
             raise ValueError("Skew must be greater than 0")
         elif self.skew == 1.0:
-            h = hmin + weight*(hmax - hmin)
-            s = smin + weight*(smax - smin)
-            l = lmin + weight*(lmax - lmin)
+            h = hmin + weight * (hmax - hmin)
+            s = smin + weight * (smax - smin)
+            l = lmin + weight * (lmax - lmin)
         else:
             base = self.skew
-            h = hmin + ((hmax-hmin)*(-1.0 + (base ** weight)) / (base - 1.0))
-            s = smin + ((smax-smin)*(-1.0 + (base ** weight)) / (base - 1.0))
-            l = lmin + ((lmax-lmin)*(-1.0 + (base ** weight)) / (base - 1.0))
+            h = hmin + ((hmax - hmin) * (-1.0 + (base ** weight)) / (base - 1.0))
+            s = smin + ((smax - smin) * (-1.0 + (base ** weight)) / (base - 1.0))
+            l = lmin + ((lmax - lmin) * (-1.0 + (base ** weight)) / (base - 1.0))
 
         return self.hsl_to_rgb(h, s, l)
 
@@ -2209,13 +2208,13 @@ class Theme:
         l = min(max(l, 0.0), 1.0)
 
         if l <= 0.5:
-            m2 = l*(s + 1.0)
+            m2 = l * (s + 1.0)
         else:
-            m2 = l + s - l*s
-        m1 = l*2.0 - m2
-        r = self._hue_to_rgb(m1, m2, h + 1.0/3.0)
+            m2 = l + s - l * s
+        m1 = l * 2.0 - m2
+        r = self._hue_to_rgb(m1, m2, h + 1.0 / 3.0)
         g = self._hue_to_rgb(m1, m2, h)
-        b = self._hue_to_rgb(m1, m2, h - 1.0/3.0)
+        b = self._hue_to_rgb(m1, m2, h - 1.0 / 3.0)
 
         # Apply gamma correction
         r **= self.gamma
@@ -2229,37 +2228,36 @@ class Theme:
             h += 1.0
         elif h > 1.0:
             h -= 1.0
-        if h*6 < 1.0:
-            return m1 + (m2 - m1)*h*6.0
-        elif h*2 < 1.0:
+        if h * 6 < 1.0:
+            return m1 + (m2 - m1) * h * 6.0
+        elif h * 2 < 1.0:
             return m2
-        elif h*3 < 2.0:
-            return m1 + (m2 - m1)*(2.0/3.0 - h)*6.0
+        elif h * 3 < 2.0:
+            return m1 + (m2 - m1) * (2.0 / 3.0 - h) * 6.0
         else:
             return m1
 
-
 TEMPERATURE_COLORMAP = Theme(
-    mincolor = (2.0/3.0, 0.80, 0.25), # dark blue
-    maxcolor = (0.0, 1.0, 0.5), # satured red
+    mincolor = (2.0 / 3.0, 0.80, 0.25),  # dark blue
+    maxcolor = (0.0, 1.0, 0.5),  # satured red
     gamma = 1.0
 )
 
 PINK_COLORMAP = Theme(
-    mincolor = (0.0, 1.0, 0.90), # pink
-    maxcolor = (0.0, 1.0, 0.5), # satured red
+    mincolor = (0.0, 1.0, 0.90),  # pink
+    maxcolor = (0.0, 1.0, 0.5),  # satured red
 )
 
 GRAY_COLORMAP = Theme(
-    mincolor = (0.0, 0.0, 0.85), # light gray
-    maxcolor = (0.0, 0.0, 0.0), # black
+    mincolor = (0.0, 0.0, 0.85),  # light gray
+    maxcolor = (0.0, 0.0, 0.0),  # black
 )
 
 BW_COLORMAP = Theme(
     minfontsize = 8.0,
     maxfontsize = 24.0,
-    mincolor = (0.0, 0.0, 0.0), # black
-    maxcolor = (0.0, 0.0, 0.0), # black
+    mincolor = (0.0, 0.0, 0.0),  # black
+    maxcolor = (0.0, 0.0, 0.0),  # black
     minpenwidth = 0.1,
     maxpenwidth = 8.0,
 )
@@ -2402,7 +2400,7 @@ class DotWriter:
                 return 0
             if f >= 1.0:
                 return 255
-            return int(255.0*f + 0.5)
+            return int(255.0 * f + 0.5)
 
         return "#" + "".join(["%02x" % float2int(c) for c in (r, g, b)])
 
@@ -2575,16 +2573,16 @@ class Main:
         """Split the function name on multiple lines."""
 
         if len(name) > 32:
-            ratio = 2.0/3.0
-            height = max(int(len(name)/(1.0 - ratio) + 0.5), 1)
-            width = max(len(name)/height, 32)
+            ratio = 2.0 / 3.0
+            height = max(int(len(name) / (1.0 - ratio) + 0.5), 1)
+            width = max(len(name) / height, 32)
             # TODO: break lines in symbols
             name = textwrap.fill(name, width, break_long_words=False)
 
         # Take away spaces
         name = name.replace(", ", ",")
         name = name.replace("> >", ">>")
-        name = name.replace("> >", ">>") # catch consecutive
+        name = name.replace("> >", ">>")  # catch consecutive
 
         return name
 
@@ -2604,13 +2602,12 @@ class Main:
     def write_graph(self):
         dot = DotWriter(self.output)
         profile = self.profile
-        profile.prune(self.options.node_thres/100.0, self.options.edge_thres/100.0)
+        profile.prune(self.options.node_thres / 100.0, self.options.edge_thres / 100.0)
 
         for function in profile.functions.itervalues():
             function.name = self.compress_function_name(function.name)
 
         dot.graph(profile, self.theme)
-
 
 if __name__ == '__main__':
     Main().main()

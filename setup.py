@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
-import sys, os
+import os
+import sys
 
 version = '1.0'
 
@@ -28,7 +29,7 @@ setup(name='pymclevel',
       author_email='codewarrior0@gmail.com',
       url='https://github.com/codewarrior0/pymclevel',
       license='MIT License',
-      package_dir={'pymclevel':'.'},
+      package_dir={'pymclevel': '.'},
       packages=["pymclevel"],
       include_package_data=True,
       zip_safe=False,
