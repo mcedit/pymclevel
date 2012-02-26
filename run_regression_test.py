@@ -5,7 +5,6 @@ import sys
 import subprocess
 import shutil
 import os
-import mclevel
 import hashlib
 import contextlib
 import gzip

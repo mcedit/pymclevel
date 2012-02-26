@@ -14,7 +14,7 @@ import codecs
 
 from math import floor
 try:
-    import readline
+    import readline  # if available, used by raw_input()
 except:
     pass
 

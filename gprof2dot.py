@@ -30,12 +30,6 @@ import textwrap
 import optparse
 import xml.parsers.expat
 
-try:
-    # Debugging helper module
-    import debug
-except ImportError:
-    pass
-
 
 def times(x):
     return u"%u\xd7" % (x,)

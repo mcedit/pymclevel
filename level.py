@@ -5,7 +5,6 @@ Created on Jul 22, 2011
 '''
 
 from mclevelbase import *
-import tempfile
 from collections import defaultdict
 import materials
 

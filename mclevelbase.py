@@ -4,22 +4,13 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 import os
-import traceback
-from datetime import datetime
-from cStringIO import StringIO
-from copy import deepcopy
-import itertools
-from contextlib import closing, contextmanager
-import gzip
+from contextlib import contextmanager
 
 from numpy import *
 import logging
 
-import nbt
 from nbt import *
-from box import BoundingBox, FloatBox
 from materials import *
-import blockrotation
 from entity import *
 
 from faces import *

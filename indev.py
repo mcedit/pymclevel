@@ -86,7 +86,7 @@ Spawn = "Spawn"
 
 __all__ = ["MCIndevLevel"]
 
-from level import EntityLevel, computeChunkHeightMap
+from level import EntityLevel
 
 
 class MCIndevLevel(EntityLevel):

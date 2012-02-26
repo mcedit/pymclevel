@@ -1,7 +1,5 @@
 try:
-    import os
     try:
-        import _nbt
         from _nbt import *
         print "Accelerated NBT module loaded."
     except ImportError:
@@ -9,7 +7,6 @@ try:
         import numpy
         from pyximport import install
         install(setup_args={'include_dirs': [numpy.get_include()]})
-        import _nbt
         from _nbt import *
         print "Accelerated NBT module loaded via pyximport."
 except ImportError, e:

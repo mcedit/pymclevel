@@ -13,7 +13,6 @@ except ImportError:
     from __init__ import *
 
 import itertools
-import traceback
 import unittest
 import tempfile
 import logging

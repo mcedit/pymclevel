@@ -1,12 +1,11 @@
 
-from numpy import zeros, arange, array, zeros_like, rollaxis, indices, s_
+from numpy import zeros, rollaxis, indices
 import traceback
-from os.path import exists, join
+from os.path import join
 from collections import defaultdict
 from pprint import pformat
 
 import os
-import sys
 
 NOTEX = (0xB0, 0xE0)
 
