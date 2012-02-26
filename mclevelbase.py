@@ -104,8 +104,8 @@ if sys.platform == "win32":
         print "Error while getting AppData folder using WScript.Shell.SpecialFolders: {0!r}".format(e)
         try:
             from win32com.shell import shell, shellcon
-            appDataDir = shell.SHGetPathFromIDListEx (
-                shell.SHGetSpecialFolderLocation (0, shellcon.CSIDL_APPDATA)
+            appDataDir = shell.SHGetPathFromIDListEx(
+                shell.SHGetSpecialFolderLocation(0, shellcon.CSIDL_APPDATA)
             )
         except Exception, e:
             print "Error while getting AppData folder using SHGetSpecialFolderLocation: {0!r}".format(e)

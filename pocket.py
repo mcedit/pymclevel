@@ -332,7 +332,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
             if not 0 <= p <= 31:
                 raise ChunkNotPresent((cx, cz, self))
 
-        c = self._loadedChunks.get( (cx, cz) )
+        c = self._loadedChunks.get((cx, cz))
         if c is None:
             c = self.chunkFile.loadChunk(cx, cz, self)
             self._loadedChunks[cx, cz] = c

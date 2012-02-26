@@ -106,8 +106,8 @@ def do_test(test_data, result_check, arguments=[]):
     result_check = result_check.lower()
 
     env = {
-            'MCE_RANDOM_SEED' : '42',
-            'MCE_LAST_PLAYED' : '42',
+            'MCE_RANDOM_SEED': '42',
+            'MCE_LAST_PLAYED': '42',
     }
 
     if 'MCE_PROFILE' in os.environ:
@@ -131,8 +131,8 @@ def do_test_match_output(test_data, result_check, arguments=[]):
     result_check = result_check.lower()
 
     env = {
-            'MCE_RANDOM_SEED' : '42',
-            'MCE_LAST_PLAYED' : '42'
+            'MCE_RANDOM_SEED': '42',
+            'MCE_LAST_PLAYED': '42'
     }
 
     with directory_clone(test_data) as directory:

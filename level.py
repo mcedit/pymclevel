@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 
-def computeChunkHeightMap(materials, blocks, HeightMap = None):
+def computeChunkHeightMap(materials, blocks, HeightMap=None):
     """Computes the HeightMap array for a chunk, which stores the lowest
     y-coordinate of each column where the sunlight is still at full strength.
     The HeightMap array is indexed z,x contrary to the blocks array which is x,z,y.
@@ -496,9 +496,9 @@ class MCLevel(object):
 
             convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, chunk.Blocks[slices], chunk.Data[slices])
 
-            destSlices = [slice(p, p + s.stop - s.start) for p, s in zip(point, slices) ]
+            destSlices = [slice(p, p + s.stop - s.start) for p, s in zip(point, slices)]
 
-            blocks = self.Blocks[ destSlices ]
+            blocks = self.Blocks[destSlices]
 
             if blocksToCopy is not None:
                 mask = typemask[convertedSourceBlocks]
@@ -506,7 +506,7 @@ class MCLevel(object):
             blocks[mask] = convertedSourceBlocks[mask]
 
             if hasattr(self, 'Data'):
-                data = self.Data[ destSlices ]
+                data = self.Data[destSlices]
                 data[mask] = convertedSourceData[mask]
 
             yield i
@@ -520,7 +520,7 @@ class MCLevel(object):
         sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
 
         (lx, ly, lz) = sourceBox.size
-        debug(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format (ly * lz * lx, sourceBox, destinationPoint, sourceLevel, self))
+        debug(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format(ly * lz * lx, sourceBox, destinationPoint, sourceLevel, self))
 
         # clip the source ranges to this level's edges.  move the destination point as needed.
         # xxx abstract this
@@ -572,7 +572,7 @@ class MCLevel(object):
             print "Empty source box, aborting"
             return
 
-        info(u"Copying {0} blocks from {1} to {2}" .format (sourceBox.volume, sourceBox, destinationPoint))
+        info(u"Copying {0} blocks from {1} to {2}" .format(sourceBox.volume, sourceBox, destinationPoint))
 
         if not sourceLevel.isInfinite:
             self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
@@ -799,7 +799,7 @@ class ChunkBase(EntityLevel):
     def compress(self):
         pass
 
-    def chunkChanged(self, needsLighting = True):
+    def chunkChanged(self, needsLighting=True):
         self.dirty = True
         self.needsLighting = needsLighting or self.needsLighting
 

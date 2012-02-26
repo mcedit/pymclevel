@@ -35,7 +35,7 @@ class Block(object):
         if not isinstance(other, Block):
             return -1
         key = lambda a: a and (a.ID, a.blockData)
-        return cmp( key(self), key(other))
+        return cmp(key(self), key(other))
 
     hasVariants = False  # True if blockData defines additional blocktypes
 
@@ -105,7 +105,7 @@ class MCMaterials(object):
     def AllStairs(self):
         return [b for b in self.allBlocks if b.name.endswith("Stairs")]
 
-    def get(self, key, default = None):
+    def get(self, key, default=None):
         try:
             return self[key]
         except KeyError:
@@ -284,16 +284,16 @@ alphaMaterials.addYamlBlocksFromFile("minecraft.yaml")
 # --- Special treatment for some blocks ---
 
 HugeMushroomTypes = {
-   "Northwest" : 1,
-   "North" : 2,
-   "Northeast" : 3,
-   "East" : 6,
-   "Southeast" : 9,
-   "South" : 8,
-   "Southwest" : 7,
-   "West" : 4,
-   "Stem" : 10,
-   "Top" : 5,
+   "Northwest": 1,
+   "North": 2,
+   "Northeast": 3,
+   "East": 6,
+   "Southeast": 9,
+   "South": 8,
+   "Southwest": 7,
+   "West": 4,
+   "Stem": 10,
+   "Top": 5,
 }
 from faces import *
 
@@ -322,7 +322,7 @@ def defineShroomFaces(Shroom, id, name):
             if "east" in loway:
                 tex[FaceXIncreasing] = Shroom
 
-        alphaMaterials.addBlock(id, blockData = data,
+        alphaMaterials.addBlock(id, blockData=data,
             name="Huge " + name + " Mushroom (" + way + ")",
             texture=tex,
             )
@@ -330,11 +330,11 @@ def defineShroomFaces(Shroom, id, name):
 defineShroomFaces(Brown, 99, "Brown")
 defineShroomFaces(Red, 100, "Red")
 
-classicMaterials = MCMaterials(defaultName = "Not present in Classic")
+classicMaterials = MCMaterials(defaultName="Not present in Classic")
 classicMaterials.name = "Classic"
 classicMaterials.addYamlBlocksFromFile("classic.yaml")
 
-indevMaterials = MCMaterials(defaultName = "Not present in Indev")
+indevMaterials = MCMaterials(defaultName="Not present in Indev")
 indevMaterials.name = "Indev"
 indevMaterials.addYamlBlocksFromFile("classic.yaml")
 indevMaterials.addYamlBlocksFromFile("indev.yaml")
@@ -702,10 +702,10 @@ pocketMaterials.OrangeWool = pocketMaterials[115, 0]
 #                      b.ID, b.blockData)
 #                  for b in sorted(mats.pocketMaterials.allBlocks)])
 
-_indices = rollaxis(indices( (256, 16) ), 0, 3)
+_indices = rollaxis(indices((256, 16)), 0, 3)
 
 
-def _filterTable(filters, unavailable, default = (0, 0) ):
+def _filterTable(filters, unavailable, default=(0, 0)):
     # a filter table is a 256x16 table of (ID, data) pairs.
     table = zeros((256, 16, 2), dtype='uint8')
     table[:] = _indices
@@ -773,11 +773,11 @@ def guessFilterTable(matsFrom, matsTo):
 
         if block:
             if block != fromBlock:
-                filters.append( ( (fromBlock.ID, fromBlock.blockData), (block.ID, block.blockData) ) )
+                filters.append(((fromBlock.ID, fromBlock.blockData), (block.ID, block.blockData)))
         else:
-            unavailable.append((fromBlock.ID, fromBlock.blockData) )
+            unavailable.append((fromBlock.ID, fromBlock.blockData))
 
-    return filters , unavailable
+    return filters, unavailable
 
 allMaterials = (alphaMaterials, classicMaterials, pocketMaterials, indevMaterials)
 

@@ -1041,7 +1041,7 @@ class mce(object):
 
             print "It is {0}:{1:02} {2} on Day {3}".format(clockHours % 12 or 12, minutes, ampm, days)
         else:
-            times = { "morning": 6, "noon": 12, "evening": 18, "midnight": 24 }
+            times = {"morning": 6, "noon": 12, "evening": 18, "midnight": 24}
             word = command[0]
             minutes = 0
 

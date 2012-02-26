@@ -374,8 +374,8 @@ class Items (object):
                 with file(filename) as f:
                     items_txt = f.read()
             except Exception, e:
-                logger.info( "Error reading items.txt: %s", e)
-                logger.info( "Using internal data." )
+                logger.info("Error reading items.txt: %s", e)
+                logger.info("Using internal data.")
                 items_txt = self.items_txt
 
         self.itemtypes = {}

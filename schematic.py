@@ -489,7 +489,7 @@ def adjustExtractionParameters(self, box):
         if l <= 0:
             return
 
-    box = BoundingBox ((x, y, z), (w, h, l))
+    box = BoundingBox((x, y, z), (w, h, l))
 
     return box, (destX, destY, destZ)
 

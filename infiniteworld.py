@@ -51,7 +51,7 @@ __all__ = ["ZeroChunk", "InfdevChunk", "ChunkedLevelMixin", "MCInfdevOldLevel", 
 import re
 
 convert = lambda text: int(text) if text.isdigit() else text
-alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
 
 
 def sort_nicely(l):
@@ -194,7 +194,7 @@ this way.
     def latestVersion(self):
         if len(self.versions) == 0:
             return None
-        return max( (v for v in self.versions if v not in self.broken_versions), key=alphanum_key)
+        return max((v for v in self.versions if v not in self.broken_versions), key=alphanum_key)
 
     def getJarfile(self, version=None):
         if len(self.versions) == 0:
@@ -373,7 +373,7 @@ class MCServerChunkGenerator(object):
     def generateAtPosition(self, tempWorld, tempDir, cx, cz):
         return exhaust(self.generateAtPositionIter(tempWorld, tempDir, cx, cz))
 
-    def generateAtPositionIter(self, tempWorld, tempDir, cx, cz, simulate = False):
+    def generateAtPositionIter(self, tempWorld, tempDir, cx, cz, simulate=False):
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
         tempWorld.saveInPlace()
         tempWorld.unloadRegions()
@@ -450,10 +450,10 @@ class MCServerChunkGenerator(object):
     minRadius = 5
     maxRadius = 20
 
-    def createLevel(self, level, box, simulate = False, **kw):
+    def createLevel(self, level, box, simulate=False, **kw):
         return exhaust(self.createLevelIter(level, box, simulate, **kw))
 
-    def createLevelIter(self, level, box, simulate = False, **kw):
+    def createLevelIter(self, level, box, simulate=False, **kw):
         if isinstance(level, basestring):
             filename = level
             level = MCInfdevOldLevel(filename, create=True, **kw)
@@ -482,7 +482,7 @@ class MCServerChunkGenerator(object):
     def generateChunksInLevel(self, level, chunks):
         return exhaust(self.generateChunksInLevelIter(level, chunks))
 
-    def generateChunksInLevelIter(self, level, chunks, simulate = False):
+    def generateChunksInLevelIter(self, level, chunks, simulate=False):
         assert isinstance(level, MCInfdevOldLevel)
         tempWorld, tempDir = self.tempWorldForLevel(level)
 
@@ -658,7 +658,7 @@ class InfdevChunk(LightedChunk):
             return u"{region} index {index} sector {sector} length {length} format {format}".format(
                 region=os.path.basename(self.world.regionFilename(rx, rz)),
                 sector=offset >> 8,
-                length = offset & 0xff,
+                length=offset & 0xff,
                 index=4 * ((cx & 0x1f) + ((cz & 0x1f) * 32)),
                 format=["???", "gzip", "deflate"][self.compressMode])
         else:
@@ -1656,7 +1656,7 @@ class ChunkedLevelMixin(object):
                 return slice(None, None)
         return sourceMask
 
-    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
+    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create=False):
         # assumes destination point and bounds have already been checked.
         (sx, sy, sz) = sourceBox.origin
 
@@ -1725,7 +1725,7 @@ class ChunkedLevelMixin(object):
 
             # chunk.compress();  # xxx find out why this trashes changes to tile entities
 
-    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create = False):
+    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create=False):
         """ copy blocks between two infinite levels by looping through the
         destination's chunks. make a sub-box of the source level for each chunk
         and copy block and entities in the sub box to the dest chunk."""
@@ -1788,7 +1788,7 @@ class ChunkedLevelMixin(object):
 
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         # needs work xxx
-        info(u"Copying {0} blocks from {1} to {2}" .format (ly * lz * lx, sourceBox, destinationPoint))
+        info(u"Copying {0} blocks from {1} to {2}" .format(ly * lz * lx, sourceBox, destinationPoint))
         startTime = datetime.now()
 
         if not sourceLevel.isInfinite:
@@ -2003,7 +2003,7 @@ class ChunkedLevelMixin(object):
             cx, cz = ch.chunkPosition
             for dx, dz in itertools.product((-1, 0, 1), (-1, 0, 1)):
                 try:
-                    ch = self.getChunk (cx + dx, cz + dz)
+                    ch = self.getChunk(cx + dx, cz + dz)
                 except (ChunkNotPresent, ChunkMalformed):
                     continue
                 dirtyChunks.add(ch)
@@ -2492,7 +2492,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def preloadDimensions(self):
         worldDirs = os.listdir(self.worldDir)
 
-        for dirname in worldDirs :
+        for dirname in worldDirs:
             if dirname.startswith("DIM"):
                 try:
                     dimNo = int(dirname[3:])
@@ -2815,7 +2815,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         the chunk is done later, accesses to chunk attributes may
         raise ChunkMalformed"""
 
-        if not self.containsChunk(cx, cz) :
+        if not self.containsChunk(cx, cz):
             raise ChunkNotPresent((cx, cz))
 
         if not (cx, cz) in self._loadedChunks:
@@ -3002,7 +3002,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             r = cx >> 5, cz >> 5
             rf = self.getRegionFile(*r)
             if rf:
-                rf.setOffset(cx & 0x1f , cz & 0x1f, 0)
+                rf.setOffset(cx & 0x1f, cz & 0x1f, 0)
                 if (rf.offsets == 0).all():
                     rf.close()
                     os.unlink(rf.path)
@@ -3183,7 +3183,7 @@ class MCAlphaDimension (MCInfdevOldLevel):
         if not os.path.exists(self.worldDir):
             os.mkdir(self.worldDir)
 
-    dimensionNames = { -1: "Nether", 1: "The End"}
+    dimensionNames = {-1: "Nether", 1: "The End"}
 
     @property
     def displayName(self):
