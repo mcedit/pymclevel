@@ -3,13 +3,16 @@ Created on Jul 22, 2011
 
 @author: Rio
 '''
+
 __all__ = ["MCJavaLevel"]
+
+from logging import getLogger
 from mclevelbase import *
 from level import MCLevel
 
 import re
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 from level import MCLevel

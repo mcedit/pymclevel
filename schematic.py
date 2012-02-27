@@ -3,6 +3,8 @@ Created on Jul 22, 2011
 
 @author: Rio
 '''
+
+from logging import getLogger
 from mclevelbase import *
 import shutil
 import blockrotation
@@ -10,7 +12,7 @@ from box import BoundingBox
 from level import MCLevel, EntityLevel
 import nbt
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 # schematic

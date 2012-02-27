@@ -5,11 +5,12 @@ Created on Jul 22, 2011
 '''
 
 from box import BoundingBox
+from logging import getLogger
 from mclevelbase import *
 from collections import defaultdict
 import materials
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 

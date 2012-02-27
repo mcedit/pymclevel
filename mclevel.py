@@ -175,6 +175,7 @@ import traceback
 from numpy import fromstring
 import nbt
 
+from logging import getLogger
 from mclevelbase import *
 from indev import *
 from infiniteworld import *
@@ -185,7 +186,7 @@ from pocket import *
 
 import sys
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 

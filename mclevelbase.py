@@ -7,7 +7,7 @@ import os
 from contextlib import contextmanager
 
 from numpy import *
-import logging
+from logging import getLogger
 
 from nbt import *
 from materials import *
@@ -16,7 +16,7 @@ from entity import *
 from faces import *
 #String constants for common tag names
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 Entities = "Entities"

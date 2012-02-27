@@ -1,4 +1,5 @@
 
+from logging import getLogger
 from numpy import zeros, rollaxis, indices
 import traceback
 from os.path import join
@@ -11,8 +12,7 @@ NOTEX = (0xB0, 0xE0)
 
 import yaml
 
-import logging
-log = logging.getLogger(__file__)
+log = getLogger(__file__)
 debug, info, warn, error, critical = log.debug, log.info, log.warn, log.error, log.critical
 
 

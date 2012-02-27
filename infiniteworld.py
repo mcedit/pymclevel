@@ -3,10 +3,12 @@ Created on Jul 22, 2011
 
 @author: Rio
 '''
+
 from mclevelbase import *
 from collections import deque
 import nbt
 from datetime import datetime
+from logging import getLogger
 import os
 import time
 import traceback
@@ -18,7 +20,7 @@ import sys
 import urllib
 import tempfile
 from os.path import join, dirname, basename
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 import blockrotation
