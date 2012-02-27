@@ -5,7 +5,6 @@ import sys
 import subprocess
 import shutil
 import os
-import mclevel
 import hashlib
 import contextlib
 import gzip
@@ -13,10 +12,12 @@ import fnmatch
 import tarfile
 import zipfile
 
+
 def generate_file_list(directory):
     for dirpath, dirnames, filenames in os.walk(directory):
         for filename in filenames:
             yield os.path.join(dirpath, filename)
+
 
 def sha1_file(name, checksum=None):
     CHUNKSIZE = 1024
@@ -36,11 +37,13 @@ def sha1_file(name, checksum=None):
             checksum.update(chunk)
     return checksum
 
+
 def calculate_result(directory):
     checksum = hashlib.sha1()
     for filename in sorted(generate_file_list(directory)):
         sha1_file(filename, checksum)
     return checksum.hexdigest()
+
 
 @contextlib.contextmanager
 def temporary_directory(prefix='regr'):
@@ -50,12 +53,14 @@ def temporary_directory(prefix='regr'):
     finally:
         shutil.rmtree(name)
 
+
 @contextlib.contextmanager
 def directory_clone(src):
     with temporary_directory('regr') as name:
         subdir = os.path.join(name, "subdir")
         shutil.copytree(src, subdir)
         yield subdir
+
 
 @contextlib.contextmanager
 def unzipped_content(src):
@@ -64,12 +69,14 @@ def unzipped_content(src):
         f.extractall(dest)
         yield dest
 
+
 @contextlib.contextmanager
 def untared_content(src):
     with temporary_directory() as dest:
         f = tarfile.TarFile.open(src)
         f.extractall(dest)
         yield dest
+
 
 def launch_subprocess(directory, arguments, env={}):
     #my python breaks with an empty environ, i think it wants PATH
@@ -84,7 +91,10 @@ def launch_subprocess(directory, arguments, env={}):
 
     return proc
 
-class RegressionError(Exception): pass
+
+class RegressionError(Exception):
+    pass
+
 
 def do_test(test_data, result_check, arguments=[]):
     """Run a regression test on the given world.
@@ -95,8 +105,8 @@ def do_test(test_data, result_check, arguments=[]):
     result_check = result_check.lower()
 
     env = {
-            'MCE_RANDOM_SEED' : '42',
-            'MCE_LAST_PLAYED' : '42',
+            'MCE_RANDOM_SEED': '42',
+            'MCE_LAST_PLAYED': '42',
     }
 
     if 'MCE_PROFILE' in os.environ:
@@ -120,8 +130,8 @@ def do_test_match_output(test_data, result_check, arguments=[]):
     result_check = result_check.lower()
 
     env = {
-            'MCE_RANDOM_SEED' : '42',
-            'MCE_LAST_PLAYED' : '42'
+            'MCE_RANDOM_SEED': '42',
+            'MCE_LAST_PLAYED': '42'
     }
 
     with directory_clone(test_data) as directory:
@@ -160,6 +170,7 @@ import optparse
 parser = optparse.OptionParser()
 parser.add_option("--profile", help="Perform profiling on regression tests", action="store_true")
 
+
 def main(argv):
     options, args = parser.parse_args(argv)
 
@@ -190,9 +201,9 @@ def main(argv):
                     print passes[-1]
 
         print "{0} tests passed.".format(len(passes))
-        for line in fails: print line;
+        for line in fails:
+            print line
 
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
-

@@ -4,24 +4,24 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
-
+from box import BoundingBox
 from mclevelbase import *
-import tempfile
 from collections import defaultdict
 import materials
 
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
-def computeChunkHeightMap(materials, blocks, HeightMap = None):
-    """Computes the HeightMap array for a chunk, which stores the lowest 
+
+def computeChunkHeightMap(materials, blocks, HeightMap=None):
+    """Computes the HeightMap array for a chunk, which stores the lowest
     y-coordinate of each column where the sunlight is still at full strength.
     The HeightMap array is indexed z,x contrary to the blocks array which is x,z,y.
 
     If HeightMap is passed, fills it with the result and returns it. Otherwise, returns a
     new array.
     """
-    
+
     lightAbsorption = materials.lightAbsorption[blocks]
     heights = extractHeights(lightAbsorption)
     heights = heights.swapaxes(0, 1)
@@ -31,47 +31,48 @@ def computeChunkHeightMap(materials, blocks, HeightMap = None):
         HeightMap[:] = heights
         return HeightMap
 
+
 def extractHeights(array):
     """ Given an array of bytes shaped (x, z, y), return the coordinates of the highest
     non-zero value in each y-column into heightMap
     """
 
-    #The fastest way I've found to do this is to make a boolean array with >0,
+    # The fastest way I've found to do this is to make a boolean array with >0,
     # then turn it upside down with ::-1 and use argmax to get the _first_ nonzero
     # from each column.
 
     w, h = array.shape[:2]
     heightMap = zeros((w, h), 'uint16')
 
-
-    heights = argmax((array>0)[..., ::-1], 2)
+    heights = argmax((array > 0)[..., ::-1], 2)
     heights = array.shape[2] - heights
 
-    #if the entire column is air, argmax finds the first air block and the result is a top height column
-    #top height columns won't ever have air in the top block so we can find air columns by checking for both
-    heights[(array[..., -1]==0) & (heights == array.shape[2])] = 0
+    # if the entire column is air, argmax finds the first air block and the result is a top height column
+    # top height columns won't ever have air in the top block so we can find air columns by checking for both
+    heights[(array[..., -1] == 0) & (heights == array.shape[2])] = 0
 
     heightMap[:] = heights
 
     return heightMap
 
+
 def getSlices(box, height):
-    """ call this method to iterate through a large slice of the world by 
+    """ call this method to iterate through a large slice of the world by
         visiting each chunk and indexing its data with a subslice.
-    
+
     this returns an iterator, which yields 3-tuples containing:
-    +  a pair of chunk coordinates (cx,cz), 
-    +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays, 
+    +  a pair of chunk coordinates (cx, cz),
+    +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays,
     +  a x,y,z triplet representing the relative location of this subslice within the requested world slice.
-    
+
     Note the different order of the coordinates between the 'slices' triplet
     and the 'offset' triplet. x,z,y ordering is used only
     to index arrays, since it reflects the order of the blocks in memory.
-    In all other places, including an entity's 'Pos', the order is x,y,z. 
+    In all other places, including an entity's 'Pos', the order is x,y,z.
     """
-    
-    #when yielding slices of chunks on the edge of the box, adjust the 
-    #slices by an offset
+
+    # when yielding slices of chunks on the edge of the box, adjust the
+    # slices by an offset
     minxoff, minzoff = box.minx - (box.mincx << 4), box.minz - (box.mincz << 4)
     maxxoff, maxzoff = box.maxx - (box.maxcx << 4) + 16, box.maxz - (box.maxcz << 4) + 16
 
@@ -90,8 +91,6 @@ def getSlices(box, height):
         if cx == box.maxcx - 1:
             localMaxX = maxxoff
         newMinX = localMinX + (cx << 4) - box.minx
-        newMaxX = localMaxX + (cx << 4) - box.minx
-
 
         for cz in range(box.mincz, box.maxcz):
             localMinZ = 0
@@ -101,31 +100,30 @@ def getSlices(box, height):
             if cz == box.maxcz - 1:
                 localMaxZ = maxzoff
             newMinZ = localMinZ + (cz << 4) - box.minz
-            newMaxZ = localMaxZ + (cz << 4) - box.minz
             slices, point = (
                 (slice(localMinX, localMaxX), slice(localMinZ, localMaxZ), slice(miny, maxy)),
                 (newMinX, newMinY, newMinZ)
             )
-            
-            yield (cx,cz), slices, point
-            
+
+            yield (cx, cz), slices, point
+
 
 class MCLevel(object):
-    """ MCLevel is an abstract class providing many routines to the different level types, 
+    """ MCLevel is an abstract class providing many routines to the different level types,
     including a common copyEntitiesFrom built on class-specific routines, and
     a dummy getChunk/allChunks for the finite levels.
-    
+
     MCLevel also provides compress and decompress methods that are used to load
-    NBT format levels, and expects subclasses to override shapeChunkData to 
-    assign a shape to the Blocks and other arrays. The resulting arrays after 
+    NBT format levels, and expects subclasses to override shapeChunkData to
+    assign a shape to the Blocks and other arrays. The resulting arrays after
     reshape must be indexed [x,z,y]
-    
+
     MCLevel subclasses must have Width, Length, and Height attributes.  The first two are always zero for infinite levels.
     Subclasses must also have Blocks, and optionally Data and BlockLight.
     """
 
-    ###common to Creative, Survival and Indev. these routines assume
-    ###self has Width, Height, Length, and Blocks
+    ### common to Creative, Survival and Indev. these routines assume
+    ### self has Width, Height, Length, and Blocks
 
     materials = classicMaterials
     isInfinite = False
@@ -141,11 +139,12 @@ class MCLevel(object):
     dimNo = 0
     parentWorld = None
     world = None
+
     @classmethod
     def isLevel(cls, filename):
         """Tries to find out whether the given filename can be loaded
         by this class.  Returns True or False.
-        
+
         Subclasses should implement _isLevel, _isDataLevel, or _isTagLevel.
         """
         if hasattr(cls, "_isLevel"):
@@ -183,27 +182,47 @@ class MCLevel(object):
     def bounds(self):
         return BoundingBox((0, 0, 0), self.size)
 
-
-    def close(self): pass
+    def close(self):
+        pass
 
     # --- Compression ---
-    def compress(self): pass
-    def decompress(self):pass
+    def compress(self):
+        pass
 
+    def decompress(self):
+        pass
 
     # --- Entity Methods ---
-    def addEntity(self, entityTag): pass
-    def addEntities(self, entities): pass
-    def tileEntityAt(self, x, y, z): return None
-    def addTileEntity(self, entityTag): pass
-    def getEntitiesInBox(self, box): return []
-    def getTileEntitiesInBox(self, box): return []
-    def copyEntitiesFromIter(self, *args, **kw): yield;
-    def removeEntitiesInBox(self, box): pass
-    def removeTileEntitiesInBox(self, box): pass
-    
+    def addEntity(self, entityTag):
+        pass
+
+    def addEntities(self, entities):
+        pass
+
+    def tileEntityAt(self, x, y, z):
+        return None
+
+    def addTileEntity(self, entityTag):
+        pass
+
+    def getEntitiesInBox(self, box):
+        return []
+
+    def getTileEntitiesInBox(self, box):
+        return []
+
+    def copyEntitiesFromIter(self, *args, **kw):
+        yield
+
+    def removeEntitiesInBox(self, box):
+        pass
+
+    def removeTileEntitiesInBox(self, box):
+        pass
+
     # --- Chunked Format Emulation ---
-    def compressChunk(self, cx, cz): pass
+    def compressChunk(self, cx, cz):
+        pass
 
     @property
     def loadedChunks(self):
@@ -215,18 +234,17 @@ class MCLevel(object):
 
     @property
     def allChunks(self):
-        """Returns a synthetic list of chunk positions (xPos, zPos), to fake 
+        """Returns a synthetic list of chunk positions (xPos, zPos), to fake
         being a chunked level format."""
         return self.loadedChunks
 
-
     def getChunks(self, chunks=None):
         """ pass a list of chunk coordinate tuples to get an iterator yielding
-        InfdevChunks. pass nothing for an iterator of every chunk in the level. 
+        InfdevChunks. pass nothing for an iterator of every chunk in the level.
         the chunks are automatically loaded."""
-        if chunks is None: chunks = self.allChunks;
+        if chunks is None:
+            chunks = self.allChunks
         return (self.getChunk(cx, cz) for (cx, cz) in chunks if self.containsChunk(cx, cz))
-
 
     def _getFakeChunkEntities(self, cx, cz):
         """Returns Entities, TileEntities"""
@@ -237,13 +255,11 @@ class MCLevel(object):
         position. Subclasses override fakeBlocksForChunk and fakeDataForChunk
         to fill in the chunk arrays"""
 
-        
         f = FakeChunk()
         f.world = self
         f.chunkPosition = (cx, cz)
 
         f.Blocks = self.fakeBlocksForChunk(cx, cz)
-
 
         f.Data = self.fakeDataForChunk(cx, cz)
 
@@ -254,8 +270,6 @@ class MCLevel(object):
         f.SkyLight = whiteLight
 
         f.Entities, f.TileEntities = self._getFakeChunkEntities(cx, cz)
-
-
 
         f.root_tag = TAG_Compound()
 
@@ -272,7 +286,6 @@ class MCLevel(object):
                 chunk = self.getChunk(xPos, zPos)
             except (ChunkMalformed, ChunkNotPresent):
                 continue
-
 
             yield (chunk, slices, (xPos * 16 - x, 0, zPos * 16 - z))
 
@@ -293,12 +306,11 @@ class MCLevel(object):
             return getAllSlices()
         else:
             return getSlices(box, self.Height)
-    
+
     def getChunkSlices(self, box):
         return ((self.getChunk(*cPos), slices, point)
                 for cPos, slices, point in self._getSlices(box)
                 if self.containsChunk(*cPos))
-
 
     def containsPoint(self, x, y, z):
         return (x >= 0 and x < self.Width and
@@ -306,7 +318,7 @@ class MCLevel(object):
                 z >= 0 and z < self.Length)
 
     def containsChunk(self, cx, cz):
-        #w+15 to allow non 16 aligned schematics
+        # w+15 to allow non 16 aligned schematics
         return (cx >= 0 and cx < (self.Width + 15 >> 4) and
                 cz >= 0 and cz < (self.Length + 15 >> 4))
 
@@ -319,22 +331,21 @@ class MCLevel(object):
     def chunkIsDirty(self, cx, cz):
         return True
 
-
     def fakeBlocksForChunk(self, cx, cz):
-        #return a 16x16xH block array for rendering.  Alpha levels can
-        #just return the chunk data.  other levels need to reorder the
-        #indices and return a slice of the blocks.
+        # return a 16x16xH block array for rendering.  Alpha levels can
+        # just return the chunk data.  other levels need to reorder the
+        # indices and return a slice of the blocks.
 
         cxOff = cx << 4
         czOff = cz << 4
         b = self.Blocks[cxOff:cxOff + 16, czOff:czOff + 16, 0:self.Height, ]
-        #(w, l, h) = b.shape
-        #if w<16 or l<16:
+        # (w, l, h) = b.shape
+        # if w<16 or l<16:
         #    b = resize(b, (16,16,h) )
         return b
 
     def fakeDataForChunk(self, cx, cz):
-        #Data is emulated for flexibility
+        # Data is emulated for flexibility
         cxOff = cx << 4
         czOff = cz << 4
 
@@ -348,22 +359,30 @@ class MCLevel(object):
     def skylightAt(self, *args):
         return 15
 
-    def setSkylightAt(self, *args): pass
+    def setSkylightAt(self, *args):
+        pass
 
-    def setBlockDataAt(self, x, y, z, newdata): pass
+    def setBlockDataAt(self, x, y, z, newdata):
+        pass
 
-    def blockDataAt(self, x, y, z): return 0;
+    def blockDataAt(self, x, y, z):
+        return 0
 
-    def blockLightAt(self, x, y, z): return 15;
+    def blockLightAt(self, x, y, z):
+        return 15
 
     def blockAt(self, x, y, z):
-        if x < 0 or y < 0 or z < 0: return 0
-        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        if x < 0 or y < 0 or z < 0:
+            return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length:
+            return 0
         return self.Blocks[x, z, y]
 
     def setBlockAt(self, x, y, z, blockID):
-        if x < 0 or y < 0 or z < 0: return 0
-        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        if x < 0 or y < 0 or z < 0:
+            return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length:
+            return 0
         self.Blocks[x, z, y] = blockID
 
     # --- Fill and Replace ---
@@ -380,7 +399,7 @@ class MCLevel(object):
     def fillBlocksIter(self, box, blockInfo, blocksToReplace=[]):
         self.fillBlocks(box, blockInfo, blocksToReplace)
         yield
-        
+
     def fillBlocks(self, box, blockInfo, blocksToReplace=[]):
 
         if box is None:
@@ -391,12 +410,12 @@ class MCLevel(object):
         info(u"Filling blocks in {0} with {1}, replacing{2}".format(box, blockInfo, blocksToReplace))
 
         slices = map(slice, box.origin, box.maximum)
-        
+
         blocks = self.Blocks[slices[0], slices[2], slices[1]]
         if len(blocksToReplace):
             blocktable = self.blockReplaceTable(blocksToReplace)
             shouldRetainData = (self.materials == alphaMaterials) and all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
-            
+
             if hasattr(self, "Data") and shouldRetainData:
                 data = self.Data[slices[0], slices[2], slices[1]]
                 mask = blocktable[blocks, data]
@@ -412,26 +431,25 @@ class MCLevel(object):
             if hasattr(self, "Data"):
                 self.Data[slices[0], slices[2], slices[1]] = blockInfo.blockData
 
-
     # --- Transformations ---
     def rotateLeft(self):
-        self.Blocks = swapaxes(self.Blocks, 1, 0)[:, ::-1, :] #x=z; z=-x
-        pass;
+        self.Blocks = swapaxes(self.Blocks, 1, 0)[:, ::-1, :]  # x=z; z=-x
+        pass
 
     def roll(self):
-        self.Blocks = swapaxes(self.Blocks, 2, 0)[:, :, ::-1] #x=y; y=-x
+        self.Blocks = swapaxes(self.Blocks, 2, 0)[:, :, ::-1]  # x=y; y=-x
         pass
 
     def flipVertical(self):
-        self.Blocks = self.Blocks[:, :, ::-1] #y=-y
+        self.Blocks = self.Blocks[:, :, ::-1]  # y=-y
         pass
 
     def flipNorthSouth(self):
-        self.Blocks = self.Blocks[::-1, :, :] #x=-x
+        self.Blocks = self.Blocks[::-1, :, :]  # x=-x
         pass
 
     def flipEastWest(self):
-        self.Blocks = self.Blocks[:, ::-1, :] #z=-z
+        self.Blocks = self.Blocks[:, ::-1, :]  # z=-z
         pass
 
     # --- Copying ---
@@ -439,14 +457,13 @@ class MCLevel(object):
     def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         # assume destinationPoint is entirely within this level, and the size of sourceBox fits entirely within it.
         sourcex, sourcey, sourcez = map(slice, sourceBox.origin, sourceBox.maximum)
-        destCorner2 = map(lambda a, b:a + b, sourceBox.size, destinationPoint)
+        destCorner2 = map(lambda a, b: a + b, sourceBox.size, destinationPoint)
         destx, desty, destz = map(slice, destinationPoint, destCorner2)
 
         sourceData = None
         if hasattr(sourceLevel, 'Data'):
             sourceData = sourceLevel.Data[sourcex, sourcez, sourcey]
         convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceLevel.Blocks[sourcex, sourcez, sourcey], sourceData)
-
 
         blocks = self.Blocks[destx, destz, desty]
 
@@ -462,7 +479,6 @@ class MCLevel(object):
             data = self.Data[destx, destz, desty]
             data[mask] = convertedSourceData[mask]
 
-
     def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
         return exhaust(self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy))
 
@@ -472,16 +488,15 @@ class MCLevel(object):
             typemask[blocksToCopy] = True
 
         for i, (chunk, slices, point) in enumerate(sourceLevel.getChunkSlices(sourceBox)):
-            point = map(lambda a, b:a + b, point, destinationPoint)
+            point = map(lambda a, b: a + b, point, destinationPoint)
             point = point[0], point[2], point[1]
             mask = slice(None, None)
 
             convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, chunk.Blocks[slices], chunk.Data[slices])
 
+            destSlices = [slice(p, p + s.stop - s.start) for p, s in zip(point, slices)]
 
-            destSlices = [slice(p, p + s.stop - s.start) for p, s in zip(point, slices) ]
-
-            blocks = self.Blocks[ destSlices ]
+            blocks = self.Blocks[destSlices]
 
             if blocksToCopy is not None:
                 mask = typemask[convertedSourceBlocks]
@@ -489,13 +504,10 @@ class MCLevel(object):
             blocks[mask] = convertedSourceBlocks[mask]
 
             if hasattr(self, 'Data'):
-                data = self.Data[ destSlices ]
+                data = self.Data[destSlices]
                 data[mask] = convertedSourceData[mask]
-            
-            yield i
-            
-            
 
+            yield i
 
     def adjustCopyParameters(self, sourceLevel, sourceBox, destinationPoint):
 
@@ -506,11 +518,10 @@ class MCLevel(object):
         sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
 
         (lx, ly, lz) = sourceBox.size
-        debug(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format (ly * lz * lx, sourceBox, destinationPoint, sourceLevel, self))
+        debug(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format(ly * lz * lx, sourceBox, destinationPoint, sourceLevel, self))
 
-
-        #clip the source ranges to this level's edges.  move the destination point as needed.
-        #xxx abstract this
+        # clip the source ranges to this level's edges.  move the destination point as needed.
+        # xxx abstract this
         if y < 0:
             sourceBox.origin[1] -= y
             sourceBox.size[1] += y
@@ -519,8 +530,8 @@ class MCLevel(object):
             sourceBox.size[1] -= y + sourceBox.size[1] - self.Height
             y = self.Height - sourceBox.size[1]
 
-        #for infinite levels, don't clip along those dimensions because the 
-        #infinite copy func will just skip missing chunks
+        # for infinite levels, don't clip along those dimensions because the
+        # infinite copy func will just skip missing chunks
         if self.Width != 0:
             if x < 0:
                 sourceBox.origin[0] -= x
@@ -528,7 +539,7 @@ class MCLevel(object):
                 x = 0
             if x + sourceBox.size[0] > self.Width:
                 sourceBox.size[0] -= x + sourceBox.size[0] - self.Width
-                #x=self.Width-sourceBox.size[0]
+                # x=self.Width-sourceBox.size[0]
 
         if self.Length != 0:
             if z < 0:
@@ -537,12 +548,11 @@ class MCLevel(object):
                 z = 0
             if z + sourceBox.size[2] > self.Length:
                 sourceBox.size[2] -= z + sourceBox.size[2] - self.Length
-                #z=self.Length-sourceBox.size[2]
+                # z=self.Length-sourceBox.size[2]
 
         destinationPoint = (x, y, z)
 
         return sourceBox, destinationPoint
-
 
     def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
         return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
@@ -550,18 +560,17 @@ class MCLevel(object):
     def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
         if (not sourceLevel.isInfinite) and not(
                sourceLevel.containsPoint(*sourceBox.origin) and
-               sourceLevel.containsPoint(*map(lambda x:x - 1, sourceBox.maximum))):
-            raise ValueError, "{0} cannot provide blocks between {1}".format(sourceLevel, sourceBox)
-
+               sourceLevel.containsPoint(*map(lambda x: x - 1, sourceBox.maximum))):
+            raise ValueError("{0} cannot provide blocks between {1}".format(sourceLevel, sourceBox))
 
         sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
         yield
-        
+
         if min(sourceBox.size) <= 0:
             print "Empty source box, aborting"
             return
 
-        info(u"Copying {0} blocks from {1} to {2}" .format (sourceBox.volume, sourceBox, destinationPoint))
+        info(u"Copying {0} blocks from {1} to {2}" .format(sourceBox.volume, sourceBox, destinationPoint))
 
         if not sourceLevel.isInfinite:
             self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
@@ -571,25 +580,27 @@ class MCLevel(object):
         for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
             yield i
 
-
     def convertBlocksFromLevel(self, sourceLevel, blocks, blockData):
         return materials.convertBlocks(self.materials, sourceLevel.materials, blocks, blockData)
-        
+
     def saveInPlace(self):
         self.saveToFile(self.filename)
 
     # --- Player Methods ---
     def setPlayerPosition(self, pos, player="Player"):
-        pass;
+        pass
 
     def getPlayerPosition(self, player="Player"):
         return 8, self.Height * 0.75, 8
 
-    def getPlayerDimension(self, player="Player"): return 0;
-    def setPlayerDimension(self, d, player="Player"): return;
+    def getPlayerDimension(self, player="Player"):
+        return 0
+
+    def setPlayerDimension(self, d, player="Player"):
+        return
 
     def setPlayerSpawnPosition(self, pos, player=None):
-        pass;
+        pass
 
     def playerSpawnPosition(self, player=None):
         return self.getPlayerPosition()
@@ -600,23 +611,21 @@ class MCLevel(object):
     def getPlayerOrientation(self, player="Player"):
         return -45., 0.
 
-
     # --- Dummy Lighting Methods ---
     def generateLights(self, dirtyChunks=None):
-        pass;
+        pass
+
     def generateLightsIter(self, dirtyChunks=None):
         yield 0
 
 
-
-
-
 class EntityLevel(MCLevel):
     """Abstract subclass of MCLevel that adds default entity behavior"""
+
     def copyEntitiesFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, entities):
         chunkCount = sourceBox.chunkCount
         i = 0
-        copyOffset = map(lambda x, y:x - y, destinationPoint, sourceBox.origin)
+        copyOffset = map(lambda x, y: x - y, destinationPoint, sourceBox.origin)
         e = t = 0
 
         for (chunk, slices, point) in sourceLevel.getChunkSlices(sourceBox):
@@ -627,7 +636,8 @@ class EntityLevel(MCLevel):
                 e += len(chunk.Entities)
                 for entityTag in chunk.Entities:
                     x, y, z = Entity.pos(entityTag)
-                    if (x, y, z) not in sourceBox: continue
+                    if (x, y, z) not in sourceBox:
+                        continue
 
                     eTag = Entity.copyWithOffset(entityTag, copyOffset)
 
@@ -636,7 +646,8 @@ class EntityLevel(MCLevel):
             t += len(chunk.TileEntities)
             for tileEntityTag in chunk.TileEntities:
                 x, y, z = TileEntity.pos(tileEntityTag)
-                if (x, y, z) not in sourceBox: continue
+                if (x, y, z) not in sourceBox:
+                    continue
 
                 eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
 
@@ -644,13 +655,11 @@ class EntityLevel(MCLevel):
 
         info("Copied {0} entities, {1} tile entities".format(e, t))
 
-
-
     def copyEntitiesFromIter(self, sourceLevel, sourceBox, destinationPoint, entities=True):
-        #assume coords have already been adjusted by copyBlocks
-        #if not self.hasEntities or not sourceLevel.hasEntities: return;
+        # assume coords have already been adjusted by copyBlocks
+        # if not self.hasEntities or not sourceLevel.hasEntities:
+        #    return
         sourcePoint0 = sourceBox.origin
-        sourcePoint1 = sourceBox.maximum
 
         if sourceLevel.isInfinite:
             for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, entities):
@@ -658,7 +667,7 @@ class EntityLevel(MCLevel):
         else:
             entsCopied = 0
             tileEntsCopied = 0
-            copyOffset = map(lambda x, y:x - y, destinationPoint, sourcePoint0)
+            copyOffset = map(lambda x, y: x - y, destinationPoint, sourcePoint0)
             if entities:
                 for entity in sourceLevel.getEntitiesInBox(sourceBox):
                     eTag = Entity.copyWithOffset(entity, copyOffset)
@@ -672,7 +681,8 @@ class EntityLevel(MCLevel):
                 if i % 100 == 0:
                     yield
 
-                if not 'x' in entity: continue
+                if not 'x' in entity:
+                    continue
                 eTag = TileEntity.copyWithOffset(entity, copyOffset)
 
                 try:
@@ -709,7 +719,8 @@ class EntityLevel(MCLevel):
 
     def removeTileEntitiesInBox(self, box):
 
-        if not hasattr(self, "TileEntities"): return;
+        if not hasattr(self, "TileEntities"):
+            return
         newEnts = []
         for ent in self.TileEntities:
             if TileEntity.pos(ent) in box:
@@ -747,6 +758,7 @@ class EntityLevel(MCLevel):
 
     def addTileEntity(self, tileEntityTag):
         assert isinstance(tileEntityTag, TAG_Compound)
+
         def differentPosition(a):
 
             return not ((tileEntityTag is a) or TileEntity.pos(a) == TileEntity.pos(tileEntityTag))
@@ -757,44 +769,55 @@ class EntityLevel(MCLevel):
         self._fakeEntities = None
 
     _fakeEntities = None
+
     def _getFakeChunkEntities(self, cx, cz):
         """distribute entities into sublists based on fake chunk position
-        _fakeEntities keys are (cx,cz) and values are (Entities, TileEntities)"""
+        _fakeEntities keys are (cx, cz) and values are (Entities, TileEntities)"""
         if self._fakeEntities is None:
             self._fakeEntities = defaultdict(lambda: ([], []))
             for i, e in enumerate((self.Entities, self.TileEntities)):
                 for ent in e:
                     x, y, z = [Entity, TileEntity][i].pos(ent)
-                    ecx, ecz = map(lambda x:(int(floor(x)) >> 4), (x, z))
+                    ecx, ecz = map(lambda x: (int(floor(x)) >> 4), (x, z))
 
                     self._fakeEntities[ecx, ecz][i].append(ent)
 
         return self._fakeEntities[cx, cz]
 
+
 class ChunkBase(EntityLevel):
     dirty = False
     needsLighting = False
-    Blocks = Data = SkyLight = BlockLight = HeightMap = NotImplemented #override these!
+    Blocks = Data = SkyLight = BlockLight = HeightMap = NotImplemented  # override these!
 
-    def load(self):pass
-    def compress(self):pass
-    def chunkChanged(self, needsLighting = True):
+    def load(self):
+        pass
+
+    def compress(self):
+        pass
+
+    def chunkChanged(self, needsLighting=True):
         self.dirty = True
         self.needsLighting = needsLighting or self.needsLighting
+
     @property
-    def materials(self): return self.world.materials
+    def materials(self):
+        return self.world.materials
+
 
 class FakeChunk(ChunkBase):
     @property
     def HeightMap(self):
         if hasattr(self, "_heightMap"):
             return self._heightMap
-            
+
         self._heightMap = computeChunkHeightMap(self.materials, self.Blocks)
         return self._heightMap
 
+
 class LightedChunk(ChunkBase):
-    def isLoaded(self): return True
+    def isLoaded(self):
+        return True
 
     def generateHeightMap(self):
         computeChunkHeightMap(self.materials, self.Blocks, self.HeightMap)
@@ -804,7 +827,8 @@ class LightedChunk(ChunkBase):
         the chunk. Pass False for calcLighting if you know your changes will
         not change any lights."""
 
-        if not self.isLoaded(): return;
+        if not self.isLoaded():
+            return
 
         self.dirty = True
         self.needsLighting = calcLighting or self.needsLighting
@@ -815,7 +839,7 @@ class LightedChunk(ChunkBase):
     def genFastLights(self):
         self.SkyLight[:] = 0
         if self.world.dimNo in (-1, 1):
-            return #no light in nether or the end
+            return  # no light in nether or the end
 
         blocks = self.Blocks
         la = self.world.materials.lightAbsorption
@@ -832,4 +856,3 @@ class LightedChunk(ChunkBase):
                 if lv <= 0:
                     break
                 skylight[x, z, y] = lv
-

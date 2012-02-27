@@ -16,6 +16,7 @@ Motion = "Motion"
 Pos = "Pos"
 Rotation = "Rotation"
 
+
 class TileEntity(object):
     baseStructures = {
         "Furnace": (
@@ -53,12 +54,12 @@ class TileEntity(object):
             ("BrewTime", TAG_Int),
         ),
     }
-    
+
     knownIDs = baseStructures.keys()
     maxItems = {
-        "Furnace" : 3,
-        "Chest" : 27,
-        "Trap" : 9,
+        "Furnace": 3,
+        "Chest": 27,
+        "Trap": 9,
         "Cauldron": 4,
     }
     slotNames = {
@@ -74,6 +75,7 @@ class TileEntity(object):
             3: "Reagent",
         }
     }
+
     @classmethod
     def Create(cls, tileEntityID, **kw):
         tileEntityTag = TAG_Compound()
@@ -105,55 +107,55 @@ class TileEntity(object):
 
 
 class Entity(object):
-    monsters = [ "Creeper",
-                 "Skeleton",
-                 "Spider",
-                 "CaveSpider",
-                 "Giant",
-                 "Zombie",
-                 "Slime",
-                 "PigZombie",
-                 "Ghast",
-                 "Pig",
-                 "Sheep",
-                 "Cow",
-                 "Chicken",
-                 "Squid",
-                 "Wolf",
-                 "Monster",
-                 "Enderman",
-                 "Silverfish",
-                 "Blaze",
-                 "Villager",
-                 "LavaSlime",
-                 ]
-    projectiles = ["Arrow", 
-                   "Snowball", 
-                   "Egg", 
-                   "Fireball", 
-                   "SmallFireball", 
+    monsters = ["Creeper",
+                "Skeleton",
+                "Spider",
+                "CaveSpider",
+                "Giant",
+                "Zombie",
+                "Slime",
+                "PigZombie",
+                "Ghast",
+                "Pig",
+                "Sheep",
+                "Cow",
+                "Chicken",
+                "Squid",
+                "Wolf",
+                "Monster",
+                "Enderman",
+                "Silverfish",
+                "Blaze",
+                "Villager",
+                "LavaSlime",
+                ]
+    projectiles = ["Arrow",
+                   "Snowball",
+                   "Egg",
+                   "Fireball",
+                   "SmallFireball",
                    "ThrownEnderpearl",
                    ]
-                   
-    items =    [ "Item",
-                 "XPOrb",
-                 "Painting",
-                 "EnderCrystal",
-                 ]
-    vehicles = [ "Minecart", "Boat" ]
+
+    items = ["Item",
+             "XPOrb",
+             "Painting",
+             "EnderCrystal",
+             ]
+    vehicles = ["Minecart", "Boat"]
     tiles = ["PrimedTnt", "FallingSand"]
-    
+
     @classmethod
     def Create(cls, entityID, **kw):
         entityTag = TAG_Compound()
         entityTag[id] = TAG_String(entityID)
         Entity.setpos(entityTag, (0, 0, 0))
         return entityTag
-       
+
     @classmethod
     def pos(cls, tag):
         if Pos not in tag:
-            raise InvalidEntity, tag
+            raise InvalidEntity(tag)
         return [a.value for a in tag[Pos]]
 
     @classmethod
@@ -174,5 +176,10 @@ class Entity(object):
 
         return eTag
 
-class InvalidEntity(ValueError): pass
-class InvalidTileEntity(ValueError): pass
+
+class InvalidEntity(ValueError):
+    pass
+
+
+class InvalidTileEntity(ValueError):
+    pass
