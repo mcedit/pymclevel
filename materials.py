@@ -296,7 +296,7 @@ HugeMushroomTypes = {
    "Stem": 10,
    "Top": 5,
 }
-from faces import *
+from faces import FaceXDecreasing, FaceXIncreasing, FaceYIncreasing, FaceZDecreasing, FaceZIncreasing
 
 Red = (0xD0, 0x70)
 Brown = (0xE0, 0x70)
