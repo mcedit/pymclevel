@@ -61,8 +61,14 @@ TAG_Compound "MinecraftLevel"
 }
 """
 
+from entity import TileEntity
+from level import MCLevel
 from logging import getLogger
-from mclevelbase import *
+from materials import indevMaterials
+from mclevelbase import Blocks, Data, Entities, Height, Length, Map, TileEntities, Width
+from numpy import array, swapaxes, uint8
+import nbt
+import os
 
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
@@ -107,7 +113,7 @@ class MCIndevLevel(EntityLevel):
     def setPlayerPosition(self, pos, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                x["Pos"] = TAG_List([TAG_Float(p) for p in pos])
+                x["Pos"] = nbt.TAG_List([nbt.TAG_Float(p) for p in pos])
 
     def getPlayerPosition(self, player="Ignored"):
         for x in self.root_tag["Entities"]:
@@ -117,7 +123,7 @@ class MCIndevLevel(EntityLevel):
     def setPlayerOrientation(self, yp, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                x["Rotation"] = TAG_List([TAG_Float(p) for p in yp])
+                x["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
 
     def getPlayerOrientation(self, player="Ignored"):
         """ returns (yaw, pitch) """
@@ -185,19 +191,19 @@ class MCIndevLevel(EntityLevel):
             self.Spawn = [mapTag[Spawn][i].value for i in range(3)]
 
             if not Entities in root_tag:
-                root_tag[Entities] = TAG_List()
+                root_tag[Entities] = nbt.TAG_List()
             self.Entities = root_tag[Entities]
 
             # xxx fixup Motion and Pos to match infdev format
             def numbersToDoubles(ent):
                 for attr in "Motion", "Pos":
                     if attr in ent:
-                        ent[attr] = TAG_List([TAG_Double(t.value) for t in ent[attr]])
+                        ent[attr] = nbt.TAG_List([nbt.TAG_Double(t.value) for t in ent[attr]])
             for ent in self.Entities:
                 numbersToDoubles(ent)
 
             if not TileEntities in root_tag:
-                root_tag[TileEntities] = TAG_List()
+                root_tag[TileEntities] = nbt.TAG_List()
             self.TileEntities = root_tag[TileEntities]
             # xxx fixup TileEntities positions to match infdev format
             for te in self.TileEntities:
@@ -208,10 +214,10 @@ class MCIndevLevel(EntityLevel):
                 TileEntity.setpos(te, (x, y, z))
 
             if len(filter(lambda x: x['id'].value == 'LocalPlayer', root_tag[Entities])) == 0:  # omen doesn't make a player entity
-                p = TAG_Compound()
-                p['id'] = TAG_String('LocalPlayer')
-                p['Pos'] = TAG_List([TAG_Float(0.), TAG_Float(64.), TAG_Float(0.)])
-                p['Rotation'] = TAG_List([TAG_Float(0.), TAG_Float(45.)])
+                p = nbt.TAG_Compound()
+                p['id'] = nbt.TAG_String('LocalPlayer')
+                p['Pos'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(64.), nbt.TAG_Float(0.)])
+                p['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(45.)])
 
                 root_tag[Entities].append(p)
                 # self.saveInPlace()
@@ -271,17 +277,17 @@ class MCIndevLevel(EntityLevel):
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
 
-        mapTag = TAG_Compound(name=Map)
-        mapTag[Width] = TAG_Short(self.Width)
-        mapTag[Height] = TAG_Short(self.Height)
-        mapTag[Length] = TAG_Short(self.Length)
-        mapTag[Blocks] = TAG_Byte_Array(self.Blocks)
-        mapTag[Data] = TAG_Byte_Array(self.Data)
+        mapTag = nbt.TAG_Compound(name=Map)
+        mapTag[Width] = nbt.TAG_Short(self.Width)
+        mapTag[Height] = nbt.TAG_Short(self.Height)
+        mapTag[Length] = nbt.TAG_Short(self.Length)
+        mapTag[Blocks] = nbt.TAG_Byte_Array(self.Blocks)
+        mapTag[Data] = nbt.TAG_Byte_Array(self.Data)
 
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
 
-        mapTag[Spawn] = TAG_List([TAG_Short(i) for i in self.Spawn])
+        mapTag[Spawn] = nbt.TAG_List([nbt.TAG_Short(i) for i in self.Spawn])
 
         self.root_tag[Map] = mapTag
         self.root_tag[Map]
@@ -290,14 +296,14 @@ class MCIndevLevel(EntityLevel):
         def numbersToFloats(ent):
             for attr in "Motion", "Pos":
                 if attr in ent:
-                    ent[attr] = TAG_List([TAG_Double(t.value) for t in ent[attr]])
+                    ent[attr] = nbt.TAG_List([nbt.TAG_Double(t.value) for t in ent[attr]])
         for ent in self.Entities:
             numbersToFloats(ent)
 
         # fix up TileEntities imported from Alpha worlds.
         for ent in self.TileEntities:
             if "Pos" not in ent and all(c in ent for c in 'xyz'):
-                ent["Pos"] = TAG_Int(self.encodePos(ent['x'].value, ent['y'].value, ent['z'].value))
+                ent["Pos"] = nbt.TAG_Int(self.encodePos(ent['x'].value, ent['y'].value, ent['z'].value))
         # output_file = gzip.open(self.filename, "wb", compresslevel=1)
         try:
             os.rename(filename, filename + ".old")
