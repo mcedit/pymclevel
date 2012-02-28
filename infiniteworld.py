@@ -4,12 +4,24 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
-from mclevelbase import *
+# **FIXME** WindowsError is the name of a built-in Exception, but pyflakes doesn't seem to know that.  -zothar
 from collections import deque
-import nbt
+from contextlib import closing
+from cStringIO import StringIO
 from datetime import datetime
+from entity import Entity, TileEntity
+from faces import FaceXDecreasing, FaceXIncreasing, FaceZDecreasing, FaceZIncreasing
+import gzip
+import itertools
 from logging import getLogger
+from materials import alphaMaterials, namedMaterials
+from math import floor
+from mclevelbase import appDataDir, Blocks, ChunkMalformed, ChunkNotPresent, decompress_first, Entities, exhaust, notclosing, PlayerNotFound, RegionMalformed, TileEntities, unpack_first
+import nbt
+from numpy import array, clip, fromstring, maximum, uint32, uint8, zeros
 import os
+from os.path import join, dirname, basename
+import random
 import time
 import traceback
 import zlib
@@ -17,9 +29,9 @@ import struct
 import shutil
 import subprocess
 import sys
-import urllib
 import tempfile
-from os.path import join, dirname, basename
+import urllib
+
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
@@ -721,7 +733,7 @@ class InfdevChunk(LightedChunk):
         self.root_tag = None
 
     def decompressTagGzip(self, data):
-        return nbt.load(buf=gunzip(data))
+        return nbt.load(buf=nbt.gunzip(data))
 
     def decompressTagDeflate(self, data):
         return nbt.load(buf=inflate(data))
@@ -814,34 +826,34 @@ class InfdevChunk(LightedChunk):
         levelTag = nbt.TAG_Compound()
         chunkTag[Level] = levelTag
 
-        levelTag[TerrainPopulated] = TAG_Byte(1)
-        levelTag[xPos] = TAG_Int(cx)
-        levelTag[zPos] = TAG_Int(cz)
+        levelTag[TerrainPopulated] = nbt.TAG_Byte(1)
+        levelTag[xPos] = nbt.TAG_Int(cx)
+        levelTag[zPos] = nbt.TAG_Int(cz)
 
-        levelTag[LastUpdate] = TAG_Long(0)
+        levelTag[LastUpdate] = nbt.TAG_Long(0)
 
-        levelTag[BlockLight] = TAG_Byte_Array()
+        levelTag[BlockLight] = nbt.TAG_Byte_Array()
         levelTag[BlockLight].value = zeros(16 * 16 * self.world.Height / 2, uint8)
 
-        levelTag[Blocks] = TAG_Byte_Array()
+        levelTag[Blocks] = nbt.TAG_Byte_Array()
         levelTag[Blocks].value = zeros(16 * 16 * self.world.Height, uint8)
 
-        levelTag[Data] = TAG_Byte_Array()
+        levelTag[Data] = nbt.TAG_Byte_Array()
         levelTag[Data].value = zeros(16 * 16 * self.world.Height / 2, uint8)
 
-        levelTag[SkyLight] = TAG_Byte_Array()
+        levelTag[SkyLight] = nbt.TAG_Byte_Array()
         levelTag[SkyLight].value = zeros(16 * 16 * self.world.Height / 2, uint8)
         levelTag[SkyLight].value[:] = 255
 
         if self.world.Height <= 256:
-            levelTag[HeightMap] = TAG_Byte_Array()
+            levelTag[HeightMap] = nbt.TAG_Byte_Array()
             levelTag[HeightMap].value = zeros(16 * 16, uint8)
         else:
-            levelTag[HeightMap] = TAG_Int_Array()
+            levelTag[HeightMap] = nbt.TAG_Int_Array()
             levelTag[HeightMap].value = zeros(16 * 16, uint32).newbyteorder()
 
-        levelTag[Entities] = TAG_List()
-        levelTag[TileEntities] = TAG_List()
+        levelTag[Entities] = nbt.TAG_List()
+        levelTag[TileEntities] = nbt.TAG_List()
 
         self.root_tag = chunkTag
         self.shapeChunkData()
@@ -949,16 +961,16 @@ class InfdevChunk(LightedChunk):
         chunkTag[Level][BlockLight].value.shape = (chunkSize, chunkSize, self.world.Height / 2)
         chunkTag[Level]["Data"].value.shape = (chunkSize, chunkSize, self.world.Height / 2)
         if TileEntities not in chunkTag[Level]:
-            chunkTag[Level][TileEntities] = TAG_List()
+            chunkTag[Level][TileEntities] = nbt.TAG_List()
         if Entities not in chunkTag[Level]:
-            chunkTag[Level][Entities] = TAG_List()
+            chunkTag[Level][Entities] = nbt.TAG_List()
 
     def addEntity(self, entityTag):
 
         def doubleize(name):
             if name in entityTag:
                 m = entityTag[name]
-                entityTag[name] = TAG_List([TAG_Double(i.value) for i in m])
+                entityTag[name] = nbt.TAG_List([nbt.TAG_Double(i.value) for i in m])
 
         doubleize("Motion")
         doubleize("Position")
@@ -1098,7 +1110,7 @@ class AnvilChunk(InfdevChunk):
                 arr[..., y:y + 16] = secarray.swapaxes(0, 2)
 
     def _compressChunk(self):
-        sections = self.root_tag[Level][Sections] = TAG_List()
+        sections = self.root_tag[Level][Sections] = nbt.TAG_List()
 
         for y in range(0, self.Height, 16):
             sec = nbt.TAG_Compound()
@@ -1112,10 +1124,10 @@ class AnvilChunk(InfdevChunk):
                 else:
                     secarray = packNibbleArray(secarray)
 
-                sec[name] = TAG_Byte_Array(array(secarray))
+                sec[name] = nbt.TAG_Byte_Array(array(secarray))
 
             if len(sec):
-                sec["Y"] = TAG_Byte(y / 16)
+                sec["Y"] = nbt.TAG_Byte(y / 16)
                 sections.append(sec)
 
         super(AnvilChunk, self)._compressChunk()
@@ -1127,11 +1139,11 @@ class AnvilChunk(InfdevChunk):
         levelTag = nbt.TAG_Compound()
         chunkTag[Level] = levelTag
 
-        levelTag[TerrainPopulated] = TAG_Byte(1)
-        levelTag[xPos] = TAG_Int(cx)
-        levelTag[zPos] = TAG_Int(cz)
+        levelTag[TerrainPopulated] = nbt.TAG_Byte(1)
+        levelTag[xPos] = nbt.TAG_Int(cx)
+        levelTag[zPos] = nbt.TAG_Int(cz)
 
-        levelTag[LastUpdate] = TAG_Long(0)
+        levelTag[LastUpdate] = nbt.TAG_Long(0)
 
         self._Blocks = zeros((16, 16, self.world.Height), uint8)
         self._Data = zeros((16, 16, self.world.Height), uint8)
@@ -1139,11 +1151,11 @@ class AnvilChunk(InfdevChunk):
         self._SkyLight = zeros((16, 16, self.world.Height), uint8)
         self._SkyLight[:] = 15
 
-        levelTag[HeightMap] = TAG_Int_Array()
+        levelTag[HeightMap] = nbt.TAG_Int_Array()
         levelTag[HeightMap].value = zeros((16, 16), uint32).newbyteorder()
 
-        levelTag[Entities] = TAG_List()
-        levelTag[TileEntities] = TAG_List()
+        levelTag[Entities] = nbt.TAG_List()
+        levelTag[TileEntities] = nbt.TAG_List()
 
         self.root_tag = chunkTag
         self.dirty = True
@@ -1362,7 +1374,7 @@ class MCRegionFile(object):
 
     def _decompressSectors(self, format, data):
         if format == self.VERSION_GZIP:
-            return gunzip(data)
+            return nbt.gunzip(data)
         if format == self.VERSION_DEFLATE:
             return inflate(data)
 
@@ -2311,16 +2323,16 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         return property(getter, setter)
 
-    SizeOnDisk = TagProperty('SizeOnDisk', TAG_Long)
-    RandomSeed = TagProperty('RandomSeed', TAG_Long)
-    Time = TagProperty('Time', TAG_Long)  # Age of the world in ticks. 20 ticks per second; 24000 ticks per day.
-    LastPlayed = TagProperty('LastPlayed', TAG_Long, lambda self: long(time.time() * 1000))
+    SizeOnDisk = TagProperty('SizeOnDisk', nbt.TAG_Long)
+    RandomSeed = TagProperty('RandomSeed', nbt.TAG_Long)
+    Time = TagProperty('Time', nbt.TAG_Long)  # Age of the world in ticks. 20 ticks per second; 24000 ticks per day.
+    LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: long(time.time() * 1000))
 
-    LevelName = TagProperty('LevelName', TAG_String, lambda self: self.displayName)
+    LevelName = TagProperty('LevelName', nbt.TAG_String, lambda self: self.displayName)
 
-    MapFeatures = TagProperty('MapFeatures', TAG_Byte, lambda self: 1)
+    MapFeatures = TagProperty('MapFeatures', nbt.TAG_Byte, lambda self: 1)
 
-    GameType = TagProperty('GameType', TAG_Int, lambda self: 0)  # 0 for survival, 1 for creative
+    GameType = TagProperty('GameType', nbt.TAG_Int, lambda self: 0)  # 0 for survival, 1 for creative
     GAMETYPE_SURVIVAL = 0
     GAMETYPE_CREATIVE = 1
 
@@ -2353,11 +2365,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if filename == None:
             raise ValueError("Can't create an Infinite level without a filename!")
         # create a new level
-        root_tag = TAG_Compound()
-        root_tag[Data] = TAG_Compound()
-        root_tag[Data][SpawnX] = TAG_Int(0)
-        root_tag[Data][SpawnY] = TAG_Int(2)
-        root_tag[Data][SpawnZ] = TAG_Int(0)
+        root_tag = nbt.TAG_Compound()
+        root_tag[Data] = nbt.TAG_Compound()
+        root_tag[Data][SpawnX] = nbt.TAG_Int(0)
+        root_tag[Data][SpawnY] = nbt.TAG_Int(2)
+        root_tag[Data][SpawnZ] = nbt.TAG_Int(0)
 
         if last_played is None:
             last_played = long(time.time() * 1000)
@@ -2365,7 +2377,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
         self.root_tag = root_tag
-        root_tag[Data]['version'] = TAG_Int(self.VERSION_MCR)
+        root_tag[Data]['version'] = nbt.TAG_Int(self.VERSION_MCR)
 
         self.LastPlayed = long(last_played)
         self.RandomSeed = long(random_seed)
@@ -2382,25 +2394,25 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def createPlayer(self, playerName):
         if playerName == "Player":
-            playerTag = self.root_tag[Data].setdefault(playerName, TAG_Compound())
+            playerTag = self.root_tag[Data].setdefault(playerName, nbt.TAG_Compound())
         else:
-            playerTag = TAG_Compound()
+            playerTag = nbt.TAG_Compound()
 
-        playerTag['Air'] = TAG_Short(300)
-        playerTag['AttackTime'] = TAG_Short(0)
-        playerTag['DeathTime'] = TAG_Short(0)
-        playerTag['Fire'] = TAG_Short(-20)
-        playerTag['Health'] = TAG_Short(20)
-        playerTag['HurtTime'] = TAG_Short(0)
-        playerTag['Score'] = TAG_Int(0)
-        playerTag['FallDistance'] = TAG_Float(0)
-        playerTag['OnGround'] = TAG_Byte(0)
+        playerTag['Air'] = nbt.TAG_Short(300)
+        playerTag['AttackTime'] = nbt.TAG_Short(0)
+        playerTag['DeathTime'] = nbt.TAG_Short(0)
+        playerTag['Fire'] = nbt.TAG_Short(-20)
+        playerTag['Health'] = nbt.TAG_Short(20)
+        playerTag['HurtTime'] = nbt.TAG_Short(0)
+        playerTag['Score'] = nbt.TAG_Int(0)
+        playerTag['FallDistance'] = nbt.TAG_Float(0)
+        playerTag['OnGround'] = nbt.TAG_Byte(0)
 
-        playerTag['Inventory'] = TAG_List()
+        playerTag['Inventory'] = nbt.TAG_List()
 
-        playerTag['Motion'] = TAG_List([TAG_Double(0) for i in range(3)])
-        playerTag['Pos'] = TAG_List([TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
-        playerTag['Rotation'] = TAG_List([TAG_Float(0), TAG_Float(0)])
+        playerTag['Motion'] = nbt.TAG_List([nbt.TAG_Double(0) for i in range(3)])
+        playerTag['Pos'] = nbt.TAG_List([nbt.TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
+        playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0), nbt.TAG_Float(0)])
 
         if playerName != "Player":
             self.playerTagCache.save(self.getPlayerPath(playerName))
@@ -2701,7 +2713,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 with file(chunk.filename, 'rb') as f:
                     cdata = f.read()
                     chunk.compressedTag = cdata
-                    data = gunzip(cdata)
+                    data = nbt.gunzip(cdata)
                     chunk.root_tag = nbt.load(buf=data)
 
         except Exception, e:
@@ -2889,7 +2901,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         info(u"Saved {0} chunks".format(dirtyChunkCount))
 
     def addEntity(self, entityTag):
-        assert isinstance(entityTag, TAG_Compound)
+        assert isinstance(entityTag, nbt.TAG_Compound)
         x, y, z = map(lambda x: int(floor(x)), Entity.pos(entityTag))
 
         try:
@@ -2905,7 +2917,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         return chunk.tileEntityAt(x, y, z)
 
     def addTileEntity(self, tileEntityTag):
-        assert isinstance(tileEntityTag, TAG_Compound)
+        assert isinstance(tileEntityTag, nbt.TAG_Compound)
         if not 'x' in tileEntityTag:
             return
         x, y, z = TileEntity.pos(tileEntityTag)
@@ -3129,20 +3141,20 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         # Check for the Abilities tag.  It will be missing in worlds from before
         # Beta 1.9 Prerelease 5.
         if not 'abilities' in playerTag:
-            playerTag['abilities'] = TAG_Compound()
+            playerTag['abilities'] = nbt.TAG_Compound()
 
         # Assumes creative (1) is the only mode with these abilities set,
         # which is true for now.  Future game modes may not hold this to be
         # true, however.
         if gametype == 1:
-            playerTag['abilities']['instabuild'] = TAG_Byte(1)
-            playerTag['abilities']['mayfly'] = TAG_Byte(1)
-            playerTag['abilities']['invulnerable'] = TAG_Byte(1)
+            playerTag['abilities']['instabuild'] = nbt.TAG_Byte(1)
+            playerTag['abilities']['mayfly'] = nbt.TAG_Byte(1)
+            playerTag['abilities']['invulnerable'] = nbt.TAG_Byte(1)
         else:
-            playerTag['abilities']['flying'] = TAG_Byte(0)
-            playerTag['abilities']['instabuild'] = TAG_Byte(0)
-            playerTag['abilities']['mayfly'] = TAG_Byte(0)
-            playerTag['abilities']['invulnerable'] = TAG_Byte(0)
+            playerTag['abilities']['flying'] = nbt.TAG_Byte(0)
+            playerTag['abilities']['instabuild'] = nbt.TAG_Byte(0)
+            playerTag['abilities']['mayfly'] = nbt.TAG_Byte(0)
+            playerTag['abilities']['invulnerable'] = nbt.TAG_Byte(0)
 
     def setPlayerGameType(self, gametype, player="Player"):
         playerTag = self.getPlayerTag(player)
@@ -3151,7 +3163,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             self.GameType = gametype
             self.setPlayerAbilities(gametype, player)
         else:
-            playerTag['playerGameType'] = TAG_Int(gametype)
+            playerTag['playerGameType'] = nbt.TAG_Int(gametype)
             self.setPlayerAbilities(gametype, player)
 
     def getPlayerGameType(self, player="Player"):
@@ -3225,7 +3237,7 @@ class ZipSchematic (MCInfdevOldLevel):
         try:
             schematicDat = os.path.join(tempdir, "schematic.dat")
             with closing(self.zipfile.open("schematic.dat")) as f:
-                schematicDat = nbt.load(buf=gunzip(f.read()))
+                schematicDat = nbt.load(buf=nbt.gunzip(f.read()))
 
                 self.Width = schematicDat['Width'].value
                 self.Height = schematicDat['Height'].value
