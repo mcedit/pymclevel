@@ -1673,7 +1673,7 @@ class ChunkedLevelMixin(object):
                 
             return maskedSourceMask
 
-        def unaskedSourceMask(_sourceBlocks):
+        def unmaskedSourceMask(_sourceBlocks):
             return slice(None, None)
 
         return unmaskedSourceMask
