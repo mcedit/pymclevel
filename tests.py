@@ -12,6 +12,7 @@ try:
 except ImportError:
     from __init__ import *
 
+from cStringIO import StringIO
 import itertools
 import unittest
 import tempfile
@@ -88,21 +89,21 @@ class TestNBT(unittest.TestCase):
         "Create an indev level."
 
         "The root of an NBT file is always a TAG_Compound."
-        level = TAG_Compound(name="MinecraftLevel")
+        level = nbt.TAG_Compound(name="MinecraftLevel")
 
         "Subtags of a TAG_Compound are automatically named when you use the [] operator."
-        level["About"] = TAG_Compound()
-        level["About"]["Author"] = TAG_String("codewarrior")
+        level["About"] = nbt.TAG_Compound()
+        level["About"]["Author"] = nbt.TAG_String("codewarrior")
 
-        level["Environment"] = TAG_Compound()
-        level["Environment"]["SkyBrightness"] = TAG_Byte(16)
-        level["Environment"]["SurroundingWaterHeight"] = TAG_Short(32)
+        level["Environment"] = nbt.TAG_Compound()
+        level["Environment"]["SkyBrightness"] = nbt.TAG_Byte(16)
+        level["Environment"]["SurroundingWaterHeight"] = nbt.TAG_Short(32)
 
         "You can also create and name a tag before adding it to the compound."
-        spawn = TAG_List((TAG_Short(100), TAG_Short(45), TAG_Short(55)))
+        spawn = nbt.TAG_List((nbt.TAG_Short(100), nbt.TAG_Short(45), nbt.TAG_Short(55)))
         spawn.name = "Spawn"
 
-        mapTag = TAG_Compound()
+        mapTag = nbt.TAG_Compound()
         mapTag.add(spawn)
         mapTag.name = "Map"
         level.add(mapTag)
@@ -110,13 +111,13 @@ class TestNBT(unittest.TestCase):
         "I think it looks more familiar with [] syntax."
 
         l, w, h = 128, 128, 128
-        mapTag["Height"] = TAG_Short(h)  # y dimension
-        mapTag["Length"] = TAG_Short(l)  # z dimension
-        mapTag["Width"] = TAG_Short(w)  # x dimension
+        mapTag["Height"] = nbt.TAG_Short(h)  # y dimension
+        mapTag["Length"] = nbt.TAG_Short(l)  # z dimension
+        mapTag["Width"] = nbt.TAG_Short(w)  # x dimension
 
         "Byte arrays are stored as numpy.uint8 arrays. "
 
-        mapTag["Blocks"] = TAG_Byte_Array()
+        mapTag["Blocks"] = nbt.TAG_Byte_Array()
         mapTag["Blocks"].value = zeros(l * w * h, dtype=uint8)  # create lots of air!
 
         "The blocks array is indexed (y,z,x) for indev levels, so reshape the blocks"
@@ -127,7 +128,7 @@ class TestNBT(unittest.TestCase):
 
         "This is a great way to learn the power of numpy array slicing and indexing."
 
-        mapTag["Data"] = TAG_Byte_Array()
+        mapTag["Data"] = nbt.TAG_Byte_Array()
         mapTag["Data"].value = zeros(l * w * h, dtype=uint8)
 
         return level
@@ -136,7 +137,7 @@ class TestNBT(unittest.TestCase):
         level = self.testCreate()
 
         "Most of the value types work as expected. Here, we replace the entire tag with a TAG_String"
-        level["About"]["Author"] = TAG_String("YARRR~!")
+        level["About"]["Author"] = nbt.TAG_String("YARRR~!")
 
         "Because the tag type usually doesn't change, "
         "we can replace the string tag's value instead of replacing the entire tag."
