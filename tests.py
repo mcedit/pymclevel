@@ -152,7 +152,7 @@ class TestNBT(unittest.TestCase):
         level["Environment"]["SurroundingWaterHeight"].value += 6
 
         "Save the entire TAG structure to a different file."
-        atlantis = TempLevel("atlantis.mclevel", createFunc=level.save)
+        TempLevel("atlantis.mclevel", createFunc=level.save)
 
     def testErrors(self):
         """
@@ -264,7 +264,6 @@ class TestAlphaLevel(unittest.TestCase):
         print len(level.getEntitiesInBox(level.bounds))
 
     def testCreateChunks(self):
-        indevlevel = self.indevlevel.level
         level = self.alphalevel.level
 
         for ch in list(level.allChunks):
@@ -281,7 +280,6 @@ class TestAlphaLevel(unittest.TestCase):
         assert (level.getChunk(cx, cz).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
 
     def testImportSchematic(self):
-        indevlevel = self.indevlevel.level
         level = self.alphalevel.level
         cx, cz = level.allChunks.next()
 
@@ -481,7 +479,7 @@ class TestServerGen(unittest.TestCase):
         def _testCreate(filename):
             gen.createLevel(filename, BoundingBox((-128, 0, -128), (128, 128, 128)))
 
-        t = TempLevel("ServerCreate", createFunc=_testCreate)
+        TempLevel("ServerCreate", createFunc=_testCreate)
 
     def testServerGen(self):
         gen = MCServerChunkGenerator()
