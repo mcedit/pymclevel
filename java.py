@@ -6,16 +6,16 @@ Created on Jul 22, 2011
 
 __all__ = ["MCJavaLevel"]
 
-from logging import getLogger
-from mclevelbase import *
+from cStringIO import StringIO
+import gzip
 from level import MCLevel
-
+from logging import getLogger
+from numpy import fromstring
+import os
 import re
 
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
-
-from level import MCLevel
 
 
 class MCJavaLevel(MCLevel):
