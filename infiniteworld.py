@@ -1668,12 +1668,15 @@ class ChunkedLevelMixin(object):
             typemask = zeros(256, dtype='bool')
             typemask[blocksToCopy] = 1
 
-            def sourceMask(sourceBlocks):
+            def maskedSourceMask(sourceBlocks):
                 return typemask[sourceBlocks]
-        else:
-            def sourceMask(_sourceBlocks):
-                return slice(None, None)
-        return sourceMask
+                
+            return maskedSourceMask
+
+        def unaskedSourceMask(_sourceBlocks):
+            return slice(None, None)
+
+        return unmaskedSourceMask
 
     def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create=False):
         # assumes destination point and bounds have already been checked.
