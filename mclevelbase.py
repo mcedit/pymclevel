@@ -3,18 +3,10 @@ Created on Jul 22, 2011
 
 @author: Rio
 '''
-import os
+
 from contextlib import contextmanager
-
-from numpy import *
 from logging import getLogger
-
-from nbt import *
-from materials import *
-from entity import *
-
-from faces import *
-#String constants for common tag names
+import os
 
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
