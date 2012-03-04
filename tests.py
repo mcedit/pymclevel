@@ -3,30 +3,26 @@ Created on Jul 23, 2011
 
 @author: Rio
 '''
-# from mclevel import fromFile, loadWorldNumber, BoundingBox
-# from infiniteworld import MCInfdevOldLevel
-# from schematic import MCSchematic
-# import errorreporting  # annotate tracebacks with call arguments
-try:
-    from pymclevel import *
-except ImportError:
-    from __init__ import *
 
+# from mclevel import loadWorldNumber, BoundingBox
+# import errorreporting  # annotate tracebacks with call arguments
+
+from box import BoundingBox
 from cStringIO import StringIO
+from entity import Entity, TileEntity
+from infiniteworld import MCInfdevOldLevel, MCServerChunkGenerator
 import itertools
-import unittest
-import tempfile
 import logging
-import shutil
+import mclevel
+import nbt
+import numpy
 import os
 from os.path import join
+from schematic import MCSchematic
+import shutil
+import tempfile
 import time
-
-import numpy
-from numpy import *
-from box import BoundingBox
-from infiniteworld import MCServerChunkGenerator
-import nbt
+import unittest
 
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
@@ -54,7 +50,7 @@ class TempLevel(object):
         else:
             createFunc(tmpname)
         self.tmpname = tmpname
-        self.level = fromFile(tmpname)
+        self.level = mclevel.fromFile(tmpname)
 
     def __del__(self):
         self.level.close()
@@ -118,7 +114,7 @@ class TestNBT(unittest.TestCase):
         "Byte arrays are stored as numpy.uint8 arrays. "
 
         mapTag["Blocks"] = nbt.TAG_Byte_Array()
-        mapTag["Blocks"].value = zeros(l * w * h, dtype=uint8)  # create lots of air!
+        mapTag["Blocks"].value = numpy.zeros(l * w * h, dtype=numpy.uint8)  # create lots of air!
 
         "The blocks array is indexed (y,z,x) for indev levels, so reshape the blocks"
         mapTag["Blocks"].value.shape = (h, l, w)
@@ -129,7 +125,7 @@ class TestNBT(unittest.TestCase):
         "This is a great way to learn the power of numpy array slicing and indexing."
 
         mapTag["Data"] = nbt.TAG_Byte_Array()
-        mapTag["Data"].value = zeros(l * w * h, dtype=uint8)
+        mapTag["Data"].value = numpy.zeros(l * w * h, dtype=numpy.uint8)
 
         return level
 
@@ -289,7 +285,7 @@ class TestAlphaLevel(unittest.TestCase):
         level = self.alphalevel.level
         cx, cz = level.allChunks.next()
 
-        schem = fromFile("schematics/CreativeInABox.schematic")
+        schem = mclevel.fromFile("schematics/CreativeInABox.schematic")
         box = BoundingBox((cx * 16, 64, cz * 16), schem.bounds.size)
         level.copyBlocksFrom(schem, schem.bounds, (0, 64, 0))
         schem = MCSchematic(shape=schem.bounds.size)
@@ -343,7 +339,7 @@ class TestAlphaLevel(unittest.TestCase):
         d = {}
         keys = 'Blocks Data SkyLight BlockLight'.split()
         for key in keys:
-            d[key] = array(getattr(ch, key))
+            d[key] = numpy.array(getattr(ch, key))
 
         for i in range(5):
             level.saveInPlace()
@@ -390,7 +386,7 @@ class TestSchematics(unittest.TestCase):
 
         schematic.saveInPlace()
 
-        schem = fromFile("schematics/CreativeInABox.schematic")
+        schem = mclevel.fromFile("schematics/CreativeInABox.schematic")
         tempSchematic = MCSchematic(shape=(1, 1, 3))
         tempSchematic.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 0, 0))
 
@@ -422,7 +418,7 @@ class TestSchematics(unittest.TestCase):
 
     def testINVEditChests(self):
         info("INVEdit chest")
-        invFile = fromFile("schematics/Chests/TinkerersBox.inv")
+        invFile = mclevel.fromFile("schematics/Chests/TinkerersBox.inv")
         info("Blocks: %s", invFile.Blocks)
         info("Data: %s", invFile.Data)
         info("Entities: %s", invFile.Entities)
@@ -441,7 +437,7 @@ class TestPocket(unittest.TestCase):
 #        alphalevel = self.alphalevel.level
         print "Chunk count", len(level.allChunks)
         chunk = level.getChunk(1, 5)
-        a = array(chunk.SkyLight)
+        a = numpy.array(chunk.SkyLight)
         level.saveInPlace()
         assert (a == chunk.SkyLight).all()
 
@@ -462,7 +458,7 @@ class TestAnvil(TestAlphaLevel):
 
         hm = chunk["Level"]["HeightMap"]
         hm.value[2] = 500
-        oldhm = array(hm.value)
+        oldhm = numpy.array(hm.value)
 
         filename = mktemp("ChangedChunk")
         chunk.save(filename)
