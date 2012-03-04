@@ -1,8 +1,15 @@
-from mclevelbase import *
 from level import FakeChunk
+import logging
+from materials import pocketMaterials
+from mclevelbase import ChunkNotPresent, notclosing
+from nbt import TAG_List
+from numpy import array, fromstring, zeros
+import os
 import struct
 
 # values are usually little-endian, unlike Minecraft PC
+
+logger = logging.getLogger(__file__)
 
 
 class PocketChunksFile(object):
@@ -63,14 +70,14 @@ class PocketChunksFile(object):
                     needsRepair = True
                     break
                 if self.freeSectors[i] is False:
-                    debug("Double-allocated sector number %s (offset %s @ %s)", i, offset, index)
+                    logger.debug("Double-allocated sector number %s (offset %s @ %s)", i, offset, index)
                     needsRepair = True
                 self.freeSectors[i] = False
 
         if needsRepair:
             self.repair()
 
-        info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
+        logger.info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
              file=os.path.basename(path), used=self.usedSectors, total=self.sectorCount, chunks=self.chunkCount))
 
     @property
@@ -92,7 +99,7 @@ class PocketChunksFile(object):
 #        _freeSectors[0] = _freeSectors[1] = False
 #        deleted = 0
 #        recovered = 0
-#        info("Beginning repairs on {file} ({chunks} chunks)".format(file=os.path.basename(self.path), chunks=sum(self.offsets > 0)))
+#        logger.info("Beginning repairs on {file} ({chunks} chunks)".format(file=os.path.basename(self.path), chunks=sum(self.offsets > 0)))
 #        rx, rz = self.regionCoords
 #        for index, offset in enumerate(self.offsets):
 #            if offset:
@@ -136,18 +143,18 @@ class PocketChunksFile(object):
 #
 #
 #                except Exception, e:
-#                    info("Unexpected chunk data at sector {sector} ({exc})".format(sector=sectorStart, exc=e))
+#                    logger.info("Unexpected chunk data at sector {sector} ({exc})".format(sector=sectorStart, exc=e))
 #                    self.setOffset(cx, cz, 0)
 #                    deleted += 1
 #
 #        for cPos, (format, foundData) in lostAndFound.iteritems():
 #            cx, cz = cPos
 #            if self.getOffset(cx, cz) == 0:
-#                info("Found chunk {found} and its slot is empty, recovering it".format(found=cPos))
+#                logger.info("Found chunk {found} and its slot is empty, recovering it".format(found=cPos))
 #                self._saveChunk(cx, cz, foundData[5:], format)
 #                recovered += 1
 #
-#        info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered - deleted))
+#        logger.info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered - deleted))
 #
 #    def extractAllChunks(self, folder):
 #        import itertools
@@ -187,7 +194,7 @@ class PocketChunksFile(object):
             f.seek(sectorStart * self.SECTOR_BYTES)
             data = f.read(numSectors * self.SECTOR_BYTES)
         assert(len(data) > 0)
-        debug("REGION LOAD %s,%s sector %s", cx, cz, sectorStart)
+        logger.debug("REGION LOAD %s,%s sector %s", cx, cz, sectorStart)
         return data
 
     def loadChunk(self, cx, cz, world):
@@ -214,7 +221,7 @@ class PocketChunksFile(object):
             return
 
         if sectorNumber != 0 and sectorsAllocated >= sectorsNeeded:
-            debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
+            logger.debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
             self.writeSector(sectorNumber, data, format)
         else:
             # we need to allocate new sectors
@@ -244,7 +251,7 @@ class PocketChunksFile(object):
 
             # we found a free space large enough
             if runLength >= sectorsNeeded:
-                debug("REGION SAVE {0},{1}, reusing {2}b".format(cx, cz, len(data)))
+                logger.debug("REGION SAVE {0},{1}, reusing {2}b".format(cx, cz, len(data)))
                 sectorNumber = runStart
                 self.setOffset(cx, cz, sectorNumber << 8 | sectorsNeeded)
                 self.writeSector(sectorNumber, data, format)
@@ -254,7 +261,7 @@ class PocketChunksFile(object):
                 # no free space large enough found -- we need to grow the
                 # file
 
-                debug("REGION SAVE {0},{1}, growing by {2}b".format(cx, cz, len(data)))
+                logger.debug("REGION SAVE {0},{1}, growing by {2}b".format(cx, cz, len(data)))
 
                 with self.file as f:
                     f.seek(0, 2)
@@ -274,7 +281,7 @@ class PocketChunksFile(object):
 
     def writeSector(self, sectorNumber, data, format):
         with self.file as f:
-            debug("REGION: Writing sector {0}".format(sectorNumber))
+            logger.debug("REGION: Writing sector {0}".format(sectorNumber))
 
             f.seek(sectorNumber * self.SECTOR_BYTES)
             f.write(struct.pack("<I", len(data) + self.CHUNK_HEADER_SIZE))  # // chunk length
