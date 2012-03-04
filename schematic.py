@@ -12,7 +12,6 @@ import gzip
 from level import MCLevel, EntityLevel
 from logging import getLogger
 from materials import alphaMaterials, MCMaterials, namedMaterials
-#from mclevelbase import *
 from mclevelbase import Blocks, ChunkMalformed, Data, decompress_first, Entities, exhaust, Height, Length, TileEntities, unpack_first, Width
 import nbt
 from numpy import array, swapaxes, uint8, zeros
