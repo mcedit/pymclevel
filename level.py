@@ -5,6 +5,7 @@ Created on Jul 22, 2011
 '''
 
 from box import BoundingBox
+import itertools
 from logging import getLogger
 from mclevelbase import *
 from collections import defaultdict

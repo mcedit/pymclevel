@@ -150,6 +150,7 @@ class PocketChunksFile(object):
 #        info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered - deleted))
 #
 #    def extractAllChunks(self, folder):
+#        import itertools
 #        if not os.path.exists(folder):
 #            os.mkdir(folder)
 #        for cx, cz in itertools.product(range(32), range(32)):
