@@ -142,23 +142,23 @@ def lfu_cache(maxsize=100):
 if __name__ == '__main__':
 
     @lru_cache(maxsize=20)
-    def f(x, y):
+    def f_lru(x, y):
         return 3 * x + y
 
     domain = range(5)
     from random import choice
     for i in range(1000):
-        r = f(choice(domain), choice(domain))
+        r = f_lru(choice(domain), choice(domain))
 
-    print(f.hits, f.misses)
+    print(f_lru.hits, f_lru.misses)
 
     @lfu_cache(maxsize=20)
-    def f(x, y):
+    def f_lfu(x, y):
         return 3 * x + y
 
     domain = range(5)
     from random import choice
     for i in range(1000):
-        r = f(choice(domain), choice(domain))
+        r = f_lfu(choice(domain), choice(domain))
 
-    print(f.hits, f.misses)
+    print(f_lfu.hits, f_lfu.misses)

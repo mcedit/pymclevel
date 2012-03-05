@@ -1,5 +1,5 @@
-import logging
-logger = logging.getLogger(__file__)
+from logging import getLogger
+logger = getLogger(__file__)
 
 items_txt = """
 :version 27

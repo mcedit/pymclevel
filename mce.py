@@ -822,28 +822,36 @@ class mce(object):
 
     Known Dynamic Tile Entity IDs: PrimedTnt FallingSand
     """
+        ENT_MATCHTYPE_ANY = 0
+        ENT_MATCHTYPE_EXCEPT = 1
+        ENT_MATCHTYPE_NONPAINTING = 2
+
+        def match(entityID, matchType, matchWords):
+            if(ENT_MATCHTYPE_ANY == matchType):
+                return entityID.lower() in matchWords
+            elif(ENT_MATCHTYPE_EXCEPT == matchType):
+                return not (entityID.lower() in matchWords)
+            else:
+                # ENT_MATCHTYPE_EXCEPT == matchType
+                return entityID != "Painting"
+
         removedEntities = {}
+        match_words = []
 
         if len(command):
             if command[0].lower() == "except":
                 command.pop(0)
                 print "Removing all entities except ", command
-
-                def match(entityID):
-                    return not (entityID.lower() in matchWords)
+                match_type = ENT_MATCHTYPE_EXCEPT
             else:
                 print "Removing {0}...".format(", ".join(command))
+                match_type = ENT_MATCHTYPE_ANY
 
-                def match(entityID):
-                    return entityID.lower() in matchWords
-
-            matchWords = map(lambda x: x.lower(), command)
+            match_words = map(lambda x: x.lower(), command)
 
         else:
             print "Removing all entities except Painting..."
-
-            def match(entityID):
-                return entityID != "Painting"
+            match_type = ENT_MATCHTYPE_NONPAINTING
 
         for cx, cz in self.level.allChunks:
             chunk = self.level.getChunk(cx, cz)
@@ -852,7 +860,7 @@ class mce(object):
             for entity in list(chunk.Entities):
                 entityID = entity["id"].value
 
-                if match(entityID):
+                if match(entityID, match_type, match_words):
                     removedEntities[entityID] = removedEntities.get(entityID, 0) + 1
 
                     chunk.Entities.remove(entity)

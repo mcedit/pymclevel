@@ -3,14 +3,23 @@ Created on Jul 22, 2011
 
 @author: Rio
 '''
-from mclevelbase import *
-import shutil
-import blockrotation
-from box import BoundingBox
-from level import MCLevel, EntityLevel
-import nbt
 
-log = logging.getLogger(__name__)
+import blockrotation
+from contextlib import closing
+from cStringIO import StringIO
+from box import BoundingBox
+import gzip
+from level import MCLevel, EntityLevel
+from logging import getLogger
+from materials import alphaMaterials, MCMaterials, namedMaterials
+from mclevelbase import Blocks, ChunkMalformed, Data, decompress_first, Entities, exhaust, Height, Length, TileEntities, unpack_first, Width
+import nbt
+from numpy import array, swapaxes, uint8, zeros
+import os
+import shutil
+import sys
+
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 # schematic
@@ -62,22 +71,22 @@ class MCSchematic (EntityLevel):
             if Materials in root_tag:
                 self.materials = namedMaterials[self.Materials]
             else:
-                root_tag[Materials] = TAG_String(self.materials.name)
+                root_tag[Materials] = nbt.TAG_String(self.materials.name)
             self.shapeChunkData()
 
         else:
             assert shape != None
-            root_tag = TAG_Compound(name="Schematic")
-            root_tag[Height] = TAG_Short(shape[1])
-            root_tag[Length] = TAG_Short(shape[2])
-            root_tag[Width] = TAG_Short(shape[0])
+            root_tag = nbt.TAG_Compound(name="Schematic")
+            root_tag[Height] = nbt.TAG_Short(shape[1])
+            root_tag[Length] = nbt.TAG_Short(shape[2])
+            root_tag[Width] = nbt.TAG_Short(shape[0])
 
-            root_tag[Entities] = TAG_List()
-            root_tag[TileEntities] = TAG_List()
-            root_tag["Materials"] = TAG_String(self.materials.name)
+            root_tag[Entities] = nbt.TAG_List()
+            root_tag[TileEntities] = nbt.TAG_List()
+            root_tag["Materials"] = nbt.TAG_String(self.materials.name)
 
-            root_tag[Blocks] = TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
-            root_tag[Data] = TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+            root_tag[Blocks] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+            root_tag[Data] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
 
             self.root_tag = root_tag
 
@@ -196,7 +205,7 @@ class MCSchematic (EntityLevel):
     @decompress_first
     def Materials(self, val):
         if not Materials in self.root_tag:
-            self.root_tag[Materials] = TAG_String()
+            self.root_tag[Materials] = nbt.TAG_String()
         self.root_tag[Materials].value = val
 
     @classmethod
@@ -230,9 +239,9 @@ class MCSchematic (EntityLevel):
     def _update_shape(self):
         root_tag = self.root_tag
         shape = self.Blocks.shape
-        root_tag[Height] = TAG_Short(shape[2])
-        root_tag[Length] = TAG_Short(shape[1])
-        root_tag[Width] = TAG_Short(shape[0])
+        root_tag[Height] = nbt.TAG_Short(shape[2])
+        root_tag[Length] = nbt.TAG_Short(shape[1])
+        root_tag[Width] = nbt.TAG_Short(shape[0])
 
     def rotateLeft(self):
 
@@ -379,15 +388,15 @@ class MCSchematic (EntityLevel):
         """ Creates a chest with a stack of 'itemID' in each slot.
         Optionally specify the count of items in each stack. Pass a negative
         value for damage to create unnaturally sturdy tools. """
-        root_tag = TAG_Compound()
-        invTag = TAG_List()
+        root_tag = nbt.TAG_Compound()
+        invTag = nbt.TAG_List()
         root_tag["Inventory"] = invTag
         for slot in range(9, 36):
-            itemTag = TAG_Compound()
-            itemTag["Slot"] = TAG_Byte(slot)
-            itemTag["Count"] = TAG_Byte(count)
-            itemTag["id"] = TAG_Short(itemID)
-            itemTag["Damage"] = TAG_Short(damage)
+            itemTag = nbt.TAG_Compound()
+            itemTag["Slot"] = nbt.TAG_Byte(slot)
+            itemTag["Count"] = nbt.TAG_Byte(count)
+            itemTag["id"] = nbt.TAG_Short(itemID)
+            itemTag["Damage"] = nbt.TAG_Short(damage)
             invTag.append(itemTag)
 
         chest = INVEditChest(root_tag, "")
@@ -401,7 +410,7 @@ class INVEditChest(MCSchematic):
     Length = 1
     Blocks = array([[[alphaMaterials.Chest.ID]]], 'uint8')
     Data = array([[[0]]], 'uint8')
-    Entities = TAG_List()
+    Entities = nbt.TAG_List()
     Materials = alphaMaterials
 
     @classmethod
@@ -434,14 +443,14 @@ class INVEditChest(MCSchematic):
     @property
     @decompress_first
     def TileEntities(self):
-        chestTag = TAG_Compound()
-        chestTag["id"] = TAG_String("Chest")
-        chestTag["Items"] = TAG_List(self.root_tag["Inventory"])
-        chestTag["x"] = TAG_Int(0)
-        chestTag["y"] = TAG_Int(0)
-        chestTag["z"] = TAG_Int(0)
+        chestTag = nbt.TAG_Compound()
+        chestTag["id"] = nbt.TAG_String("Chest")
+        chestTag["Items"] = nbt.TAG_List(self.root_tag["Inventory"])
+        chestTag["x"] = nbt.TAG_Int(0)
+        chestTag["y"] = nbt.TAG_Int(0)
+        chestTag["z"] = nbt.TAG_Int(0)
 
-        return TAG_List([chestTag], name="TileEntities")
+        return nbt.TAG_List([chestTag], name="TileEntities")
 
 
 def adjustExtractionParameters(self, box):
@@ -548,13 +557,13 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
             yield i
         tempSchematic.saveInPlace()  # lights not needed for this format - crashes minecraft though
 
-        schematicDat = TAG_Compound()
+        schematicDat = nbt.TAG_Compound()
         schematicDat.name = "Mega Schematic"
 
-        schematicDat["Width"] = TAG_Int(sourceBox.size[0])
-        schematicDat["Height"] = TAG_Int(sourceBox.size[1])
-        schematicDat["Length"] = TAG_Int(sourceBox.size[2])
-        schematicDat["Materials"] = TAG_String(tempSchematic.materials.name)
+        schematicDat["Width"] = nbt.TAG_Int(sourceBox.size[0])
+        schematicDat["Height"] = nbt.TAG_Int(sourceBox.size[1])
+        schematicDat["Length"] = nbt.TAG_Int(sourceBox.size[2])
+        schematicDat["Materials"] = nbt.TAG_String(tempSchematic.materials.name)
         schematicDat.save(os.path.join(tempfolder, "schematic.dat"))
 
         zipdir(tempfolder, zipfilename)

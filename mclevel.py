@@ -169,23 +169,21 @@ def fillBlocks(self, box, blockType, blockData = 0):
 
 Copyright 2010 David Rio Vierra
 """
-import os
-import logging
-import traceback
-from numpy import fromstring
+
+from indev import MCIndevLevel
+from infiniteworld import MCInfdevOldLevel, ZipSchematic
+from java import MCJavaLevel
+from logging import getLogger
+from mclevelbase import saveFileDir
 import nbt
-
-from mclevelbase import *
-from indev import *
-from infiniteworld import *
-from java import *
-from level import *
-from schematic import *
-from pocket import *
-
+from numpy import fromstring
+import os
+from pocket import PocketWorld
+from schematic import INVEditChest, MCSchematic
 import sys
+import traceback
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 
@@ -243,7 +241,7 @@ def fromFile(filename, loadInfinite=True):
     compressed = True
     unzippedData = None
     try:
-        unzippedData = gunzip(rawdata)
+        unzippedData = nbt.gunzip(rawdata)
     except Exception, e:
         info(u"Exception during Gzip operation, assuming {0} uncompressed: {1!r}".format(filename, e))
         if unzippedData is None:

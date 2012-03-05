@@ -4,12 +4,20 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
+import blockrotation
 from box import BoundingBox
-from mclevelbase import *
 from collections import defaultdict
+from entity import Entity, TileEntity
+import itertools
+from logging import getLogger
 import materials
+from math import floor
+from mclevelbase import ChunkMalformed, ChunkNotPresent, exhaust
+import nbt
+from numpy import argmax, swapaxes, zeros, zeros_like
+import os.path
 
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 
@@ -125,7 +133,7 @@ class MCLevel(object):
     ### common to Creative, Survival and Indev. these routines assume
     ### self has Width, Height, Length, and Blocks
 
-    materials = classicMaterials
+    materials = materials.classicMaterials
     isInfinite = False
 
     compressedTag = None
@@ -271,7 +279,7 @@ class MCLevel(object):
 
         f.Entities, f.TileEntities = self._getFakeChunkEntities(cx, cz)
 
-        f.root_tag = TAG_Compound()
+        f.root_tag = nbt.TAG_Compound()
 
         return f
 
@@ -414,7 +422,7 @@ class MCLevel(object):
         blocks = self.Blocks[slices[0], slices[2], slices[1]]
         if len(blocksToReplace):
             blocktable = self.blockReplaceTable(blocksToReplace)
-            shouldRetainData = (self.materials == alphaMaterials) and all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
+            shouldRetainData = (self.materials == materials.alphaMaterials) and all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
 
             if hasattr(self, "Data") and shouldRetainData:
                 data = self.Data[slices[0], slices[2], slices[1]]
@@ -739,7 +747,7 @@ class EntityLevel(MCLevel):
             self.addEntity(e)
 
     def addEntity(self, entityTag):
-        assert isinstance(entityTag, TAG_Compound)
+        assert isinstance(entityTag, nbt.TAG_Compound)
         self.Entities.append(entityTag)
         self._fakeEntities = None
 
@@ -757,7 +765,7 @@ class EntityLevel(MCLevel):
         return entities[0]
 
     def addTileEntity(self, tileEntityTag):
-        assert isinstance(tileEntityTag, TAG_Compound)
+        assert isinstance(tileEntityTag, nbt.TAG_Compound)
 
         def differentPosition(a):
 
