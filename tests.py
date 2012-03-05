@@ -3,29 +3,26 @@ Created on Jul 23, 2011
 
 @author: Rio
 '''
-# from mclevel import fromFile, loadWorldNumber, BoundingBox
-# from infiniteworld import MCInfdevOldLevel
-# from schematic import MCSchematic
-# import errorreporting  # annotate tracebacks with call arguments
-try:
-    from pymclevel import *
-except ImportError:
-    from __init__ import *
 
+# from mclevel import loadWorldNumber, BoundingBox
+# import errorreporting  # annotate tracebacks with call arguments
+
+from box import BoundingBox
+from cStringIO import StringIO
+from entity import Entity, TileEntity
+from infiniteworld import MCInfdevOldLevel, MCServerChunkGenerator
 import itertools
-import unittest
-import tempfile
 import logging
-import shutil
+import mclevel
+import nbt
+import numpy
 import os
 from os.path import join
+from schematic import MCSchematic
+import shutil
+import tempfile
 import time
-
-import numpy
-from numpy import *
-from box import BoundingBox
-from infiniteworld import MCServerChunkGenerator
-import nbt
+import unittest
 
 log = logging.getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
@@ -53,7 +50,7 @@ class TempLevel(object):
         else:
             createFunc(tmpname)
         self.tmpname = tmpname
-        self.level = fromFile(tmpname)
+        self.level = mclevel.fromFile(tmpname)
 
     def __del__(self):
         self.level.close()
@@ -88,21 +85,21 @@ class TestNBT(unittest.TestCase):
         "Create an indev level."
 
         "The root of an NBT file is always a TAG_Compound."
-        level = TAG_Compound(name="MinecraftLevel")
+        level = nbt.TAG_Compound(name="MinecraftLevel")
 
         "Subtags of a TAG_Compound are automatically named when you use the [] operator."
-        level["About"] = TAG_Compound()
-        level["About"]["Author"] = TAG_String("codewarrior")
+        level["About"] = nbt.TAG_Compound()
+        level["About"]["Author"] = nbt.TAG_String("codewarrior")
 
-        level["Environment"] = TAG_Compound()
-        level["Environment"]["SkyBrightness"] = TAG_Byte(16)
-        level["Environment"]["SurroundingWaterHeight"] = TAG_Short(32)
+        level["Environment"] = nbt.TAG_Compound()
+        level["Environment"]["SkyBrightness"] = nbt.TAG_Byte(16)
+        level["Environment"]["SurroundingWaterHeight"] = nbt.TAG_Short(32)
 
         "You can also create and name a tag before adding it to the compound."
-        spawn = TAG_List((TAG_Short(100), TAG_Short(45), TAG_Short(55)))
+        spawn = nbt.TAG_List((nbt.TAG_Short(100), nbt.TAG_Short(45), nbt.TAG_Short(55)))
         spawn.name = "Spawn"
 
-        mapTag = TAG_Compound()
+        mapTag = nbt.TAG_Compound()
         mapTag.add(spawn)
         mapTag.name = "Map"
         level.add(mapTag)
@@ -110,14 +107,14 @@ class TestNBT(unittest.TestCase):
         "I think it looks more familiar with [] syntax."
 
         l, w, h = 128, 128, 128
-        mapTag["Height"] = TAG_Short(h)  # y dimension
-        mapTag["Length"] = TAG_Short(l)  # z dimension
-        mapTag["Width"] = TAG_Short(w)  # x dimension
+        mapTag["Height"] = nbt.TAG_Short(h)  # y dimension
+        mapTag["Length"] = nbt.TAG_Short(l)  # z dimension
+        mapTag["Width"] = nbt.TAG_Short(w)  # x dimension
 
         "Byte arrays are stored as numpy.uint8 arrays. "
 
-        mapTag["Blocks"] = TAG_Byte_Array()
-        mapTag["Blocks"].value = zeros(l * w * h, dtype=uint8)  # create lots of air!
+        mapTag["Blocks"] = nbt.TAG_Byte_Array()
+        mapTag["Blocks"].value = numpy.zeros(l * w * h, dtype=numpy.uint8)  # create lots of air!
 
         "The blocks array is indexed (y,z,x) for indev levels, so reshape the blocks"
         mapTag["Blocks"].value.shape = (h, l, w)
@@ -127,8 +124,8 @@ class TestNBT(unittest.TestCase):
 
         "This is a great way to learn the power of numpy array slicing and indexing."
 
-        mapTag["Data"] = TAG_Byte_Array()
-        mapTag["Data"].value = zeros(l * w * h, dtype=uint8)
+        mapTag["Data"] = nbt.TAG_Byte_Array()
+        mapTag["Data"].value = numpy.zeros(l * w * h, dtype=numpy.uint8)
 
         return level
 
@@ -136,7 +133,7 @@ class TestNBT(unittest.TestCase):
         level = self.testCreate()
 
         "Most of the value types work as expected. Here, we replace the entire tag with a TAG_String"
-        level["About"]["Author"] = TAG_String("YARRR~!")
+        level["About"]["Author"] = nbt.TAG_String("YARRR~!")
 
         "Because the tag type usually doesn't change, "
         "we can replace the string tag's value instead of replacing the entire tag."
@@ -155,7 +152,7 @@ class TestNBT(unittest.TestCase):
         level["Environment"]["SurroundingWaterHeight"].value += 6
 
         "Save the entire TAG structure to a different file."
-        atlantis = TempLevel("atlantis.mclevel", createFunc=level.save)
+        TempLevel("atlantis.mclevel", createFunc=level.save)
 
     def testErrors(self):
         """
@@ -267,7 +264,6 @@ class TestAlphaLevel(unittest.TestCase):
         print len(level.getEntitiesInBox(level.bounds))
 
     def testCreateChunks(self):
-        indevlevel = self.indevlevel.level
         level = self.alphalevel.level
 
         for ch in list(level.allChunks):
@@ -284,11 +280,10 @@ class TestAlphaLevel(unittest.TestCase):
         assert (level.getChunk(cx, cz).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
 
     def testImportSchematic(self):
-        indevlevel = self.indevlevel.level
         level = self.alphalevel.level
         cx, cz = level.allChunks.next()
 
-        schem = fromFile("schematics/CreativeInABox.schematic")
+        schem = mclevel.fromFile("schematics/CreativeInABox.schematic")
         box = BoundingBox((cx * 16, 64, cz * 16), schem.bounds.size)
         level.copyBlocksFrom(schem, schem.bounds, (0, 64, 0))
         schem = MCSchematic(shape=schem.bounds.size)
@@ -342,7 +337,7 @@ class TestAlphaLevel(unittest.TestCase):
         d = {}
         keys = 'Blocks Data SkyLight BlockLight'.split()
         for key in keys:
-            d[key] = array(getattr(ch, key))
+            d[key] = numpy.array(getattr(ch, key))
 
         for i in range(5):
             level.saveInPlace()
@@ -389,7 +384,7 @@ class TestSchematics(unittest.TestCase):
 
         schematic.saveInPlace()
 
-        schem = fromFile("schematics/CreativeInABox.schematic")
+        schem = mclevel.fromFile("schematics/CreativeInABox.schematic")
         tempSchematic = MCSchematic(shape=(1, 1, 3))
         tempSchematic.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 0, 0))
 
@@ -421,7 +416,7 @@ class TestSchematics(unittest.TestCase):
 
     def testINVEditChests(self):
         info("INVEdit chest")
-        invFile = fromFile("schematics/Chests/TinkerersBox.inv")
+        invFile = mclevel.fromFile("schematics/Chests/TinkerersBox.inv")
         info("Blocks: %s", invFile.Blocks)
         info("Data: %s", invFile.Data)
         info("Entities: %s", invFile.Entities)
@@ -440,7 +435,7 @@ class TestPocket(unittest.TestCase):
 #        alphalevel = self.alphalevel.level
         print "Chunk count", len(level.allChunks)
         chunk = level.getChunk(1, 5)
-        a = array(chunk.SkyLight)
+        a = numpy.array(chunk.SkyLight)
         level.saveInPlace()
         assert (a == chunk.SkyLight).all()
 
@@ -461,7 +456,7 @@ class TestAnvil(TestAlphaLevel):
 
         hm = chunk["Level"]["HeightMap"]
         hm.value[2] = 500
-        oldhm = array(hm.value)
+        oldhm = numpy.array(hm.value)
 
         filename = mktemp("ChangedChunk")
         chunk.save(filename)
@@ -484,7 +479,7 @@ class TestServerGen(unittest.TestCase):
         def _testCreate(filename):
             gen.createLevel(filename, BoundingBox((-128, 0, -128), (128, 128, 128)))
 
-        t = TempLevel("ServerCreate", createFunc=_testCreate)
+        TempLevel("ServerCreate", createFunc=_testCreate)
 
     def testServerGen(self):
         gen = MCServerChunkGenerator()

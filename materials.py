@@ -1,4 +1,5 @@
 
+from logging import getLogger
 from numpy import zeros, rollaxis, indices
 import traceback
 from os.path import join
@@ -11,8 +12,7 @@ NOTEX = (0xB0, 0xE0)
 
 import yaml
 
-import logging
-log = logging.getLogger(__file__)
+log = getLogger(__file__)
 debug, info, warn, error, critical = log.debug, log.info, log.warn, log.error, log.critical
 
 
@@ -296,7 +296,7 @@ HugeMushroomTypes = {
    "Stem": 10,
    "Top": 5,
 }
-from faces import *
+from faces import FaceXDecreasing, FaceXIncreasing, FaceYIncreasing, FaceZDecreasing, FaceZIncreasing
 
 Red = (0xD0, 0x70)
 Brown = (0xE0, 0x70)
