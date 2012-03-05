@@ -4,14 +4,14 @@ logger = logging.getLogger(__file__)
 
 try:
     try:
-        from _nbt import *
+        from _nbt import load, gunzip, TAG_Byte, TAG_Byte_Array, TAG_Compound, TAG_Double, TAG_Float, TAG_Int, TAG_Int_Array, TAG_List, TAG_Long, TAG_Short, TAG_String
         logger.info("Accelerated NBT module loaded.")
     except ImportError:
         logger.info("Import error loading precompiled _nbt extension. Trying pyximport...")
         import numpy
         from pyximport import install
         install(setup_args={'include_dirs': [numpy.get_include()]})
-        from _nbt import *
+        from _nbt import load, gunzip, TAG_Byte, TAG_Byte_Array, TAG_Compound, TAG_Double, TAG_Float, TAG_Int, TAG_Int_Array, TAG_List, TAG_Long, TAG_Short, TAG_String
         logger.info("Accelerated NBT module loaded via pyximport.")
 except ImportError, e:
     logger.info("Exception: ", repr(e))
@@ -32,5 +32,5 @@ command to install Cython:
 
     sudo apt-get install gcc
 """)
-    from pynbt import *
+    from pynbt import load, gunzip, TAG_Byte, TAG_Byte_Array, TAG_Compound, TAG_Double, TAG_Float, TAG_Int, TAG_Int_Array, TAG_List, TAG_Long, TAG_Short, TAG_String
     logger.info("Pure-python NBT module loaded.")

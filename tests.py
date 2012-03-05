@@ -4,6 +4,14 @@ Created on Jul 23, 2011
 @author: Rio
 '''
 
+import logging
+
+log = logging.getLogger(__name__)
+warn, error, info, debug = log.warn, log.error, log.info, log.debug
+
+# logging.basicConfig(format=u'%(levelname)s:%(message)s')
+# logging.getLogger().level = logging.INFO
+
 # from mclevel import loadWorldNumber, BoundingBox
 # import errorreporting  # annotate tracebacks with call arguments
 
@@ -12,7 +20,6 @@ from cStringIO import StringIO
 from entity import Entity, TileEntity
 from infiniteworld import MCInfdevOldLevel, MCServerChunkGenerator
 import itertools
-import logging
 import mclevel
 import nbt
 import numpy
@@ -23,12 +30,6 @@ import shutil
 import tempfile
 import time
 import unittest
-
-log = logging.getLogger(__name__)
-warn, error, info, debug = log.warn, log.error, log.info, log.debug
-
-# logging.basicConfig(format=u'%(levelname)s:%(message)s')
-# logging.getLogger().level = logging.INFO
 
 
 def mktemp(suffix):

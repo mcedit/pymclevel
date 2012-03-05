@@ -16,5 +16,9 @@ build
 #profiling/outputs
 *.log
 
+# Accelerated NBT build
+_nbt.c
+_nbt.so
+
 # The "standard" virtualenv directory.
 ENV
