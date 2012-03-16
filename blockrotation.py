@@ -7,6 +7,16 @@ def genericVerticalFlip(cls):
     if hasattr(cls, "Up") and hasattr(cls, "Down"):
         rotation[cls.Up] = cls.Down
         rotation[cls.Down] = cls.Up
+        
+    if hasattr(cls, "TopNorth") and hasattr(cls, "TopWest") and hasattr(cls, "TopSouth") and hasattr(cls, "TopEast"):
+        rotation[cls.North] = cls.TopNorth
+        rotation[cls.West] = cls.TopWest
+        rotation[cls.South] = cls.TopSouth
+        rotation[cls.East] = cls.TopEast
+        rotation[cls.TopNorth] = cls.North
+        rotation[cls.TopWest] = cls.West
+        rotation[cls.TopSouth] = cls.South
+        rotation[cls.TopEast] = cls.East
 
     return rotation
 
@@ -17,6 +27,12 @@ def genericRotation(cls):
     rotation[cls.West] = cls.South
     rotation[cls.South] = cls.East
     rotation[cls.East] = cls.North
+    if hasattr(cls, "TopNorth") and hasattr(cls, "TopWest") and hasattr(cls, "TopSouth") and hasattr(cls, "TopEast"):
+        rotation[cls.TopNorth] = cls.TopWest
+        rotation[cls.TopWest] = cls.TopSouth
+        rotation[cls.TopSouth] = cls.TopEast
+        rotation[cls.TopEast] = cls.TopNorth
+    
     return rotation
 
 
@@ -24,6 +40,10 @@ def genericEastWestFlip(cls):
     rotation = arange(16, dtype='uint8')
     rotation[cls.West] = cls.East
     rotation[cls.East] = cls.West
+    if hasattr(cls, "TopWest") and hasattr(cls, "TopEast"):
+        rotation[cls.TopWest] = cls.TopEast
+        rotation[cls.TopEast] = cls.TopWest
+    
     return rotation
 
 
@@ -31,6 +51,10 @@ def genericNorthSouthFlip(cls):
     rotation = arange(16, dtype='uint8')
     rotation[cls.South] = cls.North
     rotation[cls.North] = cls.South
+    if hasattr(cls, "TopNorth") and hasattr(cls, "TopSouth"):
+        rotation[cls.TopSouth] = cls.TopNorth
+        rotation[cls.TopNorth] = cls.TopSouth
+    
     return rotation
 
 rotationClasses = []
@@ -77,6 +101,10 @@ class Stair:
     North = 1
     West = 2
     East = 3
+    TopSouth = 4
+    TopNorth = 5
+    TopWest = 6
+    TopEast = 7
 genericFlipRotation(Stair)
 
 
