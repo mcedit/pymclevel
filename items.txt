@@ -1,5 +1,5 @@
-:version 29
-:mc-version Minecraft 1.2
+:version 31
+:mc-version Minecraft 1.2.4
 
 #            Blocks
 # ID  NAME                   FILE         CORDS   DAMAGE
@@ -7,7 +7,10 @@
    2  Grass                  terrain.png  3,0
    3  Dirt                   terrain.png  2,0
    4  Cobblestone            terrain.png  0,1
-   5  Wooden_Planks          terrain.png  4,0
+   5  Wooden_Planks          terrain.png  4,0    0
+   5  Dark_Wooden_Planks     terrain.png  6,12   1
+   5  Birch_Wooden_Planks    terrain.png  6,13   2
+   5  Jungle_Wooden_Planks   terrain.png  7,12   3
    6  Sapling                terrain.png  15,0   0
    6  Spruce_Sapling         terrain.png  15,3   1
    6  Birch_Sapling          terrain.png  15,4   2
@@ -35,7 +38,9 @@
   21  Lapis_Lazuli_Ore       terrain.png  0,10
   22  Lapis_Lazuli_Block     terrain.png  0,9
   23  Dispenser              terrain.png  14,2
-  24  Sandstone              terrain.png  0,12
+  24  Sandstone              terrain.png  0,12   0
+  24  Decorative_Sandstone   terrain.png  5,14   1
+  24  Smooth_Sandstone       terrain.png  6,14   2
   25  Note_Block             terrain.png  10,4
   26  Bed_Block              terrain.png  6,8
   27  Powered_Rail           terrain.png  3,10
@@ -136,6 +141,7 @@
   98  Stone_Bricks           terrain.png  6,3    0
   98  Mossy_Stone_Bricks     terrain.png  4,6    1
   98  Damaged_Stone_Bricks   terrain.png  5,6    2
+  98  Circle_Stone_Bricks    terrain.png  5,13   3
   99  Brown_Mushroom_Block   terrain.png  13,7
  100  Red_Mushroom_Block     terrain.png  14,7
  101  Iron_Bars              terrain.png  5,5
@@ -419,6 +425,7 @@
  383  Spawn_Squid            special.png  1,12   94
  383  Spawn_Wolf             special.png  2,12   95
  383  Spawn_Mooshroom        special.png  3,12   96
+ 383  Spawn_Ocelot           special.png  5,12   98
  383  Spawn_Villager         special.png  4,12   120
 
 #           Groups
@@ -449,4 +456,4 @@
 ~ Music      2257  2256,2257,2258,2259,2260,2261,2262,2263,2264,2265,2266
 # New
 ~ Potion     373   373~0,373~16,373~32,373~8192,373~8193,373~8257,373~8225,373~8289,373~8194,373~8258,373~8226,373~8290,373~8195,373~8259,373~8197,373~8229,373~8201,373~8265,373~8233,373~8297,373~8196,373~8260,373~8228,373~8292,373~8200,373~8264,373~8202,373~8266,373~8204,373~8236,373~16384,373~16385,373~16499,373~16417,373~16481,373~16386,373~16450,373~16418,373~16482,373~16387,373~16451,373~16389,373~16421,373~16393,373~16457,373~16425,373~16489,373~16388,373~16452,373~16420,373~16484,373~16392,373~16456,373~16394,373~16458,373~16396,373~16428
-~ Eggs       383   383~50,383~51,383~52,383~54,383~55,383~56,383~57,383~58,383~59,383~60,383~61,383~62,383~90,383~91,383~92,383~93,383~94,383~95,383~96,383~120
+~ Eggs       383   383~50,383~51,383~52,383~54,383~55,383~56,383~57,383~58,383~59,383~60,383~61,383~62,383~90,383~91,383~92,383~93,383~94,383~95,383~96,383~98,383~120
