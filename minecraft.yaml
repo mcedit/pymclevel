@@ -810,6 +810,9 @@ blocks:
         name: Double Stone Slab
       1: 
         tex: [0, 12]
+        tex_direction:
+          TOP: [0, 11]
+          BOTTOM: [0, 13]
         name: Double Sandstone Slab
       2: 
         tex: [4, 0]
@@ -845,6 +848,9 @@ blocks:
         name: Stone Slab
       1: 
         tex: [0, 12]
+        tex_direction:
+          TOP: [0, 11]
+          BOTTOM: [0, 13]
         name: Sandstone Slab
       2: 
         tex: [4, 0]
