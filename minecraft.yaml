@@ -306,6 +306,19 @@ blocks:
     name: Wood Planks
     mapcolor: [157, 128, 79]
     tex: [4, 0]
+    data:
+      0:
+        name: Wood Planks
+        tex: [4, 0]
+      1:
+        name: Wood Planks
+        tex: [6, 12]
+      2:
+        name: Wood Planks
+        tex: [6, 13]
+      3:
+        name: Wood Planks
+        tex: [7, 12]
   
   - id: 6
     idStr: SAPLING
@@ -324,6 +337,9 @@ blocks:
       2: 
         name: Birch Sapling
         tex: [15, 4]
+      3:
+        name: Jungle Sapling
+        tex: [14, 1]
     
   - id: 7
     idStr: BEDROCK
@@ -413,6 +429,9 @@ blocks:
       2:
         name: Birch Wood
         tex: [5, 7]
+      3:
+        name: Jungle Wood
+        tex: [9, 9]
   
   - id: 18
     idStr: LEAVES
@@ -436,11 +455,10 @@ blocks:
         mapcolor: [89, 151, 76]
         tex: [5, 3]
       3:
-        name: Leaves
+        name: Jungle Leaves
         mapcolor: [74, 131, 66]
-        tex: [5, 3]
-        aka: Off-color
-        
+        tex: [5, 12]
+
       4: # bit 0x4 - "Permanent"
         name: Leaves (Permanent)
         mapcolor: [60, 192, 41]
@@ -455,10 +473,9 @@ blocks:
         mapcolor: [89, 151, 76]
         tex: [5, 3]
       7:
-        name: Leaves (Permanent)
+        name: Jungle Leaves (Permanent)
         mapcolor: [74, 131, 66]
-        tex: [5, 3]
-        aka: Off-color   
+        tex: [5, 12]
              
       8: # bit 0x8 - "Decaying"
         name: Leaves (Decaying)
@@ -474,10 +491,9 @@ blocks:
         mapcolor: [89, 151, 76]
         tex: [5, 3]
       11:
-        name: Leaves (Decaying)
+        name: Jungle Leaves (Decaying)
         mapcolor: [74, 131, 66]
-        tex: [5, 3]
-        aka: Off-color   
+        tex: [5, 12]
              
       
   - id: 19
@@ -527,6 +543,27 @@ blocks:
     tex_direction:
       TOP: [0, 11]
       BOTTOM: [0, 13]
+    data:
+      0:
+        name: Sandstone
+        mapcolor: [218, 210, 158]
+        tex: [0, 12]
+      1:
+        name: Sandstone
+        aka: Decorative Sandstone
+        mapcolor: [218, 210, 158]
+        tex: [5, 14]
+        tex_direction:
+          TOP: [0, 11]
+          BOTTOM: [0, 11]
+      2:
+        name: Sandstone
+        aka: Smooth Sandstone
+        mapcolor: [218, 210, 158]
+        tex: [6, 14]
+        tex_direction:
+          TOP: [0, 11]
+          BOTTOM: [0, 11]
   
   - id: 25
     idStr: NOTE_BLOCK
@@ -786,6 +823,9 @@ blocks:
       5: 
         tex: [6, 3]
         name: Double Stone Brick Slab
+      6:
+        name: Double Smooth Stone Slab
+        tex: [6, 0]
       
   - id: 44
     idStr: SLAB
@@ -802,7 +842,6 @@ blocks:
           FORWARD: [5, 0]
           BACKWARD: [5, 0]
           SIDES: [5, 0]
-          
         name: Stone Slab
       1: 
         tex: [0, 12]
@@ -1316,6 +1355,9 @@ blocks:
       2: 
         tex: [5, 6]
         name: Cracked Stone Bricks
+      3:
+        tex: [5, 13]
+        name: Circle Stone Bricks
 
   - id: 99
     idStr: HUGE_BROWN_MUSHROOM
@@ -1516,5 +1558,25 @@ blocks:
     name: End Stone
     mapcolor: [235, 248, 182]
     tex: [15, 10]
+
+  - id: 122
+    idStr: DRAGON_EGG
+    name: Dragon Egg
+    aka: Ender Dragon Egg
+    mapcolor: [45, 1, 51]
+    tex: [7, 10]
+
+  - id: 123
+    idStr: REDSTONE_LAMP_OFF
+    name: Redstone Lamp (off)
+    mapcolor: [156, 104, 54]
+    tex: [3, 13]
+
+  - id: 124
+    idStr: REDSTONE_LAMP_ON
+    name: Redstone Lamp (on)
+    mapcolor: [208, 152, 70]
+    tex: [4, 13]
+    brightness: 15
 
 ...

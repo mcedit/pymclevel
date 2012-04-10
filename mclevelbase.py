@@ -3,29 +3,12 @@ Created on Jul 22, 2011
 
 @author: Rio
 '''
+
+from contextlib import contextmanager
+from logging import getLogger
 import os
-import traceback
-from datetime import datetime
-from cStringIO import StringIO
-from copy import deepcopy
-import itertools
-from contextlib import closing, contextmanager
-import gzip
 
-from numpy import *
-import logging
-
-import nbt
-from nbt import *
-from box import BoundingBox, FloatBox
-from materials import *
-import blockrotation
-from entity import *
-
-from faces import *
-#String constants for common tag names
-
-log = logging.getLogger(__name__)
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 Entities = "Entities"
@@ -52,6 +35,8 @@ def decompress_first(func):
 
     dec_first.__doc__ = func.__doc__
     return dec_first
+
+
 def unpack_first(func):
     def upk_first(self, *args, **kw):
         self.unpackChunkData()
@@ -60,10 +45,21 @@ def unpack_first(func):
     upk_first.__doc__ = func.__doc__
     return upk_first
 
-class PlayerNotFound(Exception): pass
-class ChunkNotPresent(Exception): pass
-class RegionMalformed(Exception): pass
-class ChunkMalformed(ChunkNotPresent): pass
+
+class PlayerNotFound(Exception):
+    pass
+
+
+class ChunkNotPresent(Exception):
+    pass
+
+
+class RegionMalformed(Exception):
+    pass
+
+
+class ChunkMalformed(ChunkNotPresent):
+    pass
 
 
 def exhaust(_iter):
@@ -82,7 +78,7 @@ import sys
 
 if sys.platform == "win32":
     #not sure why win32com is needed if the %APPDATA% var is available
-    
+
     try:
         import win32com.client
         objShell = win32com.client.Dispatch("WScript.Shell")
@@ -91,25 +87,24 @@ if sys.platform == "win32":
         print "Error while getting AppData folder using WScript.Shell.SpecialFolders: {0!r}".format(e)
         try:
             from win32com.shell import shell, shellcon
-            appDataDir = shell.SHGetPathFromIDListEx (
-                shell.SHGetSpecialFolderLocation (0, shellcon.CSIDL_APPDATA)
+            appDataDir = shell.SHGetPathFromIDListEx(
+                shell.SHGetSpecialFolderLocation(0, shellcon.CSIDL_APPDATA)
             )
         except Exception, e:
             print "Error while getting AppData folder using SHGetSpecialFolderLocation: {0!r}".format(e)
-            
+
             appDataDir = os.environ['APPDATA'].decode(sys.getfilesystemencoding())
 
     minecraftDir = os.path.join(appDataDir, u".minecraft")
 
 elif sys.platform == "darwin":
     appDataDir = os.path.expanduser(u"~/Library/Application Support")
-    
+
     minecraftDir = os.path.join(appDataDir, u"minecraft")
     minecraftDir.decode(sys.getfilesystemencoding())
 else:
     appDataDir = os.path.expanduser(u"~")
     minecraftDir = os.path.expanduser(u"~/.minecraft")
-    
+
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
-

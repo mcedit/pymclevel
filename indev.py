@@ -4,13 +4,12 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
-
 """
 Indev levels:
 
 TAG_Compound "MinecraftLevel"
 {
-   TAG_Compound "Environment" 
+   TAG_Compound "Environment"
    {
       TAG_Short "SurroundingGroundHeight"// Height of surrounding ground (in blocks)
       TAG_Byte "SurroundingGroundType"   // Block ID of surrounding ground
@@ -22,7 +21,7 @@ TAG_Compound "MinecraftLevel"
       TAG_Int "FogColor"                 // Hexadecimal value for the color of the fog
       TAG_Byte "SkyBrightness"           // The brightness of the sky, from 0 to 100
    }
-   
+
    TAG_List "Entities"
    {
       TAG_Compound
@@ -33,18 +32,18 @@ TAG_Compound "MinecraftLevel"
          // The most interesting one might be the one with ID "LocalPlayer", which contains the player inventory
       }
    }
-   
+
    TAG_Compound "Map"
    {
       // To access a specific block from either byte array, use the following algorithm:
       // Index = x + (y * Depth + z) * Width
 
-      TAG_Short "Width"                  // Width of the level (along X) 
-      TAG_Short "Height"                 // Height of the level (along Y) 
-      TAG_Short "Length"                 // Length of the level (along Z) 
+      TAG_Short "Width"                  // Width of the level (along X)
+      TAG_Short "Height"                 // Height of the level (along Y)
+      TAG_Short "Length"                 // Length of the level (along Z)
       TAG_Byte_Array "Blocks"             // An array of Length*Height*Width bytes specifying the block types
       TAG_Byte_Array "Data"              // An array of Length*Height*Width bytes with data for each blocks
-      
+
       TAG_List "Spawn"                   // Default spawn position
       {
          TAG_Short x  // These values are multiplied by 32 before being saved
@@ -52,7 +51,7 @@ TAG_Compound "MinecraftLevel"
          TAG_Short z
       }
    }
-   
+
    TAG_Compound "About"
    {
       TAG_String "Name"                  // Level name
@@ -61,9 +60,17 @@ TAG_Compound "MinecraftLevel"
    }
 }
 """
-from mclevelbase import *
 
-log = logging.getLogger(__name__)
+from entity import TileEntity
+from level import MCLevel
+from logging import getLogger
+from materials import indevMaterials
+from mclevelbase import Blocks, Data, Entities, Height, Length, Map, TileEntities, Width
+from numpy import array, swapaxes, uint8
+import nbt
+import os
+
+log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 MinecraftLevel = "MinecraftLevel"
@@ -87,13 +94,15 @@ Spawn = "Spawn"
 
 __all__ = ["MCIndevLevel"]
 
-from level import EntityLevel, computeChunkHeightMap
+from level import EntityLevel
+
 
 class MCIndevLevel(EntityLevel):
-    """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis 
+    """ IMPORTANT: self.Blocks and self.Data are indexed with [x,z,y] via axis
     swapping to be consistent with infinite levels."""
 
     materials = indevMaterials
+
     def setPlayerSpawnPosition(self, pos, player=None):
         assert len(pos) == 3
         self.Spawn = array(pos)
@@ -104,37 +113,43 @@ class MCIndevLevel(EntityLevel):
     def setPlayerPosition(self, pos, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                x["Pos"] = TAG_List([TAG_Float(p) for p in pos])
+                x["Pos"] = nbt.TAG_List([nbt.TAG_Float(p) for p in pos])
 
     def getPlayerPosition(self, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                return array(map(lambda x:x.value, x["Pos"]))
+                return array(map(lambda x: x.value, x["Pos"]))
 
     def setPlayerOrientation(self, yp, player="Ignored"):
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                x["Rotation"] = TAG_List([TAG_Float(p) for p in yp])
+                x["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
 
     def getPlayerOrientation(self, player="Ignored"):
         """ returns (yaw, pitch) """
         for x in self.root_tag["Entities"]:
             if x["id"].value == "LocalPlayer":
-                return array(map(lambda x:x.value, x["Rotation"]))
+                return array(map(lambda x: x.value, x["Rotation"]))
 
     def setBlockDataAt(self, x, y, z, newdata):
-        if x < 0 or y < 0 or z < 0: return 0
-        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        if x < 0 or y < 0 or z < 0:
+            return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length:
+            return 0
         self.Data[x, z, y] = (newdata & 0xf)
 
     def blockDataAt(self, x, y, z):
-        if x < 0 or y < 0 or z < 0: return 0
-        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        if x < 0 or y < 0 or z < 0:
+            return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length:
+            return 0
         return self.Data[x, z, y]
 
     def blockLightAt(self, x, y, z):
-        if x < 0 or y < 0 or z < 0: return 0
-        if x >= self.Width or y >= self.Height or z >= self.Length: return 0;
+        if x < 0 or y < 0 or z < 0:
+            return 0
+        if x >= self.Width or y >= self.Height or z >= self.Length:
+            return 0
         return self.BlockLight[x, z, y]
 
     def __repr__(self):
@@ -169,8 +184,6 @@ class MCIndevLevel(EntityLevel):
 
             self.Data = swapaxes(mapTag[Data].value, 0, 2)
 
-
-
             self.BlockLight = self.Data & 0xf
 
             self.Data >>= 4
@@ -178,22 +191,21 @@ class MCIndevLevel(EntityLevel):
             self.Spawn = [mapTag[Spawn][i].value for i in range(3)]
 
             if not Entities in root_tag:
-                root_tag[Entities] = TAG_List()
+                root_tag[Entities] = nbt.TAG_List()
             self.Entities = root_tag[Entities]
-            
-            #xxx fixup Motion and Pos to match infdev format
+
+            # xxx fixup Motion and Pos to match infdev format
             def numbersToDoubles(ent):
                 for attr in "Motion", "Pos":
                     if attr in ent:
-                        ent[attr] = TAG_List([TAG_Double(t.value) for t in ent[attr]])
+                        ent[attr] = nbt.TAG_List([nbt.TAG_Double(t.value) for t in ent[attr]])
             for ent in self.Entities:
                 numbersToDoubles(ent)
-                
-            
+
             if not TileEntities in root_tag:
-                root_tag[TileEntities] = TAG_List()
+                root_tag[TileEntities] = nbt.TAG_List()
             self.TileEntities = root_tag[TileEntities]
-            #xxx fixup TileEntities positions to match infdev format
+            # xxx fixup TileEntities positions to match infdev format
             for te in self.TileEntities:
                 pos = te["Pos"].value
 
@@ -201,18 +213,18 @@ class MCIndevLevel(EntityLevel):
 
                 TileEntity.setpos(te, (x, y, z))
 
-            if len(filter(lambda x:x['id'].value == 'LocalPlayer', root_tag[Entities])) == 0: #omen doesn't make a player entity
-                p = TAG_Compound()
-                p['id'] = TAG_String('LocalPlayer')
-                p['Pos'] = TAG_List([TAG_Float(0.), TAG_Float(64.), TAG_Float(0.)])
-                p['Rotation'] = TAG_List([TAG_Float(0.), TAG_Float(45.)])
+            if len(filter(lambda x: x['id'].value == 'LocalPlayer', root_tag[Entities])) == 0:  # omen doesn't make a player entity
+                p = nbt.TAG_Compound()
+                p['id'] = nbt.TAG_String('LocalPlayer')
+                p['Pos'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(64.), nbt.TAG_Float(0.)])
+                p['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(45.)])
 
                 root_tag[Entities].append(p)
-                #self.saveInPlace();
+                # self.saveInPlace()
 
         else:
             info(u"Creating new Indev levels is not yet implemented.!")
-            raise ValueError, "Can't do that yet"
+            raise ValueError("Can't do that yet")
 #            self.SurroundingGroundHeight = root_tag[Environment][SurroundingGroundHeight].value
 #            self.SurroundingGroundType = root_tag[Environment][SurroundingGroundType].value
 #            self.SurroundingWaterHeight = root_tag[Environment][SurroundingGroundHeight].value
@@ -224,17 +236,15 @@ class MCIndevLevel(EntityLevel):
 #            self.SkyBrightness = root_tag[Environment][SkyBrightness].value
 #            self.TimeOfDay = root_tag[Environment]["TimeOfDay"].value
 #
-#              
+#
 #            self.Name = self.root_tag[About][Name].value
 #            self.Author = self.root_tag[About][Author].value
 #            self.CreatedOn = self.root_tag[About][CreatedOn].value
 
-
-
     def rotateLeft(self):
         MCLevel.rotateLeft(self)
 
-        self.Data = swapaxes(self.Data, 1, 0)[:, ::-1, :] #x=y; y=-x
+        self.Data = swapaxes(self.Data, 1, 0)[:, ::-1, :]  # x=y; y=-x
 
         torchRotation = array([0, 4, 3, 1, 2, 5,
                                6, 7,
@@ -247,16 +257,19 @@ class MCIndevLevel(EntityLevel):
 
     def decodePos(self, v):
         b = 10
-        m = (1 << b) - 1; return v & m, (v >> b) & m, (v >> (2 * b))
+        m = (1 << b) - 1
+        return v & m, (v >> b) & m, (v >> (2 * b))
+
     def encodePos(self, x, y, z):
         b = 10
         return x + (y << b) + (z << (2 * b))
 
     def saveToFile(self, filename=None):
-        if filename == None: filename = self.filename;
+        if filename == None:
+            filename = self.filename
         if filename == None:
             warn(u"Attempted to save an unnamed file in place")
-            return #you fool!
+            return  # you fool!
 
         self.Data <<= 4
         self.Data |= (self.BlockLight & 0xf)
@@ -264,37 +277,37 @@ class MCIndevLevel(EntityLevel):
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
 
-        mapTag = TAG_Compound(name=Map)
-        mapTag[Width] = TAG_Short(self.Width)
-        mapTag[Height] = TAG_Short(self.Height)
-        mapTag[Length] = TAG_Short(self.Length)
-        mapTag[Blocks] = TAG_Byte_Array(self.Blocks)
-        mapTag[Data] = TAG_Byte_Array(self.Data)
+        mapTag = nbt.TAG_Compound(name=Map)
+        mapTag[Width] = nbt.TAG_Short(self.Width)
+        mapTag[Height] = nbt.TAG_Short(self.Height)
+        mapTag[Length] = nbt.TAG_Short(self.Length)
+        mapTag[Blocks] = nbt.TAG_Byte_Array(self.Blocks)
+        mapTag[Data] = nbt.TAG_Byte_Array(self.Data)
 
         self.Blocks = swapaxes(self.Blocks, 0, 2)
         self.Data = swapaxes(self.Data, 0, 2)
 
-        mapTag[Spawn] = TAG_List([TAG_Short(i) for i in self.Spawn])
+        mapTag[Spawn] = nbt.TAG_List([nbt.TAG_Short(i) for i in self.Spawn])
 
         self.root_tag[Map] = mapTag
         self.root_tag[Map]
-        
-        #fix up Entities imported from Alpha worlds
+
+        # fix up Entities imported from Alpha worlds
         def numbersToFloats(ent):
             for attr in "Motion", "Pos":
                 if attr in ent:
-                    ent[attr] = TAG_List([TAG_Double(t.value) for t in ent[attr]])
+                    ent[attr] = nbt.TAG_List([nbt.TAG_Double(t.value) for t in ent[attr]])
         for ent in self.Entities:
             numbersToFloats(ent)
-            
-        #fix up TileEntities imported from Alpha worlds.
+
+        # fix up TileEntities imported from Alpha worlds.
         for ent in self.TileEntities:
             if "Pos" not in ent and all(c in ent for c in 'xyz'):
-                ent["Pos"] = TAG_Int(self.encodePos(ent['x'].value, ent['y'].value, ent['z'].value))
-        #output_file = gzip.open(self.filename, "wb", compresslevel=1)
+                ent["Pos"] = nbt.TAG_Int(self.encodePos(ent['x'].value, ent['y'].value, ent['z'].value))
+        # output_file = gzip.open(self.filename, "wb", compresslevel=1)
         try:
             os.rename(filename, filename + ".old")
-        except Exception, e:
+        except Exception:
             pass
 
         try:
@@ -302,11 +315,11 @@ class MCIndevLevel(EntityLevel):
         except:
             os.rename(filename + ".old", filename)
 
-        try: os.remove(filename + ".old");
-        except Exception, e:
+        try:
+            os.remove(filename + ".old")
+        except Exception:
             pass
 
         self.BlockLight = self.Data & 0xf
 
         self.Data >>= 4
-
