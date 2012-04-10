@@ -196,7 +196,7 @@ class LoadingError(RuntimeError): pass
 
 def fromFile(filename, loadInfinite=True):
     ''' The preferred method for loading Minecraft levels of any type.
-    pass False to loadInfinite if you'd rather not load infdev levels.
+    pass False to loadInfinite if you would rather not load infdev levels.
     '''
     info(u"Identifying " + filename)
 
