@@ -2761,9 +2761,12 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     dirhashes = [_dirhash(n) for n in range(64)]
 
     def regionFilename(self, rx, rz):
-        s = os.path.join(self.regionDir,
-                                     "r.%s.%s.mcr" % (rx, rz))
-        return s
+        if self.version == self.VERSION_MCR:
+            EXTENSION = "mcr"
+        elif self.version == self.VERSION_ANVIL:
+            EXTENSION = "mca"
+
+        return os.path.join(self.regionDir, "r.%s.%s.%s" % (rx, rz, EXTENSION))
 
     def chunkFilename(self, cx, cz):
         s = os.path.join(self.worldDir, self.dirhash(cx), self.dirhash(cz),
