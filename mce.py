@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import mclevel
+import infiniteworld
 import sys
 import os
 from box import BoundingBox
@@ -61,6 +62,7 @@ class mce(object):
 
     World commands:
        {commandPrefix}create <filename>
+       {commandPrefix}dimension [ <dim> ]
        {commandPrefix}degrief
        {commandPrefix}time [ <time> ]
        {commandPrefix}worldsize
@@ -1288,6 +1290,7 @@ class mce(object):
     these keywords:
         nether, hell, slip: DIM-1
         earth, overworld, parent: parent world
+        end: DIM1
     """
 
         if len(command):
@@ -1301,6 +1304,8 @@ class mce(object):
 
             elif command[0].lower() in ("hell", "nether", "slip"):
                 dimNo = -1
+            elif command[0].lower() in ("end"):
+                dimNo = 1
             else:
                 dimNo = self.readInt(command)
 
@@ -1314,7 +1319,7 @@ class mce(object):
         if len(self.level.dimensions):
             print u"Dimensions in {0}:".format(self.level.displayName)
             for k in self.level.dimensions:
-                print "{0}: {1}".format(k, mclevel.MCAlphaDimension.dimensionNames.get(k, "Unknown"))
+                print "{0}: {1}".format(k, infiniteworld.MCAlphaDimension.dimensionNames.get(k, "Unknown"))
 
     def _help(self, command):
         if len(command):
