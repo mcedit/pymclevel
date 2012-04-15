@@ -108,6 +108,38 @@ class Stair:
 genericFlipRotation(Stair)
 
 
+class HalfSlab:
+    blocktypes = [alphaMaterials.StoneSlab.ID]
+
+    StoneSlab = 0
+    SandstoneSlab = 1
+    WoodenSlab = 2
+    CobblestoneSlab = 3
+    BrickSlab = 4
+    StoneBrickSlab = 5
+    TopStoneSlab = 8
+    TopSandstoneSlab = 9
+    TopWoodenSlab = 10
+    TopCobblestoneSlab = 11
+    TopBrickSlab = 12
+    TopStoneBrickSlab = 13
+    
+HalfSlab.flipVertical =  arange(16, dtype='uint8')
+HalfSlab.flipVertical[HalfSlab.StoneSlab] = HalfSlab.TopStoneSlab
+HalfSlab.flipVertical[HalfSlab.SandstoneSlab] = HalfSlab.TopSandstoneSlab
+HalfSlab.flipVertical[HalfSlab.WoodenSlab] = HalfSlab.TopWoodenSlab
+HalfSlab.flipVertical[HalfSlab.CobblestoneSlab] = HalfSlab.TopCobblestoneSlab
+HalfSlab.flipVertical[HalfSlab.BrickSlab] = HalfSlab.TopBrickSlab
+HalfSlab.flipVertical[HalfSlab.StoneBrickSlab] = HalfSlab.TopStoneBrickSlab
+HalfSlab.flipVertical[HalfSlab.TopStoneSlab] = HalfSlab.StoneSlab
+HalfSlab.flipVertical[HalfSlab.TopSandstoneSlab] = HalfSlab.SandstoneSlab
+HalfSlab.flipVertical[HalfSlab.TopWoodenSlab] = HalfSlab.WoodenSlab
+HalfSlab.flipVertical[HalfSlab.TopCobblestoneSlab] = HalfSlab.CobblestoneSlab
+HalfSlab.flipVertical[HalfSlab.TopBrickSlab] = HalfSlab.BrickSlab
+HalfSlab.flipVertical[HalfSlab.TopStoneBrickSlab] = HalfSlab.StoneBrickSlab
+rotationClasses.append(HalfSlab)
+
+
 class WallSign:
     blocktypes = [alphaMaterials.WallSign.ID]
 
