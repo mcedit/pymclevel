@@ -1670,7 +1670,7 @@ class ChunkedLevelMixin(object):
 
             def maskedSourceMask(sourceBlocks):
                 return typemask[sourceBlocks]
-                
+
             return maskedSourceMask
 
         def unmaskedSourceMask(_sourceBlocks):
@@ -2301,11 +2301,15 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if self.chunkCount == 0:
             return BoundingBox((0, 0, 0), (0, 0, 0))
 
-        allChunksArray = array(list(self.allChunks), dtype='int32')
-        mincx = min(allChunksArray[:, 0])
-        maxcx = max(allChunksArray[:, 0])
-        mincz = min(allChunksArray[:, 1])
-        maxcz = max(allChunksArray[:, 1])
+        mincx = 0
+        maxcx = 0
+        mincz = 0
+        maxcz = 0
+        for chunk in self.allChunks:
+            mincx = min(mincx, chunk[0])
+            maxcx = max(maxcx, chunk[0])
+            mincz = min(mincz, chunk[1])
+            maxcz = max(maxcz, chunk[1])
 
         origin = (mincx << 4, 0, mincz << 4)
         size = ((maxcx - mincx + 1) << 4, self.Height, (maxcz - mincz + 1) << 4)
