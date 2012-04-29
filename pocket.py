@@ -400,11 +400,17 @@ class PocketChunk(LightedChunk):
     def load(self):
         pass
 
+    def unload(self):
+        pass
+
     def decompress(self):
         pass
 
     def compress(self):
         pass
+
+    def compressedSize(self):
+        return 0
 
     def unpackChunkData(self):
         for key in ('SkyLight', 'BlockLight', 'Data'):
