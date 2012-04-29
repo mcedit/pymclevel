@@ -348,7 +348,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
 
     @classmethod
     def _isLevel(cls, filename):
-        clp = ("chunks.dat", "level.dat", "player.dat")
+        clp = ("chunks.dat", "level.dat")
 
         if not os.path.isdir(filename):
             f = os.path.basename(filename)
