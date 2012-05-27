@@ -147,13 +147,13 @@ class Entity(object):
     @classmethod
     def Create(cls, entityID, **kw):
         entityTag = nbt.TAG_Compound()
-        entityTag[id] = nbt.TAG_String(entityID)
+        entityTag["id"] = nbt.TAG_String(entityID)
         Entity.setpos(entityTag, (0, 0, 0))
         return entityTag
 
     @classmethod
     def pos(cls, tag):
-        if Pos not in tag:
+        if "Pos" not in tag:
             raise InvalidEntity(tag)
         return [a.value for a in tag[Pos]]
 
