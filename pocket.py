@@ -348,7 +348,7 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
 
     @classmethod
     def _isLevel(cls, filename):
-        clp = ("chunks.dat", "level.dat", "player.dat")
+        clp = ("chunks.dat", "level.dat")
 
         if not os.path.isdir(filename):
             f = os.path.basename(filename)
@@ -400,11 +400,17 @@ class PocketChunk(LightedChunk):
     def load(self):
         pass
 
+    def unload(self):
+        pass
+
     def decompress(self):
         pass
 
     def compress(self):
         pass
+
+    def compressedSize(self):
+        return 0
 
     def unpackChunkData(self):
         for key in ('SkyLight', 'BlockLight', 'Data'):

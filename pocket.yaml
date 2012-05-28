@@ -211,12 +211,12 @@ blocks:
     name: Lapis Lazuli Ore
     mapcolor: [27, 70, 161]
     tex: [0, 10]
-#  
-#  - id: 22
-#    idStr: LAPIS_LAZULI_BLOCK
-#    name: Lapis Lazuli Block
-#    mapcolor: [0, 0, 0]
-#    tex: [0, 9]
+  
+  - id: 22
+    idStr: LAPIS_LAZULI_BLOCK
+    name: Lapis Lazuli Block
+    mapcolor: [0, 0, 0]
+    tex: [0, 9]
 #  
 #  - id: 23
 #    idStr: DISPENSER
@@ -351,9 +351,76 @@ blocks:
 #  
   - id: 35
     idStr: WOOL
-    name: Black Wool 2
-    mapcolor: [0, 0, 0]
-    tex: [1, 7]
+    name: White Wool
+    mapcolor: [222, 222, 222]
+    tex: [0, 4]
+    data:
+      0: 
+        tex: [0, 4]
+        name: White Wool
+        mapcolor: [222, 222, 222]
+      1: 
+        tex: [2, 13]
+        name: Orange Wool
+        mapcolor: [234, 127, 55]
+      2: 
+        tex: [2, 12]
+        name: Magenta Wool
+        mapcolor: [191, 75, 201]
+      3: 
+        tex: [2, 11]
+        name: Light Blue Wool
+        aka: Aqua Wool
+        mapcolor: [104, 139, 212]
+      4: 
+        tex: [2, 10]
+        name: Yellow Wool
+        mapcolor: [104, 139, 212]
+      5: 
+        tex: [2, 9]
+        name: Lime Wool
+        mapcolor: [59, 189, 48]
+      6: 
+        tex: [2, 8]
+        name: Pink Wool
+        mapcolor: [217, 131, 155]
+      7: 
+        tex: [2, 7]
+        name: Gray Wool
+        mapcolor: [66, 66, 66]
+      8: 
+        tex: [1, 14]
+        name: Light Gray Wool
+        mapcolor: [166, 166, 166]
+      9: 
+        tex: [1, 13]
+        name: Cyan Wool
+        mapcolor: [39, 117, 149]
+      10: 
+        tex: [1, 12]
+        name: Purple Wool
+        aka: Indigo Wool, Violet Wool
+        mapcolor: [129, 54, 196]
+      11: 
+        tex: [1, 11]
+        name: Blue Wool
+        mapcolor: [39, 51, 161]
+      12: 
+        tex: [1, 10]
+        name: Brown Wool
+        mapcolor: [86, 51, 28]
+      13: 
+        tex: [1, 9]
+        name: Green Wool
+        mapcolor: [56, 77, 24]
+      14: 
+        tex: [1, 8]
+        name: Red Wool
+        mapcolor: [164, 45, 41]
+      15: 
+        tex: [1, 7]
+        name: Black Wool
+        mapcolor: [0, 0, 0]
     
   - id: 37
     idStr: YELLOW_FLOWER
@@ -411,22 +478,22 @@ blocks:
       BACKWARD: [5, 0]
       SIDES: [5, 0]
       
-#    data:
-#      0: 
-#        tex: [5, 0]
-#        name: Double Stone Slab
-#      1: 
-#        tex: [0, 12]
-#        name: Double Sandstone Slab
-#      2: 
-#        tex: [4, 0]
-#        name: Double Wooden Slab
-#      3: 
-#        tex: [0, 1]
-#        name: Double Cobblestone Slab
-#      4: 
-#        tex: [7, 0]
-#        name: Double Brick Slab
+    data:
+      0: 
+        tex: [5, 0]
+        name: Double Stone Slab
+      1: 
+        tex: [0, 12]
+        name: Double Sandstone Slab
+      2: 
+        tex: [4, 0]
+        name: Double Wooden Slab
+      3: 
+        tex: [0, 1]
+        name: Double Cobblestone Slab
+      4: 
+        tex: [7, 0]
+        name: Double Brick Slab
 #      5: 
 #        tex: [6, 3]
 #        name: Double Stone Brick Slab
@@ -445,22 +512,22 @@ blocks:
       SIDES: [5, 0]
       
     type: HALFHEIGHT
-#    data:
-#      0: 
-#        tex: [6, 0]
-#        name: Stone Slab
-#      1: 
-#        tex: [0, 12]
-#        name: Sandstone Slab
-#      2: 
-#        tex: [4, 0]
-#        name: Wooden Slab
-#      3: 
-#        tex: [0, 1]
-#        name: Cobblestone Slab
-#      4: 
-#        tex: [7, 0]
-#        name: Brick Slab
+    data:
+      0: 
+        tex: [6, 0]
+        name: Stone Slab
+      1: 
+        tex: [0, 12]
+        name: Sandstone Slab
+      2: 
+        tex: [4, 0]
+        name: Wooden Slab
+      3: 
+        tex: [0, 1]
+        name: Cobblestone Slab
+      4: 
+        tex: [7, 0]
+        name: Brick Slab
 #      5: 
 #        tex: [6, 3]
 #        name: Stone Brick Slab
@@ -479,23 +546,23 @@ blocks:
     tex_direction:
       TOP: [9, 0]
       BOTTOM: [10, 0]
-#  
-#  - id: 47
-#    idStr: BOOKSHELF
-#    name: Bookshelf
-#    mapcolor: [188, 152, 98]
-#    tex: [3, 2]
-#    tex_direction:
-#      TOP: [4, 0]
-#      BOTTOM: [4, 0]
-#  
-#  - id: 48
-#    idStr: MOSSY_COBBLESTONE
-#    name: Moss Stone
-#    aka: Mossy Cobblestone
-#    mapcolor: [115, 169, 115]
-#    tex: [4, 2]
-#  
+  
+  - id: 47
+    idStr: BOOKSHELF
+    name: Bookshelf
+    mapcolor: [188, 152, 98]
+    tex: [3, 2]
+    tex_direction:
+      TOP: [4, 0]
+      BOTTOM: [4, 0]
+  
+  - id: 48
+    idStr: MOSSY_COBBLESTONE
+    name: Moss Stone
+    aka: Mossy Cobblestone
+    mapcolor: [115, 169, 115]
+    tex: [4, 2]
+  
   - id: 49
     idStr: OBSIDIAN
     name: Obsidian
@@ -570,16 +637,16 @@ blocks:
     name: Block of Diamond
     mapcolor: [45, 166, 152]
     tex: [8, 1]
-#  
-#  - id: 58
-#    idStr: WORKBENCH
-#    name: Bench
-#    mapcolor: [114, 88, 56]
-#    tex: [12, 3]
-#    tex_direction:
-#      SIDES: [11, 3]
-#      TOP: [11, 2]
-#      BOTTOM: [4, 0]
+  
+  - id: 58
+    idStr: WORKBENCH
+    name: Bench
+    mapcolor: [114, 88, 56]
+    tex: [12, 3]
+    tex_direction:
+      SIDES: [11, 3]
+      TOP: [11, 2]
+      BOTTOM: [4, 0]
 #  
 #  - id: 59
 #    idStr: CROPS
@@ -778,23 +845,23 @@ blocks:
     tex: [3, 4]
     type: WATER
     opacity: 3
-#    
-#  - id: 80
-#    idStr: SNOW_BLOCK
-#    name: Snow
-#    mapcolor: [250, 250, 250]
-#    tex: [2, 4]
-#  
-#  - id: 81
-#    idStr: CACTUS
-#    name: Cactus
-#    mapcolor: [25, 120, 25]
-#    tex: [6, 4]
-#    tex_direction:
-#      TOP: [5, 4]
-#      BOTTOM: [5, 4]
-#    opacity: 0
-#    
+    
+  - id: 80
+    idStr: SNOW_BLOCK
+    name: Snow
+    mapcolor: [250, 250, 250]
+    tex: [2, 4]
+  
+  - id: 81
+    idStr: CACTUS
+    name: Cactus
+    mapcolor: [25, 120, 25]
+    tex: [6, 4]
+    tex_direction:
+      TOP: [5, 4]
+      BOTTOM: [5, 4]
+    opacity: 0
+    
   - id: 82
     idStr: CLAY
     name: Clay
@@ -808,87 +875,21 @@ blocks:
     tex: [9, 4]
     type: DECORATION_CROSS
     opacity: 0
-    
-  - id: 101
-    tex: [1, 7]
-    name: Black Wool
-    mapcolor: [0, 0, 0]
-
-  - id: 102
-    tex: [1, 8]
-    name: Red Wool
-    mapcolor: [164, 45, 41]
   
-  - id: 103 
-    tex: [1, 9]
-    name: Green Wool
-    mapcolor: [56, 77, 24]
-    
-  - id: 104
-    tex: [1, 10]
-    name: Brown Wool
-    mapcolor: [86, 51, 28]
-    
-  - id: 105
-    tex: [1, 11]
-    name: Blue Wool
-    mapcolor: [39, 51, 161]
-    
-  - id: 106
-    tex: [1, 12]
-    name: Purple Wool
-    mapcolor: [129, 54, 196]
-    
+  - id: 85
+    idStr: FENCE
+    name: Fence
+    mapcolor: [157, 128, 79]
+    tex: [4, 0]
+    type: FENCE
+    opacity: 0
+
   - id: 107
-    tex: [1, 13]
-    name: Cyan Wool
-    mapcolor: [39, 117, 149]
-    
-  - id: 108
-    tex: [1, 14]
-    name: Light Gray Wool
-    aka: White Wool
-    mapcolor: [166, 166, 166]
-    
-  - id: 109
-    tex: [2, 7]
-    name: Gray Wool
-    mapcolor: [66, 66, 66]
-    
-  - id: 110
-    tex: [2, 8]
-    name: Pink Wool
-    mapcolor: [217, 131, 155]
-    
-  - id: 111
-    tex: [2, 9]
-    name: Lime Wool
-    mapcolor: [59, 189, 48]
-    
-  - id: 112
-    tex: [2, 10]
-    name: Yellow Wool
-    mapcolor: [104, 139, 212]
-    
-  - id: 113
-    tex: [2, 11]
-    name: Light Blue Wool
-    aka: Aqua Wool
-    mapcolor: [104, 139, 212]
-    
-  - id: 114
-    tex: [2, 12]
-    name: Magenta Wool
-    mapcolor: [191, 75, 201]
-    
-  - id: 115
-    tex: [2, 13]
-    name: Orange Wool
-    mapcolor: [234, 127, 55]
-    
-#  - id: 116?
-#    tex: [0, 4]
-#    name: White Wool
-#    mapcolor: [222, 222, 222]
+    idStr: FENCE_GATE
+    name: Fence Gate
+    mapcolor: [157, 128, 79]
+    tex: [4, 0]
+    type: FENCE_GATE
+    opacity: 0
   
 ...
