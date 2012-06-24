@@ -2384,7 +2384,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
         self.root_tag = root_tag
-        root_tag[Data]['version'] = nbt.TAG_Int(self.VERSION_MCR)
+        root_tag[Data]['version'] = nbt.TAG_Int(self.VERSION_ANVIL)
 
         self.LastPlayed = long(last_played)
         self.RandomSeed = long(random_seed)
