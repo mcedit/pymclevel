@@ -939,10 +939,10 @@ blocks:
     type: STAIRS
   
   - id: 54
+    texfile: item/largechest.png
     idStr: CHEST
     name: Chest
     mapcolor: [125, 91, 38]
-    texfile: item/largechest.png
     tex: [1, 0]
     type: CHEST
     tex_extra:
@@ -1704,5 +1704,5 @@ blocks:
     tex: [7, 12]
     type: STAIRS
 
-	
+
 ...
