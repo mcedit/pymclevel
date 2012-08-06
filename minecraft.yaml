@@ -942,15 +942,16 @@ blocks:
     idStr: CHEST
     name: Chest
     mapcolor: [125, 91, 38]
-    tex: [11, 1]
+    texfile: item/largechest.png
+    tex: [1, 0]
     type: CHEST
     tex_extra:
-      side_small: [10, 1]
-      top: [9, 1]
-      front_big_left: [9, 2]
-      front_big_right: [10, 2]
-      back_big_left: [9, 3]
-      back_big_right: [10, 3]
+      side_small: [1, 0]
+      top: [3, 0]
+      front_big_left: [1, 0]
+      front_big_right: [1, 0]
+      back_big_left: [1, 0]
+      back_big_right: [1, 0]
     opacity: 0
     
   - id: 55
@@ -1584,5 +1585,123 @@ blocks:
     mapcolor: [208, 152, 70]
     tex: [4, 13]
     brightness: 15
+    
+  - id: 125
+    idStr: WOODEN_DOUBLE_SLAB
+    name: Wooden Double Slab
+    aka: Wood Double Step
+    mapcolor: [200, 200, 200]
+    tex: [4, 0]
+    data:
+      0: 
+        tex: [4, 0]
+        name: Oak-Wood Double Slab
+      1:
+        tex: [6, 12]
+        name: Spruce-Wood Double Slab
+      2:
+        tex: [6, 13]
+        name: Birch-Wood Double Slab
+      3:
+        tex: [7, 12]
+        name: Jungle-Wood Double Slab
+    
+  - id: 126
+    idStr: WOODEN_SLAB
+    name: Wooden Slab
+    aka: Wood Half Step
+    mapcolor: [200, 200, 200]
+    tex: [4, 0]
+    data:
+      0:
+        tex: [4, 0]
+        name: Oak-Wood Slab
+      1:
+        tex: [6, 12]
+        name: Spruce-Wood Slab
+      2:
+        tex: [6, 13]
+        name: Birch-Wood Slab
+      3:
+        tex: [7, 12]
+        name: Jungle-Wood Slab
+    type: HALFHEIGHT
+    
+  - id: 127
+    idStr: COCOA_PLANT
+    name: Cocoa Plant
+    mapcolor: [181, 140, 64]
+    tex: [10, 10]
+    opacity: 0
+    type: LEVER
+    
+  - id: 128
+    idStr: SANDSTONE_STAIRS
+    name: Sandstone Stairs
+    mapcolor: [157, 128, 79]
+    tex: [0, 12]
+    type: STAIRS
+    
+  - id: 129
+    idStr: EMERALD_ORE
+    name: Emerald Ore
+    mapcolor: [200, 200, 200]
+    tex: [11, 10]
+    
+  - id: 130
+    idStr: ENDER_CHEST
+    name: Ender Chest
+    mapcolor: [200, 200, 200]
+    tex: [10, 12]
+    tex_extra:
+      side_small: [9, 12]
+      top: [8, 12]
+      front_big_left: [8, 13]
+      front_big_right: [9, 13]
+      back_big_left: [8, 14]
+      back_big_right: [9, 14]
+      
+  - id: 131
+    idStr: TRIPWIRE_HOOK
+    name: Tripwire Hook
+    mapcolor: [200, 200, 200]
+    tex: [12, 10]
+    opacity: 0
+    type: LEVER
+    
+  - id: 132
+    idStr: TRIPWIRE
+    name: Tripwire
+    mapcolor: [200, 200, 200]
+    tex: [13, 10]
+    opacity: 0
+    type: LEVER
+    
+  - id: 133
+    idStr: EMERALD_BLOCK
+    name: Block of Emerald
+    mapcolor: [200, 200, 200]
+    tex: [9, 1]
+    
+  - id: 134
+    idStr: SPRUCE_WOOD_STAIRS
+    name: Spruce-Wood Stairs
+    mapcolor: [157, 128, 79]
+    tex: [6, 12]
+    type: STAIRS
+    
+  - id: 135
+    idStr: BIRCH_WOOD_STAIRS
+    name: Birch-Wood Stairs
+    mapcolor: [157, 128, 79]
+    tex: [6, 13]
+    type: STAIRS
+    
+  - id: 136
+    idStr: JUNGLE_WOOD_STAIRS
+    name: Jungle-Wood Stairs
+    mapcolor: [157, 128, 79]
+    tex: [7, 12]
+    type: STAIRS
 
 ...
