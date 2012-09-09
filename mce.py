@@ -1286,13 +1286,12 @@ class mce(object):
     dimension [ <dim> ]
 
     Load another dimension, a sub-world of this level. Without options, lists
-    all of the dimensions found in this world. <dim> can be a number or one of
-    these keywords:
+    all of the dimensions found in this world. <dim> can be a number, a 
+    directory or one of these keywords:
         nether, hell, slip: DIM-1
         earth, overworld, parent: parent world
         end: DIM1
     """
-
         if len(command):
             if command[0].lower() in ("earth", "overworld", "parent"):
                 if self.level.parentWorld:
@@ -1307,10 +1306,14 @@ class mce(object):
             elif command[0].lower() in ("end"):
                 dimNo = 1
             else:
-                dimNo = self.readInt(command)
+                dirname = None
+                dimNo = None
+                try:
+                    dimNo = int(command[0])
+                except ValueError:
+                    dirname = command[0]
 
-            if dimNo in self.level.dimensions:
-                self.level = self.level.dimensions[dimNo]
+                self.level = self.level.getDimension(dimNo, dirname)
                 return
 
         if self.level.parentWorld:
@@ -1318,7 +1321,7 @@ class mce(object):
 
         if len(self.level.dimensions):
             print u"Dimensions in {0}:".format(self.level.displayName)
-            for k in self.level.dimensions:
+            for k in self.level.dimensions.values():
                 print "{0}: {1}".format(k, infiniteworld.MCAlphaDimension.dimensionNames.get(k, "Unknown"))
 
     def _help(self, command):
