@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import mclevelbase
 import mclevel
 import infiniteworld
 import sys
@@ -620,7 +621,7 @@ class mce(object):
         for i, cPos in enumerate(self.level.allChunks):
             try:
                 chunk = self.level.getChunk(*cPos)
-            except mclevel.ChunkMalformed:
+            except mclevelbase.ChunkMalformed:
                 continue
 
             for tileEntity in chunk.TileEntities:
@@ -779,7 +780,7 @@ class mce(object):
         for i, cPos in enumerate(self.level.allChunks):
             try:
                 chunk = self.level.getChunk(*cPos)
-            except mclevel.ChunkMalformed:
+            except mclevelbase.ChunkMalformed:
                 continue
 
             for tileEntity in chunk.TileEntities:
