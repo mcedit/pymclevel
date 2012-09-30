@@ -799,6 +799,8 @@ class InfdevChunk(LightedChunk):
             try:
                 self._decompressChunk()
 
+            except MemoryError:
+                raise
             except Exception, e:
                 error(u"Malformed NBT data in file: {0} ({1})".format(self.filename, e))
                 if self.world:
@@ -884,6 +886,8 @@ class InfdevChunk(LightedChunk):
                 self.dataIsPacked = True
                 self.decompress()
 
+            except MemoryError:
+                raise
             except Exception, e:
                 error(u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e))
                 if self.world:
@@ -2731,6 +2735,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     data = nbt.gunzip(cdata)
                     chunk.root_tag = nbt.load(buf=data)
 
+        except MemoryError:
+            raise
         except Exception, e:
             raise ChunkMalformed("Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e), sys.exc_info()[2])
 
