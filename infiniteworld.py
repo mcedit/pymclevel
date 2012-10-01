@@ -720,6 +720,9 @@ class InfdevChunk(LightedChunk):
         root_tag.save(buf=buf)
         return deflate(buf.getvalue())
 
+    def _discardUncompressed(self):
+        self.root_tag = None
+
     def _compressChunk(self):
         root_tag = self.root_tag
         if root_tag is None:
@@ -730,7 +733,7 @@ class InfdevChunk(LightedChunk):
         if self.compressMode == MCRegionFile.VERSION_DEFLATE:
             self.compressedTag = self.compressTagDeflate(root_tag)
 
-        self.root_tag = None
+        self._discardUncompressed()
 
     def decompressTagGzip(self, data):
         return nbt.load(buf=nbt.gunzip(data))
@@ -774,7 +777,7 @@ class InfdevChunk(LightedChunk):
         if not self.dirty:
             # if we are not dirty, just throw the
             # uncompressed tag structure away. rely on the OS disk cache.
-            self.root_tag = None
+            self._discardUncompressed()
         else:
             if self.root_tag is not None:
                 self.sanitizeBlocks()  # xxx
@@ -1112,6 +1115,14 @@ class AnvilChunk(InfdevChunk):
                     secarray = unpackNibbleArray(secarray)
 
                 arr[..., y:y + 16] = secarray.swapaxes(0, 2)
+
+    def _discardUncompressed(self):
+        self._Blocks = None
+        self._Data = None
+        self._BlockLight = None
+        self._SkyLight = None
+
+        super(AnvilChunk, self)._discardUncompressed()
 
     def _compressChunk(self):
         sections = self.root_tag[Level][Sections] = nbt.TAG_List()
