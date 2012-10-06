@@ -1535,7 +1535,7 @@ blocks:
     
   - id: 118
     idStr: CAULDRON
-    name: CAULDRON
+    name: Cauldron
     mapcolor: [79, 79, 79]
     tex: [10, 9]
     type: CAULDRON
@@ -1632,8 +1632,8 @@ blocks:
     name: Cocoa Plant
     mapcolor: [181, 140, 64]
     tex: [10, 10]
+    type: CROPS
     opacity: 0
-    type: LEVER
     
   - id: 128
     idStr: SANDSTONE_STAIRS
@@ -1652,30 +1652,30 @@ blocks:
     idStr: ENDER_CHEST
     name: Ender Chest
     mapcolor: [200, 200, 200]
-    tex: [10, 12]
-    tex_extra:
-      side_small: [9, 12]
-      top: [8, 12]
-      front_big_left: [8, 13]
-      front_big_right: [9, 13]
-      back_big_left: [8, 14]
-      back_big_right: [9, 14]
+    tex: [11, 11]
+    data:
+      0: {tex: [11, 11]}
+      1: {tex: [11, 11]}
+      2: {tex: [11, 11]}
+      3: {tex: [11, 11]}
+      4: {tex: [11, 11]}
+    opacity: 0
       
   - id: 131
     idStr: TRIPWIRE_HOOK
     name: Tripwire Hook
     mapcolor: [200, 200, 200]
     tex: [12, 10]
+    type: CROPS
     opacity: 0
-    type: LEVER
     
   - id: 132
     idStr: TRIPWIRE
     name: Tripwire
     mapcolor: [200, 200, 200]
     tex: [13, 10]
+    type: CROPS
     opacity: 0
-    type: LEVER
     
   - id: 133
     idStr: EMERALD_BLOCK
@@ -1704,5 +1704,81 @@ blocks:
     tex: [7, 12]
     type: STAIRS
 
+  - id: 137
+    idStr: COMMAND_BLOCK
+    name: Command Block
+    mapcolor: [200, 200, 200]
+    tex: [8, 11]
+    
+  - id: 138
+    idStr: BEACON_BLOCK
+    name: Beacon Block
+    mapcolor: [200, 200, 200]
+    tex: [9, 2]
+    opacity: 0
+    
+  - id: 139
+    idStr: COBBLE_WALL
+    name: Cobblestone Wall
+    mapcolor: [128, 128, 128]
+    tex: [0, 1]
+    type: FENCE
+    data:
+      0:
+        tex: [0, 1]
+        name: Cobblestone Wall
+      1:
+        tex: [4, 2]
+        name: Mossy Cobblestone Wall
+    opacity: 0
+    
+  - id: 140
+    idStr: FLOWER_POT
+    name: Flower Pot
+    mapcolor: [200, 200, 200]
+    tex: [10, 11]
+    opacity: 0
+    
+  - id: 141
+    idStr: CARROTS
+    name: Carrots
+    mapcolor: [200, 100, 100]
+    tex: [11, 12]
+    type: CROPS
+    data:
+      0: {tex: [8, 12]}
+      1: {tex: [9, 12]}
+      2: {tex: [10, 12]}
+      3: {tex: [11, 12]}
+    opacity: 0
+    
+  - id: 142
+    idStr: POTATOES
+    name: Potatoes
+    mapcolor: [200, 100, 100]
+    tex: [12, 12]
+    type: CROPS
+    data:
+      0: {tex: [8, 12]}
+      1: {tex: [9, 12]}
+      2: {tex: [10, 12]}
+      3: {tex: [12, 12]}
+    opacity: 0
+    
+  - id: 143
+    idStr: WOODEN_BUTTON
+    name: Wooden Button
+    mapcolor: [200, 100, 100]
+    tex: [4, 0]
+    type: BUTTON
+    opacity: 0
+    
+  - id: 144
+    idStr: MOB_HEAD
+    name: Mob Head
+    mapcolor: [200, 100, 100]
+    tex: [0, 0]
+    opacity: 0
+    
 
 ...
