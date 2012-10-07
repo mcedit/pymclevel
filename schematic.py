@@ -132,6 +132,8 @@ class MCSchematic (EntityLevel):
 
         try:
             self.root_tag = nbt.load(buf=data)
+        except MemoryError:
+             raise
         except Exception, e:
             error(u"Malformed NBT data in schematic file: {0} ({1})".format(self.filename, e))
             raise ChunkMalformed((e, self.filename), sys.exc_info()[2])
