@@ -127,6 +127,7 @@ class Entity(object):
                 "Blaze",
                 "Villager",
                 "LavaSlime",
+                "WitherBoss",
                 ]
     projectiles = ["Arrow",
                    "Snowball",
@@ -140,6 +141,8 @@ class Entity(object):
              "XPOrb",
              "Painting",
              "EnderCrystal",
+             "ItemFrame",
+             "WitherSkull",
              ]
     vehicles = ["Minecart", "Boat"]
     tiles = ["PrimedTnt", "FallingSand"]
