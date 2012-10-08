@@ -2316,15 +2316,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if self.chunkCount == 0:
             return BoundingBox((0, 0, 0), (0, 0, 0))
 
-        mincx = 0
-        maxcx = 0
-        mincz = 0
-        maxcz = 0
-        for chunk in self.allChunks:
-            mincx = min(mincx, chunk[0])
-            maxcx = max(maxcx, chunk[0])
-            mincz = min(mincz, chunk[1])
-            maxcz = max(maxcz, chunk[1])
+        allChunks = array(list(self.allChunks))
+        mincx = (allChunks[:, 0]).min()
+        maxcx = (allChunks[:, 0]).max()
+        mincz = (allChunks[:, 1]).min()
+        maxcz = (allChunks[:, 1]).max()
 
         origin = (mincx << 4, 0, mincz << 4)
         size = ((maxcx - mincx + 1) << 4, self.Height, (maxcz - mincz + 1) << 4)
