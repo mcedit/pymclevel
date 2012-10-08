@@ -471,7 +471,7 @@ class TestAnvil(TestAlphaLevel):
 class TestServerGen(unittest.TestCase):
     def setUp(self):
         # self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
-        self.alphalevel = TempLevel("PyTestWorld")
+        self.alphalevel = TempLevel("AnvilWorld")
 
     def testCreate(self):
         gen = MCServerChunkGenerator()
