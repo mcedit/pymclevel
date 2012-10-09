@@ -136,13 +136,13 @@ class MCSchematic (EntityLevel):
              raise
         except Exception, e:
             error(u"Malformed NBT data in schematic file: {0} ({1})".format(self.filename, e))
-            raise ChunkMalformed((e, self.filename), sys.exc_info()[2])
+            raise ChunkMalformed, self.filename, sys.exc_info()[2]
 
         try:
             self.shapeChunkData()
         except KeyError, e:
             error(u"Incorrect schematic format in file: {0} ({1})".format(self.filename, e))
-            raise ChunkMalformed((e, self.filename), sys.exc_info()[2])
+            raise ChunkMalformed, self.filename, sys.exc_info()[2]
         pass
 
         self.dataIsPacked = True

@@ -805,18 +805,20 @@ class InfdevChunk(LightedChunk):
             except MemoryError:
                 raise
             except Exception, e:
-                error(u"Malformed NBT data in file: {0} ({1})".format(self.filename, e))
+                msg = u"Malformed NBT data in file: {0} ({1})".format(self.filename, e)
+                error(msg)
                 if self.world:
                     self.world.malformedChunk(*self.chunkPosition)
-                raise ChunkMalformed((e,), sys.exc_info()[2])
+                raise ChunkMalformed, msg, sys.exc_info()[2]
 
             try:
                 self.shapeChunkData()
             except KeyError, e:
-                error(u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e))
+                msg = u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e)
+                error(msg)
                 if self.world:
                     self.world.malformedChunk(*self.chunkPosition)
-                raise ChunkMalformed((e,), sys.exc_info()[2])
+                raise ChunkMalformed, msg, sys.exc_info()[2]
 
             self.dataIsPacked = True
         self.world.chunkDidDecompress(self)
@@ -892,10 +894,11 @@ class InfdevChunk(LightedChunk):
             except MemoryError:
                 raise
             except Exception, e:
-                error(u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e))
+                msg = u"Incorrect chunk format in file: {0} ({1})".format(self.filename, e)
+                error(msg)
                 if self.world:
                     self.world.malformedChunk(*self.chunkPosition)
-                raise ChunkMalformed((e,), sys.exc_info()[2])
+                raise ChunkMalformed, msg, sys.exc_info()[2]
 
             self.world.chunkDidLoad(self)
             self.world.chunkDidDecompress(self)
@@ -2745,7 +2748,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         except MemoryError:
             raise
         except Exception, e:
-            raise ChunkMalformed("Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e), sys.exc_info()[2])
+            raise ChunkMalformed("Chunk {0} had an error: {1!r}".format(chunk.chunkPosition, e)), sys.exc_info()[2]
 
     def _saveChunk(self, chunk):
         cx, cz = chunk.chunkPosition
