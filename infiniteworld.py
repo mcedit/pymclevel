@@ -440,20 +440,17 @@ class MCServerChunkGenerator(object):
         except ChunkNotPresent, e:
             raise ChunkNotPresent("While generating a world in {0} using server {1} ({2!r})".format(tempWorld, self.serverJarFile, e), sys.exc_traceback)
 
-        tempChunk.decompress()
-        tempChunk.unpackChunkData()
-        root_tag = tempChunk.root_tag
+        tempChunk.compress()
+        data = tempChunk.compressedTag
 
         if not level.containsChunk(cx, cz):
             level.createChunk(cx, cz)
 
         chunk = level.getChunk(cx, cz)
-        chunk.decompress()
-        chunk.unpackChunkData()
-        chunk.root_tag = root_tag  # xxx tag swap, could copy blocks and entities and chunk attrs instead?
+        chunk.compress()
+        chunk.compressedTag = data  # xxx tag swap, could copy blocks and entities and chunk attrs instead?
         chunk.dirty = True
 
-        chunk.compress()
         chunk.save()
         chunk.unload()
         tempChunk.compress()
