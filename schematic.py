@@ -102,12 +102,7 @@ class MCSchematic (EntityLevel):
             return
         else:
             self.packChunkData()
-
-            buf = StringIO()
-            with closing(gzip.GzipFile(fileobj=buf, mode='wb', compresslevel=2)) as gzipper:
-                self.root_tag.save(buf=gzipper)
-
-            self.compressedTag = buf.getvalue()
+            self.compressedTag = self.root_tag.save(compressed=False)
 
         self.root_tag = None
 

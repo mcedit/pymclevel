@@ -9,7 +9,7 @@ from test.templevel import TempLevel
 
 __author__ = 'Rio'
 
-class TestNBT(unittest.TestCase):
+class TestNBT():
 
     def testLoad(self):
         "Load an indev level."
@@ -21,8 +21,7 @@ class TestNBT(unittest.TestCase):
         """Use the [] operator to look up subtags of a TAG_Compound."""
         print level["Environment"]["SurroundingGroundHeight"].value
 
-        """Numeric, string, and bytearray types have a value
-  that can be accessed and changed. """
+        """Numeric, string, and bytearray types have a value that can be accessed and changed. """
         print level["Map"]["Blocks"].value
 
         return level
@@ -109,9 +108,8 @@ class TestNBT(unittest.TestCase):
 
         level = self.testCreate()
         level["Map"]["Spawn"][0].name = "Torg Potter"
-        sio = StringIO()
-        level.save(buf=sio)
-        newlevel = nbt.load(buf=sio.getvalue())
+        data = level.save()
+        newlevel = nbt.load(buf=data)
 
         n = newlevel["Map"]["Spawn"][0].name
         if n:
@@ -133,8 +131,7 @@ class TestNBT(unittest.TestCase):
         d = join("testfiles", "TileTicks_chunks")
         files = [join(d, f) for f in os.listdir(d)]
         startTime = time.time()
-        for i in range(20):
-            for f in files[:40]:
-                n = nbt.load(f)
+        for f in files[:40]:
+            n = nbt.load(f)
         print "Duration: ", time.time() - startTime
-        # print "NBT: ", n
+
