@@ -35,10 +35,18 @@ class TestNBT():
         "Subtags of a TAG_Compound are automatically named when you use the [] operator."
         level["About"] = nbt.TAG_Compound()
         level["About"]["Author"] = nbt.TAG_String("codewarrior")
+        level["About"]["CreatedOn"] = nbt.TAG_Long(time.time())
 
         level["Environment"] = nbt.TAG_Compound()
         level["Environment"]["SkyBrightness"] = nbt.TAG_Byte(16)
         level["Environment"]["SurroundingWaterHeight"] = nbt.TAG_Short(32)
+        level["Environment"]["FogColor"] = nbt.TAG_Int(0xcccccc)
+
+        entity = nbt.TAG_Compound()
+        entity["id"] = nbt.TAG_String("Creeper")
+        entity["Pos"] = nbt.TAG_List([nbt.TAG_Float(d) for d in (32.5, 64.0, 33.3)])
+
+        level["Entities"] = nbt.TAG_List([entity])
 
         "You can also create and name a tag before adding it to the compound."
         spawn = nbt.TAG_List((nbt.TAG_Short(100), nbt.TAG_Short(45), nbt.TAG_Short(55)))
@@ -48,6 +56,9 @@ class TestNBT():
         mapTag.add(spawn)
         mapTag.name = "Map"
         level.add(mapTag)
+
+        mapTag2 = nbt.TAG_Compound([spawn])
+        mapTag2.name = "Map"
 
         "I think it looks more familiar with [] syntax."
 
@@ -72,7 +83,21 @@ class TestNBT():
         mapTag["Data"] = nbt.TAG_Byte_Array()
         mapTag["Data"].value = numpy.zeros(l * w * h, dtype=numpy.uint8)
 
+        "Save a few more tag types for completeness"
+
+        level["ShortArray"] = nbt.TAG_Short_Array(numpy.zeros((16, 16), dtype='uint16'))
+        level["IntArray"] = nbt.TAG_Int_Array(numpy.zeros((16, 16), dtype='uint32'))
+        level["Float"] = nbt.TAG_Float(0.3)
+
         return level
+
+    def testToStrings(self):
+        level = self.testCreate()
+        repr(level)
+        repr(level["Map"]["Blocks"])
+        repr(level["Entities"])
+
+        str(level)
 
     def testModify(self):
         level = self.testCreate()
@@ -91,13 +116,28 @@ class TestNBT():
         blocks = level["Map"]["Blocks"].value
         blocks[blocks == 5] = 41
 
+        level["Entities"][0] = nbt.TAG_Compound([nbt.TAG_String("Creeper", "id"),
+                                                 nbt.TAG_List([nbt.TAG_Double(d) for d in (1, 1, 1)], "Pos")])
+
+    def testMultipleCompound(self):
+        """ According to rumor, some TAG_Compounds store several tags with the same name. Once I find a chunk file
+        with such a compound, I need to test TAG_Compound.get_all()"""
+
+        pass
+
     def testSave(self):
 
         level = self.testCreate()
         level["Environment"]["SurroundingWaterHeight"].value += 6
 
         "Save the entire TAG structure to a different file."
-        TempLevel("atlantis.mclevel", createFunc=level.save)
+        TempLevel("atlantis.mclevel", createFunc=level.save) #xxx don't use templevel here
+
+
+    def testList(self):
+        tag = nbt.TAG_List()
+        tag.append(nbt.TAG_Int(258))
+        del tag[0]
 
     def testErrors(self):
         """
@@ -133,5 +173,7 @@ class TestNBT():
         startTime = time.time()
         for f in files[:40]:
             n = nbt.load(f)
-        print "Duration: ", time.time() - startTime
+        duration = time.time() - startTime
+
+        assert duration < 1.0 # Will fail when not using _nbt.pyx
 
