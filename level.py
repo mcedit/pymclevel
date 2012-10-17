@@ -50,7 +50,7 @@ def extractHeights(array):
     # from each column.
 
     w, h = array.shape[:2]
-    heightMap = zeros((w, h), 'uint16')
+    heightMap = zeros((w, h), 'int16')
 
     heights = argmax((array > 0)[..., ::-1], 2)
     heights = array.shape[2] - heights
