@@ -2276,7 +2276,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     isInfinite = True
     parentWorld = None
     dimNo = 0
-    Height = 128
+    Height = 256
 
     @property
     def displayName(self):
