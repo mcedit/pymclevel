@@ -2918,7 +2918,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 chunk.save()
 
         for path, tag in self.playerTagCache.iteritems():
-            tag.saveGzipped(path)
+            tag.save(path)
 
         self.playerTagCache = {}
 

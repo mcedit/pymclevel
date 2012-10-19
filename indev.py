@@ -311,7 +311,7 @@ class MCIndevLevel(EntityLevel):
             pass
 
         try:
-            self.root_tag.saveGzipped(filename)
+            self.root_tag.save(filename)
         except:
             os.rename(filename + ".old", filename)
 
