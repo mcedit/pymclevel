@@ -22,17 +22,22 @@ class TempLevel(object):
                 shutil.copytree(filename, tmpname)
             else:
                 shutil.copy(filename, tmpname)
-        else:
+        elif createFunc:
             createFunc(tmpname)
+        else:
+            raise IOError, "File %s not found." % filename
+
         self.tmpname = tmpname
         self.level = mclevel.fromFile(tmpname)
 
     def __del__(self):
-        self.level.close()
-        del self.level
-        filename = self.tmpname
+        if hasattr(self, 'level'):
+            self.level.close()
+            del self.level
+        if hasattr(self, 'tmpname'):
+            filename = self.tmpname
 
-        if os.path.isdir(filename):
-            shutil.rmtree(filename)
-        else:
-            os.unlink(filename)
+            if os.path.isdir(filename):
+                shutil.rmtree(filename)
+            else:
+                os.unlink(filename)
