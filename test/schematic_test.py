@@ -11,8 +11,8 @@ __author__ = 'Rio'
 class TestSchematics(unittest.TestCase):
     def setUp(self):
         # self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
-        self.indevlevel = TempLevel("hell.mclevel")
-        self.alphalevel = TempLevel("PyTestWorld")
+        self.indevLevel = TempLevel("hell.mclevel")
+        self.anvilLevel = TempLevel("AnvilWorld")
 
     def testCreate(self):
         # info("Schematic from indev")
@@ -20,7 +20,7 @@ class TestSchematics(unittest.TestCase):
         size = (64, 64, 64)
         temp = mktemp("testcreate.schematic")
         schematic = MCSchematic(shape=size, filename=temp, mats='Classic')
-        level = self.indevlevel.level
+        level = self.indevLevel.level
 
         self.failUnlessRaises(ValueError, lambda: (
             schematic.copyBlocksFrom(level, BoundingBox((-32, -32, -32), (64, 64, 64,)), (0, 0, 0))
@@ -28,12 +28,9 @@ class TestSchematics(unittest.TestCase):
 
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         assert((schematic.Blocks[0:64, 0:64, 0:64] == level.Blocks[0:64, 0:64, 0:64]).all())
-        schematic.compress()
 
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (-32, -32, -32))
         assert((schematic.Blocks[0:32, 0:32, 0:32] == level.Blocks[32:64, 32:64, 32:64]).all())
-
-        schematic.compress()
 
         schematic.saveInPlace()
 
@@ -41,7 +38,7 @@ class TestSchematics(unittest.TestCase):
         tempSchematic = MCSchematic(shape=(1, 1, 3))
         tempSchematic.copyBlocksFrom(schem, BoundingBox((0, 0, 0), (1, 1, 3)), (0, 0, 0))
 
-        level = self.alphalevel.level
+        level = self.anvilLevel.level
         for cx, cz in itertools.product(xrange(0, 4), xrange(0, 4)):
             try:
                 level.createChunk(cx, cz)
@@ -52,15 +49,20 @@ class TestSchematics(unittest.TestCase):
         os.remove(temp)
 
     def testRotate(self):
-        level = self.indevlevel.level
+        level = self.indevLevel.level
         schematic = level.extractSchematic(level.bounds)
         schematic.rotateLeft()
         schematic.flipNorthSouth()
         schematic.flipVertical()
 
     def testZipSchematic(self):
-        level = self.alphalevel.level
-        box = BoundingBox((0, 0, 0), (64, 64, 64,))
+        level = self.anvilLevel.level
+
+        x, y, z = level.bounds.origin
+        x += level.bounds.size[0]/2 & ~15
+        z += level.bounds.size[2]/2 & ~15
+
+        box = BoundingBox((x, y, z), (64, 64, 64,))
         zs = level.extractZipSchematic(box)
         assert(box.chunkCount == zs.chunkCount)
         zs.close()

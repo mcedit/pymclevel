@@ -156,24 +156,7 @@ class PocketChunksFile(object):
 #
 #        logger.info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered - deleted))
 #
-#    def extractAllChunks(self, folder):
-#        import itertools
-#        if not os.path.exists(folder):
-#            os.mkdir(folder)
-#        for cx, cz in itertools.product(range(32), range(32)):
-#            sectors = self._readChunk(cx, cz)
-#            if sectors is not None:
-#                format, compressedData = self.unpackSectors(sectors)
-#                data = self._decompressSectors(format, compressedData)
-#                chunkTag = nbt.load(buf=data)
-#                lev = chunkTag["Level"]
-#                xPos = lev["xPos"].value
-#                zPos = lev["zPos"].value
-#                gzdata = InfdevChunk.compressTagGzip(chunkTag)
-#                # print chunkTag.pretty_string()
-#
-#                with file(os.path.join(folder, "c.{0}.{1}.dat".format(base36(xPos), base36(zPos))), "wb") as f:
-#                    f.write(gzdata)
+
 
     def _readChunk(self, cx, cz):
         cx &= 0x1f
@@ -319,7 +302,6 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
     Width = 512
 
     isInfinite = True  # Wrong. isInfinite actually means 'isChunked' and should be changed
-    loadedChunks = None
     materials = pocketMaterials
 
     @property
@@ -394,23 +376,6 @@ class PocketChunk(LightedChunk):
         self.unpackChunkData()
         self.shapeChunkData()
 
-    def isLoaded(self):
-        return True
-
-    def load(self):
-        pass
-
-    def unload(self):
-        pass
-
-    def decompress(self):
-        pass
-
-    def compress(self):
-        pass
-
-    def compressedSize(self):
-        return 0
 
     def unpackChunkData(self):
         for key in ('SkyLight', 'BlockLight', 'Data'):

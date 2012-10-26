@@ -490,6 +490,7 @@ import zlib
 
 
 def gunzip(data):
+    #return gzip.GzipFile(fileobj=StringIO(data)).read()
     # strip off the header and use negative WBITS to tell zlib there's no header
     return zlib.decompress(data[10:], -zlib.MAX_WBITS)
 

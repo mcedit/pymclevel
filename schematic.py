@@ -12,7 +12,7 @@ import gzip
 from level import MCLevel, EntityLevel
 from logging import getLogger
 from materials import alphaMaterials, MCMaterials, namedMaterials
-from mclevelbase import Blocks, ChunkMalformed, Data, decompress_first, Entities, exhaust, Height, Length, TileEntities, unpack_first, Width
+from mclevelbase import Blocks, ChunkMalformed, Data, Entities, exhaust, Height, Length, TileEntities, Width
 import nbt
 from numpy import array, swapaxes, uint8, zeros
 import os
@@ -90,116 +90,63 @@ class MCSchematic (EntityLevel):
 
             self.root_tag = root_tag
 
-        self.dataIsPacked = True
+        self.packUnpack()
+        self.root_tag[Data].value &= 0xF  # discard high bits
+
+
+    def saveToFile(self, filename=None):
+        """ save to file named filename, or use self.filename.  XXX NOT THREAD SAFE AT ALL. """
+        if filename == None:
+            filename = self.filename
+        if filename == None:
+            raise IOError, u"Attempted to save an unnamed schematic in place"
+
+        self.Materials = self.materials.name
+
+        self.packUnpack()
+        with open(filename, 'wb') as chunkfh:
+            self.root_tag.save(buf=chunkfh)
+
+        self.packUnpack()
 
     def __str__(self):
         return u"MCSchematic(shape={0}, materials={2}, filename=\"{1}\")".format(self.size, self.filename or u"", self.Materials)
 
-    def compress(self):
-        # if self.root_tag is not None, then our compressed data must be stale and we need to recompress.
-
-        if self.root_tag is None:
-            return
-        else:
-            self.packChunkData()
-            self.compressedTag = self.root_tag.save(compressed=False)
-
-        self.root_tag = None
-
-    def decompress(self):
-        """called when accessing attributes decorated with @decompress_first"""
-        if self.root_tag != None:
-            return
-        if self.compressedTag is None:
-            if self.root_tag is None:
-                self.load()
-            else:
-                return
-
-        with closing(gzip.GzipFile(fileobj=StringIO(self.compressedTag))) as gzipper:
-            try:
-                data = gzipper.read()
-                if data == None:
-                    return
-            except Exception, e:
-                # error( u"Error reading compressed data, assuming uncompressed: {0}".format(e) )
-                data = self.compressedTag
-
-        try:
-            self.root_tag = nbt.load(buf=data)
-        except MemoryError:
-             raise
-        except Exception, e:
-            error(u"Malformed NBT data in schematic file: {0} ({1})".format(self.filename, e))
-            raise ChunkMalformed, self.filename, sys.exc_info()[2]
-
-        try:
-            self.shapeChunkData()
-        except KeyError, e:
-            error(u"Incorrect schematic format in file: {0} ({1})".format(self.filename, e))
-            raise ChunkMalformed, self.filename, sys.exc_info()[2]
-        pass
-
-        self.dataIsPacked = True
-
     # these refer to the blocks array instead of the file's height because rotation swaps the axes
     # this will have an impact later on when editing schematics instead of just importing/exporting
     @property
-    @decompress_first
     def Length(self):
         return self.Blocks.shape[1]
 
     @property
-    @decompress_first
     def Width(self):
         return self.Blocks.shape[0]
 
     @property
-    @decompress_first
     def Height(self):
         return self.Blocks.shape[2]
 
     @property
-    @decompress_first
-    @unpack_first
     def Blocks(self):
         return self.root_tag[Blocks].value
 
-    @Blocks.setter
-    @decompress_first
-    @unpack_first
-    def Blocks(self, newval):
-        self.root_tag[Blocks].value = newval
-
     @property
-    @decompress_first
-    @unpack_first
     def Data(self):
         return self.root_tag[Data].value
 
-    @Data.setter
-    @decompress_first
-    @unpack_first
-    def Data(self, newval):
-        self.root_tag[Data].value = newval
-
     @property
-    @decompress_first
     def Entities(self):
         return self.root_tag[Entities]
 
     @property
-    @decompress_first
     def TileEntities(self):
         return self.root_tag[TileEntities]
 
     @property
-    @decompress_first
     def Materials(self):
         return self.root_tag[Materials].value
 
     @Materials.setter
-    @decompress_first
     def Materials(self, val):
         if not Materials in self.root_tag:
             self.root_tag[Materials] = nbt.TAG_String()
@@ -220,18 +167,7 @@ class MCSchematic (EntityLevel):
     def packUnpack(self):
         self.root_tag[Blocks].value = swapaxes(self.root_tag[Blocks].value, 0, 2)  # yzx to xzy
         self.root_tag[Data].value = swapaxes(self.root_tag[Data].value, 0, 2)  # yzx to xzy
-        if self.dataIsPacked:
-            self.root_tag[Data].value &= 0xF  # discard high bits
 
-    def packChunkData(self):
-        if not self.dataIsPacked:
-            self.packUnpack()
-            self.dataIsPacked = True
-
-    def unpackChunkData(self):
-        if self.dataIsPacked:
-            self.packUnpack()
-            self.dataIsPacked = False
 
     def _update_shape(self):
         root_tag = self.root_tag
@@ -242,8 +178,8 @@ class MCSchematic (EntityLevel):
 
     def rotateLeft(self):
 
-        self.Blocks = swapaxes(self.Blocks, 1, 0)[:, ::-1, :]  # x=z; z=-x
-        self.Data = swapaxes(self.Data, 1, 0)[:, ::-1, :]  # x=z; z=-x
+        self.root_tag["Blocks"].value = swapaxes(self.Blocks, 1, 0)[:, ::-1, :]  # x=z; z=-x
+        self.root_tag["Data"].value   = swapaxes(self.Data, 1, 0)[:, ::-1, :]  # x=z; z=-x
         self._update_shape()
 
         blockrotation.RotateLeft(self.Blocks, self.Data)
@@ -281,20 +217,20 @@ class MCSchematic (EntityLevel):
 
     def roll(self):
         " xxx rotate stuff "
-        self.Blocks = swapaxes(self.Blocks, 2, 0)[:, :, ::-1]  # x=z; z=-x
-        self.Data = swapaxes(self.Data, 2, 0)[:, :, ::-1]
+        self.root_tag["Blocks"].value = swapaxes(self.Blocks, 2, 0)[:, :, ::-1]  # x=z; z=-x
+        self.root_tag["Data"].value = swapaxes(self.Data, 2, 0)[:, :, ::-1]
         self._update_shape()
 
     def flipVertical(self):
         " xxx delete stuff "
         blockrotation.FlipVertical(self.Blocks, self.Data)
-        self.Blocks = self.Blocks[:, :, ::-1]  # y=-y
-        self.Data = self.Data[:, :, ::-1]
+        self.root_tag["Blocks"].value = self.Blocks[:, :, ::-1]  # y=-y
+        self.root_tag["Data"].value = self.Data[:, :, ::-1]
 
     def flipNorthSouth(self):
         blockrotation.FlipNorthSouth(self.Blocks, self.Data)
-        self.Blocks = self.Blocks[::-1, :, :]  # x=-x
-        self.Data = self.Data[::-1, :, :]
+        self.root_tag["Blocks"].value = self.Blocks[::-1, :, :]  # x=-x
+        self.root_tag["Data"].value = self.Data[::-1, :, :]
 
         northSouthPaintingMap = [0, 3, 2, 1]
 
@@ -319,8 +255,8 @@ class MCSchematic (EntityLevel):
     def flipEastWest(self):
         " xxx flip entities "
         blockrotation.FlipEastWest(self.Blocks, self.Data)
-        self.Blocks = self.Blocks[:, ::-1, :]  # z=-z
-        self.Data = self.Data[:, ::-1, :]
+        self.root_tag["Blocks"].value = self.Blocks[:, ::-1, :]  # z=-z
+        self.root_tag["Data"].value = self.Data[:, ::-1, :]
 
         eastWestPaintingMap = [2, 1, 0, 3]
 
@@ -339,7 +275,6 @@ class MCSchematic (EntityLevel):
         for tileEntity in self.TileEntities:
             tileEntity["z"].value = self.Length - tileEntity["z"].value - 1
 
-    @decompress_first
     def setShape(self, shape):
         """shape is a tuple of (width, height, length).  sets the
         schematic's properties and clears the block and data arrays"""
@@ -351,20 +286,6 @@ class MCSchematic (EntityLevel):
         self.root_tag[Data].value = zeros(dtype='uint8', shape=shape)
         self.shapeChunkData()
 
-    def saveToFile(self, filename=None):
-        """ save to file named filename, or use self.filename.  XXX NOT THREAD SAFE AT ALL. """
-        if filename == None:
-            filename = self.filename
-        if filename == None:
-            warn(u"Attempted to save an unnamed schematic in place")
-            return  # you fool!
-
-        self.Materials = self.materials.name
-
-        self.compress()
-
-        with open(filename, 'wb') as chunkfh:
-            chunkfh.write(self.compressedTag)
 
     def setBlockDataAt(self, x, y, z, newdata):
         if x < 0 or y < 0 or z < 0:
@@ -438,7 +359,6 @@ class INVEditChest(MCSchematic):
         self.root_tag = root_tag
 
     @property
-    @decompress_first
     def TileEntities(self):
         chestTag = nbt.TAG_Compound()
         chestTag["id"] = nbt.TAG_String("Chest")
@@ -582,9 +502,6 @@ def extractAnySchematic(level, box):
 
 def extractAnySchematicIter(level, box):
     try:
-        if box.chunkCount > MCInfdevOldLevel.decompressedChunkLimit:
-            raise MemoryError
-
         for i in level.extractSchematicIter(box):
             yield i
     except MemoryError:

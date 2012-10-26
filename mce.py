@@ -438,12 +438,10 @@ class mce(object):
 
     def _analyze(self, command):
         """
-    analyze
+        analyze
 
-    Counts all of the block types in every chunk of the world.
-    Also updates the level's 'SizeOnDisk' field, correcting its size in the
-    world select menu.
-    """
+        Counts all of the block types in every chunk of the world.
+        """
         blockCounts = zeros((4096,), 'uint64')
         sizeOnDisk = 0
 
@@ -459,8 +457,6 @@ class mce(object):
             counts = bincount(btypes)
 
             blockCounts[:counts.shape[0]] += counts
-            sizeOnDisk += ch.compressedSize()
-            ch.unload()
             if i % 100 == 0:
                 logging.info("Chunk {0}...".format(i))
 
@@ -482,8 +478,6 @@ class mce(object):
                     print "{idstring:9} {name:30}: {count:<10}".format(
                           idstring=idstring, name=self.level.materials.blockWithID(blockID, 0).name, count=count)
 
-        print "Size on disk: {0:.3}MB".format(sizeOnDisk / 1048576.0)
-        self.level.SizeOnDisk = sizeOnDisk
         self.needsSave = True
 
     def _export(self, command):
@@ -636,7 +630,6 @@ class mce(object):
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
 
-            chunk.unload()
 
         print "Dumped {0} signs to {1}".format(signCount, filename)
 
@@ -807,7 +800,6 @@ class mce(object):
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
 
-            chunk.unload()
 
         print "Dumped {0} chests to {1}".format(chestCount, filename)
 
@@ -881,9 +873,7 @@ class mce(object):
             if entitiesRemoved:
                 chunk.chunkChanged(False)
 
-            chunk.compress()
             chunk.save()
-            chunk.unload()
 
         if len(removedEntities) == 0:
             print "No entities to remove."
@@ -1296,7 +1286,7 @@ class mce(object):
     dimension [ <dim> ]
 
     Load another dimension, a sub-world of this level. Without options, lists
-    all of the dimensions found in this world. <dim> can be a number, a 
+    all of the dimensions found in this world. <dim> can be a number, a
     directory or one of these keywords:
         nether, hell, slip: DIM-1
         earth, overworld, parent: parent world

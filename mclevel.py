@@ -50,7 +50,7 @@ chunkPositions = list(world1.allChunks)
 # allChunks returns an iterator that yields a (xPos, zPos) tuple for each chunk
 xPos, zPos = chunkPositions[0];
 
-# retrieve an InfdevChunk object. this object will load and decompress
+# retrieve an AnvilChunk object. this object will load and decompress
 # the chunk as needed, and remember whether it needs to be saved or relighted
 
 chunk = world1.getChunk(xPos, zPos)
@@ -148,7 +148,7 @@ world.saveInPlace();
 # The getChunkSlices method returns an iterator that returns slices of chunks within the specified range.
 # the slices are returned as tuples of (chunk, slices, point)
 
-# chunk:  The InfdevChunk object we're interested in.
+# chunk:  The AnvilChunk object we're interested in.
 # slices:  A 3-tuple of slice objects that can be used to index chunk's data arrays
 # point:  A 3-tuple of floats representing the relative position of this subslice within the larger slice.
 #

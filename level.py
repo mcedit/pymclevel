@@ -70,7 +70,7 @@ def getSlices(box, height):
 
     this returns an iterator, which yields 3-tuples containing:
     +  a pair of chunk coordinates (cx, cz),
-    +  a x,z,y triplet of slices that can be used to index the InfdevChunk's data arrays,
+    +  a x,z,y triplet of slices that can be used to index the AnvilChunk's data arrays,
     +  a x,y,z triplet representing the relative location of this subslice within the requested world slice.
 
     Note the different order of the coordinates between the 'slices' triplet
@@ -121,11 +121,6 @@ class MCLevel(object):
     including a common copyEntitiesFrom built on class-specific routines, and
     a dummy getChunk/allChunks for the finite levels.
 
-    MCLevel also provides compress and decompress methods that are used to load
-    NBT format levels, and expects subclasses to override shapeChunkData to
-    assign a shape to the Blocks and other arrays. The resulting arrays after
-    reshape must be indexed [x,z,y]
-
     MCLevel subclasses must have Width, Length, and Height attributes.  The first two are always zero for infinite levels.
     Subclasses must also have Blocks, and optionally Data and BlockLight.
     """
@@ -136,7 +131,6 @@ class MCLevel(object):
     materials = materials.classicMaterials
     isInfinite = False
 
-    compressedTag = None
     root_tag = None
 
     Height = None
@@ -194,13 +188,6 @@ class MCLevel(object):
     def close(self):
         pass
 
-    # --- Compression ---
-    def compress(self):
-        pass
-
-    def decompress(self):
-        pass
-
     # --- Entity Methods ---
     def addEntity(self, entityTag):
         pass
@@ -229,14 +216,6 @@ class MCLevel(object):
     def removeTileEntitiesInBox(self, box):
         pass
 
-    # --- Chunked Format Emulation ---
-    def compressChunk(self, cx, cz):
-        pass
-
-    @property
-    def loadedChunks(self):
-        return itertools.product(xrange(0, self.Width + 15 >> 4), xrange(0, self.Length + 15 >> 4))
-
     @property
     def chunkCount(self):
         return (self.Width + 15 >> 4) * (self.Length + 15 >> 4)
@@ -245,11 +224,11 @@ class MCLevel(object):
     def allChunks(self):
         """Returns a synthetic list of chunk positions (xPos, zPos), to fake
         being a chunked level format."""
-        return self.loadedChunks
+        return itertools.product(xrange(0, self.Width + 15 >> 4), xrange(0, self.Length + 15 >> 4))
 
     def getChunks(self, chunks=None):
         """ pass a list of chunk coordinate tuples to get an iterator yielding
-        InfdevChunks. pass nothing for an iterator of every chunk in the level.
+        AnvilChunks. pass nothing for an iterator of every chunk in the level.
         the chunks are automatically loaded."""
         if chunks is None:
             chunks = self.allChunks
@@ -330,15 +309,6 @@ class MCLevel(object):
         # w+15 to allow non 16 aligned schematics
         return (cx >= 0 and cx < (self.Width + 15 >> 4) and
                 cz >= 0 and cz < (self.Length + 15 >> 4))
-
-    def chunkIsLoaded(self, cx, cz):
-        return self.containsChunk(cx, cz)
-
-    def chunkIsCompressed(self, cx, cz):
-        return False
-
-    def chunkIsDirty(self, cx, cz):
-        return True
 
     def fakeBlocksForChunk(self, cx, cz):
         # return a 16x16xH block array for rendering.  Alpha levels can
@@ -799,12 +769,6 @@ class ChunkBase(EntityLevel):
     needsLighting = False
     Blocks = Data = SkyLight = BlockLight = HeightMap = NotImplemented  # override these!
 
-    def load(self):
-        pass
-
-    def compress(self):
-        pass
-
     def chunkChanged(self, needsLighting=True):
         self.dirty = True
         self.needsLighting = needsLighting or self.needsLighting
@@ -825,9 +789,6 @@ class FakeChunk(ChunkBase):
 
 
 class LightedChunk(ChunkBase):
-    def isLoaded(self):
-        return True
-
     def generateHeightMap(self):
         computeChunkHeightMap(self.materials, self.Blocks, self.HeightMap)
 
@@ -835,9 +796,6 @@ class LightedChunk(ChunkBase):
         """ You are required to call this function after you are done modifying
         the chunk. Pass False for calcLighting if you know your changes will
         not change any lights."""
-
-        if not self.isLoaded():
-            return
 
         self.dirty = True
         self.needsLighting = calcLighting or self.needsLighting

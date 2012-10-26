@@ -2,7 +2,7 @@ from box import BoundingBox, FloatBox
 from entity import Entity, TileEntity
 from faces import faceDirections, FaceXDecreasing, FaceXIncreasing, FaceYDecreasing, FaceYIncreasing, FaceZDecreasing, FaceZIncreasing, MaxDirections
 from indev import MCIndevLevel
-from infiniteworld import ChunkedLevelMixin, InfdevChunk, MCAlphaDimension, MCInfdevOldLevel, ZeroChunk, ZipSchematic
+from infiniteworld import ChunkedLevelMixin, AnvilChunk, MCAlphaDimension, MCInfdevOldLevel, ZeroChunk, ZipSchematic
 import items
 from java import MCJavaLevel
 from level import ChunkBase, computeChunkHeightMap, EntityLevel, FakeChunk, LightedChunk, MCLevel

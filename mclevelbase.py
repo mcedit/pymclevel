@@ -28,24 +28,6 @@ def notclosing(f):
     yield f
 
 
-def decompress_first(func):
-    def dec_first(self, *args, **kw):
-        self.decompress()
-        return func(self, *args, **kw)
-
-    dec_first.__doc__ = func.__doc__
-    return dec_first
-
-
-def unpack_first(func):
-    def upk_first(self, *args, **kw):
-        self.unpackChunkData()
-        return func(self, *args, **kw)
-
-    upk_first.__doc__ = func.__doc__
-    return upk_first
-
-
 class PlayerNotFound(Exception):
     pass
 
