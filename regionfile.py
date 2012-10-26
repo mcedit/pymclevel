@@ -159,7 +159,7 @@ class MCRegionFile(object):
             cx, cz = cPos
             if self.getOffset(cx, cz) == 0:
                 log.info("Found chunk {found} and its slot is empty, recovering it".format(found=cPos))
-                self._saveChunk(cx, cz, foundData[5:], format)
+                self.saveChunk(cx, cz, foundData[5:])
                 recovered += 1
 
         log.info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered - deleted))

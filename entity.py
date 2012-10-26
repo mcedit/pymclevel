@@ -7,14 +7,7 @@ Created on Jul 23, 2011
 import nbt
 from copy import deepcopy
 
-__all__ = "Entity, TileEntity".split(", ")
-
-id = "id"
-
-Motion = "Motion"
-Pos = "Pos"
-Rotation = "Rotation"
-
+__all__ = ["Entity", "TileEntity"]
 
 class TileEntity(object):
     baseStructures = {
@@ -78,7 +71,7 @@ class TileEntity(object):
     @classmethod
     def Create(cls, tileEntityID, **kw):
         tileEntityTag = nbt.TAG_Compound()
-        tileEntityTag[id] = nbt.TAG_String(tileEntityID)
+        tileEntityTag["id"] = nbt.TAG_String(tileEntityID)
         base = cls.baseStructures.get(tileEntityID, None)
         if base:
             for (name, tag) in base:
@@ -150,15 +143,15 @@ class Entity(object):
     @classmethod
     def Create(cls, entityID, **kw):
         entityTag = nbt.TAG_Compound()
-        entityTag[id] = nbt.TAG_String(entityID)
+        entityTag["id"] = nbt.TAG_String(entityID)
         Entity.setpos(entityTag, (0, 0, 0))
         return entityTag
 
     @classmethod
     def pos(cls, tag):
-        if Pos not in tag:
+        if "Pos" not in tag:
             raise InvalidEntity(tag)
-        return [a.value for a in tag[Pos]]
+        return [a.value for a in tag["Pos"]]
 
     @classmethod
     def setpos(cls, tag, pos):

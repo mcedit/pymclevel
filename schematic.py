@@ -12,7 +12,7 @@ import gzip
 from level import MCLevel, EntityLevel
 from logging import getLogger
 from materials import alphaMaterials, MCMaterials, namedMaterials
-from mclevelbase import Blocks, ChunkMalformed, Data, Entities, exhaust, Height, Length, TileEntities, Width
+from mclevelbase import exhaust
 import nbt
 from numpy import array, swapaxes, uint8, zeros
 import os
@@ -21,9 +21,6 @@ import sys
 
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
-
-# schematic
-Materials = 'Materials'
 
 __all__ = ['MCSchematic', 'INVEditChest']
 
@@ -68,30 +65,30 @@ class MCSchematic (EntityLevel):
 
         if root_tag:
             self.root_tag = root_tag
-            if Materials in root_tag:
+            if "Materials" in root_tag:
                 self.materials = namedMaterials[self.Materials]
             else:
-                root_tag[Materials] = nbt.TAG_String(self.materials.name)
+                root_tag["Materials"] = nbt.TAG_String(self.materials.name)
             self.shapeChunkData()
 
         else:
             assert shape != None
             root_tag = nbt.TAG_Compound(name="Schematic")
-            root_tag[Height] = nbt.TAG_Short(shape[1])
-            root_tag[Length] = nbt.TAG_Short(shape[2])
-            root_tag[Width] = nbt.TAG_Short(shape[0])
+            root_tag["Height"] = nbt.TAG_Short(shape[1])
+            root_tag["Length"] = nbt.TAG_Short(shape[2])
+            root_tag["Width"] = nbt.TAG_Short(shape[0])
 
-            root_tag[Entities] = nbt.TAG_List()
-            root_tag[TileEntities] = nbt.TAG_List()
+            root_tag["Entities"] = nbt.TAG_List()
+            root_tag["TileEntities"] = nbt.TAG_List()
             root_tag["Materials"] = nbt.TAG_String(self.materials.name)
 
-            root_tag[Blocks] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
-            root_tag[Data] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+            root_tag["Blocks"] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+            root_tag["Data"] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
 
             self.root_tag = root_tag
 
         self.packUnpack()
-        self.root_tag[Data].value &= 0xF  # discard high bits
+        self.root_tag["Data"].value &= 0xF  # discard high bits
 
 
     def saveToFile(self, filename=None):
@@ -105,7 +102,7 @@ class MCSchematic (EntityLevel):
 
         self.packUnpack()
         with open(filename, 'wb') as chunkfh:
-            self.root_tag.save(buf=chunkfh)
+            self.root_tag.save(chunkfh)
 
         self.packUnpack()
 
@@ -128,53 +125,53 @@ class MCSchematic (EntityLevel):
 
     @property
     def Blocks(self):
-        return self.root_tag[Blocks].value
+        return self.root_tag["Blocks"].value
 
     @property
     def Data(self):
-        return self.root_tag[Data].value
+        return self.root_tag["Data"].value
 
     @property
     def Entities(self):
-        return self.root_tag[Entities]
+        return self.root_tag["Entities"]
 
     @property
     def TileEntities(self):
-        return self.root_tag[TileEntities]
+        return self.root_tag["TileEntities"]
 
     @property
     def Materials(self):
-        return self.root_tag[Materials].value
+        return self.root_tag["Materials"].value
 
     @Materials.setter
     def Materials(self, val):
-        if not Materials in self.root_tag:
-            self.root_tag[Materials] = nbt.TAG_String()
-        self.root_tag[Materials].value = val
+        if "Materials" not in self.root_tag:
+            self.root_tag["Materials"] = nbt.TAG_String()
+        self.root_tag["Materials"].value = val
 
     @classmethod
     def _isTagLevel(cls, root_tag):
         return "Schematic" == root_tag.name
 
     def shapeChunkData(self):
-        w = self.root_tag[Width].value
-        l = self.root_tag[Length].value
-        h = self.root_tag[Height].value
+        w = self.root_tag["Width"].value
+        l = self.root_tag["Length"].value
+        h = self.root_tag["Height"].value
 
-        self.root_tag[Blocks].value.shape = (h, l, w)
-        self.root_tag[Data].value.shape = (h, l, w)
+        self.root_tag["Blocks"].value.shape = (h, l, w)
+        self.root_tag["Data"].value.shape = (h, l, w)
 
     def packUnpack(self):
-        self.root_tag[Blocks].value = swapaxes(self.root_tag[Blocks].value, 0, 2)  # yzx to xzy
-        self.root_tag[Data].value = swapaxes(self.root_tag[Data].value, 0, 2)  # yzx to xzy
+        self.root_tag["Blocks"].value = swapaxes(self.root_tag["Blocks"].value, 0, 2)  # yzx to xzy
+        self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 0, 2)  # yzx to xzy
 
 
     def _update_shape(self):
         root_tag = self.root_tag
         shape = self.Blocks.shape
-        root_tag[Height] = nbt.TAG_Short(shape[2])
-        root_tag[Length] = nbt.TAG_Short(shape[1])
-        root_tag[Width] = nbt.TAG_Short(shape[0])
+        root_tag["Height"] = nbt.TAG_Short(shape[2])
+        root_tag["Length"] = nbt.TAG_Short(shape[1])
+        root_tag["Width"] = nbt.TAG_Short(shape[0])
 
     def rotateLeft(self):
 
@@ -282,8 +279,8 @@ class MCSchematic (EntityLevel):
         x, y, z = shape
         shape = (x, z, y)
 
-        self.root_tag[Blocks].value = zeros(dtype='uint8', shape=shape)
-        self.root_tag[Data].value = zeros(dtype='uint8', shape=shape)
+        self.root_tag["Blocks"].value = zeros(dtype='uint8', shape=shape)
+        self.root_tag["Data"].value = zeros(dtype='uint8', shape=shape)
         self.shapeChunkData()
 
 

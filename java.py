@@ -38,13 +38,12 @@ class MCJavaLevel(MCLevel):
         return self.Blocks.shape[0]
 
     def guessSize(self, data):
+        Width = 64
+        Length = 64
+        Height = 64
         if data.shape[0] <= (32 * 32 * 64) * 2:
             warn(u"Can't guess the size of a {0} byte level".format(data.shape[0]))
             raise IOError("MCJavaLevel attempted for smaller than 64 blocks cubed")
-        if data.shape[0] > (32 * 32 * 64) * 2:
-            Width = 64
-            Length = 64
-            Height = 64
         if data.shape[0] > (64 * 64 * 64) * 2:
             Width = 128
             Length = 128

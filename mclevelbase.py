@@ -11,18 +11,6 @@ import os
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
-Entities = "Entities"
-TileEntities = "TileEntities"
-
-Map = "Map"
-Width = "Width"
-Height = "Height"
-Length = "Length"
-Blocks = "Blocks"
-Data = "Data"
-Inventory = 'Inventory'
-
-
 @contextmanager
 def notclosing(f):
     yield f
@@ -59,7 +47,7 @@ def exhaust(_iter):
 import sys
 
 if sys.platform == "win32":
-    #not sure why win32com is needed if the %APPDATA% var is available
+    # try to use win32 api to get the AppData folder since python doesn't populate os.environ with unicode strings.
 
     try:
         import win32com.client

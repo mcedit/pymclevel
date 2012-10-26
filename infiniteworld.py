@@ -5,7 +5,6 @@ Created on Jul 22, 2011
 '''
 
 # **FIXME** WindowsError is the name of a built-in Exception, but pyflakes doesn't seem to know that.  -zothar
-from collections import deque
 from contextlib import closing
 from datetime import datetime
 from entity import Entity, TileEntity
@@ -14,9 +13,9 @@ import itertools
 from logging import getLogger
 from materials import alphaMaterials, namedMaterials
 from math import floor
-from mclevelbase import appDataDir, Blocks, ChunkMalformed, ChunkNotPresent, Entities, exhaust, PlayerNotFound, TileEntities
+from mclevelbase import appDataDir, ChunkMalformed, ChunkNotPresent, exhaust, PlayerNotFound
 import nbt
-from numpy import array, clip, maximum, uint32, uint8, zeros
+from numpy import array, clip, maximum, zeros
 import os
 from os.path import join, dirname, basename
 import random
@@ -38,27 +37,6 @@ from box import BoundingBox
 from level import LightedChunk, EntityLevel, computeChunkHeightMap, MCLevel
 
 # infinite
-Level = 'Level'
-BlockData = 'BlockData'
-BlockLight = 'BlockLight'
-SkyLight = 'SkyLight'
-HeightMap = 'HeightMap'
-TerrainPopulated = 'TerrainPopulated'
-LastUpdate = 'LastUpdate'
-xPos = 'xPos'
-zPos = 'zPos'
-
-Data = 'Data'
-SpawnX = 'SpawnX'
-SpawnY = 'SpawnY'
-SpawnZ = 'SpawnZ'
-LastPlayed = 'LastPlayed'
-RandomSeed = 'RandomSeed'
-SizeOnDisk = 'SizeOnDisk'  # maybe update this?
-Time = 'Time'
-Player = 'Player'
-
-Sections = 'Sections'
 
 DIM_NETHER = -1
 DIM_END = 1
@@ -80,8 +58,8 @@ def sort_nicely(l):
 # Thank you, Stackoverflow
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
-    def is_exe(fpath):
-        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+    def is_exe(f):
+        return os.path.exists(f) and os.access(f, os.X_OK)
 
     fpath, _fname = os.path.split(program)
     if fpath:
@@ -621,7 +599,7 @@ class _ZeroChunk(ChunkBase):
     " a placebo for neighboring-chunk routines "
 
     def __init__(self, height=512):
-        zeroChunk = zeros((16, 16, height), uint8)
+        zeroChunk = zeros((16, 16, height), 'uint8')
         whiteLight = zeroChunk + 15
         self.Blocks = zeroChunk
         self.BlockLight = whiteLight
@@ -697,17 +675,17 @@ class AnvilChunk(LightedChunk):
         chunkTag.name = ""
 
         levelTag = nbt.TAG_Compound()
-        chunkTag[Level] = levelTag
+        chunkTag["Level"] = levelTag
 
-        levelTag[HeightMap] = nbt.TAG_Int_Array(zeros((16, 16), 'uint8'))
-        levelTag[TerrainPopulated] = nbt.TAG_Byte(1)
-        levelTag[xPos] = nbt.TAG_Int(cx)
-        levelTag[zPos] = nbt.TAG_Int(cz)
+        levelTag["HeightMap"] = nbt.TAG_Int_Array(zeros((16, 16), 'uint8'))
+        levelTag["TerrainPopulated"] = nbt.TAG_Byte(1)
+        levelTag["xPos"] = nbt.TAG_Int(cx)
+        levelTag["zPos"] = nbt.TAG_Int(cz)
 
-        levelTag[LastUpdate] = nbt.TAG_Long(0)
+        levelTag["LastUpdate"] = nbt.TAG_Long(0)
 
-        levelTag[Entities] = nbt.TAG_List()
-        levelTag[TileEntities] = nbt.TAG_List()
+        levelTag["Entities"] = nbt.TAG_List()
+        levelTag["TileEntities"] = nbt.TAG_List()
 
         self.root_tag = chunkTag
 
@@ -719,12 +697,12 @@ class AnvilChunk(LightedChunk):
             raise ChunkNotPresent("Chunk {0} not found", self.chunkPosition)
         self.root_tag = self.world._loadChunk(*self.chunkPosition)
 
-        for sec in self.root_tag[Level].pop(Sections, []):
+        for sec in self.root_tag["Level"].pop("Sections", []):
             y = sec["Y"].value * 16
-            for name in Blocks, Data, SkyLight, BlockLight:
+            for name in "Blocks", "Data", "SkyLight", "BlockLight":
                 arr = getattr(self, name)
                 secarray = sec[name].value
-                if name is Blocks:
+                if name == "Blocks":
                     secarray.shape = (16, 16, 16)
                 else:
                     secarray.shape = (16, 16, 8)
@@ -741,11 +719,11 @@ class AnvilChunk(LightedChunk):
             sections = nbt.TAG_List()
             for y in range(0, self.Height, 16):
                 sec = nbt.TAG_Compound()
-                for name in Blocks, Data, SkyLight, BlockLight:
+                for name in "Blocks", "Data", "SkyLight", "BlockLight":
 
                     arr = getattr(self, name)
                     secarray = arr[..., y:y + 16].swapaxes(0, 2)
-                    if name is Blocks:
+                    if name == "Blocks":
                         if not secarray.any():
                             break  # detect empty sections here
                     else:
@@ -833,21 +811,21 @@ class AnvilChunk(LightedChunk):
 
     @property
     def Entities(self):
-        return self.root_tag[Level][Entities]
+        return self.root_tag["Level"]["Entities"]
 
     @property
     def TileEntities(self):
-        return self.root_tag[Level][TileEntities]
+        return self.root_tag["Level"]["TileEntities"]
 
     @property
     def TerrainPopulated(self):
-        return self.root_tag[Level]["TerrainPopulated"].value
+        return self.root_tag["Level"]["TerrainPopulated"].value
 
     @TerrainPopulated.setter
     def TerrainPopulated(self, val):
         """True or False. If False, the game will populate the chunk with
         ores and vegetation on next load"""
-        self.root_tag[Level]["TerrainPopulated"].value = val
+        self.root_tag["Level"]["TerrainPopulated"].value = val
         self.dirty = True
 
 
@@ -1657,12 +1635,12 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def TagProperty(tagName, tagType, defaultValueFunc=lambda self: None):
         def getter(self):
-            if tagName not in self.root_tag[Data]:
-                self.root_tag[Data][tagName] = tagType(defaultValueFunc(self))
-            return self.root_tag[Data][tagName].value
+            if tagName not in self.root_tag["Data"]:
+                self.root_tag["Data"][tagName] = tagType(defaultValueFunc(self))
+            return self.root_tag["Data"][tagName].value
 
         def setter(self, val):
-            self.root_tag[Data][tagName] = tagType(value=val)
+            self.root_tag["Data"][tagName] = tagType(value=val)
 
         return property(getter, setter)
 
@@ -1707,10 +1685,10 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         # create a new level
         root_tag = nbt.TAG_Compound()
-        root_tag[Data] = nbt.TAG_Compound()
-        root_tag[Data][SpawnX] = nbt.TAG_Int(0)
-        root_tag[Data][SpawnY] = nbt.TAG_Int(2)
-        root_tag[Data][SpawnZ] = nbt.TAG_Int(0)
+        root_tag["Data"] = nbt.TAG_Compound()
+        root_tag["Data"]["SpawnX"] = nbt.TAG_Int(0)
+        root_tag["Data"]["SpawnY"] = nbt.TAG_Int(2)
+        root_tag["Data"]["SpawnZ"] = nbt.TAG_Int(0)
 
         if last_played is None:
             last_played = long(time.time() * 1000)
@@ -1718,7 +1696,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
 
         self.root_tag = root_tag
-        root_tag[Data]['version'] = nbt.TAG_Int(self.VERSION_ANVIL)
+        root_tag["Data"]['version'] = nbt.TAG_Int(self.VERSION_ANVIL)
 
         self.LastPlayed = long(last_played)
         self.RandomSeed = long(random_seed)
@@ -1735,7 +1713,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def createPlayer(self, playerName):
         if playerName == "Player":
-            playerTag = self.root_tag[Data].setdefault(playerName, nbt.TAG_Compound())
+            playerTag = self.root_tag["Data"].setdefault(playerName, nbt.TAG_Compound())
         else:
             playerTag = nbt.TAG_Compound()
 
@@ -1749,14 +1727,14 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         playerTag['FallDistance'] = nbt.TAG_Float(0)
         playerTag['OnGround'] = nbt.TAG_Byte(0)
 
-        playerTag['Inventory'] = nbt.TAG_List()
+        playerTag["Inventory"] = nbt.TAG_List()
 
         playerTag['Motion'] = nbt.TAG_List([nbt.TAG_Double(0) for i in range(3)])
         playerTag['Pos'] = nbt.TAG_List([nbt.TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
         playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0), nbt.TAG_Float(0)])
 
         if playerName != "Player":
-            self.playerTagCache.save(self.getPlayerPath(playerName))
+            playerTag.save(self.getPlayerPath(playerName))
 
     def __init__(self, filename=None, create=False, random_seed=None, last_played=None):
         """
