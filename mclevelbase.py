@@ -78,3 +78,11 @@ else:
 
 
 saveFileDir = os.path.join(minecraftDir, u"saves")
+
+
+if sys.platform == "win32":
+    appSupportDir = os.path.join(appDataDir, u"pymclevel")
+elif sys.platform == "darwin":
+    appSupportDir = os.path.expanduser(u"~/Library/Application Support/pymclevel/")
+else:
+    appSupportDir = os.path.expanduser(u"~/.pymclevel")

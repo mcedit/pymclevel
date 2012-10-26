@@ -1,5 +1,5 @@
 import unittest
-from infiniteworld import MCServerChunkGenerator
+from minecraft_server import MCServerChunkGenerator
 from templevel import TempLevel
 from box import BoundingBox
 
