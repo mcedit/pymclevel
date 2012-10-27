@@ -262,9 +262,9 @@ class MCIndevLevel(EntityLevel):
         return x + (y << b) + (z << (2 * b))
 
     def saveToFile(self, filename=None):
-        if filename == None:
+        if filename is None:
             filename = self.filename
-        if filename == None:
+        if filename is None:
             warn(u"Attempted to save an unnamed file in place")
             return  # you fool!
 

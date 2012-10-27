@@ -72,7 +72,7 @@ class MCSchematic (EntityLevel):
             self.shapeChunkData()
 
         else:
-            assert shape != None
+            assert shape is not None
             root_tag = nbt.TAG_Compound(name="Schematic")
             root_tag["Height"] = nbt.TAG_Short(shape[1])
             root_tag["Length"] = nbt.TAG_Short(shape[2])
@@ -93,9 +93,9 @@ class MCSchematic (EntityLevel):
 
     def saveToFile(self, filename=None):
         """ save to file named filename, or use self.filename.  XXX NOT THREAD SAFE AT ALL. """
-        if filename == None:
+        if filename is None:
             filename = self.filename
-        if filename == None:
+        if filename is None:
             raise IOError, u"Attempted to save an unnamed schematic in place"
 
         self.Materials = self.materials.name
