@@ -1061,7 +1061,7 @@ class AnvilWorldFolder(object):
     # --- Region files ---
 
     def getRegionFilename(self, rx, rz):
-        return self.getFilePath("region/r.%s.%s.%s" % (rx, rz, "mca"))
+        return os.path.join(self.getFolderPath("region"), "r.%s.%s.%s" % (rx, rz, "mca"))
 
     def getRegionFile(self, rx, rz):
         regionFile = self.regionFiles.get((rx, rz))
