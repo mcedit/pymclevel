@@ -3,21 +3,21 @@ Created on Jul 22, 2011
 
 @author: Rio
 '''
+import atexit
+from contextlib import closing
+import os
+import shutil
+import zipfile
+from logging import getLogger
 
 import blockrotation
-from contextlib import closing
-from cStringIO import StringIO
 from box import BoundingBox
-import gzip
+import infiniteworld
 from level import MCLevel, EntityLevel
-from logging import getLogger
 from materials import alphaMaterials, MCMaterials, namedMaterials
 from mclevelbase import exhaust
 import nbt
 from numpy import array, swapaxes, uint8, zeros
-import os
-import shutil
-import sys
 
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
@@ -367,6 +367,71 @@ class INVEditChest(MCSchematic):
         return nbt.TAG_List([chestTag], name="TileEntities")
 
 
+class ZipSchematic (infiniteworld.MCInfdevOldLevel):
+    def __init__(self, filename, create=False):
+        self.zipfilename = filename
+
+        tempdir = tempfile.mktemp("schematic")
+        if create is False:
+            zf = zipfile.ZipFile(filename)
+            zf.extractall(tempdir)
+            zf.close()
+
+        super(ZipSchematic, self).__init__(tempdir, create)
+        atexit.register(shutil.rmtree, self.worldFolder.filename, True)
+
+
+        try:
+            schematicDat = nbt.load(self.worldFolder.getFilePath("schematic.dat"))
+
+            self.Width = schematicDat['Width'].value
+            self.Height = schematicDat['Height'].value
+            self.Length = schematicDat['Length'].value
+
+            if "Materials" in schematicDat:
+                self.materials = namedMaterials[schematicDat["Materials"].value]
+
+        except Exception, e:
+            print "Exception reading schematic.dat, skipping: {0!r}".format(e)
+            self.Width = 0
+            self.Height = 128
+            self.Length = 0
+
+    def __del__(self):
+        shutil.rmtree(self.worldFolder.filename, True)
+
+    def saveInPlace(self):
+        super(ZipSchematic, self).saveInPlace()
+        schematicDat = nbt.TAG_Compound()
+        schematicDat.name = "Mega Schematic"
+
+        schematicDat["Width"] = nbt.TAG_Int(self.size[0])
+        schematicDat["Height"] = nbt.TAG_Int(self.size[1])
+        schematicDat["Length"] = nbt.TAG_Int(self.size[2])
+        schematicDat["Materials"] = nbt.TAG_String(self.materials.name)
+
+        schematicDat.save(self.worldFolder.getFilePath("schematic.dat"))
+
+        basedir = self.worldFolder.filename
+        assert os.path.isdir(basedir)
+        with closing(zipfile.ZipFile(self.zipfilename, "w", zipfile.ZIP_STORED)) as z:
+            for root, dirs, files in os.walk(basedir):
+                # NOTE: ignore empty directories
+                for fn in files:
+                    absfn = os.path.join(root, fn)
+                    zfn = absfn[len(basedir) + len(os.sep):]  # XXX: relative path
+                    z.write(absfn, zfn)
+
+    def getWorldBounds(self):
+        return BoundingBox((0, 0, 0), (self.Width, self.Height, self.Length))
+
+    @classmethod
+    def _isLevel(cls, filename):
+        return zipfile.is_zipfile(filename)
+
+
+
+
 def adjustExtractionParameters(self, box):
     x, y, z = box.origin
     w, h, l = box.size
@@ -453,7 +518,7 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
     # probably should only apply to alpha levels
 
     if zipfilename is None:
-        zipfilename = tempfile.mktemp("zipschematic")
+        zipfilename = tempfile.mktemp("zipschematic.zip")
 
     p = sourceLevel.adjustExtractionParameters(box)
     if p is None:
@@ -462,32 +527,15 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
 
     destPoint = (0, 0, 0)
 
-    tempfolder = tempfile.mktemp("schematic")
-    try:
-        tempSchematic = MCInfdevOldLevel(tempfolder, create=True)
-        tempSchematic.materials = sourceLevel.materials
+    tempSchematic = ZipSchematic(zipfilename, create=True)
+    tempSchematic.materials = sourceLevel.materials
 
-        for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True):
-            yield i
-        tempSchematic.saveInPlace()  # lights not needed for this format - crashes minecraft though
+    for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True):
+        yield i
 
-        schematicDat = nbt.TAG_Compound()
-        schematicDat.name = "Mega Schematic"
-
-        schematicDat["Width"] = nbt.TAG_Int(sourceBox.size[0])
-        schematicDat["Height"] = nbt.TAG_Int(sourceBox.size[1])
-        schematicDat["Length"] = nbt.TAG_Int(sourceBox.size[2])
-        schematicDat["Materials"] = nbt.TAG_String(tempSchematic.materials.name)
-        schematicDat.save(os.path.join(tempfolder, "schematic.dat"))
-
-        zipdir(tempfolder, zipfilename)
-
-        import mclevel
-        yield mclevel.fromFile(zipfilename)
-    finally:
-        # We get here if the generator is GCed also
-        if os.path.exists(tempfolder):
-            shutil.rmtree(tempfolder, False)
+    tempSchematic.Width, tempSchematic.Height, tempSchematic.Length = sourceBox.size
+    tempSchematic.saveInPlace()  # lights not needed for this format - crashes minecraft though
+    yield tempSchematic
 
 MCLevel.extractZipSchematic = extractZipSchematicFrom
 MCLevel.extractZipSchematicIter = extractZipSchematicFromIter
@@ -508,17 +556,3 @@ def extractAnySchematicIter(level, box):
 MCLevel.extractAnySchematic = extractAnySchematic
 MCLevel.extractAnySchematicIter = extractAnySchematicIter
 
-from zipfile import ZipFile, ZIP_STORED
-
-
-def zipdir(basedir, archivename):
-    assert os.path.isdir(basedir)
-    with closing(ZipFile(archivename, "w", ZIP_STORED)) as z:
-        for root, dirs, files in os.walk(basedir):
-            # NOTE: ignore empty directories
-            for fn in files:
-                absfn = os.path.join(root, fn)
-                zfn = absfn[len(basedir) + len(os.sep):]  # XXX: relative path
-                z.write(absfn, zfn)
-
-from infiniteworld import MCInfdevOldLevel

@@ -171,7 +171,7 @@ Copyright 2010 David Rio Vierra
 """
 
 from indev import MCIndevLevel
-from infiniteworld import MCInfdevOldLevel, ZipSchematic
+from infiniteworld import MCInfdevOldLevel
 from java import MCJavaLevel
 from logging import getLogger
 from mclevelbase import saveFileDir
@@ -179,7 +179,7 @@ import nbt
 from numpy import fromstring
 import os
 from pocket import PocketWorld
-from schematic import INVEditChest, MCSchematic
+from schematic import INVEditChest, MCSchematic, ZipSchematic
 import sys
 import traceback
 

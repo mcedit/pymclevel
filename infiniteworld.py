@@ -4,7 +4,6 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
-from contextlib import closing
 from datetime import datetime
 import itertools
 from logging import getLogger
@@ -15,13 +14,14 @@ import random
 import time
 import traceback
 import zlib
-import shutil
 import sys
-import tempfile
 
+import blockrotation
+from box import BoundingBox
 from entity import Entity, TileEntity
 from faces import FaceXDecreasing, FaceXIncreasing, FaceZDecreasing, FaceZIncreasing
-from materials import alphaMaterials, namedMaterials
+from level import LightedChunk, EntityLevel, computeChunkHeightMap, MCLevel, ChunkBase
+from materials import alphaMaterials
 from mclevelbase import ChunkMalformed, ChunkNotPresent, exhaust, PlayerNotFound
 import nbt
 from numpy import array, clip, maximum, zeros
@@ -30,9 +30,6 @@ from regionfile import MCRegionFile
 log = getLogger(__name__)
 warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
-import blockrotation
-from box import BoundingBox
-from level import LightedChunk, EntityLevel, computeChunkHeightMap, MCLevel, ChunkBase
 
 DIM_NETHER = -1
 DIM_END = 1
@@ -1840,78 +1837,4 @@ class MCAlphaDimension (MCInfdevOldLevel):
             MCInfdevOldLevel.saveInPlace(self)
         else:
             self.parentWorld.saveInPlace()
-
-from zipfile import ZipFile, is_zipfile
-
-
-class ZipSchematic (MCInfdevOldLevel):
-    def __init__(self, filename):
-        tempdir = tempfile.mktemp("schematic")
-        zf = ZipFile(filename)
-        self.zipfile = zf
-        zf.extract("level.dat", tempdir)
-
-        MCInfdevOldLevel.__init__(self, tempdir)
-
-        self.filename = filename
-
-        try:
-            with closing(self.zipfile.open("schematic.dat")) as f:
-                schematicDat = nbt.load(buf=nbt.gunzip(f.read()))
-
-                self.Width = schematicDat['Width'].value
-                self.Height = schematicDat['Height'].value
-                self.Length = schematicDat['Length'].value
-
-            if "Materials" in schematicDat:
-                self.materials = namedMaterials[schematicDat["Materials"].value]
-
-        except Exception, e:
-            print "Exception reading schematic.dat, skipping: {0!r}".format(e)
-            self.Width = 0
-            self.Height = 128
-            self.Length = 0
-
-    def close(self):
-        MCInfdevOldLevel.close(self)
-        self.zipfile.close()
-        shutil.rmtree(self.worldFolder.filename, True)
-
-    def getWorldBounds(self):
-        return BoundingBox((0, 0, 0), (self.Width, self.Height, self.Length))
-
-    @classmethod
-    def _isLevel(cls, filename):
-        return is_zipfile(filename)
-
-    def saveInPlace(self):
-        self.saveToFile(self.filename)
-
-    def saveToFile(self, filename):
-        tempfile = filename + ".new"
-        from schematic import zipdir
-        zipdir(self.worldFolder.filename, tempfile)
-
-        if os.path.exists(filename):
-            os.remove(filename)
-        shutil.copy(tempfile, filename)
-
-    def containsChunk(self, cx, cz):
-        return (cx, cz) in self.allChunks
-
-    def preloadRegions(self):
-        self.zipfile.extractall(self.worldFolder.filename)
-        self.regionFiles = {}
-
-        MCInfdevOldLevel.preloadRegions(self)
-
-    def preloadDimensions(self):
-        pass
-
-    def loadLevelDat(self, create=False, random_seed=None, last_played=None):
-        if create:
-            raise NotImplementedError("Cannot save zipfiles yet!")
-
-        with closing(self.zipfile.open("level.dat")) as f:
-            self.root_tag = nbt.load(buf=f)
 
