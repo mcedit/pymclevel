@@ -846,20 +846,20 @@ class ChunkedLevelMixin(MCLevel):
                 progressInfo = u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks))
                 info(progressInfo)
 
-                """
-                propagate light!
-                for each of the six cardinal directions, figure a new light value for
-                adjoining blocks by reducing this chunk's light by light absorption and fall off.
-                compare this new light value against the old light value and update with the maximum.
 
-                we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.
-                we do an extra cycle because lights sent across edges may lag by one cycle.
+#                propagate light!
+#                for each of the six cardinal directions, figure a new light value for
+#                adjoining blocks by reducing this chunk's light by light absorption and fall off.
+#                compare this new light value against the old light value and update with the maximum.
+#
+#                we calculate all chunks one step before moving to the next step, to ensure all gaps at chunk edges are filled.
+#                we do an extra cycle because lights sent across edges may lag by one cycle.
+#
+#                xxx this can be optimized by finding the highest and lowest blocks
+#                that changed after one pass, and only calculating changes for that
+#                vertical slice on the next pass. newDirtyChunks would have to be a
+#                list of (cPos, miny, maxy) tuples or a cPos : (miny, maxy) dict
 
-                xxx this can be optimized by finding the highest and lowest blocks
-                that changed after one pass, and only calculating changes for that
-                vertical slice on the next pass. newDirtyChunks would have to be a
-                list of (cPos, miny, maxy) tuples or a cPos : (miny, maxy) dict
-                """
                 newDirtyChunks = set(newDirtyChunks)
                 newDirtyChunks.discard(zeroChunk)
 

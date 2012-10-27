@@ -341,7 +341,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
 
         buf.write("\x00")
 
-    "collection functions"
+    # --- collection functions ---
 
     def __getitem__(self, key):
         # hits=filter(lambda x: x.name==key, self.value)

@@ -28,7 +28,7 @@ class TestAnvilLevel(unittest.TestCase):
         level = self.anvilLevel.level
         del level.root_tag['Data']['LastPlayed']
         import time
-        level.LastPlayed
+        assert 0 != level.LastPlayed
         level.LastPlayed = time.time() * 1000 - 1000000
 
     def testGetEntities(self):
@@ -125,4 +125,4 @@ class TestAnvilLevel(unittest.TestCase):
 
         level.setPlayerSpawnPosition((0, 64, 0), "Player")
         level.getPlayerPosition()
-        level.players
+        assert len(level.players) != 0

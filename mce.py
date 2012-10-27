@@ -678,7 +678,7 @@ class mce(object):
         if len(command):
             if len(command) > 1:
                 rx, rz = map(int, command[:2])
-                level.allChunks
+                print "Calling allChunks to preload region files: %d chunks" % len(level.allChunks)
                 rf = level.regionFiles.get((rx, rz))
                 if rf is None:
                     print "Region {rx},{rz} not found.".format(**locals())
@@ -704,7 +704,7 @@ class mce(object):
 
             else:
                 if command[0] == "free":
-                    level.allChunks
+                    print "Calling allChunks to preload region files: %d chunks" % len(level.allChunks)
                     for (rx, rz), rf in level.regionFiles.iteritems():
 
                         runs = getFreeSectors(rf)
@@ -713,7 +713,7 @@ class mce(object):
                             printFreeSectors(runs)
 
         else:
-            level.allChunks
+            print "Calling allChunks to preload region files: %d chunks" % len(level.allChunks)
             coords = (r for r in level.regionFiles)
             for i, (rx, rz) in enumerate(coords):
                 print "({rx:6}, {rz:6}): {count}, ".format(count=level.regionFiles[rx, rz].chunkCount),
