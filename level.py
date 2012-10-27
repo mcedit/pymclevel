@@ -375,11 +375,11 @@ class MCLevel(object):
 
         return blocktable
 
-    def fillBlocksIter(self, box, blockInfo, blocksToReplace=[]):
+    def fillBlocksIter(self, box, blockInfo, blocksToReplace=()):
         self.fillBlocks(box, blockInfo, blocksToReplace)
         yield
 
-    def fillBlocks(self, box, blockInfo, blocksToReplace=[]):
+    def fillBlocks(self, box, blockInfo, blocksToReplace=()):
 
         if box is None:
             box = self.bounds

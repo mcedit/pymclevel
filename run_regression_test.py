@@ -78,9 +78,12 @@ def untared_content(src):
         yield dest
 
 
-def launch_subprocess(directory, arguments, env={}):
+def launch_subprocess(directory, arguments, env=None):
     #my python breaks with an empty environ, i think it wants PATH
     #if sys.platform == "win32":
+    if env is None:
+        env = {}
+
     newenv = {}
     newenv.update(os.environ)
     newenv.update(env)
@@ -96,7 +99,7 @@ class RegressionError(Exception):
     pass
 
 
-def do_test(test_data, result_check, arguments=[]):
+def do_test(test_data, result_check, arguments=()):
     """Run a regression test on the given world.
 
     result_check - sha1 of the recursive tree generated
@@ -126,7 +129,7 @@ def do_test(test_data, result_check, arguments=[]):
     print "[OK] (sha1sum of result is {0!r}, as expected)".format(result_check)
 
 
-def do_test_match_output(test_data, result_check, arguments=[]):
+def do_test_match_output(test_data, result_check, arguments=()):
     result_check = result_check.lower()
 
     env = {
