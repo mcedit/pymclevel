@@ -353,8 +353,6 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
 
 
 class PocketChunk(LightedChunk):
-    Blocks = Data = SkyLight = BlockLight = None
-
     HeightMap = FakeChunk.HeightMap
 
     Entities = TileEntities = property(lambda self: TAG_List())
