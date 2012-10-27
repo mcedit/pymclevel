@@ -336,7 +336,7 @@ class MCServerChunkGenerator(object):
     def generateAtPositionIter(self, tempWorld, tempDir, cx, cz, simulate=False):
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
         tempWorld.saveInPlace()
-        tempWorld.unloadRegions()
+        tempWorld.close()
 
         startTime = time.time()
         proc = self.runServer(tempDir)
@@ -418,23 +418,22 @@ class MCServerChunkGenerator(object):
 
         for i, (cx, cz) in enumerate(genPositions):
             log.info("Generating at %s" % ((cx, cz),))
-            parentDir = dirname(level.worldDir)
+            parentDir = dirname(level.worldFolder.filename)
             propsFile = join(parentDir, "server.properties")
             props = readProperties(join(dirname(self.serverJarFile), "server.properties"))
-            props["level-name"] = basename(level.worldDir)
+            props["level-name"] = basename(level.worldFolder.filename)
             props["server-port"] = int(32767 + random.random() * 32700)
             saveProperties(propsFile, props)
 
             for p in self.generateAtPositionIter(level, parentDir, cx, cz, simulate):
                 yield i, len(genPositions), p
 
-        level.unloadRegions()
+        level.close()
 
     def generateChunksInLevel(self, level, chunks):
         return exhaust(self.generateChunksInLevelIter(level, chunks))
 
     def generateChunksInLevelIter(self, level, chunks, simulate=False):
-        assert isinstance(level, infiniteworld.MCInfdevOldLevel)
         tempWorld, tempDir = self.tempWorldForLevel(level)
 
         startLength = len(chunks)

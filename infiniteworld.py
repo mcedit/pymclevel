@@ -90,10 +90,10 @@ class AnvilChunk(LightedChunk):
     def filename(self):
         cx, cz = self.chunkPosition
         rx, rz = cx >> 5, cz >> 5
-        rf = self.world.regionFiles[rx, rz]
+        rf = self.world.worldFolder.getRegionFile(rx, rz)
         offset = rf.getOffset(cx & 0x1f, cz & 0x1f)
         return u"{region} index {index} sector {sector} length {length}".format(
-            region=os.path.basename(self.world.regionFilename(rx, rz)),
+            region=os.path.basename(rf.filename),
             sector=offset >> 8,
             length=offset & 0xff,
             index=4 * ((cx & 0x1f) + ((cz & 0x1f) * 32))
@@ -104,7 +104,6 @@ class AnvilChunk(LightedChunk):
     def __init__(self, world, chunkPosition, create=False):
         self.world = world
         self.chunkPosition = chunkPosition
-        self.chunkFilename = world.chunkFilename(*chunkPosition)
         self.Height = world.Height
 
         self.Blocks = zeros((16, 16, self.Height), 'uint8')  # xxx uint16?
@@ -1036,6 +1035,126 @@ def TagProperty(tagName, tagType, default_or_func=None):
 
     return property(getter, setter)
 
+class AnvilWorldFolder(object):
+    def __init__(self, filename):
+        if not os.path.isdir(filename):
+            filename = os.path.dirname(filename)
+
+        self.filename = filename
+        self.regionFiles = {}
+
+    # --- File paths ---
+
+    def getFilePath(self, path):
+        path = path.replace("/", os.path.sep)
+        return os.path.join(self.filename, path)
+
+    def getFolderPath(self, path):
+        path = self.getFilePath(path)
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        return path
+
+    # --- Region files ---
+
+    def getRegionFilename(self, rx, rz):
+        return self.getFilePath("region/r.%s.%s.%s" % (rx, rz, "mca"))
+
+    def getRegionFile(self, rx, rz):
+        regionFile = self.regionFiles.get((rx, rz))
+        if regionFile:
+            return regionFile
+        regionFile = MCRegionFile(self.getRegionFilename(rx, rz), (rx, rz))
+        self.regionFiles[rx, rz] = regionFile
+        return regionFile
+
+    def getRegionForChunk(self, cx, cz):
+        rx = cx >> 5
+        rz = cz >> 5
+        return self.getRegionFile(rx, rz)
+
+    def closeRegions(self):
+        for rf in self.regionFiles.values():
+            rf.close()
+
+        self.regionFiles = {}
+
+    # --- Chunks and chunk listing ---
+
+    def tryLoadRegionFile(self, filepath):
+        filename = os.path.basename(filepath)
+        bits = filename.split('.')
+        if len(bits) < 4 or bits[0] != 'r' or bits[3] != "mca":
+            return None
+
+        try:
+            rx, rz = map(int, bits[1:3])
+        except ValueError:
+            return None
+
+        return MCRegionFile(filepath, (rx, rz))
+
+    def findRegionFiles(self):
+        regionDir = self.getFolderPath("region")
+
+        regionFiles = os.listdir(regionDir)
+        for filename in regionFiles:
+            yield os.path.join(regionDir, filename)
+
+    def listChunks(self):
+        chunks = set()
+
+        for filepath in self.findRegionFiles():
+            regionFile = self.tryLoadRegionFile(filepath)
+            if regionFile is None:
+                continue
+
+            if regionFile.offsets.any():
+                rx, rz = regionFile.regionCoords
+                self.regionFiles[rx, rz] = regionFile
+
+                for index, offset in enumerate(regionFile.offsets):
+                    if offset:
+                        cx = index & 0x1f
+                        cz = index >> 5
+
+                        cx += rx << 5
+                        cz += rz << 5
+
+                        chunks.add((cx, cz))
+            else:
+                info(u"Removing empty region file {0}".format(filepath))
+                regionFile.close()
+                os.unlink(regionFile.path)
+
+        return chunks
+
+    def containsChunk(self, cx, cz):
+        rx = cx >> 5
+        rz = cz >> 5
+        if not os.path.exists(self.getRegionFilename(rx, rz)):
+            return False
+
+        return self.getRegionForChunk(cx, cz).containsChunk(cx, cz)
+
+    def deleteChunk(self, cx, cz):
+        r = cx >> 5, cz >> 5
+        rf = self.getRegionFile(*r)
+        if rf:
+            rf.setOffset(cx & 0x1f, cz & 0x1f, 0)
+            if (rf.offsets == 0).all():
+                rf.close()
+                os.unlink(rf.path)
+                del self.regionFiles[r]
+
+    def readChunk(self, cx, cz):
+        return self.getRegionForChunk(cx, cz).readChunk(cx, cz)
+
+    def saveChunk(self, cx, cz, data):
+        regionFile = self.getRegionForChunk(cx, cz)
+        regionFile.saveChunk(cx, cz, data)
+
 
 class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
@@ -1055,51 +1174,38 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.Height = 128  # subject to change?
         self.playerTagCache = {}
         self.players = []
+
+        if os.path.basename(filename) in ("level.dat", "level.dat_old"):
+            filename = os.path.dirname(filename)
+
         if not os.path.exists(filename):
             if not create:
                 raise IOError('File not found')
 
-            self.worldDir = filename
-            os.mkdir(self.worldDir)
+            os.mkdir(filename)
 
-        if os.path.isdir(filename):
-            self.worldDir = filename
+        if not os.path.isdir(filename):
+            raise IOError('File is not a Minecraft Alpha world')
 
-        else:
-            if os.path.basename(filename) in ("level.dat", "level.dat_old"):
-                self.worldDir = os.path.dirname(filename)
-            else:
-                raise IOError('File is not a Minecraft Alpha world')
 
-        self.filename = os.path.join(self.worldDir, "level.dat")
-        self.regionDir = os.path.join(self.worldDir, "region")
-        if not os.path.exists(self.regionDir):
-            os.mkdir(self.regionDir)
+        self.worldFolder = AnvilWorldFolder(filename)
+        self.filename = self.worldFolder.getFilePath("level.dat")
+
 
         # maps (cx, cz) pairs to AnvilChunks
         self._loadedChunks = {}
         self.chunksNeedingLighting = set()
         self._allChunks = None
         self.dimensions = {}
-        self.regionFiles = {}
 
         self.loadLevelDat(create, random_seed, last_played)
 
-        # attempt to support yMod
-        try:
-            self.Height = self.root_tag["Data"]["YLimit"].value
-        except:
-            pass
-        if self.version == self.VERSION_ANVIL:
-            self.Height = 256
-            self.chunkClass = AnvilChunk
-        else:
-            self.chunkClass = AnvilChunk
+        assert self.version == self.VERSION_ANVIL, "Pre-Anvil world formats are not supported (for now)"
 
-        self.playersDir = os.path.join(self.worldDir, "players")
+        self.Height = 256
+        self.chunkClass = AnvilChunk
 
-        if os.path.isdir(self.playersDir):
-            self.players = [x[:-4] for x in os.listdir(self.playersDir) if x.endswith(".dat")]
+        self.players = [x[:-4] for x in os.listdir(self.worldFolder.getFolderPath("players")) if x.endswith(".dat")]
         if "Player" in self.root_tag["Data"]:
             self.players.append("Player")
 
@@ -1128,14 +1234,12 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.RandomSeed = long(random_seed)
         self.SizeOnDisk = 0
         self.Time = 1
-        self.LevelName = os.path.basename(self.worldDir)
+        self.LevelName = os.path.basename(self.worldFolder.filename)
 
         ### if singleplayer:
 
         self.createPlayer("Player")
 
-        if not os.path.exists(self.worldDir):
-            os.mkdir(self.worldDir)
 
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
 
@@ -1146,7 +1250,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             try:
                 self.root_tag = nbt.load(self.filename)
             except Exception, e:
-                filename_old = os.path.join(self.worldDir, "level.dat_old")
+                filename_old = self.worldFolder.getFilePath("level.dat_old")
                 info("Error loading level.dat, trying level.dat_old ({0})".format(e))
                 try:
                     self.root_tag = nbt.load(filename_old)
@@ -1178,10 +1282,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         info(u"Saved {0} chunks".format(dirtyChunkCount))
 
     def close(self):
-        for rf in (self.regionFiles or {}).values():
-            rf.close()
-
-        self.regionFiles = {}
+        self.worldFolder.closeRegions()
 
         self._allChunks = None
         self._loadedChunks = {}
@@ -1221,7 +1322,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     # --- World info ---
 
     def __str__(self):
-        return "MCInfdevOldLevel(\"" + os.path.split(self.worldDir)[1] + "\")"
+        return "MCInfdevOldLevel(\"%s\")" % os.path.basename(self.worldFolder.filename)
 
     @property
     def displayName(self):
@@ -1260,10 +1361,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     @classmethod
     def _isLevel(cls, filename):
-        join = os.path.join
-        exists = os.path.exists
 
-        if exists(join(filename, "chunks.dat")):
+        if os.path.exists(os.path.join(filename, "chunks.dat")):
             return False  # exclude Pocket Edition folders
 
         if not os.path.isdir(filename):
@@ -1281,7 +1380,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     # --- Dimensions ---
 
     def preloadDimensions(self):
-        worldDirs = os.listdir(self.worldDir)
+        worldDirs = os.listdir(self.worldFolder.filename)
 
         for dirname in worldDirs:
             if dirname.startswith("DIM"):
@@ -1317,79 +1416,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     # --- Region I/O ---
 
     def preloadChunkPositions(self):
-        self.preloadRegions()
-
-    def findRegionFiles(self):
-        regionDir = os.path.join(self.worldDir, "region")
-        if not os.path.exists(regionDir):
-            os.mkdir(regionDir)
-
-        regionFiles = os.listdir(regionDir)
-        for filename in regionFiles:
-            yield os.path.join(regionDir, filename)
-
-    def loadRegionFile(self, filepath):
-        if self.version == self.VERSION_MCR:
-            EXTENSION = "mcr"
-        elif self.version == self.VERSION_ANVIL:
-            EXTENSION = "mca"
-        else:
-            raise NotImplementedError("Unknown level version")
-
-        filename = os.path.basename(filepath)
-        bits = filename.split('.')
-        if len(bits) < 4 or bits[0] != 'r' or bits[3] != EXTENSION:
-            return None
-
-        try:
-            rx, rz = map(int, bits[1:3])
-        except ValueError:
-            return None
-
-        return MCRegionFile(filepath, (rx, rz))
-
-    def getRegionFile(self, rx, rz):
-        regionFile = self.regionFiles.get((rx, rz))
-        if regionFile:
-            return regionFile
-        regionFile = MCRegionFile(self.regionFilename(rx, rz), (rx, rz))
-        self.regionFiles[rx, rz] = regionFile
-        return regionFile
+        info(u"Scanning for regions...")
+        self._allChunks = self.worldFolder.listChunks()
 
     def getRegionForChunk(self, cx, cz):
-        rx = cx >> 5
-        rz = cz >> 5
-        return self.getRegionFile(rx, rz)
-
-    def unloadRegions(self):
-        self.close()
-
-    def preloadRegions(self):
-        info(u"Scanning for regions...")
-        self._allChunks = set()
-
-        for filepath in self.findRegionFiles():
-            regionFile = self.loadRegionFile(filepath)
-            if regionFile is None:
-                continue
-
-            if regionFile.offsets.any():
-                rx, rz = regionFile.regionCoords
-                self.regionFiles[rx, rz] = regionFile
-
-                for index, offset in enumerate(regionFile.offsets):
-                    if offset:
-                        cx = index & 0x1f
-                        cz = index >> 5
-
-                        cx += rx << 5
-                        cz += rz << 5
-
-                        self._allChunks.add((cx, cz))
-            else:
-                info(u"Removing empty region file {0}".format(filepath))
-                regionFile.close()
-                os.unlink(regionFile.path)
+        return self.worldFolder.getRegionFile(cx, cz)
 
     # --- Chunk I/O ---
 
@@ -1397,8 +1428,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         """ load the chunk data from disk, and return its root tag as an NBT_Compound"""
 
         try:
-            regionFile = self.getRegionForChunk(cx, cz)
-            data = regionFile.readChunk(cx, cz)
+            data = self.worldFolder.readChunk(cx, cz)
             return nbt.load(buf=data)
         except MemoryError:
             raise
@@ -1407,8 +1437,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def _saveChunk(self, chunk):
         cx, cz = chunk.chunkPosition
-        regionFile = self.getRegionForChunk(cx, cz)
-        regionFile.saveChunk(cx, cz, chunk.root_tag.save(compressed=False))
+        self.worldFolder.saveChunk(cx, cz, chunk.root_tag.save(compressed=False))
 
     def dirhash(self, n):
         return self.dirhashes[n % 64]
@@ -1426,13 +1455,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     dirhashes = [_dirhash(n) for n in range(64)]
 
-    def regionFilename(self, rx, rz):
-        return os.path.join(self.regionDir, "r.%s.%s.%s" % (rx, rz, "mca"))
-
-    def chunkFilename(self, cx, cz):
-        s = os.path.join(self.worldDir, self.dirhash(cx), self.dirhash(cz),
-                         "c.%s.%s.dat" % (base36(cx), base36(cz)))
-        return s
+    def _oldChunkFilename(self, cx, cz):
+        return self.worldFolder.getFilePath("%s/%s/c.%s.%s.dat" % (self.dirhash(cx), self.dirhash(cz), base36(cx), base36(cz)))
 
     def extractChunksInBox(self, box, parentFolder):
         for cx, cz in box.chunkPositions:
@@ -1443,7 +1467,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if not os.path.exists(parentFolder):
             os.mkdir(parentFolder)
 
-        chunkFilename = self.chunkFilename(cx, cz)
+        chunkFilename = self._oldChunkFilename(cx, cz)
         outputFile = os.path.join(parentFolder, os.path.basename(chunkFilename))
 
         chunk = self.getChunk(cx, cz)
@@ -1563,12 +1587,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if (cx, cz) in self._loadedChunks:
             return True
 
-        rx = cx >> 5
-        rz = cz >> 5
-        if not os.path.exists(self.regionFilename(rx, rz)):
-            return False
-
-        return self.getRegionFile(rx, rz).containsChunk(cx, cz)
+        return self.worldFolder.containsChunk(cx, cz)
 
     def containsPoint(self, x, y, z):
         if y < 0 or y > 127:
@@ -1606,26 +1625,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         return self.createChunks(box.chunkPositions)
 
     def deleteChunk(self, cx, cz):
-
-        if self._allChunks is not None:
-            self._allChunks.discard((cx, cz))
-
-        if (cx, cz) in self._loadedChunks:
-            del self._loadedChunks[(cx, cz)]
-
-        if self.version:
-            r = cx >> 5, cz >> 5
-            rf = self.getRegionFile(*r)
-            if rf:
-                rf.setOffset(cx & 0x1f, cz & 0x1f, 0)
-                if (rf.offsets == 0).all():
-                    rf.close()
-                    os.unlink(rf.path)
-                    del self.regionFiles[r]
-        else:
-            os.unlink(self.chunkFilename(cx, cz))
-
-        self._bounds = None
+        self.worldFolder.deleteChunk(cx, cz)
 
     def deleteChunksInBox(self, box):
         info(u"Deleting {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
@@ -1670,7 +1670,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def getPlayerPath(self, player):
         assert player != "Player"
-        return os.path.join(self.playersDir, player + ".dat")
+        return self.worldFolder.getFilePath("players/%s.dat" % player)
 
     def getPlayerTag(self, player="Player"):
         if player == "Player":
@@ -1797,12 +1797,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
 class MCAlphaDimension (MCInfdevOldLevel):
     def __init__(self, parentWorld, dimNo, dirname, create=False):
-        filename = os.path.join(parentWorld.worldDir, dirname)
+        filename = parentWorld.worldFolder.getFolderPath(dirname)
         self.parentWorld = parentWorld
         MCInfdevOldLevel.__init__(self, filename, create)
         self.dimNo = dimNo
         self.filename = parentWorld.filename
-        self.playersDir = parentWorld.playersDir
         self.players = parentWorld.players
         self.playerTagCache = parentWorld.playerTagCache
         self.dirname = dirname
@@ -1821,8 +1820,7 @@ class MCAlphaDimension (MCInfdevOldLevel):
         pass
 
     def _create(self, *args, **kw):
-        if not os.path.exists(self.worldDir):
-            os.mkdir(self.worldDir)
+        pass
 
     dimensionNames = {-1: "Nether", 1: "The End"}
 
@@ -1856,7 +1854,6 @@ class ZipSchematic (MCInfdevOldLevel):
         self.filename = filename
 
         try:
-            schematicDat = os.path.join(tempdir, "schematic.dat")
             with closing(self.zipfile.open("schematic.dat")) as f:
                 schematicDat = nbt.load(buf=nbt.gunzip(f.read()))
 
@@ -1876,7 +1873,7 @@ class ZipSchematic (MCInfdevOldLevel):
     def close(self):
         MCInfdevOldLevel.close(self)
         self.zipfile.close()
-        shutil.rmtree(self.worldDir, True)
+        shutil.rmtree(self.worldFolder.filename, True)
 
     def getWorldBounds(self):
         return BoundingBox((0, 0, 0), (self.Width, self.Height, self.Length))
@@ -1891,7 +1888,7 @@ class ZipSchematic (MCInfdevOldLevel):
     def saveToFile(self, filename):
         tempfile = filename + ".new"
         from schematic import zipdir
-        zipdir(self.worldDir, tempfile)
+        zipdir(self.worldFolder.filename, tempfile)
 
         if os.path.exists(filename):
             os.remove(filename)
@@ -1901,7 +1898,7 @@ class ZipSchematic (MCInfdevOldLevel):
         return (cx, cz) in self.allChunks
 
     def preloadRegions(self):
-        self.zipfile.extractall(self.worldDir)
+        self.zipfile.extractall(self.worldFolder.filename)
         self.regionFiles = {}
 
         MCInfdevOldLevel.preloadRegions(self)
@@ -1916,7 +1913,3 @@ class ZipSchematic (MCInfdevOldLevel):
         with closing(self.zipfile.open("level.dat")) as f:
             self.root_tag = nbt.load(buf=f)
 
-    def chunkFilename(self, x, z):
-        s = "/".join((self.dirhash(x), self.dirhash(z),
-                      "c.%s.%s.dat" % (base36(x), base36(z))))
-        return s
