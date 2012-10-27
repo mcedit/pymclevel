@@ -10,6 +10,7 @@ import itertools
 from logging import getLogger
 from math import floor
 import os
+import re
 import random
 import time
 import traceback
@@ -39,12 +40,12 @@ DIM_END = 1
 __all__ = ["ZeroChunk", "AnvilChunk", "ChunkedLevelMixin", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
 _zeros = {}
 
+
 def ZeroChunk(height=512):
     z = _zeros.get(height)
     if z is None:
         z = _zeros[height] = _ZeroChunk(height)
     return z
-
 
 
 class _ZeroChunk(ChunkBase):
@@ -86,7 +87,6 @@ class AnvilChunk(LightedChunk):
     for better handling.
     """
     @property
-
     def filename(self):
         cx, cz = self.chunkPosition
         rx, rz = cx >> 5, cz >> 5
@@ -98,7 +98,6 @@ class AnvilChunk(LightedChunk):
             length=offset & 0xff,
             index=4 * ((cx & 0x1f) + ((cz & 0x1f) * 32))
         )
-
 
     root_tag = None
 
@@ -114,12 +113,10 @@ class AnvilChunk(LightedChunk):
         self.SkyLight = zeros((16, 16, self.Height), 'uint8')
         self.SkyLight[:] = 15
 
-
         if create:
             self._create()
         else:
             self._load()
-
 
     def _create(self):
         (cx, cz) = self.chunkPosition
@@ -161,7 +158,6 @@ class AnvilChunk(LightedChunk):
                     secarray = unpackNibbleArray(secarray)
 
                 arr[..., y:y + 16] = secarray.swapaxes(0, 2)
-
 
     def save(self):
         """ does not recalculate any data or light """
@@ -213,7 +209,6 @@ class AnvilChunk(LightedChunk):
 
             self.Blocks[:, :, 1:][badsnow] = self.materials.Air.ID
 
-
     def __str__(self):
         return u"AnvilChunk, coords:{0}, world: {1}, D:{2}, L:{3}".format(self.chunkPosition, self.world.displayName, self.dirty, self.needsLighting)
 
@@ -233,7 +228,6 @@ class AnvilChunk(LightedChunk):
             self.HeightMap[:] = 0
         else:
             computeChunkHeightMap(self.materials, self.Blocks, self.HeightMap)
-
 
     def addEntity(self, entityTag):
 
@@ -255,7 +249,6 @@ class AnvilChunk(LightedChunk):
     def removeTileEntitiesInBox(self, box):
         self.dirty = True
         return super(AnvilChunk, self).removeTileEntitiesInBox(box)
-
 
     @property
     def HeightMap(self):
@@ -314,6 +307,7 @@ def deflate(data):
     # zdata += zobj.flush()
     # return zdata
     return zlib.compress(data)
+
 
 def inflate(data):
     return zlib.decompress(data)
@@ -531,7 +525,6 @@ class ChunkedLevelMixin(MCLevel):
         d = datetime.now() - start
         if i:
             info("Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i))
-
 
     def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create=False):
         """ copy blocks between two infinite levels by looping through the
@@ -846,7 +839,6 @@ class ChunkedLevelMixin(MCLevel):
                 progressInfo = u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks))
                 info(progressInfo)
 
-
 #                propagate light!
 #                for each of the six cardinal directions, figure a new light value for
 #                adjoining blocks by reducing this chunk's light by light absorption and fall off.
@@ -872,9 +864,9 @@ class ChunkedLevelMixin(MCLevel):
                     neighboringChunks = {}
 
                     for dir, dx, dz in ((FaceXDecreasing, -1, 0),
-                                          (FaceXIncreasing, 1, 0),
-                                          (FaceZDecreasing, 0, -1),
-                                          (FaceZIncreasing, 0, 1)):
+                                        (FaceXIncreasing, 1, 0),
+                                        (FaceZDecreasing, 0, -1),
+                                        (FaceZIncreasing, 0, 1)):
                         try:
                             neighboringChunks[dir] = self.getChunk(cx + dx, cz + dz)
                         except (ChunkNotPresent, ChunkMalformed):
@@ -1027,6 +1019,7 @@ class ChunkedLevelMixin(MCLevel):
         for ch in startingDirtyChunks:
             ch.needsLighting = False
 
+
 def TagProperty(tagName, tagType, defaultValueFunc=lambda self: None):
     def getter(self):
         if tagName not in self.root_tag["Data"]:
@@ -1038,152 +1031,8 @@ def TagProperty(tagName, tagType, defaultValueFunc=lambda self: None):
 
     return property(getter, setter)
 
+
 class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
-    materials = alphaMaterials
-    isInfinite = True
-    parentWorld = None
-    dimNo = 0
-    Height = 256
-
-    @property
-    def displayName(self):
-        # shortname = os.path.basename(self.filename)
-        # if shortname == "level.dat":
-        shortname = os.path.basename(os.path.dirname(self.filename))
-
-        return shortname
-
-    @classmethod
-    def _isLevel(cls, filename):
-        join = os.path.join
-        exists = os.path.exists
-
-        if exists(join(filename, "chunks.dat")):
-            return False  # exclude Pocket Edition folders
-
-        if not os.path.isdir(filename):
-            f = os.path.basename(filename)
-            if f not in ("level.dat", "level.dat_old"):
-                return False
-            filename = os.path.dirname(filename)
-
-        files = os.listdir(filename)
-        if "level.dat" in files or "level.dat_old" in files:
-            return True
-
-        return False
-
-    def getWorldBounds(self):
-        if self.chunkCount == 0:
-            return BoundingBox((0, 0, 0), (0, 0, 0))
-
-        allChunks = array(list(self.allChunks))
-        mincx = (allChunks[:, 0]).min()
-        maxcx = (allChunks[:, 0]).max()
-        mincz = (allChunks[:, 1]).min()
-        maxcz = (allChunks[:, 1]).max()
-
-        origin = (mincx << 4, 0, mincz << 4)
-        size = ((maxcx - mincx + 1) << 4, self.Height, (maxcz - mincz + 1) << 4)
-
-        return BoundingBox(origin, size)
-
-    def __str__(self):
-        return "MCInfdevOldLevel(\"" + os.path.split(self.worldDir)[1] + "\")"
-
-
-
-    SizeOnDisk = TagProperty('SizeOnDisk', nbt.TAG_Long)
-    RandomSeed = TagProperty('RandomSeed', nbt.TAG_Long)
-    Time = TagProperty('Time', nbt.TAG_Long)  # Age of the world in ticks. 20 ticks per second; 24000 ticks per day.
-    LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: long(time.time() * 1000))
-
-    LevelName = TagProperty('LevelName', nbt.TAG_String, lambda self: self.displayName)
-
-    MapFeatures = TagProperty('MapFeatures', nbt.TAG_Byte, lambda self: 1)
-
-    GameType = TagProperty('GameType', nbt.TAG_Int, lambda self: 0)  # 0 for survival, 1 for creative
-    GAMETYPE_SURVIVAL = 0
-    GAMETYPE_CREATIVE = 1
-
-    VERSION_MCR = 19132
-    VERSION_ANVIL = 19133
-
-    _bounds = None
-
-    @property
-    def bounds(self):
-        if self._bounds is None:
-            self._bounds = self.getWorldBounds()
-        return self._bounds
-
-    @property
-    def size(self):
-        return self.bounds.size
-
-    def close(self):
-        for rf in (self.regionFiles or {}).values():
-            rf.close()
-
-        self.regionFiles = {}
-
-        self._allChunks = None
-        self._loadedChunks = {}
-
-    def _create(self, filename, random_seed, last_played):
-
-        # create a new level
-        root_tag = nbt.TAG_Compound()
-        root_tag["Data"] = nbt.TAG_Compound()
-        root_tag["Data"]["SpawnX"] = nbt.TAG_Int(0)
-        root_tag["Data"]["SpawnY"] = nbt.TAG_Int(2)
-        root_tag["Data"]["SpawnZ"] = nbt.TAG_Int(0)
-
-        if last_played is None:
-            last_played = long(time.time() * 1000)
-        if random_seed is None:
-            random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
-
-        self.root_tag = root_tag
-        root_tag["Data"]['version'] = nbt.TAG_Int(self.VERSION_ANVIL)
-
-        self.LastPlayed = long(last_played)
-        self.RandomSeed = long(random_seed)
-        self.SizeOnDisk = 0
-        self.Time = 1
-        self.LevelName = os.path.basename(self.worldDir)
-
-        ### if singleplayer:
-
-        self.createPlayer("Player")
-
-        if not os.path.exists(self.worldDir):
-            os.mkdir(self.worldDir)
-
-    def createPlayer(self, playerName):
-        if playerName == "Player":
-            playerTag = self.root_tag["Data"].setdefault(playerName, nbt.TAG_Compound())
-        else:
-            playerTag = nbt.TAG_Compound()
-
-        playerTag['Air'] = nbt.TAG_Short(300)
-        playerTag['AttackTime'] = nbt.TAG_Short(0)
-        playerTag['DeathTime'] = nbt.TAG_Short(0)
-        playerTag['Fire'] = nbt.TAG_Short(-20)
-        playerTag['Health'] = nbt.TAG_Short(20)
-        playerTag['HurtTime'] = nbt.TAG_Short(0)
-        playerTag['Score'] = nbt.TAG_Int(0)
-        playerTag['FallDistance'] = nbt.TAG_Float(0)
-        playerTag['OnGround'] = nbt.TAG_Byte(0)
-
-        playerTag["Inventory"] = nbt.TAG_List()
-
-        playerTag['Motion'] = nbt.TAG_List([nbt.TAG_Double(0) for i in range(3)])
-        playerTag['Pos'] = nbt.TAG_List([nbt.TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
-        playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0), nbt.TAG_Float(0)])
-
-        if playerName != "Player":
-            playerTag.save(self.getPlayerPath(playerName))
 
     def __init__(self, filename=None, create=False, random_seed=None, last_played=None):
         """
@@ -1250,7 +1099,38 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             self.players.append("Player")
 
         self.preloadDimensions()
-        # self.preloadChunkPositions()
+
+    # --- Load, save, create ---
+
+    def _create(self, filename, random_seed, last_played):
+
+        # create a new level
+        root_tag = nbt.TAG_Compound()
+        root_tag["Data"] = nbt.TAG_Compound()
+        root_tag["Data"]["SpawnX"] = nbt.TAG_Int(0)
+        root_tag["Data"]["SpawnY"] = nbt.TAG_Int(2)
+        root_tag["Data"]["SpawnZ"] = nbt.TAG_Int(0)
+
+        if last_played is None:
+            last_played = long(time.time() * 1000)
+        if random_seed is None:
+            random_seed = long(random.random() * 0xffffffffffffffffL) - 0x8000000000000000L
+
+        self.root_tag = root_tag
+        root_tag["Data"]['version'] = nbt.TAG_Int(self.VERSION_ANVIL)
+
+        self.LastPlayed = long(last_played)
+        self.RandomSeed = long(random_seed)
+        self.SizeOnDisk = 0
+        self.Time = 1
+        self.LevelName = os.path.basename(self.worldDir)
+
+        ### if singleplayer:
+
+        self.createPlayer("Player")
+
+        if not os.path.exists(self.worldDir):
+            os.mkdir(self.worldDir)
 
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
 
@@ -1273,6 +1153,128 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     info("Error loading level.dat_old. Initializing with defaults.")
                     self._create(self.filename, random_seed, last_played)
 
+    def saveInPlace(self):
+        for level in self.dimensions.itervalues():
+            level.saveInPlace(True)
+
+        dirtyChunkCount = 0
+        if self._loadedChunks:
+            for chunk in self._loadedChunks.itervalues():
+                if chunk.dirty:
+                    dirtyChunkCount += 1
+                chunk.save()
+
+        for path, tag in self.playerTagCache.iteritems():
+            tag.save(path)
+
+        self.playerTagCache = {}
+
+        self.root_tag.save(self.filename)
+        info(u"Saved {0} chunks".format(dirtyChunkCount))
+
+    def close(self):
+        for rf in (self.regionFiles or {}).values():
+            rf.close()
+
+        self.regionFiles = {}
+
+        self._allChunks = None
+        self._loadedChunks = {}
+
+    # --- Constants ---
+
+    GAMETYPE_SURVIVAL = 0
+    GAMETYPE_CREATIVE = 1
+
+    VERSION_MCR = 19132
+    VERSION_ANVIL = 19133
+
+    # --- Instance variables  ---
+
+    materials = alphaMaterials
+    isInfinite = True
+    parentWorld = None
+    dimNo = 0
+    Height = 256
+    _bounds = None
+
+    # --- NBT Tag variables ---
+
+    SizeOnDisk = TagProperty('SizeOnDisk', nbt.TAG_Long)
+    RandomSeed = TagProperty('RandomSeed', nbt.TAG_Long)
+    Time = TagProperty('Time', nbt.TAG_Long)  # Age of the world in ticks. 20 ticks per second; 24000 ticks per day.
+    LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: long(time.time() * 1000))
+
+    LevelName = TagProperty('LevelName', nbt.TAG_String, lambda self: self.displayName)
+
+    MapFeatures = TagProperty('MapFeatures', nbt.TAG_Byte, lambda self: 1)
+
+    GameType = TagProperty('GameType', nbt.TAG_Int, lambda self: 0)  # 0 for survival, 1 for creative
+
+    version = TagProperty('version', nbt.TAG_Int, lambda s: MCInfdevOldLevel.VERSION_ANVIL)
+
+    # --- World info ---
+
+    def __str__(self):
+        return "MCInfdevOldLevel(\"" + os.path.split(self.worldDir)[1] + "\")"
+
+    @property
+    def displayName(self):
+        # shortname = os.path.basename(self.filename)
+        # if shortname == "level.dat":
+        shortname = os.path.basename(os.path.dirname(self.filename))
+
+        return shortname
+
+    @property
+    def bounds(self):
+        if self._bounds is None:
+            self._bounds = self.getWorldBounds()
+        return self._bounds
+
+    def getWorldBounds(self):
+        if self.chunkCount == 0:
+            return BoundingBox((0, 0, 0), (0, 0, 0))
+
+        allChunks = array(list(self.allChunks))
+        mincx = (allChunks[:, 0]).min()
+        maxcx = (allChunks[:, 0]).max()
+        mincz = (allChunks[:, 1]).min()
+        maxcz = (allChunks[:, 1]).max()
+
+        origin = (mincx << 4, 0, mincz << 4)
+        size = ((maxcx - mincx + 1) << 4, self.Height, (maxcz - mincz + 1) << 4)
+
+        return BoundingBox(origin, size)
+
+    @property
+    def size(self):
+        return self.bounds.size
+
+    # --- Format detection ---
+
+    @classmethod
+    def _isLevel(cls, filename):
+        join = os.path.join
+        exists = os.path.exists
+
+        if exists(join(filename, "chunks.dat")):
+            return False  # exclude Pocket Edition folders
+
+        if not os.path.isdir(filename):
+            f = os.path.basename(filename)
+            if f not in ("level.dat", "level.dat_old"):
+                return False
+            filename = os.path.dirname(filename)
+
+        files = os.listdir(filename)
+        if "level.dat" in files or "level.dat_old" in files:
+            return True
+
+        return False
+
+    # --- Dimensions ---
+
     def preloadDimensions(self):
         worldDirs = os.listdir(self.worldDir)
 
@@ -1280,10 +1282,10 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             if dirname.startswith("DIM"):
                 try:
                     intInDirname = re.findall("\\d+", dirname)
-                    if len(intInDirname)>0:
+                    if len(intInDirname) > 0:
                         dimNo = int(intInDirname[-1])
                     else:
-                        dimNo = 999 #identical dimNo should not matter
+                        dimNo = 999  # identical dimNo should not matter
                     info("Found dimension {0}".format(dirname))
                     dim = MCAlphaDimension(self, dimNo, dirname)
                     self.dimensions[dirname] = dim
@@ -1292,7 +1294,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def getDimension(self, dimNo, dirname=None):
         if dirname is None:
-            dirname="DIM" + str(int(dimNo))
+            dirname = "DIM" + str(int(dimNo))
 
         if self.dimNo != 0:
             return self.parentWorld.getDimension(dimNo, dirname)
@@ -1307,14 +1309,10 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.dimensions[dirname] = dim
         return dim
 
-    def getRegionForChunk(self, cx, cz):
-        rx = cx >> 5
-        rz = cz >> 5
-        return self.getRegionFile(rx, rz)
+    # --- Region I/O ---
 
     def preloadChunkPositions(self):
         self.preloadRegions()
-
 
     def findRegionFiles(self):
         regionDir = os.path.join(self.worldDir, "region")
@@ -1353,6 +1351,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.regionFiles[rx, rz] = regionFile
         return regionFile
 
+    def getRegionForChunk(self, cx, cz):
+        rx = cx >> 5
+        rz = cz >> 5
+        return self.getRegionFile(rx, rz)
+
     def unloadRegions(self):
         self.close()
 
@@ -1383,21 +1386,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 regionFile.close()
                 os.unlink(regionFile.path)
 
-    @property
-    def version(self):
-        if 'version' in self.root_tag['Data']:
-            return self.root_tag['Data']['version'].value
-        else:
-            return None
-
-    @version.setter
-    def version(self, val):
-        if 'version' in self.root_tag['Data']:
-            self.root_tag['Data']['version'].value = val
-
-    @version.deleter
-    def version(self):
-        self.root_tag['Data'].pop('version')
+    # --- Chunk I/O ---
 
     def _loadChunk(self, cx, cz):
         """ load the chunk data from disk, and return its root tag as an NBT_Compound"""
@@ -1437,13 +1426,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def chunkFilename(self, cx, cz):
         s = os.path.join(self.worldDir, self.dirhash(cx), self.dirhash(cz),
-                                     "c.%s.%s.dat" % (base36(cx), base36(cz)))
+                         "c.%s.%s.dat" % (base36(cx), base36(cz)))
         return s
-
-    def chunkFilenameAt(self, x, y, z):
-        cx = x >> 4
-        cz = z >> 4
-        return self._loadedChunks.get((cx, cz)).filename
 
     def extractChunksInBox(self, box, parentFolder):
         for cx, cz in box.chunkPositions:
@@ -1462,19 +1446,6 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         with file(outputFile, "wb") as f:
             chunk.root_tag.save(buf=f)
 
-    def heightMapAt(self, x, z):
-        zc = z >> 4
-        xc = x >> 4
-        xInChunk = x & 0xf
-        zInChunk = z & 0xf
-
-        ch = self.getChunk(xc, zc)
-
-        heightMap = ch.HeightMap
-
-        return heightMap[zInChunk, xInChunk]
-        # the heightmap is ordered differently because in minecraft it is a flat array
-
     @property
     def chunkCount(self):
         """Returns the number of chunks in the level. May initiate a costly
@@ -1491,13 +1462,12 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             self.preloadChunkPositions()
         return self._allChunks.__iter__()
 
-
     def getChunk(self, cx, cz):
         """ read the chunk from disk, load it, and return it."""
 
         chunk = self._loadedChunks.get((cx, cz))
         if chunk is None:
-            chunk =  self.chunkClass(self, (cx, cz))
+            chunk = self.chunkClass(self, (cx, cz))
             self._loadedChunks[cx, cz] = chunk
 
         return chunk
@@ -1511,24 +1481,21 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         for cx, cz in box.chunkPositions:
             self.markDirtyChunk(cx, cz)
 
-    def saveInPlace(self):
-        for level in self.dimensions.itervalues():
-            level.saveInPlace(True)
+    # --- HeightMaps ---
 
-        dirtyChunkCount = 0
-        if self._loadedChunks:
-            for chunk in self._loadedChunks.itervalues():
-                if chunk.dirty:
-                    dirtyChunkCount += 1
-                chunk.save()
+    def heightMapAt(self, x, z):
+        zc = z >> 4
+        xc = x >> 4
+        xInChunk = x & 0xf
+        zInChunk = z & 0xf
 
-        for path, tag in self.playerTagCache.iteritems():
-            tag.save(path)
+        ch = self.getChunk(xc, zc)
 
-        self.playerTagCache = {}
+        heightMap = ch.HeightMap
 
-        self.root_tag.save(self.filename)
-        info(u"Saved {0} chunks".format(dirtyChunkCount))
+        return heightMap[zInChunk, xInChunk]  # HeightMap indices are backwards
+
+    # --- Entities and TileEntities ---
 
     def addEntity(self, entityTag):
         assert isinstance(entityTag, nbt.TAG_Compound)
@@ -1583,10 +1550,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         info("Removed {0} tile entities".format(count))
         return count
 
-    def containsPoint(self, x, y, z):
-        if y < 0 or y > 127:
-            return False
-        return self.containsChunk(x >> 4, z >> 4)
+    # --- Chunk manipulation ---
 
     def containsChunk(self, cx, cz):
         if self._allChunks is not None:
@@ -1600,6 +1564,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             return False
 
         return self.getRegionFile(rx, rz).containsChunk(cx, cz)
+
+    def containsPoint(self, x, y, z):
+        if y < 0 or y > 127:
+            return False
+        return self.containsChunk(x >> 4, z >> 4)
 
     def createChunk(self, cx, cz):
         if self.containsChunk(cx, cz):
@@ -1670,7 +1639,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         return ret
 
-    spawnxyz = ["SpawnX", "SpawnY", "SpawnZ"]
+    # --- Player and spawn manipulation ---
 
     def playerSpawnPosition(self, player=None):
         """
@@ -1683,7 +1652,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         else:
             playerSpawnTag = self.getPlayerTag(player)
 
-        return [playerSpawnTag.get(i, dataTag[i]).value for i in self.spawnxyz]
+        return [playerSpawnTag.get(i, dataTag[i]).value for i in ("SpawnX", "SpawnY", "SpawnZ")]
 
     def setPlayerSpawnPosition(self, pos, player=None):
         """ xxx if player is None then it sets the default spawn position for the world """
@@ -1691,7 +1660,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             playerSpawnTag = self.root_tag["Data"]
         else:
             playerSpawnTag = self.getPlayerTag(player)
-        for name, val in zip(self.spawnxyz, pos):
+        for name, val in zip(("SpawnX", "SpawnY", "SpawnZ"), pos):
             playerSpawnTag[name] = nbt.TAG_Int(val)
 
     def getPlayerPath(self, player):
@@ -1795,6 +1764,31 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             playerTag = self.getPlayerTag(player)
             return playerTag["playerGameType"].value
 
+    def createPlayer(self, playerName):
+        if playerName == "Player":
+            playerTag = self.root_tag["Data"].setdefault(playerName, nbt.TAG_Compound())
+        else:
+            playerTag = nbt.TAG_Compound()
+
+        playerTag['Air'] = nbt.TAG_Short(300)
+        playerTag['AttackTime'] = nbt.TAG_Short(0)
+        playerTag['DeathTime'] = nbt.TAG_Short(0)
+        playerTag['Fire'] = nbt.TAG_Short(-20)
+        playerTag['Health'] = nbt.TAG_Short(20)
+        playerTag['HurtTime'] = nbt.TAG_Short(0)
+        playerTag['Score'] = nbt.TAG_Int(0)
+        playerTag['FallDistance'] = nbt.TAG_Float(0)
+        playerTag['OnGround'] = nbt.TAG_Byte(0)
+
+        playerTag["Inventory"] = nbt.TAG_List()
+
+        playerTag['Motion'] = nbt.TAG_List([nbt.TAG_Double(0) for i in range(3)])
+        playerTag['Pos'] = nbt.TAG_List([nbt.TAG_Double([0.5, 2.8, 0.5][i]) for i in range(3)])
+        playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0), nbt.TAG_Float(0)])
+
+        if playerName != "Player":
+            playerTag.save(self.getPlayerPath(playerName))
+
 
 class MCAlphaDimension (MCInfdevOldLevel):
     def __init__(self, parentWorld, dimNo, dirname, create=False):
@@ -1874,7 +1868,6 @@ class ZipSchematic (MCInfdevOldLevel):
             self.Height = 128
             self.Length = 0
 
-
     def close(self):
         MCInfdevOldLevel.close(self)
         self.zipfile.close()
@@ -1920,5 +1913,5 @@ class ZipSchematic (MCInfdevOldLevel):
 
     def chunkFilename(self, x, z):
         s = "/".join((self.dirhash(x), self.dirhash(z),
-                                     "c.%s.%s.dat" % (base36(x), base36(z))))
+                      "c.%s.%s.dat" % (base36(x), base36(z))))
         return s

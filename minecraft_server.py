@@ -315,7 +315,6 @@ class MCServerChunkGenerator(object):
 
             tempWorldDir = os.path.join(tempDir, worldName)
             tempWorld = infiniteworld.MCInfdevOldLevel(tempWorldDir, create=True, random_seed=level.RandomSeed)
-            del tempWorld.version  # for compatibility with older servers. newer ones will set it again without issue.
 
             self.tempWorldCache[self.serverVersion, level.RandomSeed] = tempWorld
 
