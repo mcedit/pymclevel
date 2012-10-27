@@ -697,9 +697,6 @@ class ChunkedLevelMixin(MCLevel):
     def generateLights(self, dirtyChunks=None):
         return exhaust(self.generateLightsIter(dirtyChunks))
 
-    def _getChunkUnloaded(self, cx, cz):
-        return self.getChunk(cx, cz)
-
     def generateLightsIter(self, dirtyChunks=None):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
         if none, generate lights for all chunks that need lighting
