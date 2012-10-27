@@ -163,6 +163,8 @@ class AnvilChunk(LightedChunk):
 
         if self.dirty:
             debug(u"Saving chunk: {0}".format(self))
+            self.sanitizeBlocks()
+
             sections = nbt.TAG_List()
             for y in range(0, self.Height, 16):
                 sec = nbt.TAG_Compound()
