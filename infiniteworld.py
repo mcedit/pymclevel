@@ -1020,10 +1020,15 @@ class ChunkedLevelMixin(MCLevel):
             ch.needsLighting = False
 
 
-def TagProperty(tagName, tagType, defaultValueFunc=lambda self: None):
+def TagProperty(tagName, tagType, default_or_func=None):
     def getter(self):
         if tagName not in self.root_tag["Data"]:
-            self.root_tag["Data"][tagName] = tagType(defaultValueFunc(self))
+            if hasattr(default_or_func, "__call__"):
+                default = default_or_func(self)
+            else:
+                default = default_or_func
+
+            self.root_tag["Data"][tagName] = tagType(default)
         return self.root_tag["Data"][tagName].value
 
     def setter(self, val):
@@ -1200,18 +1205,18 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     # --- NBT Tag variables ---
 
-    SizeOnDisk = TagProperty('SizeOnDisk', nbt.TAG_Long)
-    RandomSeed = TagProperty('RandomSeed', nbt.TAG_Long)
-    Time = TagProperty('Time', nbt.TAG_Long)  # Age of the world in ticks. 20 ticks per second; 24000 ticks per day.
+    SizeOnDisk = TagProperty('SizeOnDisk', nbt.TAG_Long, 0)
+    RandomSeed = TagProperty('RandomSeed', nbt.TAG_Long, 0)
+    Time = TagProperty('Time', nbt.TAG_Long, 0)  # Age of the world in ticks. 20 ticks per second; 24000 ticks per day.
     LastPlayed = TagProperty('LastPlayed', nbt.TAG_Long, lambda self: long(time.time() * 1000))
 
     LevelName = TagProperty('LevelName', nbt.TAG_String, lambda self: self.displayName)
 
-    MapFeatures = TagProperty('MapFeatures', nbt.TAG_Byte, lambda self: 1)
+    MapFeatures = TagProperty('MapFeatures', nbt.TAG_Byte, 1)
 
-    GameType = TagProperty('GameType', nbt.TAG_Int, lambda self: 0)  # 0 for survival, 1 for creative
+    GameType = TagProperty('GameType', nbt.TAG_Int, 0)  # 0 for survival, 1 for creative
 
-    version = TagProperty('version', nbt.TAG_Int, lambda s: MCInfdevOldLevel.VERSION_ANVIL)
+    version = TagProperty('version', nbt.TAG_Int, VERSION_ANVIL)
 
     # --- World info ---
 
