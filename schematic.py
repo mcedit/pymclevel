@@ -299,7 +299,7 @@ class MCSchematic (EntityLevel):
         return self.Data[x, z, y]
 
     @classmethod
-    def chestWithItemID(self, itemID, count=64, damage=0):
+    def chestWithItemID(cls, itemID, count=64, damage=0):
         """ Creates a chest with a stack of 'itemID' in each slot.
         Optionally specify the count of items in each stack. Pass a negative
         value for damage to create unnaturally sturdy tools. """

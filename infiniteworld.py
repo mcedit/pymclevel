@@ -1027,7 +1027,16 @@ class ChunkedLevelMixin(MCLevel):
         for ch in startingDirtyChunks:
             ch.needsLighting = False
 
+def TagProperty(tagName, tagType, defaultValueFunc=lambda self: None):
+    def getter(self):
+        if tagName not in self.root_tag["Data"]:
+            self.root_tag["Data"][tagName] = tagType(defaultValueFunc(self))
+        return self.root_tag["Data"][tagName].value
 
+    def setter(self, val):
+        self.root_tag["Data"][tagName] = tagType(value=val)
+
+    return property(getter, setter)
 
 class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     materials = alphaMaterials
@@ -1082,16 +1091,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def __str__(self):
         return "MCInfdevOldLevel(\"" + os.path.split(self.worldDir)[1] + "\")"
 
-    def TagProperty(tagName, tagType, defaultValueFunc=lambda self: None):
-        def getter(self):
-            if tagName not in self.root_tag["Data"]:
-                self.root_tag["Data"][tagName] = tagType(defaultValueFunc(self))
-            return self.root_tag["Data"][tagName].value
 
-        def setter(self, val):
-            self.root_tag["Data"][tagName] = tagType(value=val)
-
-        return property(getter, setter)
 
     SizeOnDisk = TagProperty('SizeOnDisk', nbt.TAG_Long)
     RandomSeed = TagProperty('RandomSeed', nbt.TAG_Long)

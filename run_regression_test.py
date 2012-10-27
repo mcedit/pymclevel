@@ -65,7 +65,7 @@ def directory_clone(src):
 @contextlib.contextmanager
 def unzipped_content(src):
     with temporary_directory() as dest:
-        f = zipfile.ZipFile.open(src)
+        f = zipfile.ZipFile(src)
         f.extractall(dest)
         yield dest
 
