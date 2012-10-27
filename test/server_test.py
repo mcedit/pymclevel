@@ -27,3 +27,5 @@ class TestServerGen(unittest.TestCase):
 
         gen.generateChunkInLevel(level, 50, 50)
         gen.generateChunksInLevel(level, [(120, 50), (121, 50), (122, 50), (123, 50), (244, 244), (244, 245), (244, 246)])
+        c = level.getChunk(50, 50)
+        assert c.Blocks.any()
