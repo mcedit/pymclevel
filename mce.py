@@ -831,9 +831,9 @@ class mce(object):
         ENT_MATCHTYPE_NONPAINTING = 2
 
         def match(entityID, matchType, matchWords):
-            if(ENT_MATCHTYPE_ANY == matchType):
+            if ENT_MATCHTYPE_ANY == matchType:
                 return entityID.lower() in matchWords
-            elif(ENT_MATCHTYPE_EXCEPT == matchType):
+            elif ENT_MATCHTYPE_EXCEPT == matchType:
                 return not (entityID.lower() in matchWords)
             else:
                 # ENT_MATCHTYPE_EXCEPT == matchType
@@ -1303,7 +1303,7 @@ class mce(object):
 
             elif command[0].lower() in ("hell", "nether", "slip"):
                 dimNo = -1
-            elif command[0].lower() in ("end"):
+            elif command[0].lower() == "end":
                 dimNo = 1
             else:
                 dirname = None
