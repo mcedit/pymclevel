@@ -8,7 +8,7 @@ class TestPocket(unittest.TestCase):
     def setUp(self):
         # self.alphaLevel = TempLevel("Dojo_64_64_128.dat")
         self.level = TempLevel("PocketWorld")
-        self.alphalevel = TempLevel("PyTestWorld")
+        self.alphalevel = TempLevel("AnvilWorld")
 
     def testPocket(self):
         level = self.level.level
