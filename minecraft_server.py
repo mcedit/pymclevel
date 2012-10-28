@@ -388,7 +388,6 @@ class MCServerChunkGenerator(object):
         chunk.root_tag = tempChunk.root_tag
         chunk.dirty = True
 
-        chunk.save()
 
 
     def generateChunkInLevel(self, level, cx, cz):

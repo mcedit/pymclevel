@@ -11,6 +11,7 @@ from math import floor
 import os
 import re
 import random
+import shutil
 import time
 import traceback
 import zlib
@@ -135,7 +136,6 @@ class AnvilChunk(LightedChunk):
         self.root_tag = chunkTag
 
         self.dirty = True
-        self.save()
 
     def _load(self, root_tag):
         self.root_tag = root_tag
@@ -153,37 +153,37 @@ class AnvilChunk(LightedChunk):
 
                 arr[..., y:y + 16] = secarray.swapaxes(0, 2)
 
-    def save(self):
+    def savedTagData(self):
         """ does not recalculate any data or light """
 
-        if self.dirty:
-            debug(u"Saving chunk: {0}".format(self))
-            self.sanitizeBlocks()
+        debug(u"Saving chunk: {0}".format(self))
+        self.sanitizeBlocks()
 
-            sections = nbt.TAG_List()
-            for y in range(0, self.Height, 16):
-                sec = nbt.TAG_Compound()
-                for name in "Blocks", "Data", "SkyLight", "BlockLight":
+        sections = nbt.TAG_List()
+        for y in range(0, self.Height, 16):
+            sec = nbt.TAG_Compound()
+            for name in "Blocks", "Data", "SkyLight", "BlockLight":
 
-                    arr = getattr(self, name)
-                    secarray = arr[..., y:y + 16].swapaxes(0, 2)
-                    if name == "Blocks":
-                        if not secarray.any():
-                            break  # detect empty sections here
-                    else:
-                        secarray = packNibbleArray(secarray)
+                arr = getattr(self, name)
+                secarray = arr[..., y:y + 16].swapaxes(0, 2)
+                if name == "Blocks":
+                    if not secarray.any():
+                        break  # detect empty sections here
+                else:
+                    secarray = packNibbleArray(secarray)
 
-                    sec[name] = nbt.TAG_Byte_Array(array(secarray))
+                sec[name] = nbt.TAG_Byte_Array(array(secarray))
 
-                if len(sec):
-                    sec["Y"] = nbt.TAG_Byte(y / 16)
-                    sections.append(sec)
+            if len(sec):
+                sec["Y"] = nbt.TAG_Byte(y / 16)
+                sections.append(sec)
 
-            self.root_tag["Level"]["Sections"] = sections
-            self.world._saveChunk(self)
-            self.dirty = False
-            del self.root_tag["Level"]["Sections"]
-            debug(u"Saved chunk {0}".format(self))
+        self.root_tag["Level"]["Sections"] = sections
+        data = self.root_tag.save(compressed=False)
+        del self.root_tag["Level"]["Sections"]
+        debug(u"Saved chunk {0}".format(self))
+        return data
+
 
     @property
     def materials(self):
@@ -1266,9 +1266,13 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         dirtyChunkCount = 0
         if self._loadedChunks:
             for chunk in self._loadedChunks.itervalues():
+                cx, cz = chunk.chunkPosition
                 if chunk.dirty:
+                    data = chunk.savedTagData()
                     dirtyChunkCount += 1
-                chunk.save()
+                    self.worldFolder.saveChunk(cx, cz, data)
+                    chunk.dirty = False
+
 
         for path, tag in self.playerTagCache.iteritems():
             tag.save(path)
@@ -1423,10 +1427,6 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def getChunkData(self, cx, cz):
         return self.worldFolder.readChunk(cx, cz)
-
-    def _saveChunk(self, chunk):
-        cx, cz = chunk.chunkPosition
-        self.worldFolder.saveChunk(cx, cz, chunk.root_tag.save(compressed=False))
 
     def dirhash(self, n):
         return self.dirhashes[n % 64]
