@@ -767,7 +767,17 @@ class EntityLevel(MCLevel):
 class ChunkBase(EntityLevel):
     dirty = False
     needsLighting = False
+
+    chunkPosition = NotImplemented
     Blocks = Data = SkyLight = BlockLight = HeightMap = NotImplemented  # override these!
+
+    Width = Length = 16
+
+    @property
+    def bounds(self):
+        cx, cz = self.chunkPosition
+        return BoundingBox((cx << 4, 0, cz << 4), self.size)
+
 
     def chunkChanged(self, needsLighting=True):
         self.dirty = True
