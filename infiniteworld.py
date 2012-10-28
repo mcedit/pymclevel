@@ -98,7 +98,7 @@ class AnvilChunk(LightedChunk):
 
     root_tag = None
 
-    def __init__(self, world, chunkPosition, create=False):
+    def __init__(self, world, chunkPosition, root_tag = None, create=False):
         self.world = world
         self.chunkPosition = chunkPosition
         self.Height = world.Height
@@ -112,7 +112,7 @@ class AnvilChunk(LightedChunk):
         if create:
             self._create()
         else:
-            self._load()
+            self._load(root_tag)
 
     def _create(self):
         (cx, cz) = self.chunkPosition
@@ -137,10 +137,8 @@ class AnvilChunk(LightedChunk):
         self.dirty = True
         self.save()
 
-    def _load(self):
-        if not self.world.containsChunk(*self.chunkPosition):
-            raise ChunkNotPresent("Chunk {0} not found", self.chunkPosition)
-        self.root_tag = self.world._loadChunk(*self.chunkPosition)
+    def _load(self, root_tag):
+        self.root_tag = root_tag
 
         for sec in self.root_tag["Level"].pop("Sections", []):
             y = sec["Y"].value * 16
@@ -1423,16 +1421,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     # --- Chunk I/O ---
 
-    def _loadChunk(self, cx, cz):
-        """ load the chunk data from disk, and return its root tag as an NBT_Compound"""
-
-        try:
-            data = self.worldFolder.readChunk(cx, cz)
-            return nbt.load(buf=data)
-        except MemoryError:
-            raise
-        except Exception, e:
-            raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
+    def getChunkData(self, cx, cz):
+        return self.worldFolder.readChunk(cx, cz)
 
     def _saveChunk(self, chunk):
         cx, cz = chunk.chunkPosition
@@ -1495,7 +1485,16 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         chunk = self._loadedChunks.get((cx, cz))
         if chunk is None:
-            chunk = self.chunkClass(self, (cx, cz))
+            try:
+                data = self.getChunkData(cx, cz)
+                root_tag = nbt.load(buf=data)
+            except MemoryError:
+                raise
+            except Exception, e:
+                raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
+
+            chunk = self.chunkClass(self, (cx, cz), root_tag)
+
             self._loadedChunks[cx, cz] = chunk
 
         return chunk
