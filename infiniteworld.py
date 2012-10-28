@@ -122,7 +122,7 @@ class AnvilChunk(LightedChunk):
         levelTag = nbt.TAG_Compound()
         chunkTag["Level"] = levelTag
 
-        levelTag["HeightMap"] = nbt.TAG_Int_Array(zeros((16, 16), 'uint8'))
+        levelTag["HeightMap"] = nbt.TAG_Int_Array(zeros((16, 16), 'uint32'))
         levelTag["TerrainPopulated"] = nbt.TAG_Byte(1)
         levelTag["xPos"] = nbt.TAG_Int(cx)
         levelTag["zPos"] = nbt.TAG_Int(cz)
