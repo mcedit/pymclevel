@@ -1034,8 +1034,11 @@ def TagProperty(tagName, tagType, default_or_func=None):
 
 class AnvilWorldFolder(object):
     def __init__(self, filename):
-        if not os.path.isdir(filename):
-            filename = os.path.dirname(filename)
+        if not os.path.exists(filename):
+            os.mkdir(filename)
+
+        elif not os.path.isdir(filename):
+            raise IOError, "AnvilWorldFolder: Not a folder: %s" % filename
 
         self.filename = filename
         self.regionFiles = {}
