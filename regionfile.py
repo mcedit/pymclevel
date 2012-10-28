@@ -93,6 +93,8 @@ class MCRegionFile(object):
         log.info("Found region file {file} with {used}/{total} sectors used and {chunks} chunks present".format(
              file=os.path.basename(path), used=self.usedSectors, total=self.sectorCount, chunks=self.chunkCount))
 
+    def __repr__(self):
+        return "%s(\"%s\")" % (self.__class__.__name__, self.path)
     @property
     def usedSectors(self):
         return len(self.freeSectors) - sum(self.freeSectors)
