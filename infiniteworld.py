@@ -1581,6 +1581,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         for cx, cz in box.chunkPositions:
             self.markDirtyChunk(cx, cz)
 
+    def listDirtyChunks(self):
+        for cPos, chunkData in self._loadedChunkData.iteritems():
+            if chunkData.dirty:
+                yield cPos
+
     # --- HeightMaps ---
 
     def heightMapAt(self, x, z):
