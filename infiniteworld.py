@@ -75,7 +75,21 @@ def packNibbleArray(unpackedData):
     packedData[..., 1] |= packedData[..., 0]
     return array(packedData[:, :, :, 1])
 
+def sanitizeBlocks(chunk):
+    # change grass to dirt where needed so Minecraft doesn't flip out and die
+    grass = chunk.Blocks == chunk.materials.Grass.ID
+    grass |= chunk.Blocks == chunk.materials.Dirt.ID
+    badgrass = grass[:, :, 1:] & grass[:, :, :-1]
 
+    chunk.Blocks[:, :, :-1][badgrass] = chunk.materials.Dirt.ID
+
+    # remove any thin snow layers immediately above other thin snow layers.
+    # minecraft doesn't flip out, but it's almost never intended
+    if hasattr(chunk.materials, "SnowLayer"):
+        snowlayer = chunk.Blocks == chunk.materials.SnowLayer.ID
+        badsnow = snowlayer[:, :, 1:] & snowlayer[:, :, :-1]
+
+        chunk.Blocks[:, :, 1:][badsnow] = chunk.materials.Air.ID
 class AnvilChunk(LightedChunk):
     """ This is a 16x16xH chunk in an (infinite) world.
     The properties Blocks, Data, SkyLight, BlockLight, and Heightmap
@@ -157,7 +171,7 @@ class AnvilChunk(LightedChunk):
         """ does not recalculate any data or light """
 
         debug(u"Saving chunk: {0}".format(self))
-        self.sanitizeBlocks()
+        sanitizeBlocks(self)
 
         sections = nbt.TAG_List()
         for y in range(0, self.Height, 16):
@@ -189,21 +203,7 @@ class AnvilChunk(LightedChunk):
     def materials(self):
         return self.world.materials
 
-    def sanitizeBlocks(self):
-        # change grass to dirt where needed so Minecraft doesn't flip out and die
-        grass = self.Blocks == self.materials.Grass.ID
-        grass |= self.Blocks == self.materials.Dirt.ID
-        badgrass = grass[:, :, 1:] & grass[:, :, :-1]
 
-        self.Blocks[:, :, :-1][badgrass] = self.materials.Dirt.ID
-
-        # remove any thin snow layers immediately above other thin snow layers.
-        # minecraft doesn't flip out, but it's almost never intended
-        if hasattr(self.materials, "SnowLayer"):
-            snowlayer = self.Blocks == self.materials.SnowLayer.ID
-            badsnow = snowlayer[:, :, 1:] & snowlayer[:, :, :-1]
-
-            self.Blocks[:, :, 1:][badsnow] = self.materials.Air.ID
 
     def __str__(self):
         return u"AnvilChunk, coords:{0}, world: {1}, D:{2}, L:{3}".format(self.chunkPosition, self.world.displayName, self.dirty, self.needsLighting)
