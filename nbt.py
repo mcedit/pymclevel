@@ -502,7 +502,7 @@ def try_gunzip(data):
     return data
 
 
-def load(filename="", buf=None):
+def load(filename="", buf=None, compressed=True):
     """
     Unserialize data from an NBT file and return the root TAG_Compound object. If filename is passed,
     reads from the file, otherwise uses data from buf. Buf can be a buffer object with a read() method or a string
@@ -514,7 +514,10 @@ def load(filename="", buf=None):
     if hasattr(buf, "read"):
         buf = buf.read()
 
-    return _load_buffer(try_gunzip(buf))
+    if compressed is True:
+        return _load_buffer(try_gunzip(buf))
+    else:
+        return _load_buffer(buf)
 
 class load_ctx(object):
     pass

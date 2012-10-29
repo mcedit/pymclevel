@@ -445,14 +445,17 @@ def try_gunzip(data):
     return data
 
 
-def load(filename="", buf=None):
+def load(filename="", buf=None, compressed=True):
     if filename:
         buf = file(filename, "rb")
 
     if hasattr(buf, "read"):
         buf = buf.read()
 
-    return load_buffer(try_gunzip(buf))
+    if compressed is True:
+        return load_buffer(try_gunzip(buf))
+    else
+        return load_buffer(buf)
 
 
 cdef class load_ctx:
