@@ -14,6 +14,7 @@ import random
 import shutil
 import time
 import traceback
+import weakref
 import zlib
 import sys
 
@@ -90,27 +91,29 @@ def sanitizeBlocks(chunk):
         badsnow = snowlayer[:, :, 1:] & snowlayer[:, :, :-1]
 
         chunk.Blocks[:, :, 1:][badsnow] = chunk.materials.Air.ID
-class AnvilChunk(LightedChunk):
-    """ This is a 16x16xH chunk in an (infinite) world.
-    The properties Blocks, Data, SkyLight, BlockLight, and Heightmap
-    are ndarrays containing the respective blocks in the chunk file.
-    Each array is indexed [x,z,y].  The Data, Skylight, and BlockLight
-    arrays are automatically unpacked from nibble arrays into byte arrays
-    for better handling.
+
+
+class AnvilChunkData(object):
+    """ This is the chunk data backing an AnvilChunk. Chunk data is retained by the MCInfdevOldLevel until its
+    AnvilChunk is no longer used, then it is either cached in memory, discarded, or written to disk according to
+    resource limits.
+
+    AnvilChunks are stored in a WeakValueDictionary so we can find out when they are no longer used by clients. The
+    AnvilChunkData for an unused chunk may safely be discarded or written out to disk. The client should probably
+     not keep references to a whole lot of chunks or else it will run out of memory.
     """
-
-    root_tag = None
-
-    def __init__(self, world, chunkPosition, root_tag = None, create=False):
-        self.world = world
+    def __init__(self, world, chunkPosition, root_tag = None, create = False):
         self.chunkPosition = chunkPosition
-        self.Height = world.Height
+        self.world = world
+        self.root_tag = root_tag
+        self.dirty = False
 
-        self.Blocks = zeros((16, 16, self.Height), 'uint8')  # xxx uint16?
-        self.Data = zeros((16, 16, self.Height), 'uint8')
-        self.BlockLight = zeros((16, 16, self.Height), 'uint8')
-        self.SkyLight = zeros((16, 16, self.Height), 'uint8')
+        self.Blocks = zeros((16, 16, world.Height), 'uint8')  # xxx uint16?
+        self.Data = zeros((16, 16, world.Height), 'uint8')
+        self.BlockLight = zeros((16, 16, world.Height), 'uint8')
+        self.SkyLight = zeros((16, 16, world.Height), 'uint8')
         self.SkyLight[:] = 15
+
 
         if create:
             self._create()
@@ -155,6 +158,7 @@ class AnvilChunk(LightedChunk):
 
                 arr[..., y:y + 16] = secarray.swapaxes(0, 2)
 
+
     def savedTagData(self):
         """ does not recalculate any data or light """
 
@@ -162,7 +166,7 @@ class AnvilChunk(LightedChunk):
         sanitizeBlocks(self)
 
         sections = nbt.TAG_List()
-        for y in range(0, self.Height, 16):
+        for y in range(0, self.world.Height, 16):
             sec = nbt.TAG_Compound()
             for name in "Blocks", "Data", "SkyLight", "BlockLight":
 
@@ -183,14 +187,33 @@ class AnvilChunk(LightedChunk):
         self.root_tag["Level"]["Sections"] = sections
         data = self.root_tag.save(compressed=False)
         del self.root_tag["Level"]["Sections"]
+
         debug(u"Saved chunk {0}".format(self))
         return data
-
 
     @property
     def materials(self):
         return self.world.materials
 
+
+class AnvilChunk(LightedChunk):
+    """ This is a 16x16xH chunk in an (infinite) world.
+    The properties Blocks, Data, SkyLight, BlockLight, and Heightmap
+    are ndarrays containing the respective blocks in the chunk file.
+    Each array is indexed [x,z,y].  The Data, Skylight, and BlockLight
+    arrays are automatically unpacked from nibble arrays into byte arrays
+    for better handling.
+    """
+
+    def __init__(self, chunkData):
+        self.world = chunkData.world
+        self.chunkPosition = chunkData.chunkPosition
+        self.Height = self.world.Height
+        self.chunkData = chunkData
+
+
+    def savedTagData(self):
+        return self.chunkData.savedTagData()
 
 
     def __str__(self):
@@ -216,6 +239,7 @@ class AnvilChunk(LightedChunk):
     def addEntity(self, entityTag):
 
         def doubleize(name):
+            # This is needed for compatibility with Indev levels. Those levels use TAG_Float for entity motion and pos
             if name in entityTag:
                 m = entityTag[name]
                 entityTag[name] = nbt.TAG_List([nbt.TAG_Double(i.value) for i in m])
@@ -233,6 +257,50 @@ class AnvilChunk(LightedChunk):
     def removeTileEntitiesInBox(self, box):
         self.dirty = True
         return super(AnvilChunk, self).removeTileEntitiesInBox(box)
+
+    # --- AnvilChunkData accessors ---
+
+    @property
+    def root_tag(self):
+        return self.chunkData.root_tag
+
+    @property
+    def dirty(self):
+        return self.chunkData.dirty
+
+    @dirty.setter
+    def dirty(self, val):
+        self.chunkData.dirty = val
+
+    # --- Chunk attributes ---
+
+    @property
+    def materials(self):
+        return self.world.materials
+
+    @property
+    def Blocks(self):
+        return self.chunkData.Blocks
+
+    @property
+    def Data(self):
+        return self.chunkData.Data
+
+    @property
+    def SkyLight(self):
+        return self.chunkData.SkyLight
+
+    @property
+    def BlockLight(self):
+        return self.chunkData.BlockLight
+
+    @property
+    def HeightMap(self):
+        return self.chunkData.HeightMap
+
+    @property
+    def Biomes(self):
+        return self.root_tag["Level"]["Biomes"].value.reshape((16, 16))
 
     @property
     def HeightMap(self):
@@ -1180,8 +1248,12 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.filename = self.worldFolder.getFilePath("level.dat")
 
 
-        # maps (cx, cz) pairs to AnvilChunks
-        self._loadedChunks = {}
+        # maps (cx, cz) pairs to AnvilChunk
+        self._loadedChunks = weakref.WeakValueDictionary()
+
+        # maps (cx, cz) pairs to AnvilChunkData
+        self._loadedChunkData = {}
+
         self.chunksNeedingLighting = set()
         self._allChunks = None
         self.dimensions = {}
@@ -1191,7 +1263,6 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         assert self.version == self.VERSION_ANVIL, "Pre-Anvil world formats are not supported (for now)"
 
         self.Height = 256
-        self.chunkClass = AnvilChunk
 
         self.players = [x[:-4] for x in os.listdir(self.worldFolder.getFolderPath("players")) if x.endswith(".dat")]
         if "Player" in self.root_tag["Data"]:
@@ -1255,14 +1326,13 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             level.saveInPlace(True)
 
         dirtyChunkCount = 0
-        if self._loadedChunks:
-            for chunk in self._loadedChunks.itervalues():
-                cx, cz = chunk.chunkPosition
-                if chunk.dirty:
-                    data = chunk.savedTagData()
-                    dirtyChunkCount += 1
-                    self.worldFolder.saveChunk(cx, cz, data)
-                    chunk.dirty = False
+        for chunk in self._loadedChunkData.itervalues():
+            cx, cz = chunk.chunkPosition
+            if chunk.dirty:
+                data = chunk.savedTagData()
+                dirtyChunkCount += 1
+                self.worldFolder.saveChunk(cx, cz, data)
+                chunk.dirty = False
 
 
         for path, tag in self.playerTagCache.iteritems():
@@ -1274,10 +1344,14 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         info(u"Saved {0} chunks".format(dirtyChunkCount))
 
     def close(self):
+        """
+        Unload all chunks and close all open filehandles. Discard any unsaved data.
+        """
         self.worldFolder.closeRegions()
 
         self._allChunks = None
-        self._loadedChunks = {}
+        self._loadedChunks.clear()
+        self._loadedChunkData.clear()
 
     # --- Constants ---
 
@@ -1416,9 +1490,6 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     # --- Chunk I/O ---
 
-    def getChunkData(self, cx, cz):
-        return self.worldFolder.readChunk(cx, cz)
-
     def dirhash(self, n):
         return self.dirhashes[n % 64]
 
@@ -1471,29 +1542,40 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             self.preloadChunkPositions()
         return self._allChunks.__iter__()
 
+    def _getChunkBytes(self, cx, cz):
+        return self.worldFolder.readChunk(cx, cz)
+
+    def _getChunkData(self, cx, cz):
+        chunkData = self._loadedChunkData.get((cx, cz))
+        if chunkData is not None: return chunkData
+
+        try:
+            data = self._getChunkBytes(cx, cz)
+            root_tag = nbt.load(buf=data)
+        except MemoryError:
+            raise
+        except Exception, e:
+            raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
+
+        chunkData = AnvilChunkData(self, (cx, cz), root_tag)
+        self._loadedChunkData[cx, cz] = chunkData
+        return chunkData
+
     def getChunk(self, cx, cz):
         """ read the chunk from disk, load it, and return it."""
 
         chunk = self._loadedChunks.get((cx, cz))
-        if chunk is None:
-            try:
-                data = self.getChunkData(cx, cz)
-                root_tag = nbt.load(buf=data)
-            except MemoryError:
-                raise
-            except Exception, e:
-                raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
+        if chunk is not None:
+            return chunk
 
-            chunk = self.chunkClass(self, (cx, cz), root_tag)
+        chunkData = self._getChunkData(cx, cz)
+        chunk = AnvilChunk(chunkData)
 
-            self._loadedChunks[cx, cz] = chunk
-
+        self._loadedChunks[cx, cz] = chunk
         return chunk
 
     def markDirtyChunk(self, cx, cz):
-        if not (cx, cz) in self._loadedChunks:
-            return
-        self._loadedChunks[cx, cz].chunkChanged()
+        self.getChunk(cx, cz).chunkChanged()
 
     def markDirtyBox(self, box):
         for cx, cz in box.chunkPositions:
@@ -1573,7 +1655,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def containsChunk(self, cx, cz):
         if self._allChunks is not None:
             return (cx, cz) in self._allChunks
-        if (cx, cz) in self._loadedChunks:
+        if (cx, cz) in self._loadedChunkData:
             return True
 
         return self.worldFolder.containsChunk(cx, cz)
@@ -1589,7 +1671,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if self._allChunks is not None:
             self._allChunks.add((cx, cz))
 
-        self._loadedChunks[cx, cz] = self.chunkClass(self, (cx, cz), create=True)
+        self._loadedChunkData[cx, cz] = AnvilChunkData(self, (cx, cz), create=True)
         self._bounds = None
 
     def createChunks(self, chunks):
