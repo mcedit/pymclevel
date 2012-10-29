@@ -1247,6 +1247,14 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.worldFolder = AnvilWorldFolder(filename)
         self.filename = self.worldFolder.getFilePath("level.dat")
 
+        workFolderPath = self.worldFolder.getFolderPath("##MCEDIT.TEMP##")
+        if os.path.exists(workFolderPath):
+            # xxxxxxx Opening a world a second time deletes the first world's work folder and crashes when the first
+            # world tries to read a modified chunk from the work folder. This mainly happens when importing a world
+            # into itself after modifying it.
+            shutil.rmtree(workFolderPath, True)
+
+        self.unsavedWorkFolder = AnvilWorldFolder(workFolderPath)
 
         # maps (cx, cz) pairs to AnvilChunk
         self._loadedChunks = weakref.WeakValueDictionary()
@@ -1334,6 +1342,13 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 self.worldFolder.saveChunk(cx, cz, data)
                 chunk.dirty = False
 
+        for cx, cz in self.unsavedWorkFolder.listChunks():
+            data = self.unsavedWorkFolder.readChunk(cx, cz)
+            self.worldFolder.saveChunk(cx, cz, data)
+
+        self.unsavedWorkFolder.closeRegions()
+        shutil.rmtree(self.unsavedWorkFolder.filename, True)
+        os.mkdir(self.unsavedWorkFolder.filename)
 
         for path, tag in self.playerTagCache.iteritems():
             tag.save(path)
@@ -1348,10 +1363,16 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         Unload all chunks and close all open filehandles. Discard any unsaved data.
         """
         self.worldFolder.closeRegions()
+        self.unsavedWorkFolder.closeRegions()
+        shutil.rmtree(self.unsavedWorkFolder.filename, True)
 
         self._allChunks = None
         self._loadedChunks.clear()
         self._loadedChunkData.clear()
+
+    # --- Resource limits ---
+
+    loadedChunkLimit = 400
 
     # --- Constants ---
 
@@ -1543,6 +1564,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         return self._allChunks.__iter__()
 
     def _getChunkBytes(self, cx, cz):
+        data = self.unsavedWorkFolder.readChunk(cx, cz)
+        if data: return data
+
         return self.worldFolder.readChunk(cx, cz)
 
     def _getChunkData(self, cx, cz):
@@ -1558,6 +1582,19 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
 
         chunkData = AnvilChunkData(self, (cx, cz), root_tag)
+
+        if len(self._loadedChunkData) > self.loadedChunkLimit:
+            # Try to find a chunk to unload. The chunk must not be in _loadedChunks, which contains only chunks that
+            # are in use by another object. If the chunk is dirty, save it to the temporary folder.
+            for (ocx, ocz), oldChunkData in self._loadedChunkData.items():
+                if (ocx, ocz) not in self._loadedChunks:
+                    if oldChunkData.dirty:
+                        data = oldChunkData.savedTagData()
+                        self.unsavedWorkFolder.saveChunk(ocx, ocz, data)
+
+                    del self._loadedChunkData[ocx, ocz]
+                    break
+
         self._loadedChunkData[cx, cz] = chunkData
         return chunkData
 
@@ -1704,7 +1741,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.worldFolder.deleteChunk(cx, cz)
         if self._allChunks is not None:
             self._allChunks.discard((cx, cz))
-            
+
         self._bounds = None
 
 
