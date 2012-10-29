@@ -1702,6 +1702,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def deleteChunk(self, cx, cz):
         self.worldFolder.deleteChunk(cx, cz)
+        if self._allChunks is not None:
+            self._allChunks.discard((cx, cz))
+            
+        self._bounds = None
+
 
     def deleteChunksInBox(self, box):
         info(u"Deleting {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
