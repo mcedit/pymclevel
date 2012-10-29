@@ -98,18 +98,6 @@ class AnvilChunk(LightedChunk):
     arrays are automatically unpacked from nibble arrays into byte arrays
     for better handling.
     """
-    @property
-    def filename(self):
-        cx, cz = self.chunkPosition
-        rx, rz = cx >> 5, cz >> 5
-        rf = self.world.worldFolder.getRegionFile(rx, rz)
-        offset = rf.getOffset(cx & 0x1f, cz & 0x1f)
-        return u"{region} index {index} sector {sector} length {length}".format(
-            region=os.path.basename(rf.filename),
-            sector=offset >> 8,
-            length=offset & 0xff,
-            index=4 * ((cx & 0x1f) + ((cz & 0x1f) * 32))
-        )
 
     root_tag = None
 
