@@ -1,11 +1,18 @@
 from setuptools import setup
+from setuptools.extension import Extension
+from Cython.Distutils import build_ext
 
-version = '1.0'
+import numpy
+
+version = '0.1'
 
 install_requires = [
     # -*- Extra requirements: -*-
     "numpy",
+    "pyyaml",
     ]
+
+ext_modules = [Extension("_nbt", ["_nbt.pyx"])]
 
 setup(name='pymclevel',
       version=version,
@@ -25,13 +32,16 @@ setup(name='pymclevel',
       keywords='minecraft',
       author='David Vierra',
       author_email='codewarrior0@gmail.com',
-      url='https://github.com/codewarrior0/pymclevel',
+      url='https://github.com/mcedit/pymclevel',
       license='MIT License',
       package_dir={'pymclevel': '.'},
       packages=["pymclevel"],
+      ext_modules=ext_modules,
+      include_dirs=numpy.get_include(),
       include_package_data=True,
       zip_safe=False,
       install_requires=install_requires,
+      cmdclass={'build_ext': build_ext},
       entry_points="""
       # -*- Entry points: -*-
       [console_scripts]
