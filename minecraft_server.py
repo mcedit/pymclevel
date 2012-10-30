@@ -379,7 +379,7 @@ class MCServerChunkGenerator(object):
         try:
             tempChunk = tempWorld.getChunk(cx, cz)
         except ChunkNotPresent, e:
-            raise ChunkNotPresent("While generating a world in {0} using server {1} ({2!r})".format(tempWorld, self.serverJarFile, e), sys.exc_traceback)
+            raise ChunkNotPresent, "While generating a world in {0} using server {1} ({2!r})".format(tempWorld, self.serverJarFile, e), sys.exc_info()[2]
 
         if not level.containsChunk(cx, cz):
             level.createChunk(cx, cz)
