@@ -19,15 +19,16 @@ http://www.minecraft.net/docs/NBT.txt
 Copyright 2010 David Rio Vierra
 """
 import collections
-import itertools
-import struct
 import gzip
+import itertools
+import logging
+import struct
+import zlib
 from cStringIO import StringIO
 
+import numpy
 from numpy import array, zeros, fromstring
 
-import logging
-import numpy
 
 log = logging.getLogger(__name__)
 
@@ -485,8 +486,6 @@ class TAG_List(TAG_Value, collections.MutableSequence):
 tag_classes = { c.tagID: c for c in (TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
     TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Short_Array) }
 
-
-import zlib
 
 
 def gunzip(data):

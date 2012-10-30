@@ -35,8 +35,6 @@ Copyright 2012 David Rio Vierra
 DEF UNICODE_NAMES = False
 
 import collections
-import itertools
-import struct
 import gzip
 import zlib
 
@@ -54,13 +52,7 @@ cdef extern from "cobject.h":
 cdef PycStringIO_CAPI *PycStringIO = <PycStringIO_CAPI *> PyCObject_Import("cStringIO", "cStringIO_CAPI")
 cdef PyTypeObject * StringO = PycStringIO.OutputType
 
-import sys
-import os
-from os.path import exists
-from contextlib import closing
-
 from numpy import array, zeros, uint8, fromstring, ndarray, frombuffer
-cimport numpy as np
 
 cdef char TAG_END = 0
 cdef char TAG_BYTE = 1
