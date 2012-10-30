@@ -194,7 +194,7 @@ class MCSchematic (EntityLevel):
                 entity[p][0].value = newX
                 entity[p][2].value = newZ
             entity["Rotation"][0].value -= 90.0
-            if entity["id"].value == "Painting":
+            if entity["id"].value in ("Painting", "ItemFrame"):
                 x, z = entity["TileX"].value, entity["TileZ"].value
                 newx = z
                 newz = self.Length - x - 1
@@ -239,7 +239,7 @@ class MCSchematic (EntityLevel):
 
             entity["Rotation"][0].value -= 180.0
 
-            if entity["id"].value == "Painting":
+            if entity["id"].value in ("Painting", "ItemFrame"):
                 entity["TileX"].value = self.Width - entity["TileX"].value
                 entity["Dir"].value = northSouthPaintingMap[entity["Dir"].value]
 
@@ -265,7 +265,7 @@ class MCSchematic (EntityLevel):
 
             entity["Rotation"][0].value -= 180.0
 
-            if entity["id"].value == "Painting":
+            if entity["id"].value in ("Painting", "ItemFrame"):
                 entity["TileZ"].value = self.Length - entity["TileZ"].value
                 entity["Dir"].value = eastWestPaintingMap[entity["Dir"].value]
 

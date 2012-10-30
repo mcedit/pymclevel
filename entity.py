@@ -164,7 +164,7 @@ class Entity(object):
         positionTags = map(lambda p, co: nbt.TAG_Double(p.value + co), eTag["Pos"], copyOffset)
         eTag["Pos"] = nbt.TAG_List(positionTags)
 
-        if eTag["id"].value == "Painting":
+        if eTag["id"].value in ("Painting", "ItemFrame"):
             eTag["TileX"].value += copyOffset[0]
             eTag["TileY"].value += copyOffset[1]
             eTag["TileZ"].value += copyOffset[2]
