@@ -68,6 +68,7 @@ class TestAnvilLevel(unittest.TestCase):
 
         for x, z in itertools.product(xrange(-1, 3), xrange(-1, 2)):
             level.deleteChunk(x, z)
+            assert not level.containsChunk(x, z)
             level.createChunk(x, z)
 
     def testFill(self):
