@@ -26,6 +26,12 @@ class TestNBT():
 
         return level
 
+    def testLoadUncompressed(self):
+        root_tag = nbt.load("testfiles/uncompressed.nbt")
+
+    def testLoadNBTExplorer(self):
+        root_tag = nbt.load("testfiles/modified_by_nbtexplorer.dat")
+
     def testCreate(self):
         "Create an indev level."
 
