@@ -425,14 +425,13 @@ cdef swab(void * vbuf, int nbytes):
 
 
 def gunzip(data):
-    #strip off the header and use negative WBITS to tell zlib there's no header
-    return zlib.decompress(data[10:], -zlib.MAX_WBITS)
+    return gzip.GzipFile(fileobj=StringIO(data)).read()
 
 
 def try_gunzip(data):
     try:
         data = gunzip(data)
-    except zlib.error:
+    except IOError, zlib.error:
         pass
     return data
 

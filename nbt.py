@@ -489,15 +489,13 @@ tag_classes = { c.tagID: c for c in (TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG
 
 
 def gunzip(data):
-    #return gzip.GzipFile(fileobj=StringIO(data)).read()
-    # strip off the header and use negative WBITS to tell zlib there's no header
-    return zlib.decompress(data[10:], -zlib.MAX_WBITS)
+    return gzip.GzipFile(fileobj=StringIO(data)).read()
 
 
 def try_gunzip(data):
     try:
         data = gunzip(data)
-    except zlib.error:
+    except IOError, zlib.error:
         pass
     return data
 
