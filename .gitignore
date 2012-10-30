@@ -12,6 +12,7 @@
 #distutils
 *.egg-info
 build
+dist
 
 #profiling/outputs
 *.log
@@ -19,7 +20,8 @@ build
 # Accelerated NBT build
 _nbt.c
 _nbt.so
+_nbt.pyd
 
 # The "standard" virtualenv directory.
 ENV
-_nbt.pyd
+
