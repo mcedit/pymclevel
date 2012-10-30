@@ -156,7 +156,11 @@ class MCMaterials(object):
             f = pkg_resources.resource_stream(__name__, filename)
         except (ImportError, IOError):
             root = os.environ.get("PYMCLEVEL_YAML_ROOT", "pymclevel")  # fall back to cwd as last resort
-            f = file(join(root, filename))
+            path = join(root, filename)
+
+            log.exception("Failed to read %s using pkg_resources. Trying %s instead." % (filename, path))
+
+            f = file(path)
         try:
             info(u"Loading block info from %s", f)
             blockyaml = yaml.load(f)
