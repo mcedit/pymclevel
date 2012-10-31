@@ -774,6 +774,10 @@ class ChunkBase(EntityLevel):
     Width = Length = 16
 
     @property
+    def Height(self):
+        return self.world.Height
+
+    @property
     def bounds(self):
         cx, cz = self.chunkPosition
         return BoundingBox((cx << 4, 0, cz << 4), self.size)

@@ -208,7 +208,6 @@ class AnvilChunk(LightedChunk):
     def __init__(self, chunkData):
         self.world = chunkData.world
         self.chunkPosition = chunkData.chunkPosition
-        self.Height = self.world.Height
         self.chunkData = chunkData
 
 
