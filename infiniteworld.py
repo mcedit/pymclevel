@@ -1263,6 +1263,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def preloadChunkPositions(self):
         log.info(u"Scanning for regions...")
         self._allChunks = self.worldFolder.listChunks()
+        self._allChunks.update(self.unsavedWorkFolder.listChunks())
 
     def getRegionForChunk(self, cx, cz):
         return self.worldFolder.getRegionFile(cx, cz)
