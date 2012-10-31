@@ -48,11 +48,24 @@ class TestAnvilLevel(unittest.TestCase):
     def testCopyConvertBlocks(self):
         indevlevel = self.indevLevel.level
         level = self.anvilLevel.level
-        cx, cz = level.allChunks.next()
-        level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (256, 128, 256)), (cx * 16, 0, cz * 16))
+        x, y, z = level.bounds.origin
+        x += level.bounds.size[0]/2 & ~15
+        z += level.bounds.size[2]/2 & ~15
+        x -= indevlevel.Width / 2
+        z -= indevlevel.Height / 2
+
+        middle = (x, y, z)
+
+        oldEntityCount = len(level.getEntitiesInBox(BoundingBox(middle, indevlevel.bounds.size)))
+        level.copyBlocksFrom(indevlevel, indevlevel.bounds, middle)
 
         convertedSourceBlocks, convertedSourceData = block_copy.convertBlocks(indevlevel, level, indevlevel.Blocks[0:16, 0:16, 0:indevlevel.Height], indevlevel.Data[0:16, 0:16, 0:indevlevel.Height])
-        assert (level.getChunk(cx, cz).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
+
+        assert ((level.getChunk(x >> 4, z >> 4).Blocks[0:16, 0:16, 0:indevlevel.Height]
+                == convertedSourceBlocks).all())
+
+        assert (oldEntityCount + len(indevlevel.getEntitiesInBox(indevlevel.bounds))
+                == len(level.getEntitiesInBox(BoundingBox(middle, indevlevel.bounds.size))))
 
     def testImportSchematic(self):
         level = self.anvilLevel.level
