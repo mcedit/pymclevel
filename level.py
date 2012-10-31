@@ -207,9 +207,6 @@ class MCLevel(object):
     def getTileEntitiesInBox(self, box):
         return []
 
-    def copyEntitiesFromIter(self, *args, **kw):
-        yield
-
     def removeEntitiesInBox(self, box):
         pass
 
@@ -474,78 +471,6 @@ class MCLevel(object):
 
 class EntityLevel(MCLevel):
     """Abstract subclass of MCLevel that adds default entity behavior"""
-
-    def copyEntitiesFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, entities):
-        chunkCount = sourceBox.chunkCount
-        i = 0
-        copyOffset = map(lambda x, y: x - y, destinationPoint, sourceBox.origin)
-        e = t = 0
-
-        for (chunk, slices, point) in sourceLevel.getChunkSlices(sourceBox):
-            yield (i, chunkCount)
-            i += 1
-
-            if entities:
-                e += len(chunk.Entities)
-                for entityTag in chunk.Entities:
-                    x, y, z = Entity.pos(entityTag)
-                    if (x, y, z) not in sourceBox:
-                        continue
-
-                    eTag = Entity.copyWithOffset(entityTag, copyOffset)
-
-                    self.addEntity(eTag)
-
-            t += len(chunk.TileEntities)
-            for tileEntityTag in chunk.TileEntities:
-                x, y, z = TileEntity.pos(tileEntityTag)
-                if (x, y, z) not in sourceBox:
-                    continue
-
-                eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
-
-                self.addTileEntity(eTag)
-
-        info("Copied {0} entities, {1} tile entities".format(e, t))
-
-    def copyEntitiesFromIter(self, sourceLevel, sourceBox, destinationPoint, entities=True):
-        # assume coords have already been adjusted by copyBlocks
-        # if not self.hasEntities or not sourceLevel.hasEntities:
-        #    return
-        sourcePoint0 = sourceBox.origin
-
-        if sourceLevel.isInfinite:
-            for i in self.copyEntitiesFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, entities):
-                yield i
-        else:
-            entsCopied = 0
-            tileEntsCopied = 0
-            copyOffset = map(lambda x, y: x - y, destinationPoint, sourcePoint0)
-            if entities:
-                for entity in sourceLevel.getEntitiesInBox(sourceBox):
-                    eTag = Entity.copyWithOffset(entity, copyOffset)
-
-                    self.addEntity(eTag)
-                    entsCopied += 1
-
-            i = 0
-            for entity in sourceLevel.getTileEntitiesInBox(sourceBox):
-                i += 1
-                if i % 100 == 0:
-                    yield
-
-                if not 'x' in entity:
-                    continue
-                eTag = TileEntity.copyWithOffset(entity, copyOffset)
-
-                try:
-                    self.addTileEntity(eTag)
-                    tileEntsCopied += 1
-                except ChunkNotPresent:
-                    pass
-
-            yield
-            info(u"Copied {0} entities, {1} tile entities".format(entsCopied, tileEntsCopied))
 
     def getEntitiesInBox(self, box):
         """Returns a list of references to entities in this chunk, whose positions are within box"""

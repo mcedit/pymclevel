@@ -1,11 +1,13 @@
 from datetime import datetime
 import logging
+log = logging.getLogger(__name__)
+
 import numpy
 from box import BoundingBox
 from mclevelbase import exhaust
 import materials
+from entity import Entity, TileEntity
 
-log = logging.getLogger(__name__)
 
 def convertBlocks(destLevel, sourceLevel, blocks, blockData):
     return materials.convertBlocks(destLevel.materials, sourceLevel.materials, blocks, blockData)
@@ -86,6 +88,9 @@ def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, bloc
     destBox = BoundingBox(destinationPoint, sourceBox.size)
     chunkCount = destBox.chunkCount
     i = 0
+    e = 0
+    t = 0
+
     sourceMask = sourceMaskFunc(blocksToCopy)
 
     copyOffset = [d - s for s, d in zip(sourceBox.origin, destinationPoint)]
@@ -139,12 +144,36 @@ def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, bloc
             if convertedSourceData is not None:
                 destChunk.Data[destSlices][mask] = convertedSourceData[mask]
 
+            if entities:
+                e += len(sourceChunk.Entities)
+                for entityTag in sourceChunk.Entities:
+                    x, y, z = Entity.pos(entityTag)
+                    if (x, y, z) not in sourceBox:
+                        continue
+
+                    eTag = Entity.copyWithOffset(entityTag, copyOffset)
+
+                    destLevel.addEntity(eTag)
+
+            t += len(sourceChunk.TileEntities)
+            for tileEntityTag in sourceChunk.TileEntities:
+                x, y, z = TileEntity.pos(tileEntityTag)
+                if (x, y, z) not in sourceBox:
+                    continue
+
+                eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
+
+                destLevel.addTileEntity(eTag)
+
         destChunk.chunkChanged()
 
-    for i in destLevel.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
-        yield i
-
     log.info("Duration: {0}".format(datetime.now() - startTime))
+    log.info("Copied {0} entities and {1} tile entities".format(e, t))
 
 def copyBlocksFrom(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
     return exhaust(copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
+
+
+
+
+
