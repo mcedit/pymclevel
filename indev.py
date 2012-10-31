@@ -108,25 +108,17 @@ class MCIndevLevel(EntityLevel):
         return self.Spawn
 
     def setPlayerPosition(self, pos, player="Ignored"):
-        for x in self.root_tag["Entities"]:
-            if x["id"].value == "LocalPlayer":
-                x["Pos"] = nbt.TAG_List([nbt.TAG_Float(p) for p in pos])
+        self.LocalPlayer["Pos"] = nbt.TAG_List([nbt.TAG_Float(p) for p in pos])
 
     def getPlayerPosition(self, player="Ignored"):
-        for x in self.root_tag["Entities"]:
-            if x["id"].value == "LocalPlayer":
-                return array(map(lambda x: x.value, x["Pos"]))
+        return array(map(lambda x: x.value, self.LocalPlayer["Pos"]))
 
     def setPlayerOrientation(self, yp, player="Ignored"):
-        for x in self.root_tag["Entities"]:
-            if x["id"].value == "LocalPlayer":
-                x["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
+        self.LocalPlayer["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
 
     def getPlayerOrientation(self, player="Ignored"):
         """ returns (yaw, pitch) """
-        for x in self.root_tag["Entities"]:
-            if x["id"].value == "LocalPlayer":
-                return array(map(lambda x: x.value, x["Rotation"]))
+        return array(map(lambda x: x.value, self.LocalPlayer["Rotation"]))
 
     def setBlockDataAt(self, x, y, z, newdata):
         if x < 0 or y < 0 or z < 0:
@@ -210,14 +202,17 @@ class MCIndevLevel(EntityLevel):
 
                 TileEntity.setpos(te, (x, y, z))
 
-            if len(filter(lambda x: x['id'].value == 'LocalPlayer', root_tag["Entities"])) == 0:  # omen doesn't make a player entity
-                p = nbt.TAG_Compound()
-                p['id'] = nbt.TAG_String('LocalPlayer')
-                p['Pos'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(64.), nbt.TAG_Float(0.)])
-                p['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(45.)])
 
-                root_tag["Entities"].append(p)
-                # self.saveInPlace()
+            localPlayerList = [tag for tag in root_tag["Entities"] if tag['id'].value == 'LocalPlayer']
+            if len(localPlayerList) == 0:  # omen doesn't make a player entity
+                playerTag = nbt.TAG_Compound()
+                playerTag['id'] = nbt.TAG_String('LocalPlayer')
+                playerTag['Pos'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(64.), nbt.TAG_Float(0.)])
+                playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0.), nbt.TAG_Float(45.)])
+                self.LocalPlayer = playerTag
+
+            else:
+                self.LocalPlayer = localPlayerList[0]
 
         else:
             info(u"Creating new Indev levels is not yet implemented.!")
@@ -288,6 +283,7 @@ class MCIndevLevel(EntityLevel):
 
         self.root_tag["Map"] = mapTag
 
+        self.Entities.append(self.LocalPlayer)
         # fix up Entities imported from Alpha worlds
         def numbersToFloats(ent):
             for attr in "Motion", "Pos":
@@ -315,6 +311,8 @@ class MCIndevLevel(EntityLevel):
             os.remove(filename + ".old")
         except Exception:
             pass
+
+        self.Entities.remove(self.LocalPlayer)
 
         self.BlockLight = self.Data & 0xf
 
