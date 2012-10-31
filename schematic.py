@@ -394,7 +394,6 @@ class ZipSchematic (infiniteworld.MCInfdevOldLevel):
         except Exception, e:
             print "Exception reading schematic.dat, skipping: {0!r}".format(e)
             self.Width = 0
-            self.Height = 128
             self.Length = 0
 
     def __del__(self):

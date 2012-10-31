@@ -1226,7 +1226,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         self.Length = 0
         self.Width = 0
-        self.Height = 128  # subject to change?
+        self.Height = 256
+
         self.playerTagCache = {}
         self.players = []
 
@@ -1269,7 +1270,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         assert self.version == self.VERSION_ANVIL, "Pre-Anvil world formats are not supported (for now)"
 
-        self.Height = 256
+
 
         self.players = [x[:-4] for x in os.listdir(self.worldFolder.getFolderPath("players")) if x.endswith(".dat")]
         if "Player" in self.root_tag["Data"]:
