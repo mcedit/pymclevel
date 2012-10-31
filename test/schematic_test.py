@@ -22,10 +22,6 @@ class TestSchematics(unittest.TestCase):
         schematic = MCSchematic(shape=size, filename=temp, mats='Classic')
         level = self.indevLevel.level
 
-        self.failUnlessRaises(ValueError, lambda: (
-            schematic.copyBlocksFrom(level, BoundingBox((-32, -32, -32), (64, 64, 64,)), (0, 0, 0))
-        ))
-
         schematic.copyBlocksFrom(level, BoundingBox((0, 0, 0), (64, 64, 64,)), (0, 0, 0))
         assert((schematic.Blocks[0:64, 0:64, 0:64] == level.Blocks[0:64, 0:64, 0:64]).all())
 
