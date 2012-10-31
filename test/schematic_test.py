@@ -15,7 +15,7 @@ class TestSchematics(unittest.TestCase):
         self.anvilLevel = TempLevel("AnvilWorld")
 
     def testCreate(self):
-        # info("Schematic from indev")
+        # log.info("Schematic from indev")
 
         size = (64, 64, 64)
         temp = mktemp("testcreate.schematic")

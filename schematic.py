@@ -20,7 +20,6 @@ import nbt
 from numpy import array, swapaxes, uint8, zeros
 
 log = getLogger(__name__)
-warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 __all__ = ['MCSchematic', 'INVEditChest']
 
@@ -181,7 +180,7 @@ class MCSchematic (EntityLevel):
 
         blockrotation.RotateLeft(self.Blocks, self.Data)
 
-        info(u"Relocating entities...")
+        log.info(u"Relocating entities...")
         for entity in self.Entities:
             for p in "Pos", "Motion":
                 if p == "Pos":
@@ -231,7 +230,7 @@ class MCSchematic (EntityLevel):
 
         northSouthPaintingMap = [0, 3, 2, 1]
 
-        info(u"N/S Flip: Relocating entities...")
+        log.info(u"N/S Flip: Relocating entities...")
         for entity in self.Entities:
 
             entity["Pos"][0].value = self.Width - entity["Pos"][0].value
@@ -257,7 +256,7 @@ class MCSchematic (EntityLevel):
 
         eastWestPaintingMap = [2, 1, 0, 3]
 
-        info(u"E/W Flip: Relocating entities...")
+        log.info(u"E/W Flip: Relocating entities...")
         for entity in self.Entities:
 
             entity["Pos"][2].value = self.Length - entity["Pos"][2].value
@@ -340,7 +339,7 @@ class INVEditChest(MCSchematic):
                 try:
                     root_tag = nbt.load(filename)
                 except IOError, e:
-                    info(u"Failed to load file {0}".format(e))
+                    log.info(u"Failed to load file {0}".format(e))
                     raise
         else:
             assert root_tag, "Must have either root_tag or filename"

@@ -13,7 +13,6 @@ NOTEX = (0xB0, 0xE0)
 import yaml
 
 log = getLogger(__file__)
-debug, info, warn, error, critical = log.debug, log.info, log.warn, log.error, log.critical
 
 
 class Block(object):
@@ -162,12 +161,12 @@ class MCMaterials(object):
 
             f = file(path)
         try:
-            info(u"Loading block info from %s", f)
+            log.info(u"Loading block info from %s", f)
             blockyaml = yaml.load(f)
             self.addYamlBlocks(blockyaml)
 
         except Exception, e:
-            warn(u"Exception while loading block info from %s: %s", f, e)
+            log.warn(u"Exception while loading block info from %s: %s", f, e)
             traceback.print_exc()
 
     def addYamlBlocks(self, blockyaml):
@@ -176,9 +175,9 @@ class MCMaterials(object):
             try:
                 self.addYamlBlock(block)
             except Exception, e:
-                warn(u"Exception while parsing block: %s", e)
+                log.warn(u"Exception while parsing block: %s", e)
                 traceback.print_exc()
-                warn(u"Block definition: \n%s", pformat(block))
+                log.warn(u"Block definition: \n%s", pformat(block))
 
     def addYamlBlock(self, kw):
         blockID = kw['id']
@@ -819,13 +818,13 @@ def conversionFunc(destMats, sourceMats):
         return func
 
     filters, unavailable = guessFilterTable(sourceMats, destMats)
-    debug("")
-    debug("%s %s %s", sourceMats.name, "=>", destMats.name)
+    log.debug("")
+    log.debug("%s %s %s", sourceMats.name, "=>", destMats.name)
     for a, b in [(sourceMats.blockWithID(*a), destMats.blockWithID(*b)) for a, b in filters]:
-        debug("{0:20}: \"{1}\"".format('"' + a.name + '"', b.name))
+        log.debug("{0:20}: \"{1}\"".format('"' + a.name + '"', b.name))
 
-    debug("")
-    debug("Missing blocks: %s", [sourceMats.blockWithID(*a).name for a in unavailable])
+    log.debug("")
+    log.debug("Missing blocks: %s", [sourceMats.blockWithID(*a).name for a in unavailable])
 
     table = _filterTable(filters, unavailable, (35, 0))
     func = filterConversion(table)

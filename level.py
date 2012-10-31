@@ -18,8 +18,6 @@ from numpy import argmax, swapaxes, zeros, zeros_like
 import os.path
 
 log = getLogger(__name__)
-warn, error, info, debug = log.warn, log.error, log.info, log.debug
-
 
 def computeChunkHeightMap(materials, blocks, HeightMap=None):
     """Computes the HeightMap array for a chunk, which stores the lowest
@@ -276,7 +274,7 @@ class MCLevel(object):
 
     def _getSlices(self, box):
         if box == self.bounds:
-            info("All chunks selected! Selecting %s chunks instead of %s", self.chunkCount, box.chunkCount)
+            log.info("All chunks selected! Selecting %s chunks instead of %s", self.chunkCount, box.chunkCount)
             y = box.miny
             slices = slice(0, 16), slice(0, 16), slice(0, box.maxy)
 
@@ -447,7 +445,7 @@ class EntityLevel(MCLevel):
             newEnts.append(ent)
 
         entsRemoved = len(self.Entities) - len(newEnts)
-        debug("Removed {0} entities".format(entsRemoved))
+        log.debug("Removed {0} entities".format(entsRemoved))
 
         self.Entities.value[:] = newEnts
 
@@ -464,7 +462,7 @@ class EntityLevel(MCLevel):
             newEnts.append(ent)
 
         entsRemoved = len(self.TileEntities) - len(newEnts)
-        debug("Removed {0} tile entities".format(entsRemoved))
+        log.debug("Removed {0} tile entities".format(entsRemoved))
 
         self.TileEntities.value[:] = newEnts
 
@@ -486,7 +484,7 @@ class EntityLevel(MCLevel):
                 entities.append(entityTag)
 
         if len(entities) > 1:
-            info("Multiple tile entities found: {0}".format(entities))
+            log.info("Multiple tile entities found: {0}".format(entities))
         if len(entities) == 0:
             return None
 

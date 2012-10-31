@@ -68,7 +68,6 @@ import nbt
 import os
 
 log = getLogger(__name__)
-warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 MinecraftLevel = "MinecraftLevel"
 
@@ -215,7 +214,7 @@ class MCIndevLevel(EntityLevel):
                 self.LocalPlayer = localPlayerList[0]
 
         else:
-            info(u"Creating new Indev levels is not yet implemented.!")
+            log.info(u"Creating new Indev levels is not yet implemented.!")
             raise ValueError("Can't do that yet")
 #            self.SurroundingGroundHeight = root_tag[Environment][SurroundingGroundHeight].value
 #            self.SurroundingGroundType = root_tag[Environment][SurroundingGroundType].value
@@ -244,7 +243,7 @@ class MCIndevLevel(EntityLevel):
                                8, 9, 10, 11, 12, 13, 14, 15])
 
         torchIndexes = (self.Blocks == self.materials.Torch.ID)
-        info(u"Rotating torches: {0}".format(len(torchIndexes.nonzero()[0])))
+        log.info(u"Rotating torches: {0}".format(len(torchIndexes.nonzero()[0])))
         self.Data[torchIndexes] = torchRotation[self.Data[torchIndexes]]
 
     def decodePos(self, v):
@@ -260,7 +259,7 @@ class MCIndevLevel(EntityLevel):
         if filename is None:
             filename = self.filename
         if filename is None:
-            warn(u"Attempted to save an unnamed file in place")
+            log.warn(u"Attempted to save an unnamed file in place")
             return  # you fool!
 
         self.Data <<= 4
