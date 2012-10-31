@@ -433,134 +433,8 @@ class MCLevel(object):
 
     # --- Copying ---
 
-    def copyBlocksFromFiniteToFinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
-        # assume destinationPoint is entirely within this level, and the size of sourceBox fits entirely within it.
-        sourcex, sourcey, sourcez = map(slice, sourceBox.origin, sourceBox.maximum)
-        destCorner2 = map(lambda a, b: a + b, sourceBox.size, destinationPoint)
-        destx, desty, destz = map(slice, destinationPoint, destCorner2)
+    from block_copy import copyBlocksFrom, copyBlocksFromIter
 
-        sourceData = None
-        if hasattr(sourceLevel, 'Data'):
-            sourceData = sourceLevel.Data[sourcex, sourcez, sourcey]
-        convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceLevel.Blocks[sourcex, sourcez, sourcey], sourceData)
-
-        blocks = self.Blocks[destx, destz, desty]
-
-        mask = slice(None, None)
-
-        if not (blocksToCopy is None):
-            typemask = zeros(256, dtype='bool')
-            typemask[blocksToCopy] = True
-            mask = typemask[convertedSourceBlocks]
-
-        blocks[mask] = convertedSourceBlocks[mask]
-        if hasattr(self, 'Data') and hasattr(sourceLevel, 'Data'):
-            data = self.Data[destx, destz, desty]
-            data[mask] = convertedSourceData[mask]
-
-    def copyBlocksFromInfinite(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
-        return exhaust(self.copyBlocksFromInfinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy))
-
-    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy):
-        if blocksToCopy is not None:
-            typemask = zeros(256, dtype='bool')
-            typemask[blocksToCopy] = True
-
-        for i, (chunk, slices, point) in enumerate(sourceLevel.getChunkSlices(sourceBox)):
-            point = map(lambda a, b: a + b, point, destinationPoint)
-            point = point[0], point[2], point[1]
-            mask = slice(None, None)
-
-            convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, chunk.Blocks[slices], chunk.Data[slices])
-
-            destSlices = [slice(p, p + s.stop - s.start) for p, s in zip(point, slices)]
-
-            blocks = self.Blocks[destSlices]
-
-            if blocksToCopy is not None:
-                mask = typemask[convertedSourceBlocks]
-
-            blocks[mask] = convertedSourceBlocks[mask]
-
-            if hasattr(self, 'Data'):
-                data = self.Data[destSlices]
-                data[mask] = convertedSourceData[mask]
-
-            yield i
-
-    def adjustCopyParameters(self, sourceLevel, sourceBox, destinationPoint):
-
-        # if the destination box is outside the level, it and the source corners are moved inward to fit.
-        # ValueError is raised if the source corners are outside sourceLevel
-        (x, y, z) = map(int, destinationPoint)
-
-        sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
-
-        (lx, ly, lz) = sourceBox.size
-        debug(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format(ly * lz * lx, sourceBox, destinationPoint, sourceLevel, self))
-
-        # clip the source ranges to this level's edges.  move the destination point as needed.
-        # xxx abstract this
-        if y < 0:
-            sourceBox.origin[1] -= y
-            sourceBox.size[1] += y
-            y = 0
-        if y + sourceBox.size[1] > self.Height:
-            sourceBox.size[1] -= y + sourceBox.size[1] - self.Height
-            y = self.Height - sourceBox.size[1]
-
-        # for infinite levels, don't clip along those dimensions because the
-        # infinite copy func will just skip missing chunks
-        if self.Width != 0:
-            if x < 0:
-                sourceBox.origin[0] -= x
-                sourceBox.size[0] += x
-                x = 0
-            if x + sourceBox.size[0] > self.Width:
-                sourceBox.size[0] -= x + sourceBox.size[0] - self.Width
-                # x=self.Width-sourceBox.size[0]
-
-        if self.Length != 0:
-            if z < 0:
-                sourceBox.origin[2] -= z
-                sourceBox.size[2] += z
-                z = 0
-            if z + sourceBox.size[2] > self.Length:
-                sourceBox.size[2] -= z + sourceBox.size[2] - self.Length
-                # z=self.Length-sourceBox.size[2]
-
-        destinationPoint = (x, y, z)
-
-        return sourceBox, destinationPoint
-
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
-        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
-
-    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
-        if (not sourceLevel.isInfinite) and not(
-               sourceLevel.containsPoint(*sourceBox.origin) and
-               sourceLevel.containsPoint(*map(lambda x: x - 1, sourceBox.maximum))):
-            raise ValueError("{0} cannot provide blocks between {1}".format(sourceLevel, sourceBox))
-
-        sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
-        yield
-
-        if min(sourceBox.size) <= 0:
-            print "Empty source box, aborting"
-            return
-
-        info(u"Copying {0} blocks from {1} to {2}" .format(sourceBox.volume, sourceBox, destinationPoint))
-
-        if not sourceLevel.isInfinite:
-            self.copyBlocksFromFiniteToFinite(sourceLevel, sourceBox, destinationPoint, blocksToCopy)
-        else:
-            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy):
-                yield i
-        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
-            yield i
-
-    def convertBlocksFromLevel(self, sourceLevel, blocks, blockData):
-        return materials.convertBlocks(self.materials, sourceLevel.materials, blocks, blockData)
 
     def saveInPlace(self):
         self.saveToFile(self.filename)
@@ -790,6 +664,23 @@ class ChunkBase(EntityLevel):
     @property
     def materials(self):
         return self.world.materials
+
+
+    def getChunkSlicesForBox(self, box):
+        """
+         Given a BoundingBox enclosing part of the world, return a smaller box enclosing the part of this chunk
+         intersecting the given box, and a tuple of slices that can be used to select the corresponding parts
+         of this chunk's block and data arrays.
+        """
+        bounds = self.bounds
+        localBox = box.intersect(bounds)
+
+        slices = (
+            slice(localBox.minx - bounds.minx, localBox.maxx - bounds.minx),
+            slice(localBox.minz - bounds.minz, localBox.maxz - bounds.minz),
+            slice(localBox.miny - bounds.miny, localBox.maxy - bounds.miny),
+        )
+        return localBox, slices
 
 
 class FakeChunk(ChunkBase):

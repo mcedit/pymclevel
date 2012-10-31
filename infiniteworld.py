@@ -493,165 +493,7 @@ class ChunkedLevelMixin(MCLevel):
             skyLight[xInChunk, zInChunk, y] = lightValue
         return oldValue < lightValue
 
-    def sourceMaskFunc(self, blocksToCopy):
-        if blocksToCopy is not None:
-            typemask = zeros(256, dtype='bool')
-            typemask[blocksToCopy] = 1
-
-            def maskedSourceMask(sourceBlocks):
-                return typemask[sourceBlocks]
-
-            return maskedSourceMask
-
-        def unmaskedSourceMask(_sourceBlocks):
-            return slice(None, None)
-
-        return unmaskedSourceMask
-
     createChunk = NotImplemented
-
-    def copyBlocksFromFiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create=False):
-        # assumes destination point and bounds have already been checked.
-        (sx, sy, sz) = sourceBox.origin
-
-        start = datetime.now()
-
-        sourceMask = self.sourceMaskFunc(blocksToCopy)
-
-        destBox = BoundingBox(destinationPoint, sourceBox.size)
-
-        i = 0
-        chunkCount = float(destBox.chunkCount)
-
-        for (cPos, slices, point) in self._getSlices(destBox):
-            if not self.containsChunk(*cPos):
-                if create:
-                    self.createChunk(*cPos)
-                else:
-                    continue
-            chunk = self.getChunk(*cPos)
-
-            i += 1
-            yield (i, chunkCount)
-
-            if i % 100 == 0:
-                info("Chunk {0}...".format(i))
-
-            blocks = chunk.Blocks[slices]
-
-            localSourceCorner2 = (
-                sx + point[0] + blocks.shape[0],
-                sy + blocks.shape[2],
-                sz + point[2] + blocks.shape[1],
-            )
-
-            sourceBlocks = sourceLevel.Blocks[sx + point[0]:localSourceCorner2[0],
-                                              sz + point[2]:localSourceCorner2[2],
-                                              sy:localSourceCorner2[1]]
-            # sourceBlocks = filterTable[sourceBlocks]
-            mask = sourceMask(sourceBlocks)
-
-            # for small level slices, reduce the destination area
-            x, z, y = sourceBlocks.shape
-            blocks = blocks[0:x, 0:z, 0:y]
-
-            sourceData = None
-            if hasattr(sourceLevel, 'Data'):
-                # indev or schematic
-                sourceData = sourceLevel.Data[sx + point[0]:localSourceCorner2[0],
-                                              sz + point[2]:localSourceCorner2[2],
-                                              sy:localSourceCorner2[1]]
-
-            data = chunk.Data[slices][0:x, 0:z, 0:y]
-
-            convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
-
-            blocks[mask] = convertedSourceBlocks[mask]
-            if convertedSourceData is not None:
-                data[mask] = (convertedSourceData[:, :, :])[mask]
-                data[mask] &= 0xf
-
-            chunk.chunkChanged()
-
-        d = datetime.now() - start
-        if i:
-            info("Finished {2} chunks in {0} ({1} per chunk)".format(d, d / i, i))
-
-    def copyBlocksFromInfiniteIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy, create=False):
-        """ copy blocks between two infinite levels by looping through the
-        destination's chunks. make a sub-box of the source level for each chunk
-        and copy block and entities in the sub box to the dest chunk."""
-
-        # assumes destination point and bounds have already been checked.
-        destBox = BoundingBox(destinationPoint, sourceBox.size)
-        chunkCount = destBox.chunkCount
-        i = 0
-        sourceMask = self.sourceMaskFunc(blocksToCopy)
-
-        def subbox(slices, point):
-            size = [s.stop - s.start for s in slices]
-            size[1], size[2] = size[2], size[1]
-            return BoundingBox([p + a for p, a in zip(point, sourceBox.origin)], size)
-
-        def shouldCreateFunc(slices, point):
-            box = subbox(slices, point)
-            b = any(list(sourceLevel.containsChunk(*c) for c in box.chunkPositions))  # any() won't take a generator-expression :(
-            # if b == False:
-            #    print 'Skipped ', list(box.chunkPositions)
-            return b
-
-        for cPos, slices, point in self._getSlices(destBox):
-            if not self.containsChunk(*cPos):
-                if shouldCreateFunc(slices, point):
-                    self.createChunk(*cPos)
-                else:
-                    continue
-            chunk = self.getChunk(*cPos)
-
-            i += 1
-            yield (i, chunkCount)
-            if i % 100 == 0:
-                info("Chunk {0}...".format(i))
-
-            dstblocks = chunk.Blocks[slices]
-            dstdata = chunk.Data[slices]
-            sourceSubBox = subbox(slices, point)
-            for srcchunk, srcslices, srcpoint in sourceLevel.getChunkSlices(sourceSubBox):
-                srcpoint = srcpoint[0], srcpoint[2], srcpoint[1]
-                sourceBlocks = srcchunk.Blocks[srcslices]
-                sourceData = srcchunk.Data[srcslices]
-                mask = sourceMask(sourceBlocks)
-                convertedSourceBlocks, convertedSourceData = self.convertBlocksFromLevel(sourceLevel, sourceBlocks, sourceData)
-
-                dstslices = [slice(p, p + (s.stop - s.start)) for p, s in zip(srcpoint, srcslices)]
-                dstblocks[dstslices][mask] = convertedSourceBlocks[mask]
-                if convertedSourceData is not None:
-                    dstdata[dstslices][mask] = convertedSourceData[mask]
-
-            chunk.chunkChanged()
-
-    def copyBlocksFrom(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
-        return exhaust(self.copyBlocksFromIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
-
-    def copyBlocksFromIter(self, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
-        (lx, ly, lz) = sourceBox.size
-
-        sourceBox, destinationPoint = self.adjustCopyParameters(sourceLevel, sourceBox, destinationPoint)
-        # needs work xxx
-        info(u"Copying {0} blocks from {1} to {2}" .format(ly * lz * lx, sourceBox, destinationPoint))
-        startTime = datetime.now()
-
-        if not sourceLevel.isInfinite:
-            for i in self.copyBlocksFromFiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
-                yield i
-
-        else:
-            for i in self.copyBlocksFromInfiniteIter(sourceLevel, sourceBox, destinationPoint, blocksToCopy, create):
-                yield i
-
-        for i in self.copyEntitiesFromIter(sourceLevel, sourceBox, destinationPoint, entities):
-            yield i
-        info("Duration: {0}".format(datetime.now() - startTime))
 
     def fillBlocks(self, box, blockInfo, blocksToReplace=()):
         return exhaust(self.fillBlocksIter(box, blockInfo, blocksToReplace))
@@ -1573,8 +1415,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         chunkData = self._loadedChunkData.get((cx, cz))
         if chunkData is not None: return chunkData
 
+        data = self._getChunkBytes(cx, cz)
+        if data is None:
+            raise ChunkNotPresent, (cx, cz)
+
         try:
-            data = self._getChunkBytes(cx, cz)
             root_tag = nbt.load(buf=data)
         except MemoryError:
             raise

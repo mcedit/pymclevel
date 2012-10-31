@@ -9,6 +9,7 @@ from infiniteworld import MCInfdevOldLevel
 import nbt
 from schematic import MCSchematic
 from box import BoundingBox
+import block_copy
 from templevel import mktemp, TempLevel
 
 __author__ = 'Rio'
@@ -50,7 +51,7 @@ class TestAnvilLevel(unittest.TestCase):
         cx, cz = level.allChunks.next()
         level.copyBlocksFrom(indevlevel, BoundingBox((0, 0, 0), (256, 128, 256)), (cx * 16, 0, cz * 16))
 
-        convertedSourceBlocks, convertedSourceData = indevlevel.convertBlocksFromLevel(level, indevlevel.Blocks[0:16, 0:16, 0:indevlevel.Height], indevlevel.Data[0:16, 0:16, 0:indevlevel.Height])
+        convertedSourceBlocks, convertedSourceData = block_copy.convertBlocks(indevlevel, level, indevlevel.Blocks[0:16, 0:16, 0:indevlevel.Height], indevlevel.Data[0:16, 0:16, 0:indevlevel.Height])
         assert (level.getChunk(cx, cz).Blocks[0:16, 0:16, 0:indevlevel.Height] == convertedSourceBlocks).all()
 
     def testImportSchematic(self):
@@ -62,7 +63,7 @@ class TestAnvilLevel(unittest.TestCase):
         level.copyBlocksFrom(schem, schem.bounds, (0, 64, 0))
         schem = MCSchematic(shape=schem.bounds.size)
         schem.copyBlocksFrom(level, box, (0, 0, 0))
-        convertedSourceBlocks, convertedSourceData = schem.convertBlocksFromLevel(level, schem.Blocks, schem.Data)
+        convertedSourceBlocks, convertedSourceData = block_copy.convertBlocks(schem, level, schem.Blocks, schem.Data)
         assert (level.getChunk(cx, cz).Blocks[0:1, 0:3, 64:65] == convertedSourceBlocks).all()
 
     def testRecreateChunks(self):
