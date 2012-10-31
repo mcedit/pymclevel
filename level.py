@@ -362,50 +362,8 @@ class MCLevel(object):
         self.Blocks[x, z, y] = blockID
 
     # --- Fill and Replace ---
-    def blockReplaceTable(self, blocksToReplace):
-        blocktable = zeros((256, 16), dtype='bool')
-        for b in blocksToReplace:
-            if b.hasVariants:
-                blocktable[b.ID, b.blockData] = True
-            else:
-                blocktable[b.ID] = True
 
-        return blocktable
-
-    def fillBlocksIter(self, box, blockInfo, blocksToReplace=()):
-        self.fillBlocks(box, blockInfo, blocksToReplace)
-        yield
-
-    def fillBlocks(self, box, blockInfo, blocksToReplace=()):
-
-        if box is None:
-            box = self.bounds
-        else:
-            box = box.intersect(self.bounds)
-
-        info(u"Filling blocks in {0} with {1}, replacing{2}".format(box, blockInfo, blocksToReplace))
-
-        slices = map(slice, box.origin, box.maximum)
-
-        blocks = self.Blocks[slices[0], slices[2], slices[1]]
-        if len(blocksToReplace):
-            blocktable = self.blockReplaceTable(blocksToReplace)
-            shouldRetainData = (self.materials == materials.alphaMaterials) and all([blockrotation.SameRotationType(blockInfo, b) for b in blocksToReplace])
-
-            if hasattr(self, "Data") and shouldRetainData:
-                data = self.Data[slices[0], slices[2], slices[1]]
-                mask = blocktable[blocks, data]
-
-                data[mask] = blockInfo.blockData
-            else:
-                mask = blocktable[blocks, 0]
-
-            blocks[mask] = blockInfo.ID
-
-        else:
-            blocks[:] = blockInfo.ID
-            if hasattr(self, "Data"):
-                self.Data[slices[0], slices[2], slices[1]] = blockInfo.blockData
+    from block_fill import fillBlocks, fillBlocksIter
 
     # --- Transformations ---
     def rotateLeft(self):
