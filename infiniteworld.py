@@ -1264,6 +1264,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         log.info(u"Scanning for regions...")
         self._allChunks = self.worldFolder.listChunks()
         self._allChunks.update(self.unsavedWorkFolder.listChunks())
+        self._allChunks.update(self._loadedChunkData.iterkeys())
 
     def getRegionForChunk(self, cx, cz):
         return self.worldFolder.getRegionFile(cx, cz)
