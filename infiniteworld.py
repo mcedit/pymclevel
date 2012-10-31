@@ -30,7 +30,6 @@ from numpy import array, clip, maximum, zeros
 from regionfile import MCRegionFile
 
 log = getLogger(__name__)
-warn, error, info, debug = log.warn, log.error, log.info, log.debug
 
 
 DIM_NETHER = -1
@@ -162,7 +161,7 @@ class AnvilChunkData(object):
     def savedTagData(self):
         """ does not recalculate any data or light """
 
-        debug(u"Saving chunk: {0}".format(self))
+        log.debug(u"Saving chunk: {0}".format(self))
         sanitizeBlocks(self)
 
         sections = nbt.TAG_List()
@@ -188,7 +187,7 @@ class AnvilChunkData(object):
         data = self.root_tag.save(compressed=False)
         del self.root_tag["Level"]["Sections"]
 
-        debug(u"Saved chunk {0}".format(self))
+        log.debug(u"Saved chunk {0}".format(self))
         return data
 
     @property
@@ -507,10 +506,10 @@ class ChunkedLevelMixin(MCLevel):
 
         # shouldRetainData = (not blockInfo.hasVariants and not any([b.hasVariants for b in blocksToReplace]))
         # if shouldRetainData:
-        #    info( "Preserving data bytes" )
+        #    log.info( "Preserving data bytes" )
         shouldRetainData = False  # xxx old behavior overwrote blockdata with 0 when e.g. replacing water with lava
 
-        info("Replacing {0} with {1}".format(blocksToReplace, blockInfo))
+        log.info("Replacing {0} with {1}".format(blocksToReplace, blockInfo))
 
         changesLighting = True
         blocktable = None
@@ -538,7 +537,7 @@ class ChunkedLevelMixin(MCLevel):
         for (chunk, slices, point) in chunkIterator:
             i += 1
             if i % 100 == 0:
-                info(u"Chunk {0}...".format(i))
+                log.info(u"Chunk {0}...".format(i))
             yield i, box.chunkCount
 
             blocks = chunk.Blocks[slices]
@@ -578,7 +577,7 @@ class ChunkedLevelMixin(MCLevel):
             chunk.chunkChanged(needsLighting)
 
         if len(blocksToReplace):
-            info(u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))
+            log.info(u"Replace: Skipped {0} chunks, replaced {1} blocks".format(skipped, replaced))
 
     def generateLights(self, dirtyChunks=None):
         return exhaust(self.generateLightsIter(dirtyChunks))
@@ -600,7 +599,7 @@ class ChunkedLevelMixin(MCLevel):
         # at 5MB per loaded chunk,
         maxLightingChunks = 4000
 
-        info(u"Asked to light {0} chunks".format(len(dirtyChunks)))
+        log.info(u"Asked to light {0} chunks".format(len(dirtyChunks)))
         chunkLists = [dirtyChunks]
 
         def reverseChunkPosition(x):
@@ -634,13 +633,13 @@ class ChunkedLevelMixin(MCLevel):
             chunkLists = splitChunkLists(chunkLists)
 
         if len(chunkLists) > 1:
-            info(u"Using {0} batches to conserve memory.".format(len(chunkLists)))
+            log.info(u"Using {0} batches to conserve memory.".format(len(chunkLists)))
         # batchSize = min(len(a) for a in chunkLists)
         estimatedTotals = [len(a) * 32 for a in chunkLists]
         workDone = 0
 
         for i, dc in enumerate(chunkLists):
-            info(u"Batch {0}/{1}".format(i, len(chunkLists)))
+            log.info(u"Batch {0}/{1}".format(i, len(chunkLists)))
 
             dc = sorted(dc, key=lambda x: x.chunkPosition)
             workTotal = sum(estimatedTotals)
@@ -655,7 +654,7 @@ class ChunkedLevelMixin(MCLevel):
         timeDelta = datetime.now() - startTime
 
         if len(dirtyChunks):
-            info(u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta / len(dirtyChunks) or 0))
+            log.info(u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta / len(dirtyChunks) or 0))
 
         return
 
@@ -669,7 +668,7 @@ class ChunkedLevelMixin(MCLevel):
         workTotal = len(dirtyChunks) * 29
 
         progressInfo = (u"Lighting {0} chunks".format(len(dirtyChunks)))
-        info(progressInfo)
+        log.info(progressInfo)
 
         for i, chunk in enumerate(dirtyChunks):
 
@@ -710,7 +709,7 @@ class ChunkedLevelMixin(MCLevel):
             lights = ("BlockLight",)
         else:
             lights = ("BlockLight", "SkyLight")
-        info(u"Dispersing light...")
+        log.info(u"Dispersing light...")
 
         def clipLight(light):
             # light arrays are all uint8 by default, so when results go negative
@@ -730,7 +729,7 @@ class ChunkedLevelMixin(MCLevel):
                     break
 
                 progressInfo = u"{0} Pass {1}: {2} chunks".format(light, i, len(newDirtyChunks))
-                info(progressInfo)
+                log.info(progressInfo)
 
 #                propagate light!
 #                for each of the six cardinal directions, figure a new light value for
@@ -1021,7 +1020,7 @@ class AnvilWorldFolder(object):
 
                         chunks.add((cx, cz))
             else:
-                info(u"Removing empty region file {0}".format(filepath))
+                log.info(u"Removing empty region file {0}".format(filepath))
                 regionFile.close()
                 os.unlink(regionFile.path)
 
@@ -1160,15 +1159,15 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 self.root_tag = nbt.load(self.filename)
             except Exception, e:
                 filename_old = self.worldFolder.getFilePath("level.dat_old")
-                info("Error loading level.dat, trying level.dat_old ({0})".format(e))
+                log.info("Error loading level.dat, trying level.dat_old ({0})".format(e))
                 try:
                     self.root_tag = nbt.load(filename_old)
-                    info("level.dat restored from backup.")
+                    log.info("level.dat restored from backup.")
                     self.saveInPlace()
                 except Exception, e:
                     traceback.print_exc()
                     print repr(e)
-                    info("Error loading level.dat_old. Initializing with defaults.")
+                    log.info("Error loading level.dat_old. Initializing with defaults.")
                     self._create(self.filename, random_seed, last_played)
 
     def saveInPlace(self):
@@ -1198,7 +1197,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.playerTagCache = {}
 
         self.root_tag.save(self.filename)
-        info(u"Saved {0} chunks".format(dirtyChunkCount))
+        log.info(u"Saved {0} chunks".format(dirtyChunkCount))
 
     def close(self):
         """
@@ -1319,11 +1318,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                         dimNo = int(intInDirname[-1])
                     else:
                         dimNo = 999  # identical dimNo should not matter
-                    info("Found dimension {0}".format(dirname))
+                    log.info("Found dimension {0}".format(dirname))
                     dim = MCAlphaDimension(self, dimNo, dirname)
                     self.dimensions[dirname] = dim
                 except Exception, e:
-                    error(u"Error loading dimension {0}: {1}".format(dirname, e))
+                    log.error(u"Error loading dimension {0}: {1}".format(dirname, e))
 
     def getDimension(self, dimNo, dirname=None):
         if dirname is None:
@@ -1345,7 +1344,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     # --- Region I/O ---
 
     def preloadChunkPositions(self):
-        info(u"Scanning for regions...")
+        log.info(u"Scanning for regions...")
         self._allChunks = self.worldFolder.listChunks()
 
     def getRegionForChunk(self, cx, cz):
@@ -1526,7 +1525,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         for chunk, slices, point in self.getChunkSlices(box):
             count += chunk.removeEntitiesInBox(box)
 
-        info("Removed {0} entities".format(count))
+        log.info("Removed {0} entities".format(count))
         return count
 
     def removeTileEntitiesInBox(self, box):
@@ -1534,7 +1533,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         for chunk, slices, point in self.getChunkSlices(box):
             count += chunk.removeTileEntitiesInBox(box)
 
-        info("Removed {0} tile entities".format(count))
+        log.info("Removed {0} tile entities".format(count))
         return count
 
     # --- Chunk manipulation ---
@@ -1572,14 +1571,14 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 self.createChunk(cx, cz)
             assert self.containsChunk(cx, cz), "Just created {0} but it didn't take".format((cx, cz))
             if i % 100 == 0:
-                info(u"Chunk {0}...".format(i))
+                log.info(u"Chunk {0}...".format(i))
 
-        info("Created {0} chunks.".format(len(ret)))
+        log.info("Created {0} chunks.".format(len(ret)))
 
         return ret
 
     def createChunksInBox(self, box):
-        info(u"Creating {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
+        log.info(u"Creating {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
         return self.createChunks(box.chunkPositions)
 
     def deleteChunk(self, cx, cz):
@@ -1591,7 +1590,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
 
     def deleteChunksInBox(self, box):
-        info(u"Deleting {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
+        log.info(u"Deleting {0} chunks in {1}".format((box.maxcx - box.mincx) * (box.maxcz - box.mincz), ((box.mincx, box.mincz), (box.maxcx, box.maxcz))))
         i = 0
         ret = []
         for cx, cz in itertools.product(xrange(box.mincx, box.maxcx), xrange(box.mincz, box.maxcz)):
@@ -1603,7 +1602,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             assert not self.containsChunk(cx, cz), "Just deleted {0} but it didn't take".format((cx, cz))
 
             if i % 100 == 0:
-                info(u"Chunk {0}...".format(i))
+                log.info(u"Chunk {0}...".format(i))
 
         return ret
 
