@@ -4,7 +4,7 @@ import mclevel
 import infiniteworld
 import sys
 import os
-from box import BoundingBox
+from box import BoundingBox, Vector
 import numpy
 from numpy import zeros, bincount
 import logging
@@ -171,7 +171,7 @@ class mce(object):
         if command[0].lower() == "to":
             command.pop(0)
             sourcePoint2 = self.readIntPoint(command)
-            sourceSize = map(operator.sub, sourcePoint2, sourcePoint)
+            sourceSize = sourcePoint2 - sourcePoint
         else:
             sourceSize = self.readIntPoint(command, isPoint=False)
         if len([p for p in sourceSize if p <= 0]):
@@ -182,7 +182,7 @@ class mce(object):
     def readIntPoint(self, command, isPoint=True):
         point = self.readPoint(command, isPoint)
         point = map(int, map(floor, point))
-        return point
+        return Vector(*point)
 
     def readPoint(self, command, isPoint=True):
         self.prettySplit(command)

@@ -3,7 +3,7 @@ import logging
 log = logging.getLogger(__name__)
 
 import numpy
-from box import BoundingBox
+from box import BoundingBox, Vector
 from mclevelbase import exhaust
 import materials
 from entity import Entity, TileEntity
@@ -30,8 +30,7 @@ def sourceMaskFunc(blocksToCopy):
 
 def adjustCopyParameters(destLevel, sourceLevel, sourceBox, destinationPoint):
     # if the destination box is outside the level, it and the source corners are moved inward to fit.
-    # ValueError is raised if the source corners are outside sourceLevel
-    (x, y, z) = map(int, destinationPoint)
+    (dx, dy, dz) = map(int, destinationPoint)
 
     sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
 
@@ -40,37 +39,38 @@ def adjustCopyParameters(destLevel, sourceLevel, sourceBox, destinationPoint):
 
     # clip the source ranges to this level's edges.  move the destination point as needed.
     # xxx abstract this
-    if y < 0:
-        sourceBox.origin[1] -= y
-        sourceBox.size[1] += y
-        y = 0
-    if y + sourceBox.size[1] > destLevel.Height:
-        sourceBox.size[1] -= y + sourceBox.size[1] - destLevel.Height
-        y = destLevel.Height - sourceBox.size[1]
+    x, y, z = sourceBox.origin
+    w, h, l = sourceBox.size
+    if dy < 0:
+        y -= dy
+        h += dy
+        dy = 0
+    if dy + h > destLevel.Height:
+        h = destLevel.Height - dy
+        dy = destLevel.Height - h
 
     # for infinite levels, don't clip along those dimensions because the
     # infinite copy func will just skip missing chunks
     if destLevel.Width != 0:
-        if x < 0:
-            sourceBox.origin[0] -= x
-            sourceBox.size[0] += x
-            x = 0
-        if x + sourceBox.size[0] > destLevel.Width:
-            sourceBox.size[0] -= x + sourceBox.size[0] - destLevel.Width
+        if dx < 0:
+            x -= dx
+            w += dx
+            dx = 0
+        if dx + w > destLevel.Width:
+            w = destLevel.Width - dx
             # x=self.Width-sourceBox.size[0]
 
     if destLevel.Length != 0:
-        if z < 0:
-            sourceBox.origin[2] -= z
-            sourceBox.size[2] += z
-            z = 0
-        if z + sourceBox.size[2] > destLevel.Length:
-            sourceBox.size[2] -= z + sourceBox.size[2] - destLevel.Length
+        if dz < 0:
+            z -= dz
+            l += dz
+            dz = 0
+        if dz + l > destLevel.Length:
+            l = destLevel.Length - dz
             # z=self.Length-sourceBox.size[2]
 
-    destinationPoint = (x, y, z)
 
-    return sourceBox, destinationPoint
+    return BoundingBox((x, y, z), (w, h, l)), Vector(dx, dy, dz)
 
 
 def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):

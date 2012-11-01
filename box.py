@@ -1,146 +1,90 @@
+from collections import namedtuple
 import itertools
 
+_Vector = namedtuple("_Vector", ("x", "y", "z"))
+
+class Vector(_Vector):
+
+    __slots__ = ()
+
+    def __add__(self, other):
+        return Vector(self[0] + other[0], self[1] + other[1], self[2] + other[2])
+    def __sub__(self, other):
+        return Vector(self[0] - other[0], self[1] - other[1], self[2] - other[2])
+    def __mul__(self, other):
+        return Vector(self[0] * other[0], self[1] * other[1], self[2] * other[2])
 
 class BoundingBox (object):
     type = int
 
     def __init__(self, origin=(0, 0, 0), size=(0, 0, 0)):
         if isinstance(origin, BoundingBox):
-            self._origin = list(origin._origin)
-            self._size = list(origin._size)
+            self._origin = origin._origin
+            self._size = origin._size
         else:
-            self._origin, self._size = list(map(self.type, origin)), list(map(self.type, size))
+            self._origin, self._size = Vector(*origin), Vector(*size)
 
-    def chunkBox(self, level):
-        """Returns this box extended to the chunk boundaries of the given level"""
-        box = self
-        return BoundingBox((box.mincx << 4, 0, box.mincz << 4), (box.maxcx - box.mincx << 4, level.Height, box.maxcz - box.mincz << 4))
-
-    def getMinx(self):
-        return self.origin[0]
-
-    def getMiny(self):
-        return self.origin[1]
-
-    def getMinz(self):
-        return self.origin[2]
-
-    def getMaxx(self):
-        return self.origin[0] + self.size[0]
-
-    def getMaxy(self):
-        return self.origin[1] + self.size[1]
-
-    def getMaxz(self):
-        return self.origin[2] + self.size[2]
-
-    def setMinx(self, x):
-        self.size[0] -= x - self.origin[0]
-        self.origin[0] = x
-
-    def setMiny(self, y):
-        self.size[1] -= y - self.origin[1]
-        self.origin[1] = y
-
-    def setMinz(self, z):
-        self.size[2] -= z - self.origin[2]
-        self.origin[2] = z
-
-    def setMaxx(self, x):
-        if x < self.origin[0]:
-            x = self.origin[0]
-
-        self.size[0] = x - self.origin[0]
-
-    def setMaxy(self, y):
-        if y < self.origin[1]:
-            y = self.origin[1]
-
-        self.size[1] = y - self.origin[1]
-
-    def setMaxz(self, z):
-        if z < self.origin[2]:
-            z = self.origin[2]
-
-        self.size[2] = z - self.origin[2]
-
-    minx = property(getMinx, setMinx)
-    miny = property(getMiny, setMiny)
-    minz = property(getMinz, setMinz)
-
-    maxx = property(getMaxx, setMaxx)
-    maxy = property(getMaxy, setMaxy)
-    maxz = property(getMaxz, setMaxz)
-
-    def getMincx(self):
-        return self.origin[0] >> 4
-
-    def getMincz(self):
-        return self.origin[2] >> 4
-
-    def getMaxcx(self):
-        return ((self.origin[0] + self.size[0] - 1) >> 4) + 1
-
-    def getMaxcz(self):
-        return ((self.origin[2] + self.size[2] - 1) >> 4) + 1
-
-    mincx = property(getMincx, None, None, "The smallest chunk position contained in this box")
-    mincz = property(getMincz, None, None, "The smallest chunk position contained in this box")
-
-    maxcx = property(getMaxcx, None, None, "The largest chunk position contained in this box")
-    maxcz = property(getMaxcz, None, None, "The largest chunk position contained in this box")
-
-    def getOrigin(self):
-        return self._origin
-
-    def setOrigin(self, o):
-        self._origin = list(o)
-
-    def getSize(self):
-        return self._size
-
-    def setSize(self, s):
-        self._size = list(s)
-
-    origin = property(getOrigin, setOrigin)
-    size = property(getSize, setSize)
-
-    def getWidth(self):
-        return self._size[0]
-
-    def getHeight(self):
-        return self._size[1]
-
-    def getLength(self):
-        return self._size[2]
-
-    def setWidth(self, w):
-        self.size[0] = max(0, self.type(w))
-
-    def setHeight(self, h):
-        self.size[1] = max(0, self.type(h))
-
-    def setLength(self, l):
-        self.size[2] = max(0, self.type(l))
-
-    width = property(getWidth, setWidth, None, "The dimension along the X axis")
-    height = property(getHeight, setHeight, None, "The dimension along the Y axis")
-    length = property(getLength, setLength, None, "The dimension along the Z axis")
-
-    def getMaximum(self):
-        return map(lambda a, b: a + b, self._origin, self._size)
-
-    maximum = property(getMaximum, None, None, "The endpoint of the box; origin plus size.")
-
-    def getVolume(self):
-        return reduce(lambda a, b: a * b, self.size)
-
-    volume = property(getVolume, None, None, "The volume of the box in blocks")
+    def __repr__(self):
+        return "BoundingBox({0}, {1})".format(self.origin, self.size)
 
     @property
-    def chunkPositions(self):
-        #iterate through all of the chunk positions within this selection box
-        return itertools.product(xrange(self.mincx, self.maxcx), xrange(self.mincz, self.maxcz))
+    def origin(self):
+        "The smallest position in the box"
+        return self._origin
+
+    @property
+    def size(self):
+        "The size of the box"
+        return self._size
+
+    @property
+    def width(self):
+        "The dimension along the X axis"
+        return self._size.x
+
+    @property
+    def height(self):
+        "The dimension along the Y axis"
+        return self._size.y
+
+    @property
+    def length(self):
+        "The dimension along the Z axis"
+        return self._size.z
+
+    @property
+    def minx(self):
+        return self.origin.x
+
+    @property
+    def miny(self):
+        return self.origin.y
+
+    @property
+    def minz(self):
+        return self.origin.z
+
+    @property
+    def maxx(self):
+        return self.origin.x + self.size.x
+
+    @property
+    def maxy(self):
+        return self.origin.y + self.size.y
+
+    @property
+    def maxz(self):
+        return self.origin.z + self.size.z
+
+    @property
+    def maximum(self):
+        "The largest point of the box; origin plus size."
+        return self._origin + self._size
+
+    @property
+    def volume(self):
+        "The volume of the box in blocks"
+        return self.size.x * self.size.y * self.size.z
 
     @property
     def positions(self):
@@ -151,61 +95,61 @@ class BoundingBox (object):
             xrange(self.minz, self.maxz)
         )
 
-    @property
-    def chunkCount(self):
-        return (self.maxcx - self.mincx) * (self.maxcz - self.mincz)
-
-    @property
-    def isChunkAligned(self):
-        return (self.origin[0] & 0xf == 0) and (self.origin[2] & 0xf == 0)
-
     def intersect(self, box):
-        """ return a box containing the area self and box have in common"""
-        newbox = BoundingBox()
+        """
+        Return a box containing the area self and box have in common. Box will have zero volume
+         if there is no common area.
+        """
+        if (self.minx > box.maxx or self.maxx < box.minx or
+            self.miny > box.maxy or self.maxy < box.miny or
+            self.minz > box.maxz or self.maxz < box.minz):
+            #Zero size intersection.
+            return BoundingBox()
 
-        if self.minx > box.maxx or self.maxx < box.minx:
-            return BoundingBox()
-        newbox.minx = max(self.minx, box.minx)
-        newbox.maxx = min(self.maxx, box.maxx)
-
-        if self.miny > box.maxy or self.maxy < box.miny:
-            return BoundingBox()
-        newbox.miny = max(self.miny, box.miny)
-        newbox.maxy = min(self.maxy, box.maxy)
-        if self.minz > box.maxz or self.maxz < box.minz:
-            return BoundingBox()
-        newbox.minz = max(self.minz, box.minz)
-        newbox.maxz = min(self.maxz, box.maxz)
+        origin = Vector(
+            max(self.minx, box.minx),
+            max(self.miny, box.miny),
+            max(self.minz, box.minz),
+        )
+        maximum = Vector(
+            min(self.maxx, box.maxx),
+            min(self.maxy, box.maxy),
+            min(self.maxz, box.maxz),
+        )
 
         #print "Intersect of {0} and {1}: {2}".format(self, box, newbox)
-        return newbox
+        return BoundingBox(origin, maximum - origin)
 
     def union(self, box):
-        newbox = BoundingBox()
-        newbox.minx = min(self.minx, box.minx)
-        newbox.maxx = max(self.maxx, box.maxx)
-
-        newbox.miny = min(self.miny, box.miny)
-        newbox.maxy = max(self.maxy, box.maxy)
-        newbox.minz = min(self.minz, box.minz)
-        newbox.maxz = max(self.maxz, box.maxz)
-        return newbox
+        """
+        Return a box large enough to contain both self and box.
+        """
+        origin = Vector(
+            min(self.minx, box.minx),
+            min(self.miny, box.miny),
+            min(self.minz, box.minz),
+        )
+        maximum = Vector(
+            max(self.maxx, box.maxx),
+            max(self.maxy, box.maxy),
+            max(self.maxz, box.maxz),
+        )
+        return BoundingBox(origin, maximum - origin)
 
     def expand(self, dx, dy=None, dz=None):
+        """
+        Return a new box with boundaries expanded by dx, dy, dz.
+        If only dx is passed, expands by dx in all dimensions.
+        """
         if dz is None:
             dz = dx
         if dy is None:
             dy = dx
 
-        box = BoundingBox(self)
-        box.minx -= dx
-        box.miny -= dy
-        box.minz -= dz
+        origin = self.origin + (dx, dy, dz)
+        size = self.size + (dx * 2, dy * 2, dz * 2)
 
-        box.maxx += dx
-        box.maxy += dy
-        box.maxz += dz
-        return box
+        return BoundingBox(origin, size)
 
     def __contains__(self, pos):
         x, y, z = pos
@@ -221,9 +165,47 @@ class BoundingBox (object):
     def __cmp__(self, b):
         return cmp((self.origin, self.size), (b.origin, b.size))
 
-    def __repr__(self):
-        return "BoundingBox({0}, {1})".format(self.origin, self.size)
 
+    # --- Chunk positions ---
+
+    @property
+    def mincx(self):
+        "The smallest chunk position contained in this box"
+        return self.origin.x >> 4
+
+    @property
+    def mincz(self):
+        "The smallest chunk position contained in this box"
+        return self.origin.z >> 4
+
+    @property
+    def maxcx(self):
+        "The largest chunk position contained in this box"
+        return ((self.origin.x + self.size.x - 1) >> 4) + 1
+
+    @property
+    def maxcz(self):
+        "The largest chunk position contained in this box"
+        return ((self.origin.z + self.size.z - 1) >> 4) + 1
+
+    def chunkBox(self, level):
+        """Returns this box extended to the chunk boundaries of the given level"""
+        box = self
+        return BoundingBox((box.mincx << 4, 0, box.mincz << 4),
+                           (box.maxcx - box.mincx << 4, level.Height, box.maxcz - box.mincz << 4))
+
+    @property
+    def chunkPositions(self):
+        #iterate through all of the chunk positions within this selection box
+        return itertools.product(xrange(self.mincx, self.maxcx), xrange(self.mincz, self.maxcz))
+
+    @property
+    def chunkCount(self):
+        return (self.maxcx - self.mincx) * (self.maxcz - self.mincz)
+
+    @property
+    def isChunkAligned(self):
+        return (self.origin.x & 0xf == 0) and (self.origin.z & 0xf == 0)
 
 class FloatBox (BoundingBox):
     type = float
