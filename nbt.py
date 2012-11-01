@@ -456,22 +456,26 @@ class TAG_List(TAG_Value, collections.MutableSequence):
     def __iter__(self):
         return iter(self.value)
 
-    def __contains__(self, key):
-        return key in self.value
+    def __contains__(self, tag):
+        return tag in self.value
 
-    def __getitem__(self, i):
-        return self.value[i]
+    def __getitem__(self, index):
+        return self.value[index]
 
     def __len__(self):
         return len(self.value)
 
     def __setitem__(self, index, value):
-        self.check_tag(value)
-        value.name = ""
+        if isinstance(index, slice):
+            for tag in value:
+                self.check_tag(tag)
+        else:
+            self.check_tag(value)
+
         self.value[index] = value
 
-    def __delitem__(self, i):
-        del self.value[i]
+    def __delitem__(self, index):
+        del self.value[index]
 
     def insert(self, index, value):
         if len(self) == 0:

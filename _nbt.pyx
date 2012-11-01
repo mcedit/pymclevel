@@ -273,12 +273,16 @@ cdef class _TAG_List(TAG_Value):
             raise TypeError("Invalid type %s for TAG_List(%s)" % (value.__class__, tag_classes[self.list_type]))
 
     # --- collection methods ---
-    def __getitem__(self, key):
-        return self.value[key]
+    def __getitem__(self, index):
+        return self.value[index]
 
-    def __setitem__(self, key, val):
-        self.check_tag(val)
-        self.value[key] = val
+    def __setitem__(self, index, value):
+        if isinstance(index, slice):
+            for tag in value:
+                self.check_tag(tag)
+        else:
+            self.check_tag(value)
+        self.value[index] = value
 
     def __iter__(self):
         return iter(self.value)
@@ -286,13 +290,13 @@ cdef class _TAG_List(TAG_Value):
     def __len__(self):
         return len(self.value)
 
-    def insert(self, idx, val):
+    def insert(self, index, tag):
         if len(self.value) == 0:
-            self.list_type = val.tagID
+            self.list_type = tag.tagID
         else:
-            self.check_tag(val)
+            self.check_tag(tag)
 
-        self.value.insert(idx, val)
+        self.value.insert(index, tag)
 
     def __delitem__(self, key):
         del self.value[key]
