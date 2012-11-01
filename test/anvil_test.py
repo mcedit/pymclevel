@@ -92,6 +92,7 @@ class TestAnvilLevel(unittest.TestCase):
         cx, cz = level.allChunks.next()
         box = BoundingBox((cx * 16, 0, cz * 16), (32, level.Height, 32))
         level.fillBlocks(box, level.materials.WoodPlanks)
+        level.fillBlocks(box, level.materials.WoodPlanks, [level.materials.Stone])
         level.saveInPlace()
         c = level.getChunk(cx, cz)
 
