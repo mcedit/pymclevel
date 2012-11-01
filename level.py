@@ -231,7 +231,7 @@ class MCLevel(object):
 
     def _getFakeChunkEntities(self, cx, cz):
         """Returns Entities, TileEntities"""
-        return [], []
+        return nbt.TAG_List(), nbt.TAG_List()
 
     def getChunk(self, cx, cz):
         """Synthesize a FakeChunk object representing the chunk at the given
@@ -508,7 +508,7 @@ class EntityLevel(MCLevel):
         """distribute entities into sublists based on fake chunk position
         _fakeEntities keys are (cx, cz) and values are (Entities, TileEntities)"""
         if self._fakeEntities is None:
-            self._fakeEntities = defaultdict(lambda: ([], []))
+            self._fakeEntities = defaultdict(lambda: (nbt.TAG_List(), nbt.TAG_List()))
             for i, e in enumerate((self.Entities, self.TileEntities)):
                 for ent in e:
                     x, y, z = [Entity, TileEntity][i].pos(ent)
