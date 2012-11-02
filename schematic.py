@@ -544,10 +544,10 @@ def extractAnySchematic(level, box):
 
 
 def extractAnySchematicIter(level, box):
-    try:
+    if box.chunkCount < infiniteworld.MCInfdevOldLevel.loadedChunkLimit:
         for i in level.extractSchematicIter(box):
             yield i
-    except MemoryError:
+    else:
         for i in level.extractZipSchematicIter(box):
             yield i
 
