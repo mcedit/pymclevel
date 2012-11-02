@@ -1345,7 +1345,10 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
 
         chunkData = AnvilChunkData(self, (cx, cz), root_tag)
+        self._storeLoadedChunkData(chunkData)
+        return chunkData
 
+    def _storeLoadedChunkData(self, chunkData):
         if len(self._loadedChunkData) > self.loadedChunkLimit:
             # Try to find a chunk to unload. The chunk must not be in _loadedChunks, which contains only chunks that
             # are in use by another object. If the chunk is dirty, save it to the temporary folder.
@@ -1358,8 +1361,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     del self._loadedChunkData[ocx, ocz]
                     break
 
-        self._loadedChunkData[cx, cz] = chunkData
-        return chunkData
+        self._loadedChunkData[chunkData.chunkPosition] = chunkData
 
     def getChunk(self, cx, cz):
         """ read the chunk from disk, load it, and return it."""
@@ -1476,7 +1478,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         if self._allChunks is not None:
             self._allChunks.add((cx, cz))
 
-        self._loadedChunkData[cx, cz] = AnvilChunkData(self, (cx, cz), create=True)
+        self._storeLoadedChunkData(AnvilChunkData(self, (cx, cz), create=True))
         self._bounds = None
 
     def createChunks(self, chunks):
