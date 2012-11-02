@@ -417,7 +417,7 @@ class MCServerChunkGenerator(object):
 
         for i, (cx, cz) in enumerate(genPositions):
             log.info("Generating at %s" % ((cx, cz),))
-            parentDir = dirname(level.worldFolder.filename)
+            parentDir = dirname(os.path.abspath(level.worldFolder.filename))
             propsFile = join(parentDir, "server.properties")
             props = readProperties(join(dirname(self.serverJarFile), "server.properties"))
             props["level-name"] = basename(level.worldFolder.filename)
