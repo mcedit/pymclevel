@@ -1116,17 +1116,23 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.root_tag.save(self.filename)
         log.info(u"Saved {0} chunks".format(dirtyChunkCount))
 
-    def close(self):
+    def unload(self):
         """
-        Unload all chunks and close all open filehandles. Discard any unsaved data.
+        Unload all chunks and close all open filehandles.
         """
         self.worldFolder.closeRegions()
         self.unsavedWorkFolder.closeRegions()
-        shutil.rmtree(self.unsavedWorkFolder.filename, True)
 
         self._allChunks = None
         self._loadedChunks.clear()
         self._loadedChunkData.clear()
+
+    def close(self):
+        """
+        Unload all chunks and close all open filehandles. Discard any unsaved data.
+        """
+        self.unload()
+        shutil.rmtree(self.unsavedWorkFolder.filename, True)
 
     # --- Resource limits ---
 

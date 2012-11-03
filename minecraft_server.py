@@ -336,7 +336,7 @@ class MCServerChunkGenerator(object):
     def generateAtPositionIter(self, tempWorld, tempDir, cx, cz, simulate=False):
         tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
         tempWorld.saveInPlace()
-        tempWorld.close()
+        tempWorld.unload()
 
         startTime = time.time()
         proc = self.runServer(tempDir)
@@ -377,18 +377,12 @@ class MCServerChunkGenerator(object):
         if level.containsChunk(cx, cz):
             return
         try:
-            tempChunk = tempWorld.getChunk(cx, cz)
+            tempChunkBytes = tempWorld._getChunkBytes(cx, cz)
         except ChunkNotPresent, e:
             raise ChunkNotPresent, "While generating a world in {0} using server {1} ({2!r})".format(tempWorld, self.serverJarFile, e), sys.exc_info()[2]
 
-        if not level.containsChunk(cx, cz):
-            level.createChunk(cx, cz)
-
-        chunk = level.getChunk(cx, cz)
-        chunk.root_tag = tempChunk.root_tag
-        chunk.dirty = True
-
-
+        level.worldFolder.saveChunk(cx, cz, tempChunkBytes)
+        level._allChunks = None
 
     def generateChunkInLevel(self, level, cx, cz):
         assert isinstance(level, infiniteworld.MCInfdevOldLevel)
@@ -465,8 +459,7 @@ class MCServerChunkGenerator(object):
                 if level.containsChunk(cx, cz):
                     chunks.discard((cx, cz))
                 elif ((cx, cz) in chunks
-                    and tempWorld.containsChunk(cx, cz)
-                    and tempWorld.getChunk(cx, cz).TerrainPopulated
+                    and all(tempWorld.containsChunk(ncx, ncz) for ncx, ncz in itertools.product(xrange(cx-1, cx+2), xrange(cz-1, cz+2)))
                     ):
                     self.copyChunkAtPosition(tempWorld, level, cx, cz)
                     i += 1
