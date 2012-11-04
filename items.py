@@ -579,9 +579,11 @@ class Items (object):
                 line = line.strip()
                 if len(line) == 0:
                     continue
-                if line[0] == "#":
+                if line[0] == "#":  # comment
                     continue
-                if line[0] == "~":
+                if line[0] == "+":  # enchantment
+                    continue
+                if line[0] == "~":  # category
                     fields = line.split()
                     name, icon, items = fields[1:4]
                     items = items.split(",")
