@@ -962,6 +962,9 @@ class AnvilWorldFolder(object):
                 del self.regionFiles[r]
 
     def readChunk(self, cx, cz):
+        if not self.containsChunk(cx, cz):
+            return None
+
         return self.getRegionForChunk(cx, cz).readChunk(cx, cz)
 
     def saveChunk(self, cx, cz, data):
