@@ -1,5 +1,5 @@
-:version 31
-:mc-version Minecraft 1.2.4
+:version 34
+:mc-version Minecraft 1.4
 
 #            Blocks
 # ID  NAME                   FILE         CORDS   DAMAGE
@@ -7,11 +7,11 @@
    2  Grass                  terrain.png  3,0
    3  Dirt                   terrain.png  2,0
    4  Cobblestone            terrain.png  0,1
-   5  Wooden_Planks          terrain.png  4,0    0
-   5  Dark_Wooden_Planks     terrain.png  6,12   1
+   5  Oak_Wooden_Planks      terrain.png  4,0    0
+   5  Spruce_Wooden_Planks   terrain.png  6,12   1
    5  Birch_Wooden_Planks    terrain.png  6,13   2
    5  Jungle_Wooden_Planks   terrain.png  7,12   3
-   6  Sapling                terrain.png  15,0   0
+   6  Oak_Sapling            terrain.png  15,0   0
    6  Spruce_Sapling         terrain.png  15,3   1
    6  Birch_Sapling          terrain.png  15,4   2
    6  Jungle_Sapling         terrain.png  14,1   3
@@ -25,21 +25,21 @@
   14  Gold_Ore               terrain.png  0,2
   15  Iron_Ore               terrain.png  1,2
   16  Coal_Ore               terrain.png  2,2
-  17  Wood                   terrain.png  4,1    0
+  17  Oak_Wood               terrain.png  4,1    0
   17  Dark_Wood              terrain.png  4,7    1
   17  Birch_Wood             terrain.png  5,7    2
   17  Jungle_Wood            terrain.png  9,9    3
-  18  Leaves                 special.png  5,0    0
-  18  Dark_Leaves            special.png  5,1    1
-  18  Birch_Leaves           special.png  5,2    2
-  18  Jungle_Leaves          special.png  5,3    3
+  18  Oak_Leaves             special.png  15,0   0
+  18  Dark_Leaves            special.png  14,1   1
+  18  Birch_Leaves           special.png  14,2   2
+  18  Jungle_Leaves          special.png  14,3   3
   19  Sponge                 terrain.png  0,3
   20  Glass                  terrain.png  1,3
   21  Lapis_Lazuli_Ore       terrain.png  0,10
   22  Lapis_Lazuli_Block     terrain.png  0,9
   23  Dispenser              terrain.png  14,2
   24  Sandstone              terrain.png  0,12   0
-  24  Decorative_Sandstone   terrain.png  5,14   1
+  24  Chiseled_Sandstone     terrain.png  5,14   1
   24  Smooth_Sandstone       terrain.png  6,14   2
   25  Note_Block             terrain.png  10,4
   26  Bed_Block              terrain.png  6,8
@@ -48,8 +48,8 @@
   29  Sticky_Piston          terrain.png  10,6
   30  Cobweb                 terrain.png  11,0
   31  Dead_Bush              terrain.png  7,3    0
-  31  Tall_Grass             special.png  6,0    1
-  31  Fern                   special.png  6,1    2
+  31  Tall_Grass             special.png  15,0   1
+  31  Fern                   special.png  15,1   2
   32  Dead_Bush              terrain.png  7,3
   33  Piston                 terrain.png  11,6
   34  Piston_(head)          terrain.png  11,6
@@ -80,21 +80,21 @@
   43  Double_Wooden_Slab     terrain.png  4,0    2
   43  Double_Stone_Slab      terrain.png  0,1    3
   44  Stone_Slab             special.png  2,2    0
-  44  Sandstone_Slab         special.png  1,2    1
+  44  Sandstone_Slab         special.png  8,0    1
   44  Wooden_Slab            special.png  3,0    2
   44  Stone_Slab             special.png  1,0    3
-  44  Bricks_Slab            special.png  0,0    4
-  44  Stone_Bricks_Slab      special.png  2,0    5
+  44  Brick_Slab             special.png  0,0    4
+  44  Stone_Brick_Slab       special.png  2,0    5
   45  Bricks                 terrain.png  7,0
   46  TNT                    terrain.png  8,0
   47  Bookshelf              terrain.png  3,2
   48  Moss_Stone             terrain.png  4,2
   49  Obsidian               terrain.png  5,2
   50  Torch                  terrain.png  0,5
-  51  Fire                   special.png  4,0
+  51  Fire                   special.png  0,5
   52  Monster_Spawner        terrain.png  1,4
-  53  Wooden_Stairs          special.png  3,1
-  54  Chest                  terrain.png  11,1
+  53  Oak_Wood_Stair         special.png  3,1
+  54  Chest                  special.png  0,6
   55  Redstone_Dust          terrain.png  4,5
   56  Diamond_Ore            terrain.png  2,3
   57  Block_of_Diamond       terrain.png  8,1
@@ -117,7 +117,7 @@
   74  Glowing_Redstone_Ore   terrain.png  3,3
   75  Redstone_Torch_(off)   terrain.png  3,7
   76  Redstone_Torch         terrain.png  3,6
-  77  Button                 special.png  2,3
+  77  Stone_Button           special.png  2,3
   78  Snow_Layer             special.png  1,4
   79  Ice                    terrain.png  3,4
   80  Snow                   terrain.png  2,4
@@ -130,44 +130,74 @@
   87  Netherrack             terrain.png  7,6
   88  Soul_Sand              terrain.png  8,6
   89  Glowstone              terrain.png  9,6
-  90  Portal                 special.png  0,5
+  90  Portal                 special.png  1,5
   91  Jack-o'-lantern        terrain.png  8,7
-  92  Cake                   special.png  0,2
+  92  Cake                   special.png  0,4
   93  Repeater_Block_(off)   terrain.png  3,8
   94  Repeater_Block         terrain.png  3,9
-  95  Locked_Chest           terrain.png  11,1
+  95  Locked_Chest           special.png  0,2
   96  Trapdoor               terrain.png  4,5
   97  Silverfish_Block       terrain.png  1,0
-  98  Stone_Bricks           terrain.png  6,3    0
-  98  Mossy_Stone_Bricks     terrain.png  4,6    1
-  98  Damaged_Stone_Bricks   terrain.png  5,6    2
-  98  Circle_Stone_Bricks    terrain.png  5,13   3
+  98  Stone_Brick            terrain.png  6,3    0
+  98  Mossy_Stone_Brick      terrain.png  4,6    1
+  98  Cracked_Stone_Brick    terrain.png  5,6    2
+  98  Chiseled_Stone_Brick   terrain.png  5,13   3
   99  Brown_Mushroom_Block   terrain.png  13,7
  100  Red_Mushroom_Block     terrain.png  14,7
  101  Iron_Bars              terrain.png  5,5
  102  Glass_Pane             special.png  1,3
  103  Melon                  terrain.png  8,8
- 104  Pumpkin_Stem           terrain.png  5,5
- 105  Melon_Stem             terrain.png  6,3
- 106  Vines                  special.png  4,3
- 107  Fence_Gate             special.png  3,3
+ 104  Pumpkin_Stem           special.png  15,4
+ 105  Melon_Stem             special.png  15,4
+ 106  Vines                  special.png  15,2
+ 107  Fence_Gate             special.png  4,3
  108  Brick_Stairs           special.png  0,1
  109  Stone_Brick_Stairs     special.png  2,1
  110  Mycelium               terrain.png  13,4
- 111  Lily_Pad               special.png  6,2
+ 111  Lily_Pad               special.png  15,3
  112  Nether_Brick           terrain.png  0,14
- 113  Nether_Brick_Fence     special.png  4,2
- 114  Nether_Brick_Stairs    special.png  4,1
+ 113  Nether_Brick_Fence     special.png  7,2
+ 114  Nether_Brick_Stairs    special.png  7,1
  115  Nether_Wart            terrain.png  2,14
  116  Enchantment_Table      terrain.png  6,11   (x1)
  117  Brewing_Stand          terrain.png  13,9
  118  Cauldron               terrain.png  10,9
- 119  End_Portal             special.png  1,5
+ 119  End_Portal             special.png  2,5
  120  End_Portal_Frame       terrain.png  15,9
  121  End_Stone              terrain.png  15,10
- 122  Dragon_Egg             special.png  2,5
+ 122  Dragon_Egg             special.png  0,7
  123  Redstone_Lamp          terrain.png  3,13
  124  Redstone_Lamp_(on)     terrain.png  4,13
+ 125  Oak_Wooden_D._Slab     terrain.png  4,0    0
+ 125  Spruce_Wooden_D._Slab  terrain.png  6,12   1
+ 125  Birch_Wooden_D._Slab   terrain.png  6,13   2
+ 125  Jungle_Wooden_D._Slab  terrain.png  7,12   3
+ 126  Oak_Wooden_Slab        special.png  3,0    0
+ 126  Spruce_Wooden_Slab     special.png  4,0    1
+ 126  Birch_Wooden_Slab      special.png  5,0    2
+ 126  Jungle_Wooden_Slab     special.png  6,0    3
+ 127  Cocoa_Plant            special.png  15,5
+ 128  Sandstone_Stairs       special.png  8,1
+ 129  Emerald_Ore            terrain.png  11,10
+ 130  Ender_Chest            special.png  1,6
+ 131  Tripwire_Hook          terrain.png  12,10
+ 132  Tripwire               terrain.png  5,11
+ 133  Block_of_Emerald       terrain.png  9,1
+ 134  Spruce_Wood_Stairs     special.png  4,1
+ 135  Birch_Wood_Stairs      special.png  5,1
+ 136  Jungle_Wood_Stairs     special.png  6,1
+ 137  Command_Block          terrain.png  8,11
+ 138  Beacon                 special.png  2,6
+ 139  Cobblestone_Wall       special.png  1,2    0
+ 140  Moss_Stone_Wall        special.png  0,2    1
+ 141  Flower_Pot             terrain.png  9,11
+ 142  Carrots                terrain.png  11,12
+ 143  Potatoes               terrain.png  12,12
+ 144  Wooden_Button          special.png  3,3
+ 145  Head                     items.png  0,14
+ 146  Anvil                  special.png  3,6    0
+ 146  Slightly_Damaged_Anvil special.png  4,6    1
+ 146  Very_Damaged_Anvil     special.png  5,6    2
 
 #            Items
 # ID  NAME                   FILE       CORDS  DAMAGE
@@ -175,8 +205,8 @@
  257  Iron_Pickaxe           items.png  2,6    +250
  258  Iron_Axe               items.png  2,7    +250
  259  Flint_and_Steel        items.png  5,0    +64
- 260  Apple                  items.png  10,0   x1
- 261  Bow                    items.png  5,1    x1
+ 260  Apple                  items.png  10,0
+ 261  Bow                    items.png  5,1    +384
  262  Arrow                  items.png  5,2
  263  Coal                   items.png  7,0    0
  263  Charcoal               items.png  7,0    1
@@ -197,7 +227,7 @@
  278  Diamond_Pickaxe        items.png  3,6    +1561
  279  Diamond_Axe            items.png  3,7    +1561
  280  Stick                  items.png  5,3
- 281  Bowl                   items.png  7,4    x1
+ 281  Bowl                   items.png  7,4
  282  Mushroom_Stew          items.png  8,4    x1
  283  Golden_Sword           items.png  4,4    +32
  284  Golden_Shovel          items.png  4,5    +32
@@ -213,7 +243,7 @@
  294  Golden_Hoe             items.png  4,8    +32
  295  Seeds                  items.png  9,0
  296  Wheat                  items.png  9,1
- 297  Bread                  items.png  9,2    x1
+ 297  Bread                  items.png  9,2
  298  Leather_Cap            items.png  0,0    +34
  299  Leather_Tunic          items.png  0,1    +48
  300  Leather_Pants          items.png  0,2    +46
@@ -238,10 +268,11 @@
  319  Raw_Porkchop           items.png  7,5
  320  Cooked_Porkchop        items.png  8,5
  321  Painting               items.png  10,1
- 322  Golden_Apple           items.png  11,0   x1
- 323  Sign                   items.png  10,2   x1
+ 322  Golden_Apple           items.png  11,0
+ 322  Ench._Golden_Apple   special.png  0,3    1
+ 323  Sign                   items.png  10,2   x16
  324  Wooden_Door            items.png  11,2   x1
- 325  Bucket                 items.png  10,4   x1
+ 325  Bucket                 items.png  10,4   x16
  326  Water_Bucket           items.png  11,4   x1
  327  Lava_Bucket            items.png  12,4   x1
  328  Minecart               items.png  7,8    x1
@@ -251,7 +282,7 @@
  332  Snowball               items.png  14,0   x16
  333  Boat                   items.png  8,8    x1
  334  Leather                items.png  7,6
- 335  Milk                   items.png  13,4
+ 335  Milk                   items.png  13,4   x1
  336  Brick                  items.png  6,1
  337  Clay                   items.png  9,3
  338  Sugar_Canes            items.png  11,1
@@ -316,6 +347,25 @@
  383  Spawn_Egg              items.png  9,9
  384  Bottle_o'_Enchanting   items.png  11,10
  385  Fire_Charge            items.png  14,2
+ 386  Book_and_Quill         items.png  11,11  x1
+ 387  Written_Book           items.png  12,11  x1
+ 388  Emerald                items.png  10,11
+ 389  Item_Frame             items.png  14,12
+ 390  Flower_Pot             items.png  13,11
+ 391  Carrot                 items.png  8,7
+ 392  Potato                 items.png  7,7
+ 393  Baked_Potato           items.png  6,7
+ 394  Poisonous_Potato       items.png  6,8
+ 395  Empty_Map              items.png  13,12  x1
+ 396  Golden_Carrot          items.png  6,9
+ 397  Skeleton_Head          items.png  0,14   0
+ 397  Wither_Skeleton_Head   items.png  1,14   1
+ 397  Zombie_Head            items.png  2,14   2
+ 397  Human_Head             items.png  3,14   3
+ 397  Creeper_Head           items.png  4,14   4
+ 398  Carrot_on_a_Stick      items.png  6,6    +25
+ 399  Nether_Star            items.png  9,11
+ 400  Pumpkin_Pie            items.png  8,9
 2256  C418_-_13              items.png  0,15   x1
 2257  C418_-_cat             items.png  1,15   x1
 2258  C418_-_blocks          items.png  2,15   x1
@@ -418,6 +468,8 @@
  383  Spawn_Silverfish       special.png  4,10   60
  383  Spawn_Blaze            special.png  0,11   61
  383  Spawn_Magma_Cube       special.png  1,11   62
+ 383  Spawn_Bat              special.png  5,9    65
+ 383  Spawn_Witch            special.png  5,10   66
  383  Spawn_Pig              special.png  2,11   90
  383  Spawn_Sheep            special.png  3,11   91
  383  Spawn_Cow              special.png  4,11   92
@@ -425,22 +477,21 @@
  383  Spawn_Squid            special.png  1,12   94
  383  Spawn_Wolf             special.png  2,12   95
  383  Spawn_Mooshroom        special.png  3,12   96
- 383  Spawn_Ocelot           special.png  5,12   98
  383  Spawn_Villager         special.png  4,12   120
 
 #           Groups
 # NAME      ICON  ITEMS
 # Column 1
-~ Natural    2     2,3,12,24,44~1,13,82,79,80,78
-~ Stone      1     1,4,48,67,44~3,98,109,44~5,44~0,45,108,44~4,101
-~ Wood       5     17,5,53,44~2,47,85,107,20,102,30
+~ Natural    2     2,3,12,24,128,44~1,13,82,79,80,78
+~ Stone      1     1,4,48,67,44~3,139,140,98,109,44~5,44~0,45,108,44~4,101
+~ Wood       5     17,5,53,134,135,136,126,47,85,107,20,102,30
 ~ NetherEnd  87    87,88,89,348,112,114,113,372,121,122
-~ Ores       56    16,15,14,56,73,21,49,42,41,57,22,263~0,265,266,264
-~ Special    54    46,52,58,54,61,23,25,84,116,379,380,321,323,324,330,355,65,96
+~ Ores       56    16,15,14,56,129,73,21,49,42,41,57,133,22,263~0,265,266,264,388
+~ Special    54    46,52,58,54,130,61,23,25,84,116,379,380,138,146~0,321,389,323,324,330,355,65,96,390,397
 ~ Plants1    81    31~1,31~2,106,111,18,81,86,91,103,110
 ~ Plants2    6     295,361,362,6,296,338,37,38,39,40,32
-~ Transport  328   66,27,28,328,342,343,333,329
-~ Logic      331   331,76,356,69,70,72,77,33,29,123
+~ Transport  328   66,27,28,328,342,343,333,329,398
+~ Logic      331   331,76,356,69,70,72,131,77,144,33,29,123,137
 ~ Wool       35    35~0,35~8,35~7,35~15,35~14,35~12,35~1,35~4,35~5,35~13,35~11,35~3,35~9,35~10,35~2,35~6
 ~ Dye        351   351~15,351~7,351~8,351~0,351~1,351~3,351~14,351~11,351~10,351~2,351~4,351~12,351~6,351~5,351~13,351~9
 # Column 2
@@ -449,11 +500,35 @@
 ~ TierIron   307   306,307,308,309,256,257,258,292,267
 ~ TierDiam   311   310,311,312,313,277,278,279,293,276
 ~ TierGold   315   314,315,316,317,284,285,286,294,283
-~ Tools      261   50,261,262,259,346,359,345,347,358,325,326,327,335,384,385
-~ Food       297   260,322,282,297,360,319,320,363,364,365,366,349,350,354,357
-~ Items      318   280,281,318,337,336,353,339,340,332
-~ Drops      341   344,288,334,287,352,289,367,375,376,341,368,369,377,370,371,378,382,381
+~ Tools      261   50,261,262,259,346,359,345,347,395,358,325,326,327,335,384,385,386,387
+~ Food       297   260,322,282,297,360,319,320,363,364,365,366,349,350,354,357,391,396,392,393,394,400
+~ Items      318   280,281,318,337,336,353,339,340,332,376,377,382,381
+~ Drops      341   344,288,334,287,352,289,367,375,341,368,369,370,371,378,399
 ~ Music      2257  2256,2257,2258,2259,2260,2261,2262,2263,2264,2265,2266
 # New
 ~ Potion     373   373~0,373~16,373~32,373~8192,373~8193,373~8257,373~8225,373~8289,373~8194,373~8258,373~8226,373~8290,373~8195,373~8259,373~8197,373~8229,373~8201,373~8265,373~8233,373~8297,373~8196,373~8260,373~8228,373~8292,373~8200,373~8264,373~8202,373~8266,373~8204,373~8236,373~16384,373~16385,373~16499,373~16417,373~16481,373~16386,373~16450,373~16418,373~16482,373~16387,373~16451,373~16389,373~16421,373~16393,373~16457,373~16425,373~16489,373~16388,373~16452,373~16420,373~16484,373~16392,373~16456,373~16394,373~16458,373~16396,373~16428
-~ Eggs       383   383~50,383~51,383~52,383~54,383~55,383~56,383~57,383~58,383~59,383~60,383~61,383~62,383~90,383~91,383~92,383~93,383~94,383~95,383~96,383~98,383~120
+~ Eggs       383   383~50,383~51,383~52,383~54,383~55,383~56,383~57,383~58,383~59,383~60,383~61,383~62,383~65,383~66,383~90,383~91,383~92,383~93,383~94,383~95,383~96,383~120
+
+#            Enchantments
+# EID  NAME                   MAX  ITEMS
++   0  Protection             4    298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317
++   1  Fire_Protection        4    298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317
++   2  Feather_Falling        4    301,305,309,313,317
++   3  Blast_Protection       4    298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317
++   4  Projectile_Protection  4    298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317
++   5  Respiration            3    298,302,306,310,314
++   6  Aqua_Affinity          1    298,302,306,310,314
++  16  Sharpness              5    268,272,267,276,283
++  17  Smite                  5    268,272,267,276,283
++  18  Bane_of_Arthropods     5    268,272,267,276,283
++  19  Knockback              2    268,272,267,276,283
++  20  Fire_Aspect            2    268,272,267,276,283
++  21  Looting                3    268,272,267,276,283
++  32  Efficiency             5    269,270,271,273,274,275,256,257,258,277,278,279,284,285,286
++  33  Silk_Touch             1    269,270,271,273,274,275,256,257,258,277,278,279,284,285,286
++  34  Unbreaking             3    269,270,271,273,274,275,256,257,258,277,278,279,284,285,286
++  35  Fortune                3    269,270,271,273,274,275,256,257,258,277,278,279,284,285,286
++  48  Power                  5    261
++  49  Punch                  2    261
++  50  Flame                  1    261
++  51  Infinity               1    261
