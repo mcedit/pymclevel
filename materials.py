@@ -340,7 +340,6 @@ classicMaterials.addYamlBlocksFromFile("classic.yaml")
 
 indevMaterials = MCMaterials(defaultName="Not present in Indev")
 indevMaterials.name = "Indev"
-indevMaterials.addYamlBlocksFromFile("classic.yaml")
 indevMaterials.addYamlBlocksFromFile("indev.yaml")
 
 pocketMaterials = MCMaterials()
