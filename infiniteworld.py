@@ -166,22 +166,29 @@ class AnvilChunkData(object):
 
         sections = nbt.TAG_List()
         for y in range(0, self.world.Height, 16):
-            sec = nbt.TAG_Compound()
-            for name in "Blocks", "Data", "SkyLight", "BlockLight":
+            section = nbt.TAG_Compound()
 
-                arr = getattr(self, name)
-                secarray = arr[..., y:y + 16].swapaxes(0, 2)
-                if name == "Blocks":
-                    if not secarray.any():
-                        break  # detect empty sections here
-                else:
-                    secarray = packNibbleArray(secarray)
+            Blocks = self.Blocks[..., y:y + 16].swapaxes(0, 2)
+            Data = self.Data[..., y:y + 16].swapaxes(0, 2)
+            BlockLight = self.BlockLight[..., y:y + 16].swapaxes(0, 2)
+            SkyLight = self.SkyLight[..., y:y + 16].swapaxes(0, 2)
 
-                sec[name] = nbt.TAG_Byte_Array(array(secarray))
+            if (not Blocks.any() and
+                not BlockLight.any() and
+                (SkyLight == 15).all()):
+                continue
 
-            if len(sec):
-                sec["Y"] = nbt.TAG_Byte(y / 16)
-                sections.append(sec)
+            Data = packNibbleArray(Data)
+            BlockLight = packNibbleArray(BlockLight)
+            SkyLight = packNibbleArray(SkyLight)
+
+            section['Blocks'] = nbt.TAG_Byte_Array(array(Blocks))
+            section['Data'] = nbt.TAG_Byte_Array(array(Data))
+            section['BlockLight'] = nbt.TAG_Byte_Array(array(BlockLight))
+            section['SkyLight'] = nbt.TAG_Byte_Array(array(SkyLight))
+
+            section["Y"] = nbt.TAG_Byte(y / 16)
+            sections.append(section)
 
         self.root_tag["Level"]["Sections"] = sections
         data = self.root_tag.save(compressed=False)
