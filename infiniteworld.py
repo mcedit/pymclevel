@@ -1111,8 +1111,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 chunk.dirty = False
 
         for cx, cz in self.unsavedWorkFolder.listChunks():
-            data = self.unsavedWorkFolder.readChunk(cx, cz)
-            self.worldFolder.saveChunk(cx, cz, data)
+            if (cx, cz) not in self._loadedChunkData:
+                data = self.unsavedWorkFolder.readChunk(cx, cz)
+                self.worldFolder.saveChunk(cx, cz, data)
 
         self.unsavedWorkFolder.closeRegions()
         shutil.rmtree(self.unsavedWorkFolder.filename, True)
