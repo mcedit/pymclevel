@@ -612,6 +612,7 @@ class ChunkedLevelMixin(MCLevel):
                 except (ChunkNotPresent, ChunkMalformed):
                     continue
                 dirtyChunks.add(ch)
+                ch.dirty = True
 
         dirtyChunks = sorted(dirtyChunks, key=lambda x: x.chunkPosition)
         workTotal += len(dirtyChunks) * 28
@@ -687,6 +688,7 @@ class ChunkedLevelMixin(MCLevel):
                             neighboringChunks[dir] = self.getChunk(cx + dx, cz + dz)
                         except (ChunkNotPresent, ChunkMalformed):
                             neighboringChunks[dir] = zeroChunk
+                        neighboringChunks[dir].dirty = True
 
                     chunkLa = la[chunk.Blocks]
                     chunkLight = getattr(chunk, light)
