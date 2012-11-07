@@ -145,24 +145,16 @@ def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, bloc
                 destChunk.Data[destSlices][mask] = convertedSourceData[mask]
 
             if entities:
-                e += len(sourceChunk.Entities)
-                for entityTag in sourceChunk.Entities:
-                    x, y, z = Entity.pos(entityTag)
-                    if (x, y, z) not in sourceBox:
-                        continue
-
+                ents = sourceChunk.getEntitiesInBox(destChunkBoxInSourceLevel)
+                e += len(ents)
+                for entityTag in ents:
                     eTag = Entity.copyWithOffset(entityTag, copyOffset)
-
                     destLevel.addEntity(eTag)
 
-            t += len(sourceChunk.TileEntities)
-            for tileEntityTag in sourceChunk.TileEntities:
-                x, y, z = TileEntity.pos(tileEntityTag)
-                if (x, y, z) not in sourceBox:
-                    continue
-
+            tileEntities = sourceChunk.getTileEntitiesInBox(destChunkBoxInSourceLevel)
+            t += len(tileEntities)
+            for tileEntityTag in tileEntities:
                 eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
-
                 destLevel.addTileEntity(eTag)
 
         destChunk.chunkChanged()
