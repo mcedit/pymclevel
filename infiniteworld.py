@@ -503,31 +503,29 @@ class ChunkedLevelMixin(MCLevel):
 
 
 
-    def generateLights(self, dirtyChunks=None):
-        return exhaust(self.generateLightsIter(dirtyChunks))
+    def generateLights(self, dirtyChunkPositions=None):
+        return exhaust(self.generateLightsIter(dirtyChunkPositions))
 
-    def generateLightsIter(self, dirtyChunks=None):
+    def generateLightsIter(self, dirtyChunkPositions=None):
         """ dirtyChunks may be an iterable yielding (xPos,zPos) tuples
         if none, generate lights for all chunks that need lighting
         """
 
         startTime = datetime.now()
 
-        if dirtyChunks is None:
-            dirtyChunks = (self.getChunk(*c) for c in self.chunksNeedingLighting)
+        if dirtyChunkPositions is None:
+            dirtyChunkPositions = self.chunksNeedingLighting
         else:
-            dirtyChunks = (self.getChunk(*c) for c in dirtyChunks if self.containsChunk(*c))
+            dirtyChunkPositions = (c for c in dirtyChunkPositions if self.containsChunk(*c))
 
-        dirtyChunks = sorted(dirtyChunks, key=lambda x: x.chunkPosition)
+        dirtyChunkPositions = sorted(dirtyChunkPositions)
 
-        # at 5MB per loaded chunk,
-        maxLightingChunks = 4000
+        maxLightingChunks = getattr(self, 'loadedChunkLimit', 400)
 
-        log.info(u"Asked to light {0} chunks".format(len(dirtyChunks)))
-        chunkLists = [dirtyChunks]
+        log.info(u"Asked to light {0} chunks".format(len(dirtyChunkPositions)))
+        chunkLists = [dirtyChunkPositions]
 
-        def reverseChunkPosition(x):
-            cx, cz = x.chunkPosition
+        def reverseChunkPosition((cx, cz)):
             return cz, cx
 
         def splitChunkLists(chunkLists):
@@ -565,7 +563,7 @@ class ChunkedLevelMixin(MCLevel):
         for i, dc in enumerate(chunkLists):
             log.info(u"Batch {0}/{1}".format(i, len(chunkLists)))
 
-            dc = sorted(dc, key=lambda x: x.chunkPosition)
+            dc = sorted(dc)
             workTotal = sum(estimatedTotals)
             t = 0
             for c, t, p in self._generateLightsIter(dc):
@@ -577,16 +575,16 @@ class ChunkedLevelMixin(MCLevel):
 
         timeDelta = datetime.now() - startTime
 
-        if len(dirtyChunks):
-            log.info(u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunks and timeDelta / len(dirtyChunks) or 0))
+        if len(dirtyChunkPositions):
+            log.info(u"Completed in {0}, {1} per chunk".format(timeDelta, dirtyChunkPositions and timeDelta / len(dirtyChunkPositions) or 0))
 
         return
 
-    def _generateLightsIter(self, dirtyChunks):
+    def _generateLightsIter(self, dirtyChunkPositions):
         la = array(self.materials.lightAbsorption)
         clip(la, 1, 15, la)
 
-        dirtyChunks = set(dirtyChunks)
+        dirtyChunks = set(self.getChunk(*cPos) for cPos in dirtyChunkPositions)
 
         workDone = 0
         workTotal = len(dirtyChunks) * 29
