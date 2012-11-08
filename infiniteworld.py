@@ -1247,32 +1247,21 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         for dirname in worldDirs:
             if dirname.startswith("DIM"):
                 try:
-                    intInDirname = re.findall("\\d+", dirname)
-                    if len(intInDirname) > 0:
-                        dimNo = int(intInDirname[-1])
-                    else:
-                        dimNo = 999  # identical dimNo should not matter
+                    dimNo = int(dirname[3:])
                     log.info("Found dimension {0}".format(dirname))
-                    dim = MCAlphaDimension(self, dimNo, dirname)
-                    self.dimensions[dirname] = dim
+                    dim = MCAlphaDimension(self, dimNo)
+                    self.dimensions[dimNo] = dim
                 except Exception, e:
                     log.error(u"Error loading dimension {0}: {1}".format(dirname, e))
 
-    def getDimension(self, dimNo, dirname=None):
-        if dirname is None:
-            dirname = "DIM" + str(int(dimNo))
-
+    def getDimension(self, dimNo):
         if self.dimNo != 0:
-            return self.parentWorld.getDimension(dimNo, dirname)
+            return self.parentWorld.getDimension(dimNo)
 
-        if dimNo == 0:
-            return self
-
-        if dirname in self.dimensions:
-            return self.dimensions[dirname]
-
-        dim = MCAlphaDimension(self, dimNo, dirname, create=True)
-        self.dimensions[dirname] = dim
+        if dimNo in self.dimensions:
+            return self.dimensions[dimNo]
+        dim = MCAlphaDimension(self, dimNo, create=True)
+        self.dimensions[dimNo] = dim
         return dim
 
     # --- Region I/O ---
@@ -1696,22 +1685,22 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
 
 class MCAlphaDimension (MCInfdevOldLevel):
-    def __init__(self, parentWorld, dimNo, dirname, create=False):
-        filename = parentWorld.worldFolder.getFolderPath(dirname)
+    def __init__(self, parentWorld, dimNo, create=False):
+        filename = parentWorld.worldFolder.getFolderPath("DIM" + str(int(dimNo)))
+
         self.parentWorld = parentWorld
         MCInfdevOldLevel.__init__(self, filename, create)
         self.dimNo = dimNo
         self.filename = parentWorld.filename
         self.players = parentWorld.players
         self.playerTagCache = parentWorld.playerTagCache
-        self.dirname = dirname
 
     @property
     def root_tag(self):
         return self.parentWorld.root_tag
 
     def __str__(self):
-        return "MCAlphaDimension({0}, {1} ({2}))".format(self.parentWorld, self.dirname, self.dimNo)
+        return "MCAlphaDimension({0}, {1})".format(self.parentWorld, self.dimNo)
 
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
         pass
@@ -1727,7 +1716,7 @@ class MCAlphaDimension (MCInfdevOldLevel):
     @property
     def displayName(self):
         return u"{0} ({1})".format(self.parentWorld.displayName,
-                                   self.dimensionNames.get(self.dimNo, "%s (%d)" % (self.dirname, self.dimNo)))
+                                   self.dimensionNames.get(self.dimNo, "Dimension %d" % self.dimNo))
 
     def saveInPlace(self, saveSelf=False):
         """saving the dimension will save the parent world, which will save any

@@ -139,7 +139,6 @@ class MCLevel(object):
     dimNo = 0
     parentWorld = None
     world = None
-    directory = None
 
     @classmethod
     def isLevel(cls, filename):
