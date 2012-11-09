@@ -1039,8 +1039,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         assert self.version == self.VERSION_ANVIL, "Pre-Anvil world formats are not supported (for now)"
 
 
-
-        self.players = [x[:-4] for x in os.listdir(self.worldFolder.getFolderPath("players")) if x.endswith(".dat")]
+        self.playersFolder = self.worldFolder.getFolderPath("players")
+        self.players = [x[:-4] for x in os.listdir(self.playersFolder) if x.endswith(".dat")]
         if "Player" in self.root_tag["Data"]:
             self.players.append("Player")
 
@@ -1122,7 +1122,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         for path, tag in self.playerTagCache.iteritems():
             tag.save(path)
 
-        self.playerTagCache = {}
+        self.playerTagCache.clear()
 
         self.root_tag.save(self.filename)
         log.info(u"Saved {0} chunks".format(dirtyChunkCount))
@@ -1559,7 +1559,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def getPlayerPath(self, player):
         assert player != "Player"
-        return self.worldFolder.getFilePath("players/%s.dat" % player)
+        return os.path.join(self.playersFolder, "%s.dat" % player)
 
     def getPlayerTag(self, player="Player"):
         if player == "Player":
@@ -1576,10 +1576,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     playerTag = nbt.load(playerFilePath)
                     self.playerTagCache[playerFilePath] = playerTag
                 return playerTag
-
             else:
-                raise PlayerNotFound("{0}".format(player))
-                # return None
+                raise PlayerNotFound(player)
 
     def getPlayerDimension(self, player="Player"):
         playerTag = self.getPlayerTag(player)
@@ -1692,8 +1690,9 @@ class MCAlphaDimension (MCInfdevOldLevel):
         MCInfdevOldLevel.__init__(self, filename, create)
         self.dimNo = dimNo
         self.filename = parentWorld.filename
-        self.players = parentWorld.players
-        self.playerTagCache = parentWorld.playerTagCache
+        self.players = self.parentWorld.players
+        self.playersFolder = self.parentWorld.playersFolder
+        self.playerTagCache = self.parentWorld.playerTagCache
 
     @property
     def root_tag(self):
