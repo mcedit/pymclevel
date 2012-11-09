@@ -22,7 +22,7 @@ class BoundingBox (object):
             self._origin = origin._origin
             self._size = origin._size
         else:
-            self._origin, self._size = Vector(*origin), Vector(*size)
+            self._origin, self._size = Vector(*(self.type(a) for a in origin)), Vector(*(self.type(a) for a in size))
 
     def __repr__(self):
         return "BoundingBox({0}, {1})".format(self.origin, self.size)
