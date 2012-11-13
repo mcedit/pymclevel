@@ -520,6 +520,7 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
 
     if zipfilename is None:
         zipfilename = tempfile.mktemp("zipschematic.zip")
+    atexit.register(shutil.rmtree, zipfilename, True)
 
     p = sourceLevel.adjustExtractionParameters(box)
     if p is None:
