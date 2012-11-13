@@ -4,7 +4,7 @@ import struct
 import zlib
 
 from numpy import fromstring
-from mclevelbase import notclosing, RegionMalformed
+from mclevelbase import notclosing, RegionMalformed, ChunkNotPresent
 import nbt
 
 log = logging.getLogger(__name__)
@@ -172,15 +172,15 @@ class MCRegionFile(object):
         cz &= 0x1f
         offset = self.getOffset(cx, cz)
         if offset == 0:
-            return None
+            raise ChunkNotPresent((cx, cz))
 
         sectorStart = offset >> 8
         numSectors = offset & 0xff
         if numSectors == 0:
-            return None
+            raise ChunkNotPresent((cx, cz))
 
         if sectorStart + numSectors > len(self.freeSectors):
-            return None
+            raise ChunkNotPresent((cx, cz))
 
         with self.file as f:
             f.seek(sectorStart * self.SECTOR_BYTES)

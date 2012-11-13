@@ -970,8 +970,8 @@ class AnvilWorldFolder(object):
 
     def readChunk(self, cx, cz):
         if not self.containsChunk(cx, cz):
-            return None
-
+            raise ChunkNotPresent((cx, cz))
+        
         return self.getRegionForChunk(cx, cz).readChunk(cx, cz)
 
     def saveChunk(self, cx, cz, data):
@@ -1329,19 +1329,18 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             self.preloadChunkPositions()
         return self._allChunks.__iter__()
 
-    def _getChunkBytes(self, cx, cz):
-        data = self.unsavedWorkFolder.readChunk(cx, cz)
-        if data: return data
 
-        return self.worldFolder.readChunk(cx, cz)
+    def _getChunkBytes(self, cx, cz):
+        try:
+            return self.unsavedWorkFolder.readChunk(cx, cz)
+        except ChunkNotPresent:
+            return self.worldFolder.readChunk(cx, cz)
 
     def _getChunkData(self, cx, cz):
         chunkData = self._loadedChunkData.get((cx, cz))
         if chunkData is not None: return chunkData
 
         data = self._getChunkBytes(cx, cz)
-        if data is None:
-            raise ChunkNotPresent, (cx, cz)
 
         try:
             root_tag = nbt.load(buf=data)
