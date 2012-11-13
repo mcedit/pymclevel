@@ -345,7 +345,15 @@ class MCServerChunkGenerator(object):
             log.info(line)
             yield line
 
-            if "[INFO] Done" in line:
+#            Forge and FML change stderr output, causing MCServerChunkGenerator to wait endlessly.
+#
+#            Vanilla:
+#              2012-11-13 11:29:19 [INFO] Done (9.962s)!
+#
+#            Forge/FML:
+#              2012-11-13 11:47:13 [INFO] [Minecraft] Done (8.020s)!
+
+            if "[INFO]" in line and "Done" in line:
                 if simulate:
                     duration = time.time() - startTime
 
