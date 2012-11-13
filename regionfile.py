@@ -167,7 +167,7 @@ class MCRegionFile(object):
         log.info("Repair complete. Removed {0} chunks, recovered {1} chunks, net {2}".format(deleted, recovered, recovered - deleted))
 
 
-    def readChunk(self, cx, cz):
+    def _readChunk(self, cx, cz):
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx, cz)
@@ -191,7 +191,10 @@ class MCRegionFile(object):
         length = struct.unpack_from(">I", data)[0]
         format = struct.unpack_from("B", data, 4)[0]
         data = data[5:length + 5]
+        return data, format
 
+    def readChunk(self, cx, cz):
+        data, format = self._readChunk(cx, cz)
         if format == self.VERSION_GZIP:
             return nbt.gunzip(data)
         if format == self.VERSION_DEFLATE:
@@ -199,14 +202,28 @@ class MCRegionFile(object):
 
         raise IOError("Unknown compress format: {0}".format(format))
 
+    def copyChunkFrom(self, regionFile, cx, cz):
+        """
+        Silently fails if regionFile does not contain the requested chunk.
+        """
+        try:
+            data, format = regionFile._readChunk(cx, cz)
+            self._saveChunk(cx, cz, data, format)
+        except ChunkNotPresent:
+            pass
+
     def saveChunk(self, cx, cz, uncompressedData):
+        data = deflate(uncompressedData)
+        self._saveChunk(cx, cz, data, self.VERSION_DEFLATE)
+
+    def _saveChunk(self, cx, cz, data, format):
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx, cz)
         sectorNumber = offset >> 8
         sectorsAllocated = offset & 0xff
-        format = self.VERSION_DEFLATE
-        data = deflate(uncompressedData)
+
+
 
         sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1
         if sectorsNeeded >= 256:

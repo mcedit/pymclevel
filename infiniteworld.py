@@ -4,6 +4,7 @@ Created on Jul 22, 2011
 @author: Rio
 '''
 
+import copy
 from datetime import datetime
 import itertools
 from logging import getLogger
@@ -971,13 +972,17 @@ class AnvilWorldFolder(object):
     def readChunk(self, cx, cz):
         if not self.containsChunk(cx, cz):
             raise ChunkNotPresent((cx, cz))
-        
+
         return self.getRegionForChunk(cx, cz).readChunk(cx, cz)
 
     def saveChunk(self, cx, cz, data):
         regionFile = self.getRegionForChunk(cx, cz)
         regionFile.saveChunk(cx, cz, data)
 
+    def copyChunkFrom(self, worldFolder, cx, cz):
+        fromRF = worldFolder.getRegionForChunk(cx, cz)
+        rf = self.getRegionForChunk(cx, cz)
+        rf.copyChunkFrom(fromRF, cx, cz)
 
 class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
@@ -1329,6 +1334,45 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             self.preloadChunkPositions()
         return self._allChunks.__iter__()
 
+    def copyChunkFrom(self, world, cx, cz):
+        """
+        Copy a chunk from world into the same chunk position in self.
+        """
+        assert isinstance(world, MCInfdevOldLevel)
+
+        destChunk = self._loadedChunks.get((cx, cz))
+        sourceChunk = world._loadedChunks.get((cx, cz))
+
+        if sourceChunk:
+            if destChunk:
+                # Both chunks loaded. Use block copy.
+                destChunk.copyBlocksFrom(sourceChunk, destChunk.bounds, destChunk.bounds.origin)
+                return
+            else:
+                # Only source chunk loaded. Discard destination chunk and save source chunk in its place.
+                self._loadedChunkData.pop((cx, cz), None)
+                self.unsavedWorkFolder.saveChunk(cx, cz, sourceChunk.savedTagData())
+                return
+        else:
+            if destChunk:
+                # Only destination chunk loaded. Use block copy.
+                destChunk.copyBlocksFrom(world.getChunk(cx, cz), destChunk.bounds, destChunk.bounds.origin)
+            else:
+                # Neither chunk loaded. Copy via world folders.
+                self._loadedChunkData.pop((cx, cz), None)
+
+                # If the source chunk is dirty, write it to the work folder.
+                chunkData = world._loadedChunkData.pop((cx, cz), None)
+                if chunkData and chunkData.dirty:
+                    data = chunkData.savedTagData()
+                    world.unsavedWorkFolder.saveChunk(cx, cz, data)
+
+                if world.unsavedWorkFolder.containsChunk(cx, cz):
+                    sourceFolder = world.unsavedWorkFolder
+                else:
+                    sourceFolder = world.worldFolder
+
+                self.unsavedWorkFolder.copyChunkFrom(sourceFolder, cx, cz)
 
     def _getChunkBytes(self, cx, cz):
         try:

@@ -45,6 +45,16 @@ class TestAnvilLevel(unittest.TestCase):
             level.deleteChunk(*ch)
         level.createChunksInBox(BoundingBox((0, 0, 0), (32, 0, 32)))
 
+    def testCopyChunks(self):
+        level = self.anvilLevel.level
+        temppath = mktemp("AnvilCreate")
+        newLevel = MCInfdevOldLevel(filename=temppath, create=True)
+        for cx, cz in level.allChunks:
+            newLevel.copyChunkFrom(level, cx, cz)
+
+        newLevel.close()
+        shutil.rmtree(temppath)
+
     def testCopyConvertBlocks(self):
         indevlevel = self.indevLevel.level
         level = self.anvilLevel.level
