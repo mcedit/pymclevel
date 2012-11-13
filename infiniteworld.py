@@ -873,7 +873,7 @@ class AnvilWorldFolder(object):
     def getFolderPath(self, path):
         path = self.getFilePath(path)
         if not os.path.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
 
         return path
 
