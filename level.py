@@ -295,14 +295,12 @@ class MCLevel(object):
                 if self.containsChunk(*cPos))
 
     def containsPoint(self, x, y, z):
-        return (x >= 0 and x < self.Width and
-                y >= 0 and y < self.Height and
-                z >= 0 and z < self.Length)
+        return (x, y, z) in self.bounds
 
     def containsChunk(self, cx, cz):
-        # w+15 to allow non 16 aligned schematics
-        return (cx >= 0 and cx < (self.Width + 15 >> 4) and
-                cz >= 0 and cz < (self.Length + 15 >> 4))
+        bounds = self.bounds
+        return ((bounds.mincx <= cx < bounds.maxcx) and
+                (bounds.mincz <= cz < bounds.maxcz))
 
     def fakeBlocksForChunk(self, cx, cz):
         # return a 16x16xH block array for rendering.  Alpha levels can
@@ -345,16 +343,12 @@ class MCLevel(object):
         return 15
 
     def blockAt(self, x, y, z):
-        if x < 0 or y < 0 or z < 0:
-            return 0
-        if x >= self.Width or y >= self.Height or z >= self.Length:
+        if (x, y, z) not in self.bounds:
             return 0
         return self.Blocks[x, z, y]
 
     def setBlockAt(self, x, y, z, blockID):
-        if x < 0 or y < 0 or z < 0:
-            return 0
-        if x >= self.Width or y >= self.Height or z >= self.Length:
+        if (x, y, z) not in self.bounds:
             return 0
         self.Blocks[x, z, y] = blockID
 
