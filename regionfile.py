@@ -12,11 +12,7 @@ log = logging.getLogger(__name__)
 __author__ = 'Rio'
 
 def deflate(data):
-    # zobj = zlib.compressobj(6,zlib.DEFLATED,-zlib.MAX_WBITS,zlib.DEF_MEM_LEVEL,0)
-    # zdata = zobj.compress(data)
-    # zdata += zobj.flush()
-    # return zdata
-    return zlib.compress(data)
+    return zlib.compress(data, 2)
 
 def inflate(data):
     return zlib.decompress(data)
