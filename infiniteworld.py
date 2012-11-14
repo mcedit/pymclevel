@@ -1345,19 +1345,24 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         if sourceChunk:
             if destChunk:
+                log.debug("Both chunks loaded. Using block copy.")
                 # Both chunks loaded. Use block copy.
-                destChunk.copyBlocksFrom(sourceChunk, destChunk.bounds, destChunk.bounds.origin)
+                self.copyBlocksFrom(world, destChunk.bounds, destChunk.bounds.origin)
                 return
             else:
+                log.debug("Source chunk loaded. Saving into work folder.")
+
                 # Only source chunk loaded. Discard destination chunk and save source chunk in its place.
                 self._loadedChunkData.pop((cx, cz), None)
                 self.unsavedWorkFolder.saveChunk(cx, cz, sourceChunk.savedTagData())
                 return
         else:
             if destChunk:
+                log.debug("Destination chunk loaded. Using block copy.")
                 # Only destination chunk loaded. Use block copy.
-                destChunk.copyBlocksFrom(world.getChunk(cx, cz), destChunk.bounds, destChunk.bounds.origin)
+                self.copyBlocksFrom(world, destChunk.bounds, destChunk.bounds.origin)
             else:
+                log.debug("No chunk loaded. Using world folder.copyChunkFrom")
                 # Neither chunk loaded. Copy via world folders.
                 self._loadedChunkData.pop((cx, cz), None)
 
