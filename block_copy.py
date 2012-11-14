@@ -32,45 +32,19 @@ def adjustCopyParameters(destLevel, sourceLevel, sourceBox, destinationPoint):
     # if the destination box is outside the level, it and the source corners are moved inward to fit.
     (dx, dy, dz) = map(int, destinationPoint)
 
-    sourceBox = BoundingBox(sourceBox.origin, sourceBox.size)
+    log.debug(u"Asked to copy {} blocks \n\tfrom {} in {}\n\tto {} in {}" .format(
+              sourceBox.volume, sourceBox, sourceLevel, destinationPoint, destLevel))
+    if destLevel.Width == 0:
+        return sourceBox, destinationPoint
 
-    (lx, ly, lz) = sourceBox.size
-    log.debug(u"Asked to copy {0} blocks \n\tfrom {1} in {3}\n\tto {2} in {4}" .format(ly * lz * lx, sourceBox, destinationPoint, sourceLevel, destLevel))
+    destBox = BoundingBox(destinationPoint, sourceBox.size)
+    actualDestBox = destBox.intersect(destLevel.bounds)
 
-    # clip the source ranges to this level's edges.  move the destination point as needed.
-    # xxx abstract this
-    x, y, z = sourceBox.origin
-    w, h, l = sourceBox.size
-    if dy < 0:
-        y -= dy
-        h += dy
-        dy = 0
-    if dy + h > destLevel.Height:
-        h = destLevel.Height - dy
-        dy = destLevel.Height - h
+    actualSourceBox = BoundingBox(sourceBox.origin + actualDestBox.origin - destBox.origin, destBox.size)
+    actualDestPoint = actualDestBox.origin
 
-    # for infinite levels, don't clip along those dimensions because the
-    # infinite copy func will just skip missing chunks
-    if destLevel.Width != 0:
-        if dx < 0:
-            x -= dx
-            w += dx
-            dx = 0
-        if dx + w > destLevel.Width:
-            w = destLevel.Width - dx
-            # x=self.Width-sourceBox.size[0]
+    return actualSourceBox, actualDestPoint
 
-    if destLevel.Length != 0:
-        if dz < 0:
-            z -= dz
-            l += dz
-            dz = 0
-        if dz + l > destLevel.Length:
-            l = destLevel.Length - dz
-            # z=self.Length-sourceBox.size[2]
-
-
-    return BoundingBox((x, y, z), (w, h, l)), Vector(dx, dy, dz)
 
 
 def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
