@@ -301,10 +301,6 @@ class AnvilChunk(LightedChunk):
         return self.chunkData.BlockLight
 
     @property
-    def HeightMap(self):
-        return self.chunkData.HeightMap
-
-    @property
     def Biomes(self):
         return self.root_tag["Level"]["Biomes"].value.reshape((16, 16))
 
