@@ -1743,7 +1743,7 @@ class MCAlphaDimension (MCInfdevOldLevel):
         return self.parentWorld.root_tag
 
     def __str__(self):
-        return "MCAlphaDimension({0}, {1})".format(self.parentWorld, self.dimNo)
+        return u"MCAlphaDimension({0}, {1})".format(self.parentWorld, self.dimNo)
 
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
         pass
