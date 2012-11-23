@@ -1311,8 +1311,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         chunk = self.getChunk(cx, cz)
 
-        with file(outputFile, "wb") as f:
-            chunk.root_tag.save(buf=f)
+        chunk.root_tag.save(outputFile)
 
     @property
     def chunkCount(self):
