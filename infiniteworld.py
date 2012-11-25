@@ -13,6 +13,7 @@ import os
 import re
 import random
 import shutil
+import struct
 import time
 import traceback
 import weakref
@@ -38,6 +39,10 @@ DIM_END = 1
 
 __all__ = ["ZeroChunk", "AnvilChunk", "ChunkedLevelMixin", "MCInfdevOldLevel", "MCAlphaDimension", "ZipSchematic"]
 _zeros = {}
+
+class SessionLockLost(IOError):
+    pass
+
 
 
 def ZeroChunk(height=512):
@@ -1015,6 +1020,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         self.worldFolder = AnvilWorldFolder(filename)
         self.filename = self.worldFolder.getFilePath("level.dat")
+        self.acquireSessionLock()
 
         workFolderPath = self.worldFolder.getFolderPath("##MCEDIT.TEMP##")
         if os.path.exists(workFolderPath):
@@ -1076,6 +1082,18 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         self.createPlayer("Player")
 
+    def acquireSessionLock(self):
+        lockfile = self.worldFolder.getFilePath("session.lock")
+        self.initTime = int(time.time() * 1000)
+        with file(lockfile, "wb") as f:
+            f.write(struct.pack(">q", self.initTime))
+
+
+    def checkSessionLock(self):
+        lockfile = self.worldFolder.getFilePath("session.lock")
+        (lock, ) = struct.unpack(">q", file(lockfile, "rb").read())
+        if lock != self.initTime:
+            raise SessionLockLost, "Session lock lost. This world is being accessed from another location."
 
     def loadLevelDat(self, create=False, random_seed=None, last_played=None):
 
@@ -1099,6 +1117,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     self._create(self.filename, random_seed, last_played)
 
     def saveInPlace(self):
+        self.checkSessionLock()
+
         for level in self.dimensions.itervalues():
             level.saveInPlace(True)
 
