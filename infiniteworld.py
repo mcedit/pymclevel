@@ -1404,16 +1404,15 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         chunkData = self._loadedChunkData.get((cx, cz))
         if chunkData is not None: return chunkData
 
-        data = self._getChunkBytes(cx, cz)
-
         try:
+            data = self._getChunkBytes(cx, cz)
             root_tag = nbt.load(buf=data)
+            chunkData = AnvilChunkData(self, (cx, cz), root_tag)
         except MemoryError:
             raise
         except Exception, e:
             raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
 
-        chunkData = AnvilChunkData(self, (cx, cz), root_tag)
         self._storeLoadedChunkData(chunkData)
         return chunkData
 
