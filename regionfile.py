@@ -181,7 +181,9 @@ class MCRegionFile(object):
         with self.file as f:
             f.seek(sectorStart * self.SECTOR_BYTES)
             data = f.read(numSectors * self.SECTOR_BYTES)
-        assert(len(data) > 0)
+        if len(data) < 5:
+            raise RegionMalformed, "Chunk data is only %d bytes long (expected 5)" % len(data)
+
         # log.debug("REGION LOAD {0},{1} sector {2}".format(cx, cz, sectorStart))
 
         length = struct.unpack_from(">I", data)[0]
