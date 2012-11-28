@@ -146,7 +146,7 @@ class BoundingBox (object):
         if dy is None:
             dy = dx
 
-        origin = self.origin + (dx, dy, dz)
+        origin = self.origin - (dx, dy, dz)
         size = self.size + (dx * 2, dy * 2, dz * 2)
 
         return BoundingBox(origin, size)
