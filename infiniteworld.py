@@ -1413,6 +1413,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         except Exception, e:
             raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
 
+        if self.unsavedWorkFolder.containsChunk(cx, cz):
+            chunkData.dirty = True
+
         self._storeLoadedChunkData(chunkData)
         return chunkData
 
