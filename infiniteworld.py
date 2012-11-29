@@ -1135,6 +1135,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             if (cx, cz) not in self._loadedChunkData:
                 data = self.unsavedWorkFolder.readChunk(cx, cz)
                 self.worldFolder.saveChunk(cx, cz, data)
+                dirtyChunkCount += 1
+
 
         self.unsavedWorkFolder.closeRegions()
         shutil.rmtree(self.unsavedWorkFolder.filename, True)
@@ -1146,7 +1148,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.playerTagCache.clear()
 
         self.root_tag.save(self.filename)
-        log.info(u"Saved {0} chunks".format(dirtyChunkCount))
+        log.info(u"Saved {0} chunks (dim {1})".format(dirtyChunkCount, self.dimNo))
 
     def unload(self):
         """
