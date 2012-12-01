@@ -1166,7 +1166,11 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         Unload all chunks and close all open filehandles. Discard any unsaved data.
         """
         self.unload()
-        shutil.rmtree(self.unsavedWorkFolder.filename, True)
+        try:
+            self.checkSessionLock()
+            shutil.rmtree(self.unsavedWorkFolder.filename, True)
+        except SessionLockLost:
+            pass
 
     # --- Resource limits ---
 
@@ -1356,6 +1360,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         Copy a chunk from world into the same chunk position in self.
         """
         assert isinstance(world, MCInfdevOldLevel)
+        self.checkSessionLock()
 
         destChunk = self._loadedChunks.get((cx, cz))
         sourceChunk = world._loadedChunks.get((cx, cz))
@@ -1422,6 +1427,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         return chunkData
 
     def _storeLoadedChunkData(self, chunkData):
+        self.checkSessionLock()
         if len(self._loadedChunkData) > self.loadedChunkLimit:
             # Try to find a chunk to unload. The chunk must not be in _loadedChunks, which contains only chunks that
             # are in use by another object. If the chunk is dirty, save it to the temporary folder.
@@ -1746,6 +1752,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0), nbt.TAG_Float(0)])
 
         if playerName != "Player":
+            self.checkSessionLock()
             playerTag.save(self.getPlayerPath(playerName))
 
 
