@@ -987,7 +987,7 @@ class AnvilWorldFolder(object):
 
 class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
-    def __init__(self, filename=None, create=False, random_seed=None, last_played=None):
+    def __init__(self, filename=None, create=False, random_seed=None, last_played=None, readonly=False):
         """
         Load an Alpha level from the given filename. It can point to either
         a level.dat or a folder containing one. If create is True, it will
@@ -1004,6 +1004,7 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         self.playerTagCache = {}
         self.players = []
+        assert not (create and readonly)
 
         if os.path.basename(filename) in ("level.dat", "level.dat_old"):
             filename = os.path.dirname(filename)
@@ -1020,16 +1021,18 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         self.worldFolder = AnvilWorldFolder(filename)
         self.filename = self.worldFolder.getFilePath("level.dat")
-        self.acquireSessionLock()
+        self.readonly = readonly
+        if not readonly:
+            self.acquireSessionLock()
 
-        workFolderPath = self.worldFolder.getFolderPath("##MCEDIT.TEMP##")
-        if os.path.exists(workFolderPath):
-            # xxxxxxx Opening a world a second time deletes the first world's work folder and crashes when the first
-            # world tries to read a modified chunk from the work folder. This mainly happens when importing a world
-            # into itself after modifying it.
-            shutil.rmtree(workFolderPath, True)
+            workFolderPath = self.worldFolder.getFolderPath("##MCEDIT.TEMP##")
+            if os.path.exists(workFolderPath):
+                # xxxxxxx Opening a world a second time deletes the first world's work folder and crashes when the first
+                # world tries to read a modified chunk from the work folder. This mainly happens when importing a world
+                # into itself after modifying it.
+                shutil.rmtree(workFolderPath, True)
 
-        self.unsavedWorkFolder = AnvilWorldFolder(workFolderPath)
+            self.unsavedWorkFolder = AnvilWorldFolder(workFolderPath)
 
         # maps (cx, cz) pairs to AnvilChunk
         self._loadedChunks = weakref.WeakValueDictionary()
@@ -1090,6 +1093,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
 
     def checkSessionLock(self):
+        if self.readonly:
+            raise SessionLockLost, "World is opened read only."
+
         lockfile = self.worldFolder.getFilePath("session.lock")
         try:
             (lock, ) = struct.unpack(">q", file(lockfile, "rb").read())
@@ -1120,6 +1126,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                     self._create(self.filename, random_seed, last_played)
 
     def saveInPlace(self):
+        if self.readonly:
+            raise IOError, "World is opened read only."
+
         self.checkSessionLock()
 
         for level in self.dimensions.itervalues():
@@ -1158,7 +1167,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         Unload all chunks and close all open filehandles.
         """
         self.worldFolder.closeRegions()
-        self.unsavedWorkFolder.closeRegions()
+        if not self.readonly:
+            self.unsavedWorkFolder.closeRegions()
 
         self._allChunks = None
         self._loadedChunks.clear()
@@ -1299,7 +1309,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
     def preloadChunkPositions(self):
         log.info(u"Scanning for regions...")
         self._allChunks = self.worldFolder.listChunks()
-        self._allChunks.update(self.unsavedWorkFolder.listChunks())
+        if not self.readonly:
+            self._allChunks.update(self.unsavedWorkFolder.listChunks())
         self._allChunks.update(self._loadedChunkData.iterkeys())
 
     def getRegionForChunk(self, cx, cz):
@@ -1363,6 +1374,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         Copy a chunk from world into the same chunk position in self.
         """
         assert isinstance(world, MCInfdevOldLevel)
+        if self.readonly:
+            raise IOError, "World is opened read only."
         self.checkSessionLock()
 
         destChunk = self._loadedChunks.get((cx, cz))
@@ -1405,9 +1418,9 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
                 self.unsavedWorkFolder.copyChunkFrom(sourceFolder, cx, cz)
 
     def _getChunkBytes(self, cx, cz):
-        try:
+        if not self.readonly and self.unsavedWorkFolder.containsChunk(cx, cz):
             return self.unsavedWorkFolder.readChunk(cx, cz)
-        except ChunkNotPresent:
+        else:
             return self.worldFolder.readChunk(cx, cz)
 
     def _getChunkData(self, cx, cz):
@@ -1423,20 +1436,22 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         except Exception, e:
             raise ChunkMalformed, "Chunk {0} had an error: {1!r}".format((cx, cz), e), sys.exc_info()[2]
 
-        if self.unsavedWorkFolder.containsChunk(cx, cz):
+        if not self.readonly and self.unsavedWorkFolder.containsChunk(cx, cz):
             chunkData.dirty = True
 
         self._storeLoadedChunkData(chunkData)
+
         return chunkData
 
     def _storeLoadedChunkData(self, chunkData):
-        self.checkSessionLock()
         if len(self._loadedChunkData) > self.loadedChunkLimit:
             # Try to find a chunk to unload. The chunk must not be in _loadedChunks, which contains only chunks that
             # are in use by another object. If the chunk is dirty, save it to the temporary folder.
+            if not self.readonly:
+                self.checkSessionLock()
             for (ocx, ocz), oldChunkData in self._loadedChunkData.items():
                 if (ocx, ocz) not in self._loadedChunks:
-                    if oldChunkData.dirty:
+                    if oldChunkData.dirty and not self.readonly:
                         data = oldChunkData.savedTagData()
                         self.unsavedWorkFolder.saveChunk(ocx, ocz, data)
 
@@ -1755,6 +1770,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         playerTag['Rotation'] = nbt.TAG_List([nbt.TAG_Float(0), nbt.TAG_Float(0)])
 
         if playerName != "Player":
+            if self.readonly:
+                raise IOError, "World is opened read only."
             self.checkSessionLock()
             playerTag.save(self.getPlayerPath(playerName))
 
