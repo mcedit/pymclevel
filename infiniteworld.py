@@ -1804,6 +1804,12 @@ class MCAlphaDimension (MCInfdevOldLevel):
     def _create(self, *args, **kw):
         pass
 
+    def acquireSessionLock(self):
+        pass
+
+    def checkSessionLock(self):
+        self.parentWorld.checkSessionLock()
+
     dimensionNames = {-1: "Nether", 1: "The End"}
 
     @property
