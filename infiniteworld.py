@@ -1091,7 +1091,10 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
     def checkSessionLock(self):
         lockfile = self.worldFolder.getFilePath("session.lock")
-        (lock, ) = struct.unpack(">q", file(lockfile, "rb").read())
+        try:
+            (lock, ) = struct.unpack(">q", file(lockfile, "rb").read())
+        except struct.error:
+            lock = -1
         if lock != self.initTime:
             raise SessionLockLost, "Session lock lost. This world is being accessed from another location."
 
