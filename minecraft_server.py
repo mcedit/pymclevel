@@ -315,8 +315,11 @@ class MCServerChunkGenerator(object):
 
             tempWorldDir = os.path.join(tempDir, worldName)
             tempWorld = infiniteworld.MCInfdevOldLevel(tempWorldDir, create=True, random_seed=level.RandomSeed)
+            tempWorld.close()
 
-            self.tempWorldCache[self.serverVersion, level.RandomSeed] = tempWorld
+            tempWorldRO = infiniteworld.MCInfdevOldLevel(tempWorldDir, readonly=True)
+
+            self.tempWorldCache[self.serverVersion, level.RandomSeed] = tempWorldRO
 
         if level.dimNo == 0:
             properties["allow-nether"] = "false"
@@ -334,8 +337,12 @@ class MCServerChunkGenerator(object):
         return exhaust(self.generateAtPositionIter(tempWorld, tempDir, cx, cz))
 
     def generateAtPositionIter(self, tempWorld, tempDir, cx, cz, simulate=False):
-        tempWorld.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
-        tempWorld.saveInPlace()
+        tempWorldRW = infiniteworld.MCInfdevOldLevel(tempWorld.filename)
+        tempWorldRW.setPlayerSpawnPosition((cx * 16, 64, cz * 16))
+        tempWorldRW.saveInPlace()
+        tempWorldRW.close()
+        del tempWorldRW
+
         tempWorld.unload()
 
         startTime = time.time()
