@@ -3,6 +3,7 @@ Created on Jul 23, 2011
 
 @author: Rio
 '''
+from math import isnan
 
 import nbt
 from copy import deepcopy
@@ -151,7 +152,16 @@ class Entity(object):
     def pos(cls, tag):
         if "Pos" not in tag:
             raise InvalidEntity(tag)
-        return [a.value for a in tag["Pos"]]
+        values = [a.value for a in tag["Pos"]]
+
+        if isnan(values[0]) and 'xTile' in tag :
+            values[0] = tag['xTile'].value
+        if isnan(values[1]) and 'yTile' in tag:
+            values[1] = tag['yTile'].value
+        if isnan(values[2]) and 'zTile' in tag:
+            values[2] = tag['zTile'].value
+
+        return values
 
     @classmethod
     def setpos(cls, tag, pos):
