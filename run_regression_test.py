@@ -41,6 +41,8 @@ def sha1_file(name, checksum=None):
 def calculate_result(directory):
     checksum = hashlib.sha1()
     for filename in sorted(generate_file_list(directory)):
+        if filename.endswith("session.lock"):
+            continue
         sha1_file(filename, checksum)
     return checksum.hexdigest()
 
@@ -60,22 +62,6 @@ def directory_clone(src):
         subdir = os.path.join(name, "subdir")
         shutil.copytree(src, subdir)
         yield subdir
-
-
-@contextlib.contextmanager
-def unzipped_content(src):
-    with temporary_directory() as dest:
-        f = zipfile.ZipFile(src)
-        f.extractall(dest)
-        yield dest
-
-
-@contextlib.contextmanager
-def untared_content(src):
-    with temporary_directory() as dest:
-        f = tarfile.TarFile.open(src)
-        f.extractall(dest)
-        yield dest
 
 
 def launch_subprocess(directory, arguments, env=None):
@@ -159,13 +145,13 @@ def do_test_match_output(test_data, result_check, arguments=()):
 
 
 alpha_tests = [
-    (do_test, 'baseline', '9e7460d39c8e0456789cf89fee45276db2719aaa', []),
-    (do_test, 'degrief', '403e6c6147cf1f8d73377b18bbf5e4973606a311', ['degrief']),
-    (do_test_match_output, 'analyze', '89ae362dec7f6c0fd743d6ed4e3957459cb3c34d', ['analyze']),
-    (do_test, 'relight', 'e0cf60c62adfdb313f198af5314c31f89d158c12', ['relight']),
-    (do_test, 'replace', 'd73767293e903b6d1c49c1838eb1849b69d83ad8', ['replace', 'Water (active)', 'with', 'Lava (active)']),
-    (do_test, 'fill', 'f4f57c3d902b6894031d416cb9279232e7e24bd7', ['fill', 'Water (active)']),
-    (do_test, 'heightmap', '9e7460d39c8e0456789cf89fee45276db2719aaa', ['heightmap', 'regression_test/mars.png']),
+    (do_test, 'baseline', '2bf250ec4e5dd8bfd73b3ccd0a5ff749569763cf', []),
+    (do_test, 'degrief', '2b7eecd5e660f20415413707b4576b1234debfcb', ['degrief']),
+    (do_test_match_output, 'analyze', '9cb4aec2ed7a895c3a5d20d6e29e26459e00bd53', ['analyze']),
+    (do_test, 'relight', 'f3b3445b0abca1fe2b183bc48b24fb734dfca781', ['relight']),
+    (do_test, 'replace', '4e816038f9851817b0d75df948d058143708d2ec', ['replace', 'Water (active)', 'with', 'Lava (active)']),
+    (do_test, 'fill', '94566d069edece4ff0cc52ef2d8f877fbe9720ab', ['fill', 'Water (active)']),
+    (do_test, 'heightmap', '71c20e7d7e335cb64b3eb0e9f6f4c9abaa09b070', ['heightmap', 'regression_test/mars.png']),
 ]
 
 import optparse
@@ -182,8 +168,8 @@ def main(argv):
     else:
         do_these_regressions = args[1:]
 
-    with untared_content("regression_test/alpha.tar.gz") as directory:
-        test_data = os.path.join(directory, "alpha")
+    with directory_clone("testfiles/AnvilWorld") as directory:
+        test_data = directory
         passes = []
         fails = []
 
