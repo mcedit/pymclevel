@@ -1213,7 +1213,7 @@ class mce(object):
                     # the quick lighting from chunkChanged has already lit this simple terrain completely
                     c.needsLighting = False
 
-                    logging.info("%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"), cx, cz))
+                logging.info("%s Just did chunk %d,%d" % (datetime.datetime.now().strftime("[%H:%M:%S]"), cx, cz))
 
             logging.info("Done with mapping!")
             self.needsSave = True
