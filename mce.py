@@ -1003,7 +1003,7 @@ class mce(object):
     Also see removeEntities
     """
         box = self.level.bounds
-        box.miny = 32
+        box = BoundingBox(box.origin + (0, 32, 0), box.size - (0, 32, 0))
         if len(command):
             try:
                 box.miny = int(command[0])
