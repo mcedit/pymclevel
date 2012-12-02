@@ -16,6 +16,9 @@ class TestPocket(unittest.TestCase):
         print "Chunk count", len(level.allChunks)
         chunk = level.getChunk(1, 5)
         a = numpy.array(chunk.SkyLight)
+        chunk.dirty = True
+        chunk.needsLighting = True
+        level.generateLights()
         level.saveInPlace()
         assert (a == chunk.SkyLight).all()
 

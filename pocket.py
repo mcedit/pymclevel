@@ -351,6 +351,11 @@ class PocketWorld(ChunkedLevelMixin, MCLevel):
             return False
         return self.chunkFile.getOffset(cx, cz) != 0
 
+    @property
+    def chunksNeedingLighting(self):
+        for chunk in self._loadedChunks.itervalues():
+            if chunk.needsLighting:
+                yield chunk.chunkPosition
 
 class PocketChunk(LightedChunk):
     HeightMap = FakeChunk.HeightMap
