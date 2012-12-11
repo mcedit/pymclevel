@@ -48,25 +48,25 @@ blocks:
     name: Wood Planks
     mapcolor: [157, 128, 79]
     tex: [4, 0]
-#  
-#  - id: 6
-#    idStr: SAPLING
-#    name: Sapling
-#    mapcolor: [120, 120, 120]
-#    tex: [15, 0]
-#    type: DECORATION_CROSS
-#    opacity: 0
-#    data:
-#      0: 
-#        name: Sapling
-#        tex: [15, 0]
-#      1: 
-#        name: Spruce Sapling
-#        tex: [15, 3]
-#      2: 
-#        name: Birch Sapling
-#        tex: [15, 4]
-#    
+  
+  - id: 6
+    idStr: SAPLING
+    name: Sapling
+    mapcolor: [120, 120, 120]
+    tex: [15, 0]
+    type: DECORATION_CROSS
+    opacity: 0
+    data:
+      0: 
+        name: Sapling
+        tex: [15, 0]
+      1: 
+        name: Spruce Sapling
+        tex: [15, 3]
+      2: 
+        name: Birch Sapling
+        tex: [15, 4]
+    
   - id: 7
     idStr: BEDROCK
     name: Bedrock
@@ -246,20 +246,20 @@ blocks:
 #    mapcolor: [114, 88, 56]
 #    tex: [10, 4]
 #  
-#  - id: 26
-#    idStr: BED
-#    name: Bed
-#    mapcolor: [255, 0, 0]
-#    tex: [7, 8]
-#    type: BED
-#    tex_extra:
-#      foot_top: [6, 8]
-#      head_side: [7, 9]
-#      foot_side: [6, 9]
-#      foot: [5, 9]
-#      head: [8, 9]
-#    opacity: 0
-#  
+  - id: 26
+    idStr: BED
+    name: Bed
+    mapcolor: [255, 0, 0]
+    tex: [7, 8]
+    type: BED
+    tex_extra:
+      foot_top: [6, 8]
+      head_side: [7, 9]
+      foot_side: [6, 9]
+      foot: [5, 9]
+      head: [8, 9]
+    opacity: 0
+  
 #  - id: 27
 #    idStr: POWERED_RAIL
 #    name: Power Rail
@@ -602,22 +602,22 @@ blocks:
     mapcolor: [157, 128, 79]
     tex: [4, 0]
     type: STAIRS
-#  
-#  - id: 54
-#    idStr: CHEST
-#    name: Chest
-#    mapcolor: [125, 91, 38]
-#    tex: [11, 1]
-#    type: CHEST
-#    tex_extra:
-#      side_small: [10, 1]
-#      top: [9, 1]
-#      front_big_left: [9, 2]
-#      front_big_right: [10, 2]
-#      back_big_left: [9, 3]
-#      back_big_right: [10, 3]
-#    opacity: 0
-#    
+  
+  - id: 54
+    idStr: CHEST
+    name: Chest
+    mapcolor: [125, 91, 38]
+    tex: [11, 1]
+    type: CHEST
+    tex_extra:
+      side_small: [10, 1]
+      top: [9, 1]
+      front_big_left: [9, 2]
+      front_big_right: [10, 2]
+      back_big_left: [9, 3]
+      back_big_right: [10, 3]
+    opacity: 0
+    
 #  - id: 55
 #    idStr: REDSTONE_WIRE
 #    name: Wire
@@ -647,23 +647,25 @@ blocks:
       SIDES: [11, 3]
       TOP: [11, 2]
       BOTTOM: [4, 0]
-#  
-#  - id: 59
-#    idStr: CROPS
-#    name: Crops
-#    mapcolor: [146, 192, 0]
-#    tex: [15, 5]
-#    type: CROPS
-#    tex_extra:
-#      smaller_1: [14, 5]
-#      smaller_2: [13, 5]
-#      smaller_3: [12, 5]
-#      smaller_4: [11, 5]
-#      smaller_5: [10, 5]
-#      smaller_6: [9, 5]
-#      smaller_7: [8, 5]
-#    opacity: 0
-    
+  
+  - id: 59
+    idStr: CROPS
+    name: Crops
+    aka: Wheat
+    mapcolor: [146, 192, 0]
+    tex: [15, 5]
+    type: CROPS
+    data:
+      0: {tex: [8, 5]}
+      1: {tex: [9, 5]}
+      2: {tex: [10, 5]}
+      3: {tex: [11, 5]}
+      4: {tex: [12, 5]}
+      5: {tex: [13, 5]}
+      6: {tex: [14, 5]}
+      7: {tex: [15, 5]}
+    opacity: 0
+
   - id: 60
     idStr: FARMLAND
     name: Farmland
@@ -674,34 +676,34 @@ blocks:
       SIDES: [2, 0]
       BACKWARD: [2, 0]
       BOTTOM: [2, 0]
-#    
-#  - id: 61
-#    idStr: FURNACE
-#    name: Furnace
-#    mapcolor: [96, 96, 96]
-#    tex: [12, 2]
-#    tex_direction:
-#      FORWARD: [12, 2]
-#      SIDES: [13, 2]
-#      BACKWARD: [13, 2]
-#      TOP: [14, 3]
-#      BOTTOM: [14, 3]
-#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
-#  
-#  - id: 62
-#    idStr: BURNING_FURNACE
-#    name: Burning Furnace
-#    mapcolor: [96, 96, 96]
-#    tex: [13, 3]
-#    tex_direction:
-#      FORWARD: [13, 3]
-#      SIDES: [13, 2]
-#      BACKWARD: [13, 2]
-#      TOP: [14, 3]
-#      BOTTOM: [14, 3]
-#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
-#    brightness: 14
-#    
+    
+  - id: 61
+    idStr: FURNACE
+    name: Furnace
+    mapcolor: [96, 96, 96]
+    tex: [12, 2]
+    tex_direction:
+      FORWARD: [12, 2]
+      SIDES: [13, 2]
+      BACKWARD: [13, 2]
+      TOP: [14, 3]
+      BOTTOM: [14, 3]
+    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+  
+  - id: 62
+    idStr: BURNING_FURNACE
+    name: Burning Furnace
+    mapcolor: [96, 96, 96]
+    tex: [13, 3]
+    tex_direction:
+      FORWARD: [13, 3]
+      SIDES: [13, 2]
+      BACKWARD: [13, 2]
+      TOP: [14, 3]
+      BOTTOM: [14, 3]
+    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+    brightness: 14
+    
 #  - id: 63
 #    idStr: SIGNPOST
 #    name: Sign
@@ -884,6 +886,60 @@ blocks:
     type: FENCE
     opacity: 0
 
+  - id: 89
+    idStr: GLOWSTONE
+    name: Glowstone
+    mapcolor: [249, 212, 156]
+    tex: [9, 6]
+    explored: true
+    brightness: 15
+
+  - id: 95
+    idStr: INVISIBLE_BEDROCK
+    name: Invisible Bedrock
+
+  - id: 96
+    idStr: TRAPDOOR
+    name: Trapdoor
+    mapcolor: [143, 107, 53]
+    tex: [4, 5]
+    type: TRAPDOOR
+    opacity: 0
+
+  - id: 98
+    idStr: STONE_BRICK
+    name: Stone Bricks
+    mapcolor: [120, 120, 120]
+    tex: [6, 3]
+
+  - id: 102
+    idStr: GLASS_PANE
+    name: Glass Pane
+    mapcolor: [255, 255, 255]
+    tex: [1, 3]
+    type: SOLID_PANE
+    opacity: 0
+
+  - id: 103
+    idStr: MELON
+    name: Watermelon
+    mapcolor: [190, 184, 41]
+    tex: [9, 8]
+    tex_direction:
+      FORWARD: [8, 8]
+      SIDES: [8, 8]
+      BACKWARD: [8, 8]
+
+  - id: 105
+    idStr: MELON_STEM
+    name: Melon Stem
+    mapcolor: [190, 184, 41]
+    tex: [15, 6]
+    type: STEM
+    tex_extra:
+      curve: [15, 7]
+    opacity: 0
+
   - id: 107
     idStr: FENCE_GATE
     name: Fence Gate
@@ -891,5 +947,12 @@ blocks:
     tex: [4, 0]
     type: FENCE_GATE
     opacity: 0
-  
+
+  - id: 108
+    idStr: BRICK_STAIRS
+    name: Brick Stairs
+    mapcolor: [170, 86, 62]
+    tex: [7, 0]
+    type: STAIRS
+
 ...
