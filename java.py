@@ -111,10 +111,8 @@ class MCJavaLevel(MCLevel):
     def saveInPlace(self):
 
         s = StringIO()
-        if self.compressed:
-            g = gzip.GzipFile(fileobj=s, mode='wb')
-        else:
-            g = s
+        g = gzip.GzipFile(fileobj=s, mode='wb')
+
 
         g.write(self.filedata.tostring())
         g.flush()
