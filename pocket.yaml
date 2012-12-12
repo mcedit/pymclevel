@@ -10,16 +10,16 @@ defaults:
   tex: [11, 8]
   brightness: 0
   opacity: 15
-  
-  
+
+
 blocks:
-  
+
   - id: 1
     idStr: STONE
     name: Stone
     mapcolor: [120, 120, 120]
     tex: [1, 0]
-  
+
   - id: 2
     idStr: GRASS
     name: Grass
@@ -30,25 +30,25 @@ blocks:
       SIDES: [3, 0]
       BACKWARD: [3, 0]
       BOTTOM: [2, 0]
-  
+
   - id: 3
     idStr: DIRT
     name: Dirt
     mapcolor: [134, 96, 67]
     tex: [2, 0]
-  
+
   - id: 4
     idStr: COBBLESTONE
     name: Cobblestone
     mapcolor: [115, 115, 115]
     tex: [0, 1]
-  
+
   - id: 5
     idStr: PLANK
     name: Wood Planks
     mapcolor: [157, 128, 79]
     tex: [4, 0]
-  
+
   - id: 6
     idStr: SAPLING
     name: Sapling
@@ -66,14 +66,14 @@ blocks:
       2: 
         name: Birch Sapling
         tex: [15, 4]
-    
+
   - id: 7
     idStr: BEDROCK
     name: Bedrock
     aka: Adminium
     mapcolor: [84, 84, 84]
     tex: [1, 1]
-  
+
   - id: 8
     idStr: WATER
     name: Water (active)
@@ -81,7 +81,7 @@ blocks:
     type: WATER
     tex: [15, 12]
     opacity: 3
-  
+
   - id: 9
     idStr: STATIONARY_WATER
     name: Water
@@ -89,7 +89,7 @@ blocks:
     type: WATER
     tex: [15, 12]
     opacity: 3
-    
+
   - id: 10
     idStr: LAVA
     name: Lava (active)
@@ -97,7 +97,7 @@ blocks:
     tex: [15, 14]
     type: SEMISOLID
     brightness: 15
-  
+
   - id: 11
     idStr: STATIONARY_LAVA
     name: Lava
@@ -105,37 +105,37 @@ blocks:
     tex: [15, 14]
     type: SEMISOLID
     brightness: 15
-    
+
   - id: 12
     idStr: SAND
     name: Sand
     mapcolor: [218, 210, 158]
     tex: [2, 1]
-  
+
   - id: 13
     idStr: GRAVEL
     name: Gravel
     mapcolor: [136, 126, 126]
     tex: [3, 1]
-  
+
   - id: 14
     idStr: GOLD_ORE
     name: Gold Ore
     mapcolor: [143, 140, 125]
     tex: [0, 2]
-  
+
   - id: 15
     idStr: IRON_ORE
     name: Iron Ore
     mapcolor: [136, 130, 127]
     tex: [1, 2]
-  
+
   - id: 16
     idStr: COAL_ORE
     name: Coal Ore
     mapcolor: [115, 115, 115]
     tex: [2, 2]
-  
+
   - id: 17
     idStr: WOOD
     name: Wood
@@ -155,7 +155,7 @@ blocks:
       2:
         name: Birch Wood
         tex: [5, 7]
-        
+
   - id: 18
     idStr: LEAVES
     name: Leaves
@@ -177,7 +177,7 @@ blocks:
         name: Birch Leaves
         mapcolor: [89, 151, 76]
         tex: [5, 3]
-      
+
       4: # bit 0x4 - "Decaying"
         name: Leaves (Decaying)
         mapcolor: [60, 192, 41]
@@ -191,13 +191,7 @@ blocks:
         name: Birch Leaves (Decaying)
         mapcolor: [89, 151, 76]
         tex: [5, 3]
-#    
-#  - id: 19
-#    idStr: SPONGE
-#    name: Sponge
-#    mapcolor: [193, 193, 57]
-#    tex: [0, 3]
-#  
+
   - id: 20
     idStr: GLASS
     name: Glass
@@ -205,32 +199,19 @@ blocks:
     tex: [1, 3]
     type: GLASS
     opacity: 0
-  
+
   - id: 21
     idStr: LAPIS_LAZULI_ORE
     name: Lapis Lazuli Ore
     mapcolor: [27, 70, 161]
     tex: [0, 10]
-  
+
   - id: 22
     idStr: LAPIS_LAZULI_BLOCK
     name: Lapis Lazuli Block
     mapcolor: [0, 0, 0]
     tex: [0, 9]
-#  
-#  - id: 23
-#    idStr: DISPENSER
-#    name: Dispenser
-#    mapcolor: [96, 96, 96]
-#    tex: [14, 2]
-#    tex_direction:
-#      FORWARD: [14, 2]
-#      SIDES: [13, 2]
-#      BACKWARD: [13, 2]
-#      TOP: [14, 3]
-#      BOTTOM: [14, 3]
-#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
-#  
+
   - id: 24
     idStr: SANDSTONE
     name: Sandstone
@@ -239,13 +220,7 @@ blocks:
     tex_direction:
       TOP: [0, 11]
       BOTTOM: [0, 13]
-#  
-#  - id: 25
-#    idStr: NOTE_BLOCK
-#    name: Note Block
-#    mapcolor: [114, 88, 56]
-#    tex: [10, 4]
-#  
+
   - id: 26
     idStr: BED
     name: Bed
@@ -259,39 +234,7 @@ blocks:
       foot: [5, 9]
       head: [8, 9]
     opacity: 0
-  
-#  - id: 27
-#    idStr: POWERED_RAIL
-#    name: Power Rail
-#    mapcolor: [120, 53, 28]
-#    tex: [3, 10]
-#    type: SIMPLE_RAIL
-#    tex_extra:
-#      powered: [3, 11]
-#    opacity: 0
-#  
-#  - id: 28
-#    idStr: DETECTOR_RAIL
-#    name: Detector
-#    mapcolor: [200, 189, 189]
-#    tex: [3, 12]
-#    type: SIMPLE_RAIL
-#    tex_extra:
-#      powered: [3, 12] # Only because the SIMPLE_RAIL renderer requires it; will
-#                       # go unused here.
-#    opacity: 0
-#  
-#  - id: 29
-#    idStr: PISTON_STICKY_BODY
-#    name: Sticky Piston
-#    mapcolor: [132, 132, 132]
-#    tex: [12, 6]
-#    type: PISTON_BODY
-#    tex_extra:
-#      head: [11, 6]
-#      back: [13, 6]
-#      front: [14, 6]
-#  
+
   - id: 30
     idStr: WEB
     name: Web
@@ -318,37 +261,6 @@ blocks:
     type: DECORATION_CROSS
     opacity: 0
 
-#  
-#  - id: 32
-#    idStr: DEAD_SHRUB
-#    name: Dead Shrub
-#    mapcolor: [148, 100, 40]
-#    tex: [7, 3]
-#    type: DECORATION_CROSS
-#    opacity: 0
-#  
-#  - id: 33
-#    idStr: PISTON_BODY
-#    name: Piston
-#    mapcolor: [132, 132, 132]
-#    tex: [12, 6]
-#    type: PISTON_BODY
-#    tex_extra:
-#      head: [11, 6]
-#      back: [13, 6]
-#      front: [14, 6]
-#  
-#  - id: 34
-#    idStr: PISTON_HEAD
-#    name: Piston Head
-#    mapcolor: [119, 92, 53]
-#    tex: [11, 6]
-#    type: PISTON_HEAD
-#    tex_extra:
-#      head_sticky: [10, 6]
-#      body: [12, 6]
-#    opacity: 0
-#  
   - id: 35
     idStr: WOOL
     name: White Wool
@@ -421,7 +333,7 @@ blocks:
         tex: [1, 7]
         name: Black Wool
         mapcolor: [0, 0, 0]
-    
+
   - id: 37
     idStr: YELLOW_FLOWER
     name: Flower
@@ -429,14 +341,14 @@ blocks:
     tex: [13, 0]
     type: DECORATION_CROSS
     opacity: 0
-  
+
   - id: 38
     name: Cyan Flower
     mapcolor: [255, 0, 0]
     tex: [12, 0]
     type: DECORATION_CROSS
     opacity: 0
-  
+
   - id: 39
     idStr: BROWN_MUSHROOM
     name: Brown Mushroom
@@ -444,7 +356,7 @@ blocks:
     tex: [13, 1]
     type: DECORATION_CROSS
     opacity: 0
-  
+
   - id: 40
     idStr: RED_MUSHROOM
     name: Red Mushroom
@@ -452,19 +364,19 @@ blocks:
     tex: [12, 1]
     type: DECORATION_CROSS
     opacity: 0
-  
+
   - id: 41
     idStr: GOLD_BLOCK
     name: Block of Gold
     mapcolor: [231, 165, 45]
     tex: [7, 1]
-  
+
   - id: 42
     idStr: IRON_BLOCK
     name: Block of Iron
     mapcolor: [191, 191, 191]
     tex: [6, 1]
-  
+
   - id: 43
     idStr: DOUBLE_SLAB
     name: Double Stone Slab
@@ -477,7 +389,7 @@ blocks:
       FORWARD: [5, 0]
       BACKWARD: [5, 0]
       SIDES: [5, 0]
-      
+
     data:
       0: 
         tex: [5, 0]
@@ -494,10 +406,7 @@ blocks:
       4: 
         tex: [7, 0]
         name: Double Brick Slab
-#      5: 
-#        tex: [6, 3]
-#        name: Double Stone Brick Slab
-#      
+
   - id: 44
     idStr: SLAB
     name: Stone Slab
@@ -510,7 +419,7 @@ blocks:
       FORWARD: [5, 0]
       BACKWARD: [5, 0]
       SIDES: [5, 0]
-      
+
     type: HALFHEIGHT
     data:
       0: 
@@ -528,16 +437,13 @@ blocks:
       4: 
         tex: [7, 0]
         name: Brick Slab
-#      5: 
-#        tex: [6, 3]
-#        name: Stone Brick Slab
-  
+
   - id: 45
     idStr: BRICK
     name: Brick
     mapcolor: [170, 86, 62]
     tex: [7, 0]
-  
+
   - id: 46
     idStr: TNT
     name: TNT
@@ -546,7 +452,7 @@ blocks:
     tex_direction:
       TOP: [9, 0]
       BOTTOM: [10, 0]
-  
+
   - id: 47
     idStr: BOOKSHELF
     name: Bookshelf
@@ -555,20 +461,20 @@ blocks:
     tex_direction:
       TOP: [4, 0]
       BOTTOM: [4, 0]
-  
+
   - id: 48
     idStr: MOSSY_COBBLESTONE
     name: Moss Stone
     aka: Mossy Cobblestone
     mapcolor: [115, 169, 115]
     tex: [4, 2]
-  
+
   - id: 49
     idStr: OBSIDIAN
     name: Obsidian
     mapcolor: [26, 11, 43]
     tex: [5, 2]
-  
+
   - id: 50
     idStr: TORCH
     name: Torch
@@ -578,7 +484,7 @@ blocks:
     explored: true
     opacity: 0
     brightness: 14
-      
+
   - id: 51
     idStr: FIRE
     name: Fire
@@ -587,22 +493,14 @@ blocks:
     tex: [15, 1]
     opacity: 0
     brightness: 15
-#    
-#  - id: 52
-#    idStr: MOB_SPAWNER
-#    name: Spawner
-#    mapcolor: [25, 82, 122]
-#    tex: [1, 4]
-#    type: SEMISOLID
-#    opacity: 0
-#    
+
   - id: 53
     idStr: WOODEN_STAIRS
     name: Wooden Stairs
     mapcolor: [157, 128, 79]
     tex: [4, 0]
     type: STAIRS
-  
+
   - id: 54
     idStr: CHEST
     name: Chest
@@ -617,27 +515,19 @@ blocks:
       back_big_left: [9, 3]
       back_big_right: [10, 3]
     opacity: 0
-    
-#  - id: 55
-#    idStr: REDSTONE_WIRE
-#    name: Wire
-#    mapcolor: [245, 50, 50]
-#    tex: [4, 10]
-#    type: FLOOR
-#    opacity: 0
-#    
+
   - id: 56
     idStr: DIAMOND_ORE
     name: Diamond Ore
     mapcolor: [129, 140, 143]
     tex: [2, 3]
-  
+
   - id: 57
     idStr: DIAMOND_BLOCK
     name: Block of Diamond
     mapcolor: [45, 166, 152]
     tex: [8, 1]
-  
+
   - id: 58
     idStr: WORKBENCH
     name: Bench
@@ -647,7 +537,7 @@ blocks:
       SIDES: [11, 3]
       TOP: [11, 2]
       BOTTOM: [4, 0]
-  
+
   - id: 59
     idStr: CROPS
     name: Crops
@@ -676,7 +566,7 @@ blocks:
       SIDES: [2, 0]
       BACKWARD: [2, 0]
       BOTTOM: [2, 0]
-    
+
   - id: 61
     idStr: FURNACE
     name: Furnace
@@ -689,7 +579,7 @@ blocks:
       TOP: [14, 3]
       BOTTOM: [14, 3]
     tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
-  
+
   - id: 62
     idStr: BURNING_FURNACE
     name: Burning Furnace
@@ -703,15 +593,7 @@ blocks:
       BOTTOM: [14, 3]
     tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
     brightness: 14
-    
-#  - id: 63
-#    idStr: SIGNPOST
-#    name: Sign
-#    mapcolor: [111, 91, 54]
-#    tex: [4, 0]
-#    type: SIGNPOST
-#    opacity: 0
-#    
+
   - id: 64
     idStr: WOODEN_DOOR
     name: Wooden Door
@@ -721,7 +603,7 @@ blocks:
     tex_extra:
       bottom: [1, 6]
     opacity: 0
-    
+
   - id: 65
     idStr: LADDER
     name: Ladder
@@ -729,50 +611,14 @@ blocks:
     tex: [3, 5]
     type: LADDER
     opacity: 0
-#    
-#  - id: 66
-#    idStr: MINECART_TRACKS
-#    name: Rail
-#    mapcolor: [150, 134, 102]
-#    tex: [0, 8]
-#    type: MINECART_TRACKS
-#    tex_extra:
-#      curve: [0, 7]
-#    opacity: 0
-    
+
   - id: 67
     idStr: COBBLESTONE_STAIRS
     name: Stone Stairs
     mapcolor: [115, 115, 115]
     tex: [0, 1]
     type: STAIRS
-#  
-#  - id: 68
-#    idStr: WALL_SIGN
-#    name: Sign
-#    mapcolor: [111, 91, 54]
-#    tex: [4, 0]
-#    type: WALLSIGN
-#    opacity: 0
-#    
-#  - id: 69
-#    idStr: LEVER
-#    name: Lever
-#    mapcolor: [124, 98, 62]
-#    tex: [0, 6]
-#    type: LEVER
-#    tex_extra:
-#      base: [0, 1]
-#    opacity: 0
-#    
-#  - id: 70
-#    idStr: STONE_PRESSURE_PLATE
-#    name: Plate
-#    mapcolor: [120, 120, 120]
-#    tex: [1, 0]
-#    type: PRESSURE_PLATE
-#    opacity: 0
-#    
+
   - id: 71
     idStr: IRON_DOOR
     name: Iron Door
@@ -782,56 +628,20 @@ blocks:
     tex_extra:
       bottom: [2, 6]
     opacity: 0
-#    
-#  - id: 72
-#    idStr: WOODEN_PRESSURE_PLATE
-#    name: Plate
-#    mapcolor: [157, 128, 79]
-#    tex: [4, 0]
-#    type: PRESSURE_PLATE
-#    opacity: 0
-#    
+
   - id: 73
     idStr: REDSTONE_ORE
     name: Redstone Ore
     mapcolor: [131, 107, 107]
     tex: [3, 3]
-  
+
   - id: 74
     idStr: GLOWING_REDSTONE_ORE
     name: Redstone Ore (Glowing)
     mapcolor: [131, 107, 107]
     tex: [3, 3]
     brightness: 9
-  
-#  - id: 75
-#    idStr: REDSTONE_TORCH_OFF
-#    name: Redstone Torch (off)
-#    mapcolor: [181, 140, 64]
-#    tex: [3, 7]
-#    type: TORCH
-#    explored: true
-#    opacity: 0
-#    
-#  
-#  - id: 76
-#    idStr: REDSTONE_TORCH_ON
-#    name: Redstone Torch (on)
-#    mapcolor: [255, 0, 0]
-#    tex: [3, 6]
-#    type: TORCH
-#    explored: true
-#    opacity: 0
-#    brightness: 7
-#    
-#  - id: 77
-#    idStr: STONE_BUTTON
-#    name: Button
-#    mapcolor: [120, 120, 120]
-#    tex: [1, 0]
-#    type: BUTTON
-#    opacity: 0
-#    
+
   - id: 78
     idStr: SNOW
     name: Snow Layer
@@ -839,7 +649,7 @@ blocks:
     tex: [2, 4]
     type: THINSLICE
     opacity: 0
-    
+
   - id: 79
     idStr: ICE
     name: Ice
@@ -847,13 +657,13 @@ blocks:
     tex: [3, 4]
     type: WATER
     opacity: 3
-    
+
   - id: 80
     idStr: SNOW_BLOCK
     name: Snow
     mapcolor: [250, 250, 250]
     tex: [2, 4]
-  
+
   - id: 81
     idStr: CACTUS
     name: Cactus
@@ -863,13 +673,13 @@ blocks:
       TOP: [5, 4]
       BOTTOM: [5, 4]
     opacity: 0
-    
+
   - id: 82
     idStr: CLAY
     name: Clay
     mapcolor: [151, 157, 169]
     tex: [8, 4]
-  
+
   - id: 83
     idStr: SUGARCANE
     name: Sugar Cane
@@ -877,7 +687,7 @@ blocks:
     tex: [9, 4]
     type: DECORATION_CROSS
     opacity: 0
-  
+
   - id: 85
     idStr: FENCE
     name: Fence
@@ -954,14 +764,14 @@ blocks:
     mapcolor: [170, 86, 62]
     tex: [7, 0]
     type: STAIRS
-    
+
   - id: 246
     idStr: GLOWING_OBSIDIAN
     name: Glowing Obsidian
     mapcolor: [155, 0, 0]
     tex: [10, 13]
     brightness: 12
-  
+
   - id: 247
     idStr: NETHER_REACTOR_CORE
     name: Nether Reactor Core
