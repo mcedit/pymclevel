@@ -827,8 +827,8 @@ blocks:
         tex: [6, 3]
         name: Double Stone Brick Slab
       6:
-        name: Double Smooth Stone Slab
-        tex: [6, 0]
+        tex: [0, 14]
+        name: Double Nether Brick Slab
 
   - id: 44
     idStr: SLAB
@@ -864,6 +864,9 @@ blocks:
       5:
         tex: [6, 3]
         name: Stone Brick Slab
+      6:
+        tex: [0, 14]
+        name: Nether Brick Slab
     type: HALFHEIGHT
 
   - id: 45
