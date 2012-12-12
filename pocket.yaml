@@ -292,32 +292,32 @@ blocks:
 #      back: [13, 6]
 #      front: [14, 6]
 #  
-#  - id: 30
-#    idStr: WEB
-#    name: Web
-#    mapcolor: [255, 255, 255]
-#    tex: [11, 0]
-#    type: DECORATION_CROSS
-#    opacity: 0
-#  
-#  - id: 31
-#    idStr: TALL_GRASS
-#    name: Tall Grass
-#    mapcolor: [117, 176, 73]
-#    tex: [7, 2]
-#    data:
-#      0: 
-#        tex: [7, 3]
-#        name: Dead Shrub
-#      1: 
-#        tex: [7, 2]
-#        name: Tall Grass
-#      2: 
-#        tex: [8, 3]
-#        name: Fern    
-#    type: DECORATION_CROSS
-#    opacity: 0
-#    
+  - id: 30
+    idStr: WEB
+    name: Web
+    mapcolor: [255, 255, 255]
+    tex: [11, 0]
+    type: DECORATION_CROSS
+    opacity: 0
+
+  - id: 31
+    idStr: TALL_GRASS
+    name: Tall Grass
+    mapcolor: [104, 156, 53]
+    tex: [7, 2]
+    data:
+      0:
+        tex: [7, 3]
+        name: (Unused Shrub)
+      1:
+        tex: [7, 2]
+        name: Tall Grass
+      2:
+        tex: [8, 3]
+        name: Fern
+    type: DECORATION_CROSS
+    opacity: 0
+
 #  
 #  - id: 32
 #    idStr: DEAD_SHRUB
@@ -954,5 +954,25 @@ blocks:
     mapcolor: [170, 86, 62]
     tex: [7, 0]
     type: STAIRS
+    
+  - id: 246
+    idStr: GLOWING_OBSIDIAN
+    name: Glowing Obsidian
+    mapcolor: [155, 0, 0]
+    tex: [10, 13]
+    brightness: 12
+  
+  - id: 247
+    idStr: NETHER_REACTOR_CORE
+    name: Nether Reactor Core
+    mapcolor: [125, 210, 255]
+    tex: [10, 14]
+    data:
+      0: 
+        tex: [10, 14]
+        name: Nether Reactor Core
+      1: 
+        tex: [9, 14]
+        name: Nether Reactor Core (Used)
 
 ...
