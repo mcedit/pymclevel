@@ -25,3 +25,6 @@ _nbt.pyd
 # The "standard" virtualenv directory.
 ENV
 
+profile.dat
+profile.dot
+profile.png
