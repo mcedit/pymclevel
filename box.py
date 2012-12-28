@@ -9,10 +9,23 @@ class Vector(_Vector):
 
     def __add__(self, other):
         return Vector(self[0] + other[0], self[1] + other[1], self[2] + other[2])
+
     def __sub__(self, other):
         return Vector(self[0] - other[0], self[1] - other[1], self[2] - other[2])
+
     def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            return Vector(self[0] * other, self[1] * other, self[2] * other)
+
         return Vector(self[0] * other[0], self[1] * other[1], self[2] * other[2])
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float)):
+            return Vector(self[0] / other, self[1] / other, self[2] / other)
+
+        return Vector(self[0] / other[0], self[1] / other[1], self[2] / other[2])
+
+    __div__ = __truediv__
 
 class BoundingBox (object):
     type = int
