@@ -350,7 +350,7 @@ class TAG_Compound(TAG_Value, collections.MutableMapping):
         for tag in self.value:
             if tag.name == key:
                 return tag
-        raise KeyError("Key {0} not found in tag {1}".format(key, self))
+        raise KeyError("Key {0} not found".format(key))
 
     def __iter__(self):
         return itertools.imap(lambda x: x.name, self.value)
