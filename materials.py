@@ -416,7 +416,7 @@ alphaMaterials.BrownWool = alphaMaterials[35, 12]
 alphaMaterials.DarkGreenWool = alphaMaterials[35, 13]
 alphaMaterials.RedWool = alphaMaterials[35, 14]
 alphaMaterials.BlackWool = alphaMaterials[35, 15]
-
+alphaMaterials.Block36 = alphaMaterials[36, 0]
 alphaMaterials.Flower = alphaMaterials[37, 0]
 alphaMaterials.Rose = alphaMaterials[38, 0]
 alphaMaterials.BrownMushroom = alphaMaterials[39, 0]
