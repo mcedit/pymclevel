@@ -1562,6 +1562,7 @@ blocks:
       sides: [15, 9]
       bottom: [15, 10]
       eye: [14, 10]
+    opacity: 0
 
   - id: 121
     idStr: ENDER_STONE
