@@ -749,7 +749,7 @@ blocks:
 
   - id: 36
     idStr: BLOCK_36
-    name: Block 36
+    name: Piston Movement Placeholder
     mapcolor: [0, 0, 0]
     tex: [0, 0]
     opacity: 0
