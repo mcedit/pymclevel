@@ -1152,7 +1152,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
 
         self.unsavedWorkFolder.closeRegions()
         shutil.rmtree(self.unsavedWorkFolder.filename, True)
-        os.mkdir(self.unsavedWorkFolder.filename)
+        if not os.path.exists(self.unsavedWorkFolder.filename):
+            os.mkdir(self.unsavedWorkFolder.filename)
 
         for path, tag in self.playerTagCache.iteritems():
             tag.save(path)
