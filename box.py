@@ -1,5 +1,6 @@
 from collections import namedtuple
 import itertools
+import math
 
 _Vector = namedtuple("_Vector", ("x", "y", "z"))
 
@@ -27,6 +28,9 @@ class Vector(_Vector):
 
     __div__ = __truediv__
 
+    def length(self):
+        return math.sqrt(self[0] * self[0] + self[1] * self[1] + self[2] * self[2])
+    
 class BoundingBox (object):
     type = int
 
