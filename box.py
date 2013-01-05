@@ -30,6 +30,11 @@ class Vector(_Vector):
 
     def length(self):
         return math.sqrt(self[0] * self[0] + self[1] * self[1] + self[2] * self[2])
+
+    def normalize(self):
+        l = self.length()
+        if l == 0: return self
+        return self / l
     
 class BoundingBox (object):
     type = int
