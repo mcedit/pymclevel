@@ -1,4 +1,4 @@
-from test.templevel import TempLevel
+from templevel import TempLevel
 
 def testPrimordialDesert():
     templevel = TempLevel("PrimordialDesert")

@@ -4,12 +4,12 @@ import shutil
 import unittest
 import numpy
 
-import mclevel
-from infiniteworld import MCInfdevOldLevel
-import nbt
-from schematic import MCSchematic
-from box import BoundingBox
-import block_copy
+from pymclevel import mclevel
+from pymclevel.infiniteworld import MCInfdevOldLevel
+from pymclevel import nbt
+from pymclevel.schematic import MCSchematic
+from pymclevel.box import BoundingBox
+from pymclevel import block_copy
 from templevel import mktemp, TempLevel
 
 __author__ = 'Rio'

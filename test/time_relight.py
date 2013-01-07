@@ -1,8 +1,8 @@
-from infiniteworld import MCInfdevOldLevel
-import mclevel
+from pymclevel.infiniteworld import MCInfdevOldLevel
+from pymclevel import mclevel
 from timeit import timeit
 
-from test import templevel
+import templevel
 
 #import logging
 #logging.basicConfig(level=logging.INFO)

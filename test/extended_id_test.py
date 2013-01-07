@@ -1,4 +1,4 @@
-from schematic import MCSchematic
+from pymclevel.schematic import MCSchematic
 
 __author__ = 'Rio'
 

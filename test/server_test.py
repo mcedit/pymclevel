@@ -1,7 +1,7 @@
 import unittest
-from minecraft_server import MCServerChunkGenerator
+from pymclevel.minecraft_server import MCServerChunkGenerator
 from templevel import TempLevel
-from box import BoundingBox
+from pymclevel.box import BoundingBox
 
 __author__ = 'Rio'
 

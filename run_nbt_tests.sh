@@ -1,5 +1,5 @@
 rm _nbt.pyd
-sh run_tests.sh test/nbt_test.py
-python setup_nbt.py build_ext --inplace
-sh run_tests.sh test/nbt_test.py
+py.test test/nbt_test.py
+python setup.py build_ext --inplace
+py.test test/nbt_test.py
 

@@ -4,8 +4,8 @@ from os.path import join
 import time
 import unittest
 import numpy
-import nbt
-from test.templevel import TempLevel
+from pymclevel import nbt
+from templevel import TempLevel
 
 __author__ = 'Rio'
 

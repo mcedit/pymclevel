@@ -3,7 +3,7 @@ import os
 from os.path import join
 import shutil
 import tempfile
-import mclevel
+from pymclevel import mclevel
 
 __author__ = 'Rio'
 
