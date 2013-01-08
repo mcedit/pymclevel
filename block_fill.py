@@ -1,4 +1,6 @@
 import logging
+from pymclevel import materials
+
 log = logging.getLogger(__name__)
 
 import numpy
@@ -8,7 +10,7 @@ import blockrotation
 from entity import TileEntity
 
 def blockReplaceTable(blocksToReplace):
-    blocktable = numpy.zeros((256, 16), dtype='bool')
+    blocktable = numpy.zeros((materials.id_limit, 16), dtype='bool')
     for b in blocksToReplace:
         if b.hasVariants:
             blocktable[b.ID, b.blockData] = True

@@ -14,7 +14,7 @@ def convertBlocks(destLevel, sourceLevel, blocks, blockData):
 
 def sourceMaskFunc(blocksToCopy):
     if blocksToCopy is not None:
-        typemask = numpy.zeros(256, dtype='bool')
+        typemask = numpy.zeros(materials.id_limit, dtype='bool')
         typemask[blocksToCopy] = 1
 
         def maskedSourceMask(sourceBlocks):

@@ -17,7 +17,7 @@ from level import MCLevel, EntityLevel
 from materials import alphaMaterials, MCMaterials, namedMaterials
 from mclevelbase import exhaust
 import nbt
-from numpy import array, swapaxes, uint8, zeros
+from numpy import array, swapaxes, uint8, zeros, resize
 
 log = getLogger(__name__)
 
@@ -46,9 +46,6 @@ class MCSchematic (EntityLevel):
         I'm not sure what happens when I try to re-save a rotated schematic.
         """
 
-        # if(shape != None):
-        #    self.setShape(shape)
-
         if filename:
             self.filename = filename
             if None is root_tag and os.path.exists(filename):
@@ -68,7 +65,39 @@ class MCSchematic (EntityLevel):
                 self.materials = namedMaterials[self.Materials]
             else:
                 root_tag["Materials"] = nbt.TAG_String(self.materials.name)
-            self.shapeChunkData()
+
+            w = self.root_tag["Width"].value
+            l = self.root_tag["Length"].value
+            h = self.root_tag["Height"].value
+
+            self._Blocks = self.root_tag["Blocks"].value.astype('uint16').reshape(h, l, w)
+            del self.root_tag["Blocks"]
+            if "AddBlocks" in self.root_tag:
+                # Use WorldEdit's "AddBlocks" array to load and store the 4 high bits of a block ID.
+                # Unlike Minecraft's NibbleArrays, this array stores the first block's bits in the
+                # 4 high bits of the first byte.
+
+                size = (h * l * w)
+
+                # If odd, add one to the size to make sure the adjacent slices line up.
+                add = zeros(size + (size & 1), 'uint16')
+
+                # Fill the even bytes with data
+                add[::2] = self.root_tag["AddBlocks"].value
+
+                # Copy the low 4 bits to the odd bytes
+                add[1::2] = add[::2] & 0xf
+
+                # Shift the even bytes down
+                add[::2] >>= 4
+
+                # Shift every byte up before merging it with Blocks
+                add <<= 8
+                self._Blocks |= add[:size].reshape(h, l, w)
+                del self.root_tag["AddBlocks"]
+
+            self.root_tag["Data"].value = self.root_tag["Data"].value.reshape(h, l, w)
+
 
         else:
             assert shape is not None
@@ -81,12 +110,11 @@ class MCSchematic (EntityLevel):
             root_tag["TileEntities"] = nbt.TAG_List()
             root_tag["Materials"] = nbt.TAG_String(self.materials.name)
 
-            root_tag["Blocks"] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+            self._Blocks = zeros((shape[1], shape[2], shape[0]), 'uint16')
             root_tag["Data"] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
 
             self.root_tag = root_tag
 
-        self.packUnpack()
         self.root_tag["Data"].value &= 0xF  # discard high bits
 
 
@@ -99,11 +127,33 @@ class MCSchematic (EntityLevel):
 
         self.Materials = self.materials.name
 
-        self.packUnpack()
+        self.root_tag["Blocks"] = nbt.TAG_Byte_Array(self._Blocks.astype('uint8'))
+
+        add = self._Blocks >> 8
+        if add.any():
+            # WorldEdit AddBlocks compatibility.
+            # The first 4-bit value is stored in the high bits of the first byte.
+
+            # Increase odd size by one to align slices.
+            packed_add = zeros(add.size + (add.size & 1), 'uint8')
+            packed_add[:-(add.size & 1)] = add.ravel()
+
+            # Shift even bytes to the left
+            packed_add[::2] <<= 4
+
+            # Merge odd bytes into even bytes
+            packed_add[::2] |= packed_add[1::2]
+
+            # Save only the even bytes, now that they contain the odd bytes in their lower bits.
+            packed_add = packed_add[0::2]
+            self.root_tag["AddBlocks"] = nbt.TAG_Byte_Array(packed_add)
+
         with open(filename, 'wb') as chunkfh:
             self.root_tag.save(chunkfh)
 
-        self.packUnpack()
+        del self.root_tag["Blocks"]
+        self.root_tag.pop("AddBlocks", None)
+
 
     def __str__(self):
         return u"MCSchematic(shape={0}, materials={2}, filename=\"{1}\")".format(self.size, self.filename or u"", self.Materials)
@@ -124,11 +174,11 @@ class MCSchematic (EntityLevel):
 
     @property
     def Blocks(self):
-        return self.root_tag["Blocks"].value
+        return swapaxes(self._Blocks, 0, 2)
 
     @property
     def Data(self):
-        return self.root_tag["Data"].value
+        return swapaxes(self.root_tag["Data"].value, 0, 2)
 
     @property
     def Entities(self):
@@ -152,19 +202,6 @@ class MCSchematic (EntityLevel):
     def _isTagLevel(cls, root_tag):
         return "Schematic" == root_tag.name
 
-    def shapeChunkData(self):
-        w = self.root_tag["Width"].value
-        l = self.root_tag["Length"].value
-        h = self.root_tag["Height"].value
-
-        self.root_tag["Blocks"].value.shape = (h, l, w)
-        self.root_tag["Data"].value.shape = (h, l, w)
-
-    def packUnpack(self):
-        self.root_tag["Blocks"].value = swapaxes(self.root_tag["Blocks"].value, 0, 2)  # yzx to xzy
-        self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 0, 2)  # yzx to xzy
-
-
     def _update_shape(self):
         root_tag = self.root_tag
         shape = self.Blocks.shape
@@ -174,8 +211,8 @@ class MCSchematic (EntityLevel):
 
     def rotateLeft(self):
 
-        self.root_tag["Blocks"].value = swapaxes(self.Blocks, 1, 0)[:, ::-1, :]  # x=z; z=-x
-        self.root_tag["Data"].value   = swapaxes(self.Data, 1, 0)[:, ::-1, :]  # x=z; z=-x
+        self._Blocks = swapaxes(self._Blocks, 1, 0)[:, ::-1, :]  # x=z; z=-x
+        self.root_tag["Data"].value   = swapaxes(self.root_tag["Data"].value, 1, 0)[:, ::-1, :]  # x=z; z=-x
         self._update_shape()
 
         blockrotation.RotateLeft(self.Blocks, self.Data)
@@ -213,20 +250,20 @@ class MCSchematic (EntityLevel):
 
     def roll(self):
         " xxx rotate stuff "
-        self.root_tag["Blocks"].value = swapaxes(self.Blocks, 2, 0)[:, :, ::-1]  # x=z; z=-x
-        self.root_tag["Data"].value = swapaxes(self.Data, 2, 0)[:, :, ::-1]
+        self._Blocks = swapaxes(self.Blocks, 2, 0)[:, :, ::-1]  # x=z; z=-x
+        self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 2, 0)[:, :, ::-1]
         self._update_shape()
 
     def flipVertical(self):
         " xxx delete stuff "
         blockrotation.FlipVertical(self.Blocks, self.Data)
-        self.root_tag["Blocks"].value = self.Blocks[:, :, ::-1]  # y=-y
-        self.root_tag["Data"].value = self.Data[:, :, ::-1]
+        self._Blocks = self.Blocks[:, :, ::-1]  # y=-y
+        self.root_tag["Data"].value = self.root_tag["Data"].value[:, :, ::-1]
 
     def flipNorthSouth(self):
         blockrotation.FlipNorthSouth(self.Blocks, self.Data)
-        self.root_tag["Blocks"].value = self.Blocks[::-1, :, :]  # x=-x
-        self.root_tag["Data"].value = self.Data[::-1, :, :]
+        self._Blocks = self.Blocks[::-1, :, :]  # x=-x
+        self.root_tag["Data"].value = self.root_tag["Data"].value[::-1, :, :]
 
         northSouthPaintingMap = [0, 3, 2, 1]
 
@@ -249,10 +286,9 @@ class MCSchematic (EntityLevel):
             tileEntity["x"].value = self.Width - tileEntity["x"].value - 1
 
     def flipEastWest(self):
-        " xxx flip entities "
         blockrotation.FlipEastWest(self.Blocks, self.Data)
-        self.root_tag["Blocks"].value = self.Blocks[:, ::-1, :]  # z=-z
-        self.root_tag["Data"].value = self.Data[:, ::-1, :]
+        self._Blocks = self._Blocks[:, ::-1, :]  # z=-z
+        self.root_tag["Data"].value = self.root_tag["Data"].value[:, ::-1, :]
 
         eastWestPaintingMap = [2, 1, 0, 3]
 
@@ -270,17 +306,6 @@ class MCSchematic (EntityLevel):
 
         for tileEntity in self.TileEntities:
             tileEntity["z"].value = self.Length - tileEntity["z"].value - 1
-
-    def setShape(self, shape):
-        """shape is a tuple of (width, height, length).  sets the
-        schematic's properties and clears the block and data arrays"""
-
-        x, y, z = shape
-        shape = (x, z, y)
-
-        self.root_tag["Blocks"].value = zeros(dtype='uint8', shape=shape)
-        self.root_tag["Data"].value = zeros(dtype='uint8', shape=shape)
-        self.shapeChunkData()
 
 
     def setBlockDataAt(self, x, y, z, newdata):

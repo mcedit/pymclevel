@@ -53,7 +53,7 @@ class Block(object):
             r = r[self.blockData]
         return r
 
-
+id_limit = 4096
 class MCMaterials(object):
     defaultColor = (0xc9, 0x77, 0xf0, 0xff)
     defaultBrightness = 0
@@ -67,21 +67,22 @@ class MCMaterials(object):
 
         self.defaultName = defaultName
 
-        self.blockTextures = zeros((256, 16, 6, 2), dtype='uint8')
-        self.blockTextures[:] = self.defaultTexture
-        self.names = [[defaultName] * 16 for i in range(256)]
-        self.aka = [[""] * 16 for i in range(256)]
 
-        self.type = [["NORMAL"] * 16] * 256
+        self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint8')
+        self.blockTextures[:] = self.defaultTexture
+        self.names = [[defaultName] * 16 for i in range(id_limit)]
+        self.aka = [[""] * 16 for i in range(id_limit)]
+
+        self.type = [["NORMAL"] * 16] * id_limit
         self.blocksByType = defaultdict(list)
         self.allBlocks = []
         self.blocksByID = {}
 
-        self.lightEmission = zeros(256, dtype='uint8')
+        self.lightEmission = zeros(id_limit, dtype='uint8')
         self.lightEmission[:] = self.defaultBrightness
-        self.lightAbsorption = zeros(256, dtype='uint8')
+        self.lightAbsorption = zeros(id_limit, dtype='uint8')
         self.lightAbsorption[:] = self.defaultOpacity
-        self.flatColors = zeros((256, 16, 4), dtype='uint8')
+        self.flatColors = zeros((id_limit, 16, 4), dtype='uint8')
         self.flatColors[:] = self.defaultColor
 
         self.idStr = {}
@@ -153,7 +154,8 @@ class MCMaterials(object):
             import pkg_resources
 
             f = pkg_resources.resource_stream(__name__, filename)
-        except (ImportError, IOError):
+        except (ImportError, IOError), e:
+            print "Cannot get resource_stream for ", filename, e
             root = os.environ.get("PYMCLEVEL_YAML_ROOT", "pymclevel")  # fall back to cwd as last resort
             path = join(root, filename)
 
@@ -752,12 +754,12 @@ pocketMaterials.NetherReactorUsed = pocketMaterials[247, 1]
 #                      b.ID, b.blockData)
 #                  for b in sorted(mats.pocketMaterials.allBlocks)])
 
-_indices = rollaxis(indices((256, 16)), 0, 3)
+_indices = rollaxis(indices((id_limit, 16)), 0, 3)
 
 
 def _filterTable(filters, unavailable, default=(0, 0)):
-    # a filter table is a 256x16 table of (ID, data) pairs.
-    table = zeros((256, 16, 2), dtype='uint8')
+    # a filter table is a id_limit table of (ID, data) pairs.
+    table = zeros((id_limit, 16, 2), dtype='uint8')
     table[:] = _indices
     for u in unavailable:
         try:

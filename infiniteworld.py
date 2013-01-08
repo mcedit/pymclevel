@@ -113,7 +113,7 @@ class AnvilChunkData(object):
         self.root_tag = root_tag
         self.dirty = False
 
-        self.Blocks = zeros((16, 16, world.Height), 'uint8')  # xxx uint16?
+        self.Blocks = zeros((16, 16, world.Height), 'uint16')
         self.Data = zeros((16, 16, world.Height), 'uint8')
         self.BlockLight = zeros((16, 16, world.Height), 'uint8')
         self.SkyLight = zeros((16, 16, world.Height), 'uint8')
@@ -152,6 +152,7 @@ class AnvilChunkData(object):
 
         for sec in self.root_tag["Level"].pop("Sections", []):
             y = sec["Y"].value * 16
+
             for name in "Blocks", "Data", "SkyLight", "BlockLight":
                 arr = getattr(self, name)
                 secarray = sec[name].value
@@ -163,6 +164,11 @@ class AnvilChunkData(object):
 
                 arr[..., y:y + 16] = secarray.swapaxes(0, 2)
 
+            tag = sec.get("Add")
+            if tag is not None:
+                tag.value.shape = (16, 16, 8)
+                add = unpackNibbleArray(tag.value)
+                self.Blocks[...,y:y + 16] |= (array(add, 'uint16') << 8).swapaxes(0, 2)
 
     def savedTagData(self):
         """ does not recalculate any data or light """
@@ -188,7 +194,11 @@ class AnvilChunkData(object):
             BlockLight = packNibbleArray(BlockLight)
             SkyLight = packNibbleArray(SkyLight)
 
-            section['Blocks'] = nbt.TAG_Byte_Array(array(Blocks))
+            add = Blocks >> 8
+            if add.any():
+                section["Add"] = nbt.TAG_Byte_Array(packNibbleArray(add).astype('uint8'))
+
+            section['Blocks'] = nbt.TAG_Byte_Array(array(Blocks, 'uint8'))
             section['Data'] = nbt.TAG_Byte_Array(array(Data))
             section['BlockLight'] = nbt.TAG_Byte_Array(array(BlockLight))
             section['SkyLight'] = nbt.TAG_Byte_Array(array(SkyLight))

@@ -1,3 +1,4 @@
+import materials
 from materials import alphaMaterials
 from numpy import arange, zeros
 
@@ -474,9 +475,9 @@ rotationClasses.append(Vines)
 
 
 def masterRotationTable(attrname):
-    # compute a 256x16 table mapping each possible blocktype/data combination to
+    # compute a materials.id_limitx16 table mapping each possible blocktype/data combination to
     # the resulting data when the block is rotated
-    table = zeros((256, 16), dtype='uint8')
+    table = zeros((materials.id_limit, 16), dtype='uint8')
     table[:] = arange(16, dtype='uint8')
     for cls in rotationClasses:
         if hasattr(cls, attrname):
