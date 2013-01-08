@@ -35,7 +35,10 @@ class Vector(_Vector):
         l = self.length()
         if l == 0: return self
         return self / l
-    
+
+    def intfloor(self):
+        return Vector(*[int(math.floor(p)) for p in self])
+
 class BoundingBox (object):
     type = int
 
