@@ -70,7 +70,7 @@ class MCSchematic (EntityLevel):
             l = self.root_tag["Length"].value
             h = self.root_tag["Height"].value
 
-            self._Blocks = self.root_tag["Blocks"].value.astype('uint16').reshape(h, l, w)
+            self._Blocks = self.root_tag["Blocks"].value.astype('uint16').reshape(h, l, w) # _Blocks is y, z, x
             del self.root_tag["Blocks"]
             if "AddBlocks" in self.root_tag:
                 # Use WorldEdit's "AddBlocks" array to load and store the 4 high bits of a block ID.
@@ -211,8 +211,8 @@ class MCSchematic (EntityLevel):
 
     def rotateLeft(self):
 
-        self._Blocks = swapaxes(self._Blocks, 1, 0)[:, ::-1, :]  # x=z; z=-x
-        self.root_tag["Data"].value   = swapaxes(self.root_tag["Data"].value, 1, 0)[:, ::-1, :]  # x=z; z=-x
+        self._Blocks = swapaxes(self._Blocks, 1, 2)[:, ::-1, :]  # x=z; z=-x
+        self.root_tag["Data"].value   = swapaxes(self.root_tag["Data"].value, 1, 2)[:, ::-1, :]  # x=z; z=-x
         self._update_shape()
 
         blockrotation.RotateLeft(self.Blocks, self.Data)
@@ -250,20 +250,20 @@ class MCSchematic (EntityLevel):
 
     def roll(self):
         " xxx rotate stuff "
-        self._Blocks = swapaxes(self.Blocks, 2, 0)[:, :, ::-1]  # x=z; z=-x
+        self._Blocks = swapaxes(self._Blocks, 2, 0)[:, :, ::-1]  # x=y; y=-x
         self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 2, 0)[:, :, ::-1]
         self._update_shape()
 
     def flipVertical(self):
         " xxx delete stuff "
         blockrotation.FlipVertical(self.Blocks, self.Data)
-        self._Blocks = self.Blocks[:, :, ::-1]  # y=-y
-        self.root_tag["Data"].value = self.root_tag["Data"].value[:, :, ::-1]
+        self._Blocks = self._Blocks[::-1, :, :]  # y=-y
+        self.root_tag["Data"].value = self.root_tag["Data"].value[::-1, :, :]
 
     def flipNorthSouth(self):
         blockrotation.FlipNorthSouth(self.Blocks, self.Data)
-        self._Blocks = self.Blocks[::-1, :, :]  # x=-x
-        self.root_tag["Data"].value = self.root_tag["Data"].value[::-1, :, :]
+        self._Blocks = self._Blocks[:, :, ::-1]  # x=-x
+        self.root_tag["Data"].value = self.root_tag["Data"].value[:, :, ::-1]
 
         northSouthPaintingMap = [0, 3, 2, 1]
 
