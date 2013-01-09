@@ -104,6 +104,9 @@ def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, bloc
             sourceChunk = sourceLevel.getChunk(*srcCpos)
 
             sourceChunkBox, sourceSlices = sourceChunk.getChunkSlicesForBox(destChunkBoxInSourceLevel)
+            if sourceChunkBox.volume == 0:
+                continue
+
             sourceChunkBoxInDestLevel = BoundingBox([d + o for o, d in zip(copyOffset, sourceChunkBox.origin)], sourceChunkBox.size)
 
             _, destSlices = destChunk.getChunkSlicesForBox(sourceChunkBoxInDestLevel)
