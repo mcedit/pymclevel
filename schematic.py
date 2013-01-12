@@ -98,6 +98,8 @@ class MCSchematic (EntityLevel):
 
             self.root_tag["Data"].value = self.root_tag["Data"].value.reshape(h, l, w)
 
+            if "Biomes" in self.root_tag:
+                self.root_tag["Biomes"].value.shape = (l, w)
 
         else:
             assert shape is not None
@@ -112,6 +114,8 @@ class MCSchematic (EntityLevel):
 
             self._Blocks = zeros((shape[1], shape[2], shape[0]), 'uint16')
             root_tag["Data"] = nbt.TAG_Byte_Array(zeros((shape[1], shape[2], shape[0]), uint8))
+
+            root_tag["Biomes"] = nbt.TAG_Byte_Array(zeros((shape[2], shape[0]), uint8))
 
             self.root_tag = root_tag
 
@@ -197,6 +201,10 @@ class MCSchematic (EntityLevel):
         if "Materials" not in self.root_tag:
             self.root_tag["Materials"] = nbt.TAG_String()
         self.root_tag["Materials"].value = val
+
+    @property
+    def Biomes(self):
+        return swapaxes(self.root_tag["Biomes"].value, 0, 1)
 
     @classmethod
     def _isTagLevel(cls, root_tag):
@@ -341,6 +349,15 @@ class MCSchematic (EntityLevel):
         chest = INVEditChest(root_tag, "")
 
         return chest
+
+
+    def getChunk(self, cx, cz):
+        chunk = super(MCSchematic, self).getChunk(cx, cz)
+        if "Biomes" in self.root_tag:
+            x = cx << 4
+            z = cz << 4
+            chunk.Biomes = self.Biomes[x:x + 16, z:z + 16]
+        return chunk
 
 
 class INVEditChest(MCSchematic):
@@ -523,7 +540,7 @@ def extractSchematicFromIter(sourceLevel, box, entities=True):
     newbox, destPoint = p
 
     tempSchematic = MCSchematic(shape=box.size, mats=sourceLevel.materials)
-    for i in tempSchematic.copyBlocksFromIter(sourceLevel, newbox, destPoint, entities=entities):
+    for i in tempSchematic.copyBlocksFromIter(sourceLevel, newbox, destPoint, entities=entities, biomes=True):
         yield i
 
     yield tempSchematic
@@ -557,7 +574,7 @@ def extractZipSchematicFromIter(sourceLevel, box, zipfilename=None, entities=Tru
     tempSchematic = ZipSchematic(zipfilename, create=True)
     tempSchematic.materials = sourceLevel.materials
 
-    for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True):
+    for i in tempSchematic.copyBlocksFromIter(sourceLevel, sourceBox, destPoint, entities=entities, create=True, biomes=True):
         yield i
 
     tempSchematic.Width, tempSchematic.Height, tempSchematic.Length = sourceBox.size

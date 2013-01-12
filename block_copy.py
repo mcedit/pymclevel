@@ -47,7 +47,7 @@ def adjustCopyParameters(destLevel, sourceLevel, sourceBox, destinationPoint):
 
 
 
-def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
+def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False, biomes=False):
     """ copy blocks between two infinite levels by looping through the
     destination's chunks. make a sub-box of the source level for each chunk
     and copy block and entities in the sub box to the dest chunk."""
@@ -134,13 +134,16 @@ def copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, bloc
                 eTag = TileEntity.copyWithOffset(tileEntityTag, copyOffset)
                 destLevel.addTileEntity(eTag)
 
+            if biomes and hasattr(destChunk, 'Biomes') and hasattr(sourceChunk, 'Biomes'):
+                destChunk.Biomes[destSlices[:2]] = sourceChunk.Biomes[sourceSlices[:2]]
+
         destChunk.chunkChanged()
 
     log.info("Duration: {0}".format(datetime.now() - startTime))
     log.info("Copied {0} entities and {1} tile entities".format(e, t))
 
-def copyBlocksFrom(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False):
-    return exhaust(copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create))
+def copyBlocksFrom(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy=None, entities=True, create=False, biomes=False):
+    return exhaust(copyBlocksFromIter(destLevel, sourceLevel, sourceBox, destinationPoint, blocksToCopy, entities, create, biomes))
 
 
 
