@@ -85,7 +85,7 @@ class MCMaterials(object):
         self.flatColors = zeros((id_limit, 16, 4), dtype='uint8')
         self.flatColors[:] = self.defaultColor
 
-        self.idStr = {}
+        self.idStr = [""] * id_limit
 
         self.color = self.flatColors
         self.brightness = self.lightEmission
@@ -224,8 +224,7 @@ class MCMaterials(object):
             # print datakw
             block = self.addBlock(blockID, val, **datakw)
             block.yaml = datakw
-            if idStr not in self.idStr:
-                self.idStr[idStr] = block
+            self.idStr[blockID] = idStr
 
         tex_direction_data = kw.get('tex_direction_data')
         if tex_direction_data:
