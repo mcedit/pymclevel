@@ -443,7 +443,7 @@ class mce(object):
 
         Counts all of the block types in every chunk of the world.
         """
-        blockCounts = zeros((4096,), 'uint64')
+        blockCounts = zeros((65536,), 'uint64')
         sizeOnDisk = 0
 
         print "Analyzing {0} chunks...".format(self.level.chunkCount)
@@ -453,7 +453,7 @@ class mce(object):
         for i, cPos in enumerate(self.level.allChunks, 1):
             ch = self.level.getChunk(*cPos)
             btypes = numpy.array(ch.Data.ravel(), dtype='uint16')
-            btypes <<= 8
+            btypes <<= 12
             btypes += ch.Blocks.ravel()
             counts = bincount(btypes)
 
@@ -465,7 +465,7 @@ class mce(object):
             block = self.level.materials.blockWithID(blockID, 0)
             if block.hasVariants:
                 for data in range(16):
-                    i = (data << 8) + blockID
+                    i = (data << 12) + blockID
                     if blockCounts[i]:
                         idstring = "({id}:{data})".format(id=blockID, data=data)
 
@@ -473,7 +473,7 @@ class mce(object):
                             idstring=idstring, name=self.level.materials.blockWithID(blockID, data).name, count=blockCounts[i])
 
             else:
-                count = int(sum(blockCounts[(d << 8) + blockID] for d in range(16)))
+                count = int(sum(blockCounts[(d << 12) + blockID] for d in range(16)))
                 if count:
                     idstring = "({id})".format(id=blockID)
                     print "{idstring:9} {name:30}: {count:<10}".format(
