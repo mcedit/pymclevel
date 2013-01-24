@@ -1,5 +1,5 @@
 import logging
-from pymclevel import materials
+import materials
 
 log = logging.getLogger(__name__)
 
