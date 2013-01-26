@@ -45,11 +45,17 @@ class TestSchematics(unittest.TestCase):
         os.remove(temp)
 
     def testRotate(self):
-        level = self.indevLevel.level
-        schematic = level.extractSchematic(level.bounds)
+        level = self.anvilLevel.level
+        schematic = level.extractSchematic(BoundingBox((0, 0, 0), (21, 11, 8)))
         schematic.rotateLeft()
-        schematic.flipNorthSouth()
+
+        level.copyBlocksFrom(schematic, schematic.bounds, level.bounds.origin, biomes=True, create=True)
+
+        schematic.flipEastWest()
+        level.copyBlocksFrom(schematic, schematic.bounds, level.bounds.origin, biomes=True, create=True)
+
         schematic.flipVertical()
+        level.copyBlocksFrom(schematic, schematic.bounds, level.bounds.origin, biomes=True, create=True)
 
     def testZipSchematic(self):
         level = self.anvilLevel.level
