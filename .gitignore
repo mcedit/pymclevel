@@ -28,3 +28,4 @@ ENV
 profile.dat
 profile.dot
 profile.png
+doc/_build
