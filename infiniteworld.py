@@ -119,11 +119,15 @@ class AnvilChunkData(object):
         self.SkyLight = zeros((16, 16, world.Height), 'uint8')
         self.SkyLight[:] = 15
 
-
         if create:
             self._create()
         else:
             self._load(root_tag)
+
+        levelTag = self.root_tag["Level"]
+        if "Biomes" not in levelTag:
+            levelTag["Biomes"] = nbt.TAG_Int_Array(zeros((16, 16), 'uint32').newbyteorder())
+            levelTag["Biomes"].value[:] = -1
 
     def _create(self):
         (cx, cz) = self.chunkPosition
