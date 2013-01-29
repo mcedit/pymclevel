@@ -126,7 +126,7 @@ class AnvilChunkData(object):
 
         levelTag = self.root_tag["Level"]
         if "Biomes" not in levelTag:
-            levelTag["Biomes"] = nbt.TAG_Int_Array(zeros((16, 16), 'uint32').newbyteorder())
+            levelTag["Biomes"] = nbt.TAG_Byte_Array(zeros((16, 16), 'uint8'))
             levelTag["Biomes"].value[:] = -1
 
     def _create(self):
