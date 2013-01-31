@@ -260,7 +260,7 @@ class MCSchematic (EntityLevel):
 
     def roll(self):
         " xxx rotate stuff - destroys biomes"
-        self.root_tag.pop('Biomes')
+        self.root_tag.pop('Biomes', None)
 
         self._Blocks = swapaxes(self._Blocks, 2, 0)[:, :, ::-1]  # x=y; y=-x
         self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 2, 0)[:, :, ::-1]
