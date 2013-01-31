@@ -4,6 +4,7 @@ import struct
 import zlib
 
 from numpy import fromstring
+import time
 from mclevelbase import notclosing, RegionMalformed, ChunkNotPresent
 import nbt
 
@@ -287,6 +288,8 @@ class MCRegionFile(object):
                 self.setOffset(cx, cz, sectorNumber << 8 | sectorsNeeded)
                 self.writeSector(sectorNumber, data, format)
 
+        self.setTimestamp(cx, cz)
+
     def writeSector(self, sectorNumber, data, format):
         with self.file as f:
             log.debug("REGION: Writing sector {0}".format(sectorNumber))
@@ -312,6 +315,22 @@ class MCRegionFile(object):
         with self.file as f:
             f.seek(0)
             f.write(self.offsets.tostring())
+
+    def getTimestamp(self, cx, cz):
+        cx &= 0x1f
+        cz &= 0x1f
+        return self.modTimes[cx + cz * 32]
+
+    def setTimestamp(self, cx, cz, timestamp = None):
+        if timestamp is None:
+            timestamp = time.time()
+
+        cx &= 0x1f
+        cz &= 0x1f
+        self.modTimes[cx + cz * 32] = timestamp
+        with self.file as f:
+            f.seek(self.SECTOR_BYTES)
+            f.write(self.modTimes.tostring())
 
     SECTOR_BYTES = 4096
     SECTOR_INTS = SECTOR_BYTES / 4
