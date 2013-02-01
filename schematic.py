@@ -140,7 +140,7 @@ class MCSchematic (EntityLevel):
 
             # Increase odd size by one to align slices.
             packed_add = zeros(add.size + (add.size & 1), 'uint8')
-            packed_add[:add.size-(add.size & 1)] = add.ravel()
+            packed_add[:add.size] = add.ravel()
 
             # Shift even bytes to the left
             packed_add[::2] <<= 4
