@@ -285,7 +285,7 @@ rotationClasses.append(Lever)
 
 
 class Button:
-    blocktypes = [alphaMaterials.Button.ID]
+    blocktypes = [alphaMaterials.Button.ID, alphaMaterials.WoodButton.ID]
     PressedBit = 0x8
     South = 1
     North = 2

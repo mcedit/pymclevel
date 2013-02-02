@@ -515,6 +515,8 @@ alphaMaterials.NetherBrickFence = alphaMaterials[113, 0]
 alphaMaterials.NetherBrickStairs = alphaMaterials[114, 0]
 alphaMaterials.NetherWart = alphaMaterials[115, 0]
 
+alphaMaterials.WoodButton = alphaMaterials[143, 0]
+
 # --- Classic static block defs ---
 classicMaterials.Stone = classicMaterials[1]
 classicMaterials.Grass = classicMaterials[2]
