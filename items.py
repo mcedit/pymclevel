@@ -1,5 +1,5 @@
 from logging import getLogger
-logger = getLogger(__file__)
+logger = getLogger(__name__)
 
 items_txt = """
 :version 34

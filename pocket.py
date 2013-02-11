@@ -9,7 +9,7 @@ import struct
 
 # values are usually little-endian, unlike Minecraft PC
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class PocketChunksFile(object):

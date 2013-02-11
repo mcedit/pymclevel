@@ -12,7 +12,7 @@ NOTEX = (0x90, 0xD0)
 
 import yaml
 
-log = getLogger(__file__)
+log = getLogger(__name__)
 
 
 class Block(object):
