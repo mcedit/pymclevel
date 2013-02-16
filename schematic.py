@@ -217,7 +217,9 @@ class MCSchematic (EntityLevel):
         root_tag["Length"] = nbt.TAG_Short(shape[1])
         root_tag["Width"] = nbt.TAG_Short(shape[0])
 
+
     def rotateLeft(self):
+        self._fakeEntities = None
         self._Blocks = swapaxes(self._Blocks, 1, 2)[:, ::-1, :]  # x=z; z=-x
         if "Biomes" in self.root_tag:
             self.root_tag["Biomes"].value = swapaxes(self.root_tag["Biomes"].value, 0, 1)[::-1, :]
@@ -261,6 +263,7 @@ class MCSchematic (EntityLevel):
     def roll(self):
         " xxx rotate stuff - destroys biomes"
         self.root_tag.pop('Biomes', None)
+        self._fakeEntities = None
 
         self._Blocks = swapaxes(self._Blocks, 2, 0)[:, :, ::-1]  # x=y; y=-x
         self.root_tag["Data"].value = swapaxes(self.root_tag["Data"].value, 2, 0)[:, :, ::-1]
@@ -268,6 +271,7 @@ class MCSchematic (EntityLevel):
 
     def flipVertical(self):
         " xxx delete stuff "
+        self._fakeEntities = None
 
         blockrotation.FlipVertical(self.Blocks, self.Data)
         self._Blocks = self._Blocks[::-1, :, :]  # y=-y
@@ -276,6 +280,8 @@ class MCSchematic (EntityLevel):
     def flipNorthSouth(self):
         if "Biomes" in self.root_tag:
             self.root_tag["Biomes"].value = self.root_tag["Biomes"].value[::-1, :]
+
+        self._fakeEntities = None
 
         blockrotation.FlipNorthSouth(self.Blocks, self.Data)
         self._Blocks = self._Blocks[:, :, ::-1]  # x=-x
@@ -304,6 +310,8 @@ class MCSchematic (EntityLevel):
     def flipEastWest(self):
         if "Biomes" in self.root_tag:
             self.root_tag["Biomes"].value = self.root_tag["Biomes"].value[:, ::-1]
+
+        self._fakeEntities = None
 
         blockrotation.FlipEastWest(self.Blocks, self.Data)
         self._Blocks = self._Blocks[:, ::-1, :]  # z=-z
