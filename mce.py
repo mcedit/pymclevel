@@ -586,7 +586,7 @@ class mce(object):
     on the first line, followed by four lines of sign text. For example:
 
         [229, 118, -15]
-        "To boldy go
+        "To boldly go
         where no man
         has gone
         before."
@@ -600,9 +600,6 @@ class mce(object):
         else:
             filename = self.level.displayName + ".signs"
 
-        # It appears that Minecraft interprets the sign text as UTF-8,
-        # so we should decode it as such too.
-        decodeSignText = codecs.getdecoder('utf-8')
         # We happen to encode the output file in UTF-8 too, although
         # we could use another UTF encoding.  The '-sig' encoding puts
         # a signature at the start of the output file that tools such
@@ -626,7 +623,7 @@ class mce(object):
                     outFile.write(str(map(lambda x: tileEntity[x].value, "xyz")) + "\n")
                     for i in range(4):
                         signText = tileEntity["Text{0}".format(i + 1)].value
-                        outFile.write(decodeSignText(signText)[0] + u"\n")
+                        outFile.write(signText + u"\n")
 
             if i % 100 == 0:
                 print "Chunk {0}...".format(i)
