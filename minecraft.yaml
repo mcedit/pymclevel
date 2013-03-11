@@ -648,7 +648,7 @@ blocks:
       front: [14, 6]
 
   - id: 34
-    idStr: 
+    idStr:
     name: Piston Head
     mapcolor: [119, 92, 53]
     tex: [11, 6]
@@ -732,7 +732,7 @@ blocks:
         mapcolor: [0, 0, 0]
 
   - id: 36
-    idStr: 
+    idStr:
     name: Piston Movement Placeholder
     mapcolor: [0, 0, 0]
     tex: [0, 0]
@@ -932,7 +932,6 @@ blocks:
     mapcolor: [157, 128, 79]
     tex: [4, 0]
     type: STAIRS
-    opacity: 0
 
   - id: 54
     texfile: item/largechest.png
@@ -1547,7 +1546,7 @@ blocks:
     opacity: 0
 
   - id: 119
-    idStr: 
+    idStr:
     name: Ender Portal
     mapcolor: [0, 0, 0]
     type: ENDER_PORTAL
@@ -1796,6 +1795,82 @@ blocks:
     mapcolor: [100, 100, 100]
     tex: [0, 0]
     opacity: 0
+
+  - id: 146
+    idStr: chestTrap
+    name: Trapped Chest
+    mapcolor: [100, 100, 100]
+    opacity: 0
+
+  - id: 147
+    idStr: weightedPlate_light
+    name: Weighted Pressure Plate (Light)
+    mapcolor: [100, 100, 100]
+    opacity: 0
+
+  - id: 148
+    idStr: weightedPlate_heavy
+    name: Weighted Pressure Plate (Heavy)
+    mapcolor: [100, 100, 100]
+    opacity: 0
+
+  - id: 149
+    idStr: comparator
+    name: Redstone Comparator (inactive)
+    mapcolor: [100, 100, 100]
+    opacity: 0
+
+  - id: 150
+    idStr: comparator
+    name: Redstone Comparator (active)
+    mapcolor: [100, 100, 100]
+    opacity: 0
+    brightness: 8
+
+  - id: 151
+    idStr: daylightDetector
+    name: Daylight Sensor
+    mapcolor: [255, 100, 255]
+    opacity: 0
+
+  - id: 152
+    idStr: blockRedstone
+    name: Block of Redstone
+    mapcolor: [255, 100, 100]
+
+  - id: 153
+    idStr: netherquartz
+    name: Nether Quartz Ore
+    mapcolor: [255, 255, 255]
+
+  - id: 154
+    idStr: hopper
+    name: Hopper
+    mapcolor: [100, 100, 100]
+    opacity: 0
+
+  - id: 155
+    idStr: quartzBlock
+    name: Block of Quartz
+    mapcolor: [255, 255, 255]
+
+  - id: 156
+    idStr: stairsQuartz
+    name: Quartz Stairs
+    mapcolor: [255, 255, 255]
+
+  - id: 157
+    idStr: activatorRail
+    name: Activator Rail
+    mapcolor: [100, 100, 100]
+    opacity: 0
+
+  - id: 158
+    idStr: dropper
+    name: Dropper
+    mapcolor: [100, 100, 100]
+    opacity: 0
+
 
 
 ...
