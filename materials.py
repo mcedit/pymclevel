@@ -515,7 +515,57 @@ alphaMaterials.NetherBrickFence = alphaMaterials[113, 0]
 alphaMaterials.NetherBrickStairs = alphaMaterials[114, 0]
 alphaMaterials.NetherWart = alphaMaterials[115, 0]
 
-alphaMaterials.WoodButton = alphaMaterials[143, 0]
+alphaMaterials.EnchantmentTable = alphaMaterials[116,0]
+alphaMaterials.BrewingStand = alphaMaterials[117,0]
+alphaMaterials.Cauldron = alphaMaterials[118,0]
+alphaMaterials.EnderPortal = alphaMaterials[119,0]
+alphaMaterials.PortalFrame = alphaMaterials[120,0]
+alphaMaterials.EndStone = alphaMaterials[121,0]
+alphaMaterials.DragonEgg = alphaMaterials[122,0]
+alphaMaterials.RedstoneLampoff = alphaMaterials[123,0]
+alphaMaterials.RedstoneLampon = alphaMaterials[124,0]
+alphaMaterials.OakWoodDoubleSlab = alphaMaterials[125,0]
+alphaMaterials.SpruceWoodDoubleSlab = alphaMaterials[125,1]
+alphaMaterials.BirchWoodDoubleSlab = alphaMaterials[125,2]
+alphaMaterials.JungleWoodDoubleSlab = alphaMaterials[125,3]
+alphaMaterials.OakWoodSlab = alphaMaterials[126,0]
+alphaMaterials.SpruceWoodSlab = alphaMaterials[126,1]
+alphaMaterials.BirchWoodSlab = alphaMaterials[126,2]
+alphaMaterials.JungleWoodSlab = alphaMaterials[126,3]
+alphaMaterials.CocoaPlant = alphaMaterials[127,0]
+alphaMaterials.SandstoneStairs = alphaMaterials[128,0]
+alphaMaterials.EmeraldOre = alphaMaterials[129,0]
+alphaMaterials.EnderChest = alphaMaterials[130,0]
+alphaMaterials.TripwireHook = alphaMaterials[131,0]
+alphaMaterials.Tripwire = alphaMaterials[132,0]
+alphaMaterials.BlockofEmerald = alphaMaterials[133,0]
+alphaMaterials.SpruceWoodStairs = alphaMaterials[134,0]
+alphaMaterials.BirchWoodStairs = alphaMaterials[135,0]
+alphaMaterials.JungleWoodStairs = alphaMaterials[136,0]
+alphaMaterials.CommandBlock = alphaMaterials[137,0]
+alphaMaterials.BeaconBlock = alphaMaterials[138,0]
+alphaMaterials.CobblestoneWall = alphaMaterials[139,0]
+alphaMaterials.MossyCobblestoneWall = alphaMaterials[139,1]
+alphaMaterials.FlowerPot = alphaMaterials[140,0]
+alphaMaterials.Carrots = alphaMaterials[141,0]
+alphaMaterials.Potatoes = alphaMaterials[142,0]
+alphaMaterials.WoodenButton = alphaMaterials[143,0]
+alphaMaterials.MobHead = alphaMaterials[144,0]
+alphaMaterials.Anvil = alphaMaterials[145,0]
+alphaMaterials.TrappedChest = alphaMaterials[146,0]
+alphaMaterials.WeightedPressurePlateLight = alphaMaterials[147,0]
+alphaMaterials.WeightedPressurePlateHeavy = alphaMaterials[148,0]
+alphaMaterials.RedstoneComparatorInactive = alphaMaterials[149,0]
+alphaMaterials.RedstoneComparatorActive = alphaMaterials[150,0]
+alphaMaterials.DaylightSensor = alphaMaterials[151,0]
+alphaMaterials.BlockofRedstone = alphaMaterials[152,0]
+alphaMaterials.NetherQuartzOre = alphaMaterials[153,0]
+alphaMaterials.Hopper = alphaMaterials[154,0]
+alphaMaterials.BlockofQuartz = alphaMaterials[155,0]
+alphaMaterials.QuartzStairs = alphaMaterials[156,0]
+alphaMaterials.ActivatorRail = alphaMaterials[157,0]
+alphaMaterials.Dropper = alphaMaterials[158,0]
+
 
 # --- Classic static block defs ---
 classicMaterials.Stone = classicMaterials[1]
@@ -750,10 +800,10 @@ pocketMaterials.GlowingObsidian = pocketMaterials[246, 0]
 pocketMaterials.NetherReactor = pocketMaterials[247, 0]
 pocketMaterials.NetherReactorUsed = pocketMaterials[247, 1]
 
-# print "\n".join(["pocketMaterials.{0} = pocketMaterials[{1},{2}]".format(
-#                      b.name.replace(" ", "").replace("(","").replace(")",""),
-#                      b.ID, b.blockData)
-#                  for b in sorted(mats.pocketMaterials.allBlocks)])
+print "\n".join(["alphaMaterials.{0} = alphaMaterials[{1},{2}]".format(
+                      b.name.replace(" ", "").replace("(","").replace(")",""),
+                      b.ID, b.blockData)
+                  for b in sorted(alphaMaterials.allBlocks)])
 
 _indices = rollaxis(indices((id_limit, 16)), 0, 3)
 
