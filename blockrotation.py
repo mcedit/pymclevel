@@ -60,7 +60,6 @@ def genericNorthSouthFlip(cls):
 
 rotationClasses = []
 
-
 def genericFlipRotation(cls):
     cls.rotateLeft = genericRotation(cls)
 
@@ -68,6 +67,7 @@ def genericFlipRotation(cls):
     cls.flipEastWest = genericEastWestFlip(cls)
     cls.flipNorthSouth = genericNorthSouthFlip(cls)
     rotationClasses.append(cls)
+    return cls
 
 
 class Torch:
@@ -418,20 +418,8 @@ applyPistonBit(PistonBody)
 
 class PistonHead(PistonBody):
     blocktypes = [alphaMaterials.PistonHead.ID]
+
 rotationClasses.append(PistonHead)
-
-
-class Vines:
-    blocktypes = [alphaMaterials.Vines.ID]
-
-    WestBit = 1
-    NorthBit = 2
-    EastBit = 4
-    SouthBit = 8
-
-    rotateLeft = arange(16, dtype='uint8')
-    flipEastWest = arange(16, dtype='uint8')
-    flipNorthSouth = arange(16, dtype='uint8')
 
 
 #Mushroom types:
@@ -462,6 +450,19 @@ class HugeMushroom:
 
 generic8wayRotation(HugeMushroom)
 
+
+class Vines:
+    blocktypes = [alphaMaterials.Vines.ID]
+
+    WestBit = 1
+    NorthBit = 2
+    EastBit = 4
+    SouthBit = 8
+
+    rotateLeft = arange(16, dtype='uint8')
+    flipEastWest = arange(16, dtype='uint8')
+    flipNorthSouth = arange(16, dtype='uint8')
+
 #Hmm... Since each bit is a direction, we can rotate by shifting!
 Vines.rotateLeft = 0xf & ((Vines.rotateLeft >> 1) | (Vines.rotateLeft << 3))
 # Wherever each bit is set, clear it and set the opposite bit
@@ -473,6 +474,91 @@ Vines.flipNorthSouth[(Vines.flipNorthSouth & NorthSouthBits) > 0] ^= NorthSouthB
 
 rotationClasses.append(Vines)
 
+
+
+class Anvil:
+    blocktypes = [alphaMaterials.Anvil.ID]
+
+    NorthSouth = 0
+    WestEast = 1
+
+    rotateLeft = arange(16, dtype='uint8')
+    flipEastWest = arange(16, dtype='uint8')
+    flipNorthSouth = arange(16, dtype='uint8')
+
+    rotateLeft[NorthSouth] = WestEast
+    rotateLeft[WestEast] = NorthSouth
+
+rotationClasses.append(Anvil)
+
+@genericFlipRotation
+class FenceGate:
+    blocktypes = [alphaMaterials.FenceGate.ID]
+
+    South = 0
+    West = 1
+    North = 2
+    East = 3
+
+@genericFlipRotation
+class EnderPortal:
+    blocktypes = [alphaMaterials.EnderPortal.ID]
+
+    South = 0
+    West = 1
+    North = 2
+    East = 3
+
+@genericFlipRotation
+class CocoaPlant:
+    blocktypes = [alphaMaterials.CocoaPlant.ID]
+
+    North = 0
+    East = 1
+    South = 2
+    West = 3
+
+applyBits48(CocoaPlant) # growth state
+
+@genericFlipRotation
+class TripwireHook:
+    blocktypes = [alphaMaterials.TripwireHook.ID]
+
+    South = 0
+    West = 1
+    North = 2
+    East = 3
+
+applyBits48(TripwireHook) # activation/ready state
+
+@genericFlipRotation
+class MobHead:
+    blocktypes = [alphaMaterials.MobHead.ID]
+
+    North = 2
+    South = 3
+    East = 4
+    West = 5
+
+@genericFlipRotation
+class Hopper:
+    blocktypes = [alphaMaterials.Hopper.ID]
+
+    South = 2
+    North = 3
+    East = 4
+    West = 5
+
+@genericFlipRotation
+class RedstoneComparator:
+    blocktypes = [alphaMaterials.RedstoneComparatorInactive.ID, alphaMaterials.RedstoneComparatorActive.ID]
+
+    South = 0
+    West = 1
+    North = 2
+    East = 3
+
+applyBits48(RedstoneComparator)
 
 def masterRotationTable(attrname):
     # compute a materials.id_limitx16 table mapping each possible blocktype/data combination to
