@@ -103,7 +103,7 @@ class TileEntity(object):
                 mobs.append(mob)
             potentials = eTag.get('SpawnPotentials')
             if potentials:
-                mobs.extend(potentials)
+                mobs.extend(p["Properties"] for p in potentials)
 
             for mob in mobs:
                 if "Pos" in mob:
@@ -111,7 +111,7 @@ class TileEntity(object):
                     pos = [p + o for p, o in zip(pos, copyOffset)]
 
                     Entity.setpos(mob, pos)
-                    
+
         if eTag['id'].value == "Control":
             command = eTag['Command'].value
 
