@@ -800,10 +800,15 @@ pocketMaterials.GlowingObsidian = pocketMaterials[246, 0]
 pocketMaterials.NetherReactor = pocketMaterials[247, 0]
 pocketMaterials.NetherReactorUsed = pocketMaterials[247, 1]
 
-print "\n".join(["alphaMaterials.{0} = alphaMaterials[{1},{2}]".format(
-                      b.name.replace(" ", "").replace("(","").replace(")",""),
-                      b.ID, b.blockData)
-                  for b in sorted(alphaMaterials.allBlocks)])
+def printStaticDefs(name):
+    # printStaticDefs('alphaMaterials')
+    mats = eval(name)
+    for b in sorted(mats.allBlocks):
+        print "{name}.{0} = {name}[{1},{2}]".format(
+            b.name.replace(" ", "").replace("(","").replace(")",""),
+            b.ID, b.blockData,
+            name=name,
+        )
 
 _indices = rollaxis(indices((id_limit, 16)), 0, 3)
 
