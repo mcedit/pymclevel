@@ -800,11 +800,6 @@ pocketMaterials.GlowingObsidian = pocketMaterials[246, 0]
 pocketMaterials.NetherReactor = pocketMaterials[247, 0]
 pocketMaterials.NetherReactorUsed = pocketMaterials[247, 1]
 
-print "\n".join(["alphaMaterials.{0} = alphaMaterials[{1},{2}]".format(
-                      b.name.replace(" ", "").replace("(","").replace(")",""),
-                      b.ID, b.blockData)
-                  for b in sorted(alphaMaterials.allBlocks)])
-
 _indices = rollaxis(indices((id_limit, 16)), 0, 3)
 
 
