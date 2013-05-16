@@ -96,22 +96,6 @@ class TileEntity(object):
         eTag['x'] = nbt.TAG_Int(tileEntity['x'].value + copyOffset[0])
         eTag['y'] = nbt.TAG_Int(tileEntity['y'].value + copyOffset[1])
         eTag['z'] = nbt.TAG_Int(tileEntity['z'].value + copyOffset[2])
-        if eTag['id'].value == 'MobSpawner':
-            mobs = []
-            mob = eTag.get('SpawnData')
-            if mob:
-                mobs.append(mob)
-            potentials = eTag.get('SpawnPotentials')
-            if potentials:
-                mobs.extend(potentials)
-
-            for mob in mobs:
-                if "Pos" in mob:
-                    pos = Entity.pos(mob)
-                    pos = [p + o for p, o in zip(pos, copyOffset)]
-
-                    Entity.setpos(mob, pos)
-                    
         if eTag['id'].value == "Control":
             command = eTag['Command'].value
 
