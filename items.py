@@ -2,8 +2,14 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 items_txt = """
-:version 34
-:mc-version Minecraft 1.4
+:mc-version Minecraft 1.6.2
+
+# Minecraft 1.5 onwards does not use stitched texture files, so FILE and CORDS
+# are deprecated. To keep format consistent, dummy values like none.png 0,0 were
+# used for new items.
+
+# Also note MCEdit uses this file for items only (editing chest contents etc),
+# not for rendering blocks, so FILE and CORDS are ignored.
 
 #            Blocks
 # ID  NAME                   FILE         CORDS   DAMAGE
@@ -83,12 +89,21 @@ items_txt = """
   43  Double_Sandstone_Slab  terrain.png  0,12   1
   43  Double_Wooden_Slab     terrain.png  4,0    2
   43  Double_Stone_Slab      terrain.png  0,1    3
+  43  Double_Brick_Slab         none.png  0,0    4
+  43  Double_Stone_Brick_Slab   none.png  0,0    5
+  43  Double_Nether_Brick_Slab  none.png  0,0    6
+  43  Quartz_Slab               none.png  0,0    7
+  43  Smooth_Stone_Slab         none.png  0,0    8
+  43  Smooth_Sandstone_Slab     none.png  0,0    9
+  43  Tile_Quartz_Slab          none.png  0,0    15
   44  Stone_Slab             special.png  2,2    0
   44  Sandstone_Slab         special.png  8,0    1
   44  Wooden_Slab            special.png  3,0    2
   44  Stone_Slab             special.png  1,0    3
   44  Brick_Slab             special.png  0,0    4
   44  Stone_Brick_Slab       special.png  2,0    5
+  44  Nether_Brick_Slab         none.png  0,0    6
+  43  Quartz_Slab               none.png  0,0    7
   45  Bricks                 terrain.png  7,0
   46  TNT                    terrain.png  8,0
   47  Bookshelf              terrain.png  3,2
@@ -193,15 +208,35 @@ items_txt = """
  137  Command_Block          terrain.png  8,11
  138  Beacon                 special.png  2,6
  139  Cobblestone_Wall       special.png  1,2    0
- 140  Moss_Stone_Wall        special.png  0,2    1
- 141  Flower_Pot             terrain.png  9,11
- 142  Carrots                terrain.png  11,12
- 143  Potatoes               terrain.png  12,12
- 144  Wooden_Button          special.png  3,3
- 145  Head                     items.png  0,14
- 146  Anvil                  special.png  3,6    0
- 146  Slightly_Damaged_Anvil special.png  4,6    1
- 146  Very_Damaged_Anvil     special.png  5,6    2
+ 139  Moss_Stone_Wall        special.png  0,2    1
+ 140  Flower_Pot             terrain.png  9,11
+ 141  Carrots                terrain.png  11,12
+ 142  Potatoes               terrain.png  12,12
+ 143  Wooden_Button          special.png  3,3
+ 144  Head                     items.png  0,14
+ 145  Anvil                  special.png  3,6    0
+ 145  Slightly_Damaged_Anvil special.png  4,6    1
+ 145  Very_Damaged_Anvil     special.png  5,6    2
+ 146  Trapped_Chest                    none.png  0,0
+ 147  Weighted_Pressure_Plate_(Light)  none.png  0,0
+ 148  Weighted_Pressure_Plate_(Heavy)  none.png  0,0
+ 149  Redstone_Comparator_(inactive)   none.png  0,0
+ 150  Redstone_Comparator_(active)     none.png  0,0
+ 151  Daylight_Sensor                  none.png  0,0
+ 152  Block_of_Redstone                none.png  0,0
+ 153  Nether_Quartz_Ore                none.png  0,0
+ 154  Hopper                           none.png  0,0
+ 155  Block_of_Quartz                  none.png  0,0    0
+ 155  Chiseled_Quartz_Block            none.png  0,0    1
+ 155  Pillar_Quartz_Block              none.png  0,0    2
+ 156  Quartz_Stairs                    none.png  0,0
+ 157  Activator_Rail                   none.png  0,0
+ 158  Dropper                          none.png  0,0
+ 159  Stained_Clay                     none.png  0,0
+ 170  Hay_Block                        none.png  0,0
+ 171  Carpet                           none.png  0,0
+ 172  Hardened_Clay                    none.png  0,0
+ 173  Block_of_Coal                    none.png  0,0
 
 #            Items
 # ID  NAME                   FILE       CORDS  DAMAGE
@@ -305,7 +340,7 @@ items_txt = """
  351  Ink_Sack               items.png  14,4   0
  351  Rose_Red               items.png  14,5   1
  351  Cactus_Green           items.png  14,6   2
- 351  Coco_Beans             items.png  14,7   3
+ 351  Cocoa_Beans            items.png  14,7   3
  351  Lapis_Lazuli           items.png  14,8   4
  351  Purple_Dye             items.png  14,9   5
  351  Cyan_Dye               items.png  14,10  6
@@ -339,6 +374,7 @@ items_txt = """
  370  Ghast_Tear             items.png  11,7
  371  Gold_Nugget            items.png  12,7
  372  Nether_Wart            items.png  13,7
+ 373  Potion               special.png  0,14
  374  Glass_Bottle           items.png  12,8
  375  Spider_Eye             items.png  11,8
  376  Fermented_Spider_Eye   items.png  10,8
@@ -370,6 +406,19 @@ items_txt = """
  398  Carrot_on_a_Stick      items.png  6,6    +25
  399  Nether_Star            items.png  9,11
  400  Pumpkin_Pie            items.png  8,9
+ 401  Firework_Rocket        items.png  9,12
+ 402  Firework_Star          items.png  10,12
+ 403  Enchanted_Book         items.png  15,12
+ 404  Redstone_Comparator     none.png  0,0
+ 405  Nether_Brick            none.png  0,0
+ 406  Nether_Quartz           none.png  0,0
+ 407  Minecart_with_TNT       none.png  0,0
+ 408  Minecart_with_Hopper    none.png  0,0
+ 417  Iron_Horse_Armor        none.png  0,0
+ 418  Gold_Horse_Armor        none.png  0,0
+ 419  Diamond_Horse_Armor     none.png  0,0
+ 420  Lead                    none.png  0,0
+ 421  Name_Tag                none.png  0,0
 2256  C418_-_13              items.png  0,15   x1
 2257  C418_-_cat             items.png  1,15   x1
 2258  C418_-_blocks          items.png  2,15   x1
@@ -381,6 +430,7 @@ items_txt = """
 2264  C418_-_strad           items.png  8,15   x1
 2265  C418_-_ward            items.png  9,15   x1
 2266  C418_-_11              items.png  10,15  x1
+2267  C418_-_wait          special.png  0,8    x1
 
 #           Potions
 # ID  NAME                    FILE         CORDS  DAMAGE
@@ -416,6 +466,10 @@ items_txt = """
  373  Harming                 special.png  10,14  8204
  373  Harming                 special.png  10,14  8268
  373  Harming_II              special.png  10,14  8236
+ 373  Night_Vision_(3:00)     special.png  11,14  8198
+ 373  Night_Vision_(8:00)     special.png  11,14  8262
+ 373  Invisibility_(3:00)     special.png  12,14  8206
+ 373  Invisibility_(8:00)     special.png  12,14  8270
 # Unbrewable:
  373  Regeneration_II_(1:00)  special.png  2,14   8289
  373  Swiftness_II_(4:00)     special.png  3,14   8290
@@ -452,6 +506,10 @@ items_txt = """
  373  Harming                 special.png  10,13  16396
  373  Harming                 special.png  10,13  16460
  373  Harming_II              special.png  10,13  16428
+ 373  Night_Vision_(3:00)     special.png  11,13  16390
+ 373  Night_Vision_(8:00)     special.png  11,13  16454
+ 373  Invisibility_(3:00)     special.png  12,13  16398
+ 373  Invisibility_(8:00)     special.png  12,13  16462
 # Unbrewable:
  373  Regeneration_II_(0:45)  special.png  2,13   16481
  373  Swiftness_II_(3:00)     special.png  3,13   16482
@@ -508,9 +566,8 @@ items_txt = """
 ~ Food       297   260,322,282,297,360,319,320,363,364,365,366,349,350,354,357,391,396,392,393,394,400
 ~ Items      318   280,281,318,337,336,353,339,340,332,376,377,382,381
 ~ Drops      341   344,288,334,287,352,289,367,375,341,368,369,370,371,378,399
-~ Music      2257  2256,2257,2258,2259,2260,2261,2262,2263,2264,2265,2266
-# New
-~ Potion     373   373~0,373~16,373~32,373~8192,373~8193,373~8257,373~8225,373~8289,373~8194,373~8258,373~8226,373~8290,373~8195,373~8259,373~8197,373~8229,373~8201,373~8265,373~8233,373~8297,373~8196,373~8260,373~8228,373~8292,373~8200,373~8264,373~8202,373~8266,373~8204,373~8236,373~16384,373~16385,373~16499,373~16417,373~16481,373~16386,373~16450,373~16418,373~16482,373~16387,373~16451,373~16389,373~16421,373~16393,373~16457,373~16425,373~16489,373~16388,373~16452,373~16420,373~16484,373~16392,373~16456,373~16394,373~16458,373~16396,373~16428
+~ Music      2257  2256,2257,2258,2259,2260,2261,2262,2263,2264,2265,2266,2267
+~ Potion     373   373~0,373~16,373~32,373~8192,373~8193,373~8257,373~8225,373~8289,373~8194,373~8258,373~8226,373~8290,373~8195,373~8259,373~8197,373~8229,373~8201,373~8265,373~8233,373~8297,373~8196,373~8260,373~8228,373~8292,373~8200,373~8264,373~8202,373~8266,373~8204,373~8236,373~8198,373~8262,373~8206,373~8270,373~16384,373~16385,373~16499,373~16417,373~16481,373~16386,373~16450,373~16418,373~16482,373~16387,373~16451,373~16389,373~16421,373~16393,373~16457,373~16425,373~16489,373~16388,373~16452,373~16420,373~16484,373~16392,373~16456,373~16394,373~16458,373~16396,373~16428,373~16390,373~16454,373~16398,373~16462
 ~ Eggs       383   383~50,383~51,383~52,383~54,383~55,383~56,383~57,383~58,383~59,383~60,383~61,383~62,383~65,383~66,383~90,383~91,383~92,383~93,383~94,383~95,383~96,383~120
 
 #            Enchantments
@@ -567,7 +624,7 @@ class Items (object):
                 with file(filename) as f:
                     items_txt = f.read()
             except Exception, e:
-                logger.info("Error reading items.txt: %s", e)
+                logger.info("Error reading '%s': %s", filename, e)
                 logger.info("Using internal data.")
                 items_txt = self.items_txt
 
