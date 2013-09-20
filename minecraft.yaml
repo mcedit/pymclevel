@@ -740,7 +740,7 @@ blocks:
 
   - id: 37
     idStr: flower
-    name: Flower
+    name: Dandelion
     mapcolor: [255, 255, 0]
     tex: [13, 0]
     type: DECORATION_CROSS
@@ -1871,6 +1871,29 @@ blocks:
     mapcolor: [100, 100, 100]
     opacity: 0
 
+  - id: 159
+    name: Stained Clay
+    mapcolor: [150, 100, 50]
+
+  - id: 170
+    name: Hay Block
+
+  - id: 171
+    name: Carpet
+    opacity: 0
+
+  - id: 172
+    name: Hardened Clay
+
+  - id: 173
+    name: Block of Coal
+
+  - id: 174
+    name: Packed Ice
+
+  - id: 175
+    name: Large Flowers
+    opacity: 0
 
 
-...
+
