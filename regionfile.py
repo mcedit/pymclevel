@@ -213,20 +213,22 @@ class MCRegionFile(object):
 
     def saveChunk(self, cx, cz, uncompressedData):
         data = deflate(uncompressedData)
-        self._saveChunk(cx, cz, data, self.VERSION_DEFLATE)
+        try:
+            self._saveChunk(cx, cz, data, self.VERSION_DEFLATE)
+        except ChunkTooBig as e:
+            raise ChunkTooBig(e.message + " (%d uncompressed)" % len(uncompressedData))
 
     def _saveChunk(self, cx, cz, data, format):
         cx &= 0x1f
         cz &= 0x1f
         offset = self.getOffset(cx, cz)
+
         sectorNumber = offset >> 8
         sectorsAllocated = offset & 0xff
-
-
-
         sectorsNeeded = (len(data) + self.CHUNK_HEADER_SIZE) / self.SECTOR_BYTES + 1
+
         if sectorsNeeded >= 256:
-            return
+            raise ChunkTooBig("Chunk too big! %d bytes exceeds 1MB" % len(data))
 
         if sectorNumber != 0 and sectorsAllocated >= sectorsNeeded:
             log.debug("REGION SAVE {0},{1} rewriting {2}b".format(cx, cz, len(data)))
@@ -339,3 +341,7 @@ class MCRegionFile(object):
     VERSION_DEFLATE = 2
 
     compressMode = VERSION_DEFLATE
+
+
+class ChunkTooBig(ValueError):
+    pass
