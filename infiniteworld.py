@@ -1697,8 +1697,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
             playerTag["Dimension"] = nbt.TAG_Int(0)
         playerTag["Dimension"].value = d
 
-    def setPlayerPosition(self, pos, player="Player"):
-        posList = nbt.TAG_List([nbt.TAG_Double(p) for p in pos])
+    def setPlayerPosition(self, (x, y, z), player="Player"):
+        posList = nbt.TAG_List([nbt.TAG_Double(p) for p in (x, y-1.8, z)])
         playerTag = self.getPlayerTag(player)
 
         playerTag["Pos"] = posList
@@ -1707,8 +1707,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         playerTag = self.getPlayerTag(player)
         posList = playerTag["Pos"]
 
-        pos = map(lambda x: x.value, posList)
-        return pos
+        x, y, z = map(lambda x: x.value, posList)
+        return x, y + 1.8, z
 
     def setPlayerOrientation(self, yp, player="Player"):
         self.getPlayerTag(player)["Rotation"] = nbt.TAG_List([nbt.TAG_Float(p) for p in yp])
