@@ -1104,7 +1104,8 @@ class MCInfdevOldLevel(ChunkedLevelMixin, EntityLevel):
         self.initTime = int(time.time() * 1000)
         with file(lockfile, "wb") as f:
             f.write(struct.pack(">q", self.initTime))
-
+            f.flush()
+            os.fsync(f.fileno())
 
     def checkSessionLock(self):
         if self.readonly:
