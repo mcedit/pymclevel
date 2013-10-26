@@ -1,3 +1,4 @@
+import atexit
 import itertools
 import logging
 import os
@@ -348,7 +349,7 @@ class MCServerChunkGenerator(object):
         startTime = time.time()
         proc = self.runServer(tempDir)
         while proc.poll() is None:
-            line = proc.stderr.readline().strip()
+            line = proc.stdout.readline().strip()
             log.info(line)
             yield line
 
@@ -360,7 +361,7 @@ class MCServerChunkGenerator(object):
 #            Forge/FML:
 #              2012-11-13 11:47:13 [INFO] [Minecraft] Done (8.020s)!
 
-            if "[INFO]" in line and "Done" in line:
+            if "INFO" in line and "Done" in line:
                 if simulate:
                     duration = time.time() - startTime
 
@@ -508,9 +509,11 @@ class MCServerChunkGenerator(object):
             cwd=startingDir,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             universal_newlines=True,
             )
+
+        atexit.register(proc.terminate)
         return proc
 
     def _serverVersion(self):
@@ -526,7 +529,7 @@ class MCServerChunkGenerator(object):
         # for line in err.split("\n"):
 
         while proc.poll() is None:
-            line = proc.stderr.readline()
+            line = proc.stdout.readline()
             if "Preparing start region" in line:
                 break
             if "Starting minecraft server version" in line:
