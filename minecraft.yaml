@@ -1805,25 +1805,31 @@ blocks:
   - id: 147
     idStr: weightedPlate_light
     name: Weighted Pressure Plate (Light)
-    mapcolor: [100, 100, 100]
+    mapcolor: [231, 165, 45]
+    type: PRESSURE_PLATE
+    tex: [7, 1]
     opacity: 0
 
   - id: 148
     idStr: weightedPlate_heavy
     name: Weighted Pressure Plate (Heavy)
-    mapcolor: [100, 100, 100]
+    mapcolor: [191, 191, 191]
+    tex: [6, 1]
+    type: PRESSURE_PLATE
     opacity: 0
 
   - id: 149
     idStr: comparator
     name: Redstone Comparator (inactive)
     mapcolor: [100, 100, 100]
+    tex: [11, 11] 
     opacity: 0
 
   - id: 150
     idStr: comparator
     name: Redstone Comparator (active)
     mapcolor: [100, 100, 100]
+    tex: [12, 11]
     opacity: 0
     brightness: 8
 
@@ -1831,17 +1837,21 @@ blocks:
     idStr: daylightDetector
     name: Daylight Sensor
     mapcolor: [255, 100, 255]
+    tex: [13, 11]
     opacity: 0
 
   - id: 152
     idStr: blockRedstone
     name: Block of Redstone
     mapcolor: [255, 100, 100]
+    tex: [14, 11]
+    brightness: 8
 
   - id: 153
     idStr: netherquartz
     name: Nether Quartz Ore
     mapcolor: [255, 255, 255]
+    tex: [15, 11]
 
   - id: 154
     idStr: hopper
@@ -1853,6 +1863,7 @@ blocks:
     idStr: quartzBlock
     name: Block of Quartz
     mapcolor: [255, 255, 255]
+    tex: [9, 13]
 
   - id: 156
     idStr: stairsQuartz
@@ -1863,6 +1874,10 @@ blocks:
     idStr: activatorRail
     name: Activator Rail
     mapcolor: [100, 100, 100]
+    tex: [10, 13]
+    type: SIMPLE_RAIL
+    tex_extra:
+        powered: [11, 13]
     opacity: 0
 
   - id: 158
@@ -1886,7 +1901,11 @@ blocks:
     name: Hardened Clay
 
   - id: 173
+    idStr: blockcoal
     name: Block of Coal
+    mapcolor: [100, 100, 100]
+    tex: [12, 13]
+    opacity: 0
 
   - id: 174
     name: Packed Ice
