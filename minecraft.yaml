@@ -276,6 +276,16 @@ blocks:
     name: Dirt
     mapcolor: [134, 96, 67]
     tex: [2, 0]
+    data:
+      0:
+        name: Dirt
+        tex: [2, 0]
+      1:
+        name: Grassless Dirt
+        tex: [2, 0]
+      2:
+        name: Podzol
+        tex: [2, 0]
 
   - id: 4
     idStr: stonebrick
@@ -291,16 +301,28 @@ blocks:
     data:
       0:
         name: Wood Planks
+        aka: Oak Wood Planks
         tex: [4, 0]
       1:
         name: Wood Planks
+        aka: Spruce Wood Planks
         tex: [6, 12]
       2:
         name: Wood Planks
+        aka: Birch Wood Planks
         tex: [6, 13]
       3:
         name: Wood Planks
+        aka: Jungle Wood Planks
         tex: [7, 12]
+      4:
+        name: Wood Planks
+        aka: Acacia Wood Planks
+        tex: [7, 12]
+      5:
+        name: Wood Planks
+        aka: Dark Oak Wood Planks
+        tex: [6, 12]
 
   - id: 6
     idStr: sapling
@@ -312,6 +334,7 @@ blocks:
     data:
       0:
         name: Sapling
+        aka: Oak Sapling
         tex: [15, 0]
       1:
         name: Spruce Sapling
@@ -322,6 +345,12 @@ blocks:
       3:
         name: Jungle Sapling
         tex: [14, 1]
+      4:
+        name: Acacia Sapling
+        tex: [14, 1]
+      5:
+        name: Dark Oak Sapling
+        tex: [15, 3]
 
   - id: 7
     idStr: bedrock
@@ -367,6 +396,13 @@ blocks:
     name: Sand
     mapcolor: [218, 210, 158]
     tex: [2, 1]
+    data:
+      0:
+        name: Sand
+        tex: [2, 1]
+      1:
+        name: Red Sand
+        tex: [2, 1]
 
   - id: 13
     idStr: gravel
@@ -403,6 +439,7 @@ blocks:
     data:
       0:
         name: Wood
+        aka: Oak Wood
         tex: [4, 1]
       1:
         name: Pine Wood
@@ -532,7 +569,7 @@ blocks:
         tex: [0, 12]
       1:
         name: Sandstone
-        aka: Decorative Sandstone
+        aka: Decorative Sandstone, Chiseled Sandstone
         mapcolor: [218, 210, 158]
         tex: [5, 14]
         tex_direction:
@@ -740,11 +777,39 @@ blocks:
 
   - id: 37
     idStr: flower
-    name: Dandelion
+    name: Flower
     mapcolor: [255, 255, 0]
     tex: [13, 0]
     type: DECORATION_CROSS
     opacity: 0
+    data:
+      0:
+        tex: [13, 0]
+        name: Poppy
+      1:
+        tex: [13, 0]
+        name: Blue Orchid
+      2:
+        tex: [13, 0]
+        name: Allium
+      3:
+        tex: [13, 0]
+        name: Azure Bluet
+      4:
+        tex: [13, 0]
+        name: Red Tulip
+      5:
+        tex: [13, 0]
+        name: Orange Tulip
+      6:
+        tex: [13, 0]
+        name: White Tulip
+      7:
+        tex: [13, 0]
+        name: Pink Tulip
+      8:
+        tex: [13, 0]
+        name: Oxeye Daisy
 
   - id: 38
     idStr: rose
@@ -821,6 +886,9 @@ blocks:
       6:
         tex: [0, 14]
         name: Double Nether Brick Slab
+      7:
+        tex: [9, 13]
+        name: Double Quartz Slab
 
   - id: 44
     idStr: stoneSlab
@@ -859,6 +927,9 @@ blocks:
       6:
         tex: [0, 14]
         name: Nether Brick Slab
+      7:
+        tex: [9, 13]
+        name: Quartz Slab
     type: HALFHEIGHT
 
   - id: 45
@@ -1612,6 +1683,12 @@ blocks:
       3:
         tex: [7, 12]
         name: Jungle-Wood Double Slab
+      4:
+        tex: [7, 12]
+        name: Acacia-Wood Double Slab
+      5:
+        tex: [6, 12]
+        name: Dark-Oak-Wood Double Slab
 
   - id: 126
     idStr: woodSlab
@@ -1632,6 +1709,12 @@ blocks:
       3:
         tex: [7, 12]
         name: Jungle-Wood Slab
+      4:
+        tex: [7, 12]
+        name: Acacia-Wood Slab
+      5:
+        tex: [6, 12]
+        name: Dark-Oak-Wood Slab
     type: HALFHEIGHT
 
   - id: 127
@@ -1890,6 +1973,85 @@ blocks:
     name: Stained Clay
     mapcolor: [150, 100, 50]
 
+  - id: 160
+    idStr: thinStainedGlass
+    name: Stained Glass Pane
+    mapcolor: [255, 255, 255]
+    tex: [1, 3]
+    type: SOLID_PANE
+    opacity: 0
+
+  - id: 161
+    idStr: leaves2
+    name: Leaves (Acacia/Dark Oak)
+    mapcolor: [60, 192, 41]
+    tex: [5, 3] # The "correct" one is actually [4, 3] but with the current
+                # transparency rendering issues, this one looks better.
+    opacity: 1
+    data:
+      0:
+        name: Acacia Leaves
+        mapcolor: [60, 192, 41]
+        tex: [5, 3]
+      1:
+        name: Dark Oak Leaves
+        mapcolor: [74, 131, 66]
+        tex: [5, 8]
+
+      4: # bit 0x4 - "Permanent"
+        name: Acacia Leaves (Permanent)
+        mapcolor: [60, 192, 41]
+        tex: [5, 3]
+      5:
+        name: Dark Oak Leaves (Permanent)
+        mapcolor: [74, 131, 66]
+        tex: [5, 8]
+
+      8: # bit 0x8 - "Decaying"
+        name: Acacia Leaves (Decaying)
+        mapcolor: [60, 192, 41]
+        tex: [5, 3]
+      9:
+        name: Dark Oak Leaves (Decaying)
+        mapcolor: [74, 131, 66]
+        tex: [5, 8]
+
+  - id: 162
+    idStr: log2
+    name: Wood (Acacia/Dark Oak)
+    mapcolor: [102, 81, 51]
+    tex: [4, 1]
+    tex_direction:
+      TOP: [5, 1]
+      BOTTOM: [5, 1]
+    data:
+      0:
+        name: Acacia Wood
+        tex: [4, 1]
+      1:
+        name: Dark Oak Wood
+        tex: [4, 7]
+      2:
+        name: Acacia Wood (Placeholder)
+        tex: [4, 1]
+      3:
+        name: Dark Oak Wood (Placeholder)
+        tex: [4, 7]
+
+  - id: 163
+    idStr: stairsWoodAcacia
+    name: Acacia-Wood Stairs
+    mapcolor: [157, 128, 79]
+    tex: [7, 12]
+    type: STAIRS
+
+  - id: 164
+    idStr: stairsWoodDarkOak
+    name: Dark-Oak-Wood Stairs
+    mapcolor: [157, 128, 79]
+    tex: [6, 12]
+    type: STAIRS
+
   - id: 170
     name: Hay Block
 
@@ -1913,6 +2075,21 @@ blocks:
   - id: 175
     name: Large Flowers
     opacity: 0
+    data:
+      0:
+        name: Sunflower
+      1:
+        name: Lilac
+      2:
+        name: Double Tallgrass
+      3:
+        name: Large Fern
+      4:
+        name: Rose Bush
+      5:
+        name: Peony
+      8:
+        name: Large Flowers Top
 
 
 
