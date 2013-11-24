@@ -50,16 +50,16 @@ blocks:
     tex: [4, 0]
     data:
       0:
-        name: Wood Planks
+        name: Oak Wood Planks
         tex: [4, 0]
       1:
-        name: Wood Planks
+        name: Spruce Wood Planks
         tex: [6, 12]
       2:
-        name: Wood Planks
+        name: Birch Wood Planks
         tex: [6, 13]
       3:
-        name: Wood Planks
+        name: Jungle Wood Planks
         tex: [7, 12]
 
   - id: 6
@@ -466,7 +466,10 @@ blocks:
       5:
         tex: [6, 3]
         name: Double Stone Brick Slab
-
+      7:
+        tex: [9, 13]
+        name: Double Quartz Slab
+    
   - id: 44
     idStr: SLAB
     name: Stone Slab
@@ -500,6 +503,9 @@ blocks:
       5:
         tex: [6, 3]
         name: Stone Brick Slab
+      7:
+        tex: [9, 13]
+        name: Quartz Slab
 
   - id: 45
     idStr: BRICK
@@ -656,6 +662,14 @@ blocks:
       BOTTOM: [14, 3]
     tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
     brightness: 14
+    
+  - id: 63
+    idStr: sign
+    name: Sign
+    mapcolor: [111, 91, 54]
+    tex: [4, 0]
+    type: SIGNPOST
+    opacity: 0
 
   - id: 64
     idStr: WOODEN_DOOR
@@ -940,47 +954,6 @@ blocks:
     tex: [0, 14]
     type: STAIRS
     
-  - id: 125
-    idStr: woodSlab
-    name: Wooden Double Slab
-    aka: Wood Double Step
-    mapcolor: [200, 200, 200]
-    tex: [4, 0]
-    data:
-      0:
-        tex: [4, 0]
-        name: Oak-Wood Double Slab
-      1:
-        tex: [6, 12]
-        name: Spruce-Wood Double Slab
-      2:
-        tex: [6, 13]
-        name: Birch-Wood Double Slab
-      3:
-        tex: [7, 12]
-        name: Jungle-Wood Double Slab
-    
-  - id: 126
-    idStr: woodSlab
-    name: Wooden Slab
-    aka: Wood Half Step
-    mapcolor: [200, 200, 200]
-    tex: [4, 0]
-    data:
-      0:
-        tex: [4, 0]
-        name: Oak-Wood Slab
-      1:
-        tex: [6, 12]
-        name: Spruce-Wood Slab
-      2:
-        tex: [6, 13]
-        name: Birch-Wood Slab
-      3:
-        tex: [7, 12]
-        name: Jungle-Wood Slab
-    type: HALFHEIGHT
-    
   - id: 128
     idStr: stairsSandStone
     name: Sandstone Stairs
@@ -1060,6 +1033,47 @@ blocks:
     idStr: stairsQuartz
     name: Quartz Stairs
     mapcolor: [255, 255, 255]
+    
+  - id: 157
+    idStr: woodSlab
+    name: Wooden Double Slab
+    aka: Wood Double Step
+    mapcolor: [200, 200, 200]
+    tex: [4, 0]
+    data:
+      0:
+        tex: [4, 0]
+        name: Oak-Wood Double Slab
+      1:
+        tex: [6, 12]
+        name: Spruce-Wood Double Slab
+      2:
+        tex: [6, 13]
+        name: Birch-Wood Double Slab
+      3:
+        tex: [7, 12]
+        name: Jungle-Wood Double Slab
+        
+  - id: 158
+    idStr: woodSlab
+    name: Wooden Slab
+    aka: Wood Half Step
+    mapcolor: [200, 200, 200]
+    tex: [4, 0]
+    data:
+      0:
+        tex: [4, 0]
+        name: Oak-Wood Slab
+      1:
+        tex: [6, 12]
+        name: Spruce-Wood Slab
+      2:
+        tex: [6, 13]
+        name: Birch-Wood Slab
+      3:
+        tex: [7, 12]
+        name: Jungle-Wood Slab
+    type: HALFHEIGHT
     
   - id: 170
     name: Hay Block
