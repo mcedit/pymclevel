@@ -4,7 +4,7 @@ from faces import faceDirections, FaceXDecreasing, FaceXIncreasing, FaceYDecreas
 from indev import MCIndevLevel
 from infiniteworld import ChunkedLevelMixin, AnvilChunk, MCAlphaDimension, MCInfdevOldLevel, ZeroChunk
 import items
-from java import MCJavaLevel
+from javalevel import MCJavaLevel
 from level import ChunkBase, computeChunkHeightMap, EntityLevel, FakeChunk, LightedChunk, MCLevel
 from materials import alphaMaterials, classicMaterials, indevMaterials, MCMaterials, namedMaterials, pocketMaterials
 from mclevelbase import ChunkNotPresent, saveFileDir, minecraftDir, PlayerNotFound

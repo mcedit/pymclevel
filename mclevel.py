@@ -172,7 +172,7 @@ Copyright 2010 David Rio Vierra
 
 from indev import MCIndevLevel
 from infiniteworld import MCInfdevOldLevel
-from java import MCJavaLevel
+from javalevel import MCJavaLevel
 from logging import getLogger
 from mclevelbase import saveFileDir
 import nbt
