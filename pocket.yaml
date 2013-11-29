@@ -466,6 +466,12 @@ blocks:
       5:
         tex: [6, 3]
         name: Double Stone Brick Slab
+      6:
+        tex: [9, 13]
+        name: Double Quartz Slab
+      7:
+        tex: [9, 13]
+        name: Double Quartz Slab
 
   - id: 44
     idStr: SLAB
@@ -479,8 +485,6 @@ blocks:
       FORWARD: [5, 0]
       BACKWARD: [5, 0]
       SIDES: [5, 0]
-
-    type: HALFHEIGHT
     data:
       0: 
         tex: [6, 0]
@@ -500,6 +504,13 @@ blocks:
       5:
         tex: [6, 3]
         name: Stone Brick Slab
+      6:
+        tex: [9, 13]
+        name: Quartz Slab
+      7:
+        tex: [9, 13]
+        name: Quartz Slab
+    type: HALFHEIGHT
 
   - id: 45
     idStr: BRICK
@@ -593,7 +604,7 @@ blocks:
 
   - id: 58
     idStr: WORKBENCH
-    name: Bench
+    name: Crafting Table
     mapcolor: [114, 88, 56]
     tex: [12, 3]
     tex_direction:
@@ -656,6 +667,14 @@ blocks:
       BOTTOM: [14, 3]
     tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
     brightness: 14
+    
+  - id: 63
+    idStr: sign
+    name: Sign
+    mapcolor: [111, 91, 54]
+    tex: [4, 0]
+    type: SIGNPOST
+    opacity: 0
 
   - id: 64
     idStr: WOODEN_DOOR
@@ -1028,26 +1047,26 @@ blocks:
     idStr: carrots
     name: Carrots
     mapcolor: [200, 100, 100]
-    tex: [11, 12]
+    tex: [11, 11]
     type: CROPS
     data:
-      0: {tex: [8, 12]}
-      1: {tex: [9, 12]}
-      2: {tex: [10, 12]}
-      3: {tex: [11, 12]}
+      0: {tex: [8, 11]}
+      1: {tex: [9, 11]}
+      2: {tex: [10, 11]}
+      3: {tex: [11, 11]}
     opacity: 0
     
   - id: 142
     idStr: potatoes
     name: Potatoes
     mapcolor: [200, 100, 100]
-    tex: [12, 12]
+    tex: [12, 11]
     type: CROPS
     data:
-      0: {tex: [8, 12]}
-      1: {tex: [9, 12]}
-      2: {tex: [10, 12]}
-      3: {tex: [12, 12]}
+      0: {tex: [8, 11]}
+      1: {tex: [9, 11]}
+      2: {tex: [10, 11]}
+      3: {tex: [12, 11]}
     opacity: 0
     
   - id: 155
@@ -1060,9 +1079,18 @@ blocks:
     idStr: stairsQuartz
     name: Quartz Stairs
     mapcolor: [255, 255, 255]
+    tex: [9, 13]
+    type: STAIRS
     
   - id: 170
     name: Hay Block
+    mapcolor: [206, 170, 28]
+    tex_direction:
+      TOP: [7, 13]
+      FORWARD: [8, 13]
+      SIDES: [8, 13]
+      BACKWARD: [8, 13]
+      BOTTOM: [7, 13]
     
   - id: 171
     name: Carpet
