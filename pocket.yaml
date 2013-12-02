@@ -877,6 +877,9 @@ blocks:
       2:
         tex: [5, 6]
         name: Cracked Stone Bricks
+      3:
+        tex: [5, 13]
+        name: Circle Stone Bricks
         
   - id: 101
     idStr: fenceIron
