@@ -193,6 +193,10 @@ blocks:
         name: Birch Leaves
         mapcolor: [89, 151, 76]
         tex: [5, 3]
+      3:
+        name: Jungle Leaves
+        mapcolor: [74, 131, 66]
+        tex: [5, 12]
 
       4: # bit 0x4 - "Decaying"
         name: Leaves (Decaying)
@@ -209,6 +213,23 @@ blocks:
         tex: [5, 3]
       7:
         name: Jungle Leaves (Decaying)
+        mapcolor: [74, 131, 66]
+        tex: [5, 12]
+      4: # bit 0x8 - "Permanent"
+        name: Leaves (Permanent)
+        mapcolor: [60, 192, 41]
+        tex: [5, 3]
+      5:
+        name: Pine Leaves (Permanent)
+        aka: Spruce Leaves
+        mapcolor: [74, 131, 66]
+        tex: [5, 8]
+      6:
+        name: Birch Leaves (Permanent)
+        mapcolor: [89, 151, 76]
+        tex: [5, 3]
+      7:
+        name: Jungle Leaves (Permanent)
         mapcolor: [74, 131, 66]
         tex: [5, 12]
     
@@ -317,6 +338,14 @@ blocks:
         name: Fern
     type: DECORATION_CROSS
     opacity: 0
+    
+   - id: 32
+    idStr: deadbush
+    name: Dead Shrub
+    mapcolor: [148, 100, 40]
+    tex: [7, 3]
+    type: DECORATION_CROSS
+    opacity: 0
 
   - id: 35
     idStr: WOOL
@@ -400,7 +429,7 @@ blocks:
     opacity: 0
 
   - id: 38
-    name: Cyan Flower
+    name: Rose
     mapcolor: [255, 0, 0]
     tex: [12, 0]
     type: DECORATION_CROSS
@@ -471,7 +500,7 @@ blocks:
         name: Double Quartz Slab
       7:
         tex: [9, 13]
-        name: Double Quartz Slab
+        name: Double Solid Stone Slab
 
   - id: 44
     idStr: SLAB
@@ -509,7 +538,7 @@ blocks:
         name: Quartz Slab
       7:
         tex: [9, 13]
-        name: Quartz Slab
+        name: Solid Stone Slab
     type: HALFHEIGHT
 
   - id: 45
@@ -961,48 +990,7 @@ blocks:
     mapcolor: [54, 24, 30]
     tex: [0, 14]
     type: STAIRS
-    
-  - id: 125
-    idStr: woodSlab
-    name: Wooden Double Slab
-    aka: Wood Double Step
-    mapcolor: [200, 200, 200]
-    tex: [4, 0]
-    data:
-      0:
-        tex: [4, 0]
-        name: Oak-Wood Double Slab
-      1:
-        tex: [6, 12]
-        name: Spruce-Wood Double Slab
-      2:
-        tex: [6, 13]
-        name: Birch-Wood Double Slab
-      3:
-        tex: [7, 12]
-        name: Jungle-Wood Double Slab
-    
-  - id: 126
-    idStr: woodSlab
-    name: Wooden Slab
-    aka: Wood Half Step
-    mapcolor: [200, 200, 200]
-    tex: [4, 0]
-    data:
-      0:
-        tex: [4, 0]
-        name: Oak-Wood Slab
-      1:
-        tex: [6, 12]
-        name: Spruce-Wood Slab
-      2:
-        tex: [6, 13]
-        name: Birch-Wood Slab
-      3:
-        tex: [7, 12]
-        name: Jungle-Wood Slab
-    type: HALFHEIGHT
-    
+  
   - id: 128
     idStr: stairsSandStone
     name: Sandstone Stairs
@@ -1085,6 +1073,47 @@ blocks:
     tex: [9, 13]
     type: STAIRS
     
+  - id: 157
+    idStr: woodSlab
+    name: Wooden Double Slab
+    aka: Wood Double Step
+    mapcolor: [200, 200, 200]
+    tex: [4, 0]
+    data:
+      0:
+        tex: [4, 0]
+        name: Oak-Wood Double Slab
+      1:
+        tex: [6, 12]
+        name: Spruce-Wood Double Slab
+      2:
+        tex: [6, 13]
+        name: Birch-Wood Double Slab
+      3:
+        tex: [7, 12]
+        name: Jungle-Wood Double Slab
+
+  - id: 158
+    idStr: woodSlab
+    name: Wooden Slab
+    aka: Wood Half Step
+    mapcolor: [200, 200, 200]
+    tex: [4, 0]
+    data:
+      0:
+        tex: [4, 0]
+        name: Oak-Wood Slab
+      1:
+        tex: [6, 12]
+        name: Spruce-Wood Slab
+      2:
+        tex: [6, 13]
+        name: Birch-Wood Slab
+      3:
+        tex: [7, 12]
+        name: Jungle-Wood Slab
+    type: HALFHEIGHT
+    
   - id: 170
     name: Hay Block
     mapcolor: [206, 170, 28]
@@ -1104,6 +1133,13 @@ blocks:
     name: Block of Coal
     mapcolor: [100, 100, 100]
     tex: [12, 13]
+    opacity: 0
+    
+  - id: 245
+    idStr: STONECUTTER
+    name: Stonecutter
+    mapcolor: [96, 96, 96]
+    tex: [11, 8]
     opacity: 0
 
   - id: 246
@@ -1125,5 +1161,40 @@ blocks:
       1: 
         tex: [9, 14]
         name: Nether Reactor Core (Used)
+    
+  - id: 248
+    idStr: UpdateGameBlock
+    name: Update Game Block
+    mapcolor: [201, 119, 240]
+    tex: [11, 8]
+    opacity: 0
+  
+  - id: 249
+    idStr: UpdateGameBlock
+    name: UpdateGameBlock
+    mapcolor: [201, 119, 240]
+    tex: [11, 8]
+    opacity: 0
+    
+   - id: 253
+    idStr: GRASS_CARRIED
+    name: Error Grass
+    mapcolor: [201, 119, 240]
+    tex: [11, 8]
+    opacity: 0
+    
+  - id: 254
+    idStr: LEAVES_CARRIED
+    name: Error Leaves
+    mapcolor: [201, 119, 240]
+    tex: [11, 8]
+    opacity: 0
+    
+  - id: 255
+    idStr: INFO_RESERVED6
+    name: Error Stone
+    mapcolor: [201, 119, 240]
+    tex: [11, 8]
+    opacity: 0
 
 ...
