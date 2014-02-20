@@ -1,4 +1,3 @@
-
 from logging import getLogger
 from numpy import zeros, rollaxis, indices
 import traceback
@@ -68,11 +67,11 @@ class MCMaterials(object):
         self.defaultName = defaultName
 
 
-        self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint8')
+        self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint16') 
         self.blockTextures[:] = self.defaultTexture
         self.names = [[defaultName] * 16 for i in range(id_limit)]
         self.aka = [[""] * 16 for i in range(id_limit)]
-
+            #Sets terrain.png array size
         self.type = [["NORMAL"] * 16] * id_limit
         self.blocksByType = defaultdict(list)
         self.allBlocks = []
