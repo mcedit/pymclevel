@@ -158,8 +158,7 @@
 #
 #         "FLOOR" is currently used for redstone wire and Water Lilies
 #
-#         "THINSLICE" is currently only used for snow, and I may eventually
-#         change that to "SNOW" instead, and clean up that rendering.
+#         "THINSLICE" is currently used for snow and carpet, and I may eventually clean up that rendering.
 #
 #   tex_extra: This is a section to provide extra texture information for
 #         block types which require it.  A list of the required tex_extra
@@ -457,9 +456,6 @@ blocks:
     name: Wood
     mapcolor: [102, 81, 51]
     tex: [4, 1]
-    tex_direction:
-      TOP: [5, 1]
-      BOTTOM: [5, 1]
     data:
       0:
         name: Oak Wood (Upright)
@@ -636,13 +632,11 @@ blocks:
     idStr: dispenser
     name: Dispenser
     mapcolor: [96, 96, 96]
-    tex: [14, 2]
+    tex: [13, 2]
     tex_direction:
-      FORWARD: [14, 2]
-      SIDES: [13, 2]
-      BACKWARD: [13, 2]
-      TOP: [14, 3]
-      BOTTOM: [14, 3]
+          FORWARD: [14, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
     tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
 
   - id: 24
@@ -1758,7 +1752,7 @@ blocks:
     name: Brewing Stand
     mapcolor: [189, 163, 82]
     tex: [13, 9]
-    type: BREWING_STAND
+    type: BrewingStand
     tex_extra:
       base: [12, 9]
     opacity: 0
@@ -2582,7 +2576,7 @@ blocks:
     mapcolor: [56, 77, 24]
     opacity: 0
     tex: [16, 9]
-    data:   #Couldn't find good ID information, update if something is wrong.
+    data:
       0:
         name: Sunflower Stem
         tex: [16, 9]
@@ -2603,9 +2597,15 @@ blocks:
         tex: [16, 14]
       8:
         name: Tall Plant Top
-        tex: [5, 4]
+        tex: [5, 3]
+      9:
+        name: Tall Plant Top
+        tex: [5, 3]
+      10:
+        name: Tall Plant Top
+        tex: [5, 3]
       11:
-        name: Tall Plant Top (Alt)
-        tex: [5, 4]
+        name: Tall Plant Top
+        tex: [5, 3]
       
       
