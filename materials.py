@@ -7,7 +7,7 @@ from pprint import pformat
 
 import os
 
-NOTEX = (0x90, 0xD0)
+NOTEX = (0x1F0, 0x1F0)
 
 import yaml
 
@@ -67,7 +67,7 @@ class MCMaterials(object):
         self.defaultName = defaultName
 
 
-        self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint16') 
+        self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint16')
         self.blockTextures[:] = self.defaultTexture
         self.names = [[defaultName] * 16 for i in range(id_limit)]
         self.aka = [[""] * 16 for i in range(id_limit)]
