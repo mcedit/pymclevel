@@ -70,13 +70,13 @@ blocks:
     type: DECORATION_CROSS
     opacity: 0
     data:
-      0: 
+      0:
         name: Sapling
         tex: [15, 0]
-      1: 
+      1:
         name: Spruce Sapling
         tex: [15, 3]
-      2: 
+      2:
         name: Birch Sapling
         tex: [15, 4]
 
@@ -232,7 +232,7 @@ blocks:
         name: Jungle Leaves (Permanent)
         mapcolor: [74, 131, 66]
         tex: [5, 12]
-    
+
   - id: 19
     idStr: sponge
     name: Sponge
@@ -302,7 +302,7 @@ blocks:
       foot: [5, 9]
       head: [8, 9]
     opacity: 0
-    
+
   - id: 27
     idStr: goldenRail
     name: Powered Rail
@@ -338,8 +338,8 @@ blocks:
         name: Fern
     type: DECORATION_CROSS
     opacity: 0
-    
-   - id: 32
+
+  - id: 32
     idStr: deadbush
     name: Dead Shrub
     mapcolor: [148, 100, 40]
@@ -353,69 +353,69 @@ blocks:
     mapcolor: [222, 222, 222]
     tex: [0, 4]
     data:
-      0: 
+      0:
         tex: [0, 4]
         name: White Wool
         mapcolor: [222, 222, 222]
-      1: 
+      1:
         tex: [2, 13]
         name: Orange Wool
         mapcolor: [234, 127, 55]
-      2: 
+      2:
         tex: [2, 12]
         name: Magenta Wool
         mapcolor: [191, 75, 201]
-      3: 
+      3:
         tex: [2, 11]
         name: Light Blue Wool
         aka: Aqua Wool
         mapcolor: [104, 139, 212]
-      4: 
+      4:
         tex: [2, 10]
         name: Yellow Wool
         mapcolor: [104, 139, 212]
-      5: 
+      5:
         tex: [2, 9]
         name: Lime Wool
         mapcolor: [59, 189, 48]
-      6: 
+      6:
         tex: [2, 8]
         name: Pink Wool
         mapcolor: [217, 131, 155]
-      7: 
+      7:
         tex: [2, 7]
         name: Gray Wool
         mapcolor: [66, 66, 66]
-      8: 
+      8:
         tex: [1, 14]
         name: Light Gray Wool
         mapcolor: [166, 166, 166]
-      9: 
+      9:
         tex: [1, 13]
         name: Cyan Wool
         mapcolor: [39, 117, 149]
-      10: 
+      10:
         tex: [1, 12]
         name: Purple Wool
         aka: Indigo Wool, Violet Wool
         mapcolor: [129, 54, 196]
-      11: 
+      11:
         tex: [1, 11]
         name: Blue Wool
         mapcolor: [39, 51, 161]
-      12: 
+      12:
         tex: [1, 10]
         name: Brown Wool
         mapcolor: [86, 51, 28]
-      13: 
+      13:
         tex: [1, 9]
         name: Green Wool
         mapcolor: [56, 77, 24]
-      14: 
+      14:
         tex: [1, 8]
         name: Red Wool
         mapcolor: [164, 45, 41]
-      15: 
+      15:
         tex: [1, 7]
         name: Black Wool
         mapcolor: [0, 0, 0]
@@ -477,19 +477,19 @@ blocks:
       SIDES: [5, 0]
 
     data:
-      0: 
+      0:
         tex: [5, 0]
         name: Double Stone Slab
-      1: 
+      1:
         tex: [0, 12]
         name: Double Sandstone Slab
-      2: 
+      2:
         tex: [4, 0]
         name: Double Wooden Slab
-      3: 
+      3:
         tex: [0, 1]
         name: Double Cobblestone Slab
-      4: 
+      4:
         tex: [7, 0]
         name: Double Brick Slab
       5:
@@ -515,19 +515,19 @@ blocks:
       BACKWARD: [5, 0]
       SIDES: [5, 0]
     data:
-      0: 
+      0:
         tex: [6, 0]
         name: Stone Slab
-      1: 
+      1:
         tex: [0, 12]
         name: Sandstone Slab
-      2: 
+      2:
         tex: [4, 0]
         name: Wooden Slab
-      3: 
+      3:
         tex: [0, 1]
         name: Cobblestone Slab
-      4: 
+      4:
         tex: [7, 0]
         name: Brick Slab
       5:
@@ -696,7 +696,7 @@ blocks:
       BOTTOM: [14, 3]
     tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
     brightness: 14
-    
+
   - id: 63
     idStr: sign
     name: Sign
@@ -722,7 +722,7 @@ blocks:
     tex: [3, 5]
     type: LADDER
     opacity: 0
-    
+
   - id: 66
     idStr: rail
     name: Rail
@@ -739,7 +739,7 @@ blocks:
     mapcolor: [115, 115, 115]
     tex: [0, 1]
     type: STAIRS
-    
+
   - id: 68
     idStr: sign
     name: Wall Sign
@@ -824,7 +824,7 @@ blocks:
     tex: [4, 0]
     type: FENCE
     opacity: 0
-    
+
   - id: 86
     idStr: pumpkin
     name: Pumpkin
@@ -837,7 +837,7 @@ blocks:
       TOP: [6, 6]
       BOTTOM: [6, 6]
     tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
-    
+
   - id: 87
     idStr: hellrock
     name: Netherrack
@@ -851,7 +851,7 @@ blocks:
     tex: [9, 6]
     explored: true
     brightness: 15
-    
+
   - id: 91
     idStr: litpumpkin
     name: Jack-o'-Lantern
@@ -866,7 +866,7 @@ blocks:
       BOTTOM: [6, 6]
     tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
     brightness: 15
-    
+
   - id: 92
     idStr: cake
     name: Cake
@@ -909,7 +909,7 @@ blocks:
       3:
         tex: [5, 13]
         name: Circle Stone Bricks
-        
+
   - id: 101
     idStr: fenceIron
     name: Iron Bars
@@ -935,7 +935,7 @@ blocks:
       FORWARD: [8, 8]
       SIDES: [8, 8]
       BACKWARD: [8, 8]
-      
+
   - id: 104
     idStr: pumpkinStem
     name: Pumpkin Stem
@@ -970,34 +970,34 @@ blocks:
     mapcolor: [170, 86, 62]
     tex: [7, 0]
     type: STAIRS
-    
+
   - id: 109
     idStr: stairsStoneBrickSmooth
     name: Stone Brick Stairs
     mapcolor: [120, 120, 120]
     tex: [6, 3]
     type: STAIRS
-    
+
   - id: 112
     idStr: netherBrick
     name: Nether Brick
     mapcolor: [54, 24, 30]
     tex: [0, 14]
-    
+
   - id: 114
     idStr: stairsNetherBrick
     name: Nether Stairs
     mapcolor: [54, 24, 30]
     tex: [0, 14]
     type: STAIRS
-  
+
   - id: 128
     idStr: stairsSandStone
     name: Sandstone Stairs
     mapcolor: [157, 128, 79]
     tex: [0, 12]
     type: STAIRS
-    
+
   - id: 134
     idStr: stairsWoodSpruce
     name: Spruce-Wood Stairs
@@ -1018,7 +1018,7 @@ blocks:
     mapcolor: [157, 128, 79]
     tex: [7, 12]
     type: STAIRS
-    
+
   - id: 139
     idStr: cobbleWall
     name: Cobblestone Wall
@@ -1033,7 +1033,7 @@ blocks:
         tex: [4, 2]
         name: Mossy Cobblestone Wall
     opacity: 0
-    
+
   - id: 141
     idStr: carrots
     name: Carrots
@@ -1046,7 +1046,7 @@ blocks:
       2: {tex: [10, 11]}
       3: {tex: [11, 11]}
     opacity: 0
-    
+
   - id: 142
     idStr: potatoes
     name: Potatoes
@@ -1059,7 +1059,7 @@ blocks:
       2: {tex: [10, 11]}
       3: {tex: [12, 11]}
     opacity: 0
-    
+
   - id: 155
     idStr: quartzBlock
     name: Block of Quartz
@@ -1072,7 +1072,7 @@ blocks:
     mapcolor: [255, 255, 255]
     tex: [9, 13]
     type: STAIRS
-    
+
   - id: 157
     idStr: woodSlab
     name: Wooden Double Slab
@@ -1113,7 +1113,7 @@ blocks:
         tex: [7, 12]
         name: Jungle-Wood Slab
     type: HALFHEIGHT
-    
+
   - id: 170
     name: Hay Block
     mapcolor: [206, 170, 28]
@@ -1123,18 +1123,18 @@ blocks:
       SIDES: [8, 13]
       BACKWARD: [8, 13]
       BOTTOM: [7, 13]
-    
+
   - id: 171
     name: Carpet
     opacity: 0
-    
+
   - id: 173
     idStr: blockcoal
     name: Block of Coal
     mapcolor: [100, 100, 100]
     tex: [12, 13]
     opacity: 0
-    
+
   - id: 245
     idStr: STONECUTTER
     name: Stonecutter
@@ -1155,41 +1155,41 @@ blocks:
     mapcolor: [125, 210, 255]
     tex: [10, 14]
     data:
-      0: 
+      0:
         tex: [10, 14]
         name: Nether Reactor Core
-      1: 
+      1:
         tex: [9, 14]
         name: Nether Reactor Core (Used)
-    
+
   - id: 248
     idStr: UpdateGameBlock
     name: Update Game Block
     mapcolor: [201, 119, 240]
     tex: [11, 8]
     opacity: 0
-  
+
   - id: 249
     idStr: UpdateGameBlock
     name: UpdateGameBlock
     mapcolor: [201, 119, 240]
     tex: [11, 8]
     opacity: 0
-    
-   - id: 253
+
+  - id: 253
     idStr: GRASS_CARRIED
     name: Error Grass
     mapcolor: [201, 119, 240]
     tex: [11, 8]
     opacity: 0
-    
+
   - id: 254
     idStr: LEAVES_CARRIED
     name: Error Leaves
     mapcolor: [201, 119, 240]
     tex: [11, 8]
     opacity: 0
-    
+
   - id: 255
     idStr: INFO_RESERVED6
     name: Error Stone
