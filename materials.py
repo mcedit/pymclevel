@@ -167,8 +167,8 @@ class MCMaterials(object):
             self.addYamlBlocks(blockyaml)
 
         except Exception, e:
-            log.warn(u"Exception while loading block info from %s: %s", f, e)
-            traceback.print_exc()
+            log.error(u"Exception while loading block info from %s: %s", f, e)
+            raise
 
     def addYamlBlocks(self, blockyaml):
         self.yamlDatas.append(blockyaml)
@@ -176,9 +176,9 @@ class MCMaterials(object):
             try:
                 self.addYamlBlock(block)
             except Exception, e:
-                log.warn(u"Exception while parsing block: %s", e)
-                traceback.print_exc()
-                log.warn(u"Block definition: \n%s", pformat(block))
+                log.error(u"Exception while parsing block: %s", e)
+                log.error(u"Block definition: \n%s", pformat(block))
+                raise
 
     def addYamlBlock(self, kw):
         blockID = kw['id']
