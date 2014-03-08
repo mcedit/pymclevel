@@ -361,7 +361,7 @@ items_txt = """
  357  Cookie                 items.png  12,5
  358  Map                    items.png  12,3   x1
  359  Shears                 items.png  13,5   +238
- 360  Melon                  items.png  13,6
+ 360  Melon_Slice            items.png  13,6
  361  Pumpkin_Seeds          items.png  13,3
  362  Melon_Seeds            items.png  14,3
  363  Raw_Beef               items.png  9,6
