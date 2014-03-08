@@ -94,6 +94,8 @@
 #             FORWARD
 #             BACKWARD
 #             SIDES
+#             LEFT
+#             RIGHT
 #             TOP
 #             BOTTOM
 #
@@ -107,6 +109,8 @@
 #         Note that currently only NORTH, SOUTH, WEST, and EAST are
 #         supported.  Presumably I should add in UP and DOWN as
 #         well, but that's a feature for another day.
+#
+#         Note: currently broken. Use damage values for now.
 #
 #   type: This determines how X-Ray will render the block.  The
 #         default type is "NORMAL" which doesn't need to be specified.
@@ -370,10 +374,10 @@ blocks:
         tex: [14, 1]
       4:
         name: Acacia Sapling
-        tex: [14, 1]
+        tex: [1, 20]
       5:
         name: Dark Oak Sapling
-        tex: [15, 3]
+        tex: [0, 20]
 
   - id: 7
     idStr: bedrock
@@ -634,11 +638,42 @@ blocks:
     name: Dispenser
     mapcolor: [96, 96, 96]
     tex: [13, 2]
-    tex_direction:
-      FORWARD: [14, 2]
-      TOP: [14, 3]
-      BOTTOM: [14, 3]
-    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+    data:
+      0:
+        name: Dispenser (Down)
+        tex_direction:
+          TOP: [14, 3]
+          BOTTOM: [18, 5]
+      1:
+        name: Dispenser (Up)
+        tex_direction:
+          TOP: [18, 5]
+          BOTTOM: [14, 3]
+      2: 
+        name: Dispenser (North)
+        tex_direction:
+          FORWARD: [14, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      3: 
+        name: Dispenser (South)
+        tex_direction:
+          BACKWARD: [14, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      4: 
+        name: Dispenser (West)
+        tex_direction:
+          LEFT: [14, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      5: 
+        name: Dispenser (East)
+        tex_direction:
+          RIGHT: [14, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
 
   - id: 24
     idStr: sandstone
@@ -987,17 +1022,17 @@ blocks:
     type: HALFHEIGHT
     data:
       0:
+        name: Stone Slab
         tex: [5, 0]
         tex_direction:
           TOP: [6, 0]
           BOTTOM: [6, 0]
-        name: Stone Slab
       1:
+        name: Sandstone Slab
         tex: [0, 12]
         tex_direction:
           TOP: [0, 11]
           BOTTOM: [0, 13]
-        name: Sandstone Slab
       2:
         tex: [4, 0]
         name: Wooden Slab (Old)
@@ -1016,7 +1051,36 @@ blocks:
       7:
         tex: [9, 13]
         name: Quartz Slab
-
+      8:
+        name: Stone Slab (Upper)
+        tex: [5, 0]
+        tex_direction:
+          TOP: [6, 0]
+          BOTTOM: [6, 0]
+      9:
+        name: Sandstone Slab (Upper)
+        tex: [0, 12]
+        tex_direction:
+          TOP: [0, 11]
+          BOTTOM: [0, 13]
+      10:
+        tex: [4, 0]
+        name: Wooden Slab (Old) (Upper)
+      11:
+        tex: [0, 1]
+        name: Cobblestone Slab (Upper)
+      12:
+        tex: [7, 0]
+        name: Brick Slab (Upper)
+      13:
+        tex: [6, 3]
+        name: Stone Brick Slab (Upper)
+      14:
+        tex: [0, 14]
+        name: Nether Brick Slab (Upper)
+      15:
+        tex: [9, 13]
+        name: Quartz Slab (Upper)
   - id: 45
     idStr: brick_block
     name: Brick
@@ -1105,11 +1169,37 @@ blocks:
     type: CHEST
 # For whatever reason the external file wasn't being loaded, put in something a bit simpler until it is fixed.
     tex: [17,3]
-    tex_direction:
-      FORWARD: [18, 3]
-      TOP: [16, 3]
-      BOTTOM: [16, 3]
-    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#   tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#   Currently not working properly, using standard damage entries for now, null entries face north ingame.
+    data:
+#     0:
+#       null
+#     1:
+#       null
+      2: 
+        name: Chest (North)
+        tex_direction:
+          FORWARD: [18, 3]
+          TOP: [16, 3]
+          BOTTOM: [16, 3]
+      3: 
+        name: Chest (South)
+        tex_direction:
+          BACKWARD: [18, 3]
+          TOP: [16, 3]
+          BOTTOM: [16, 3]
+      4: 
+        name: Chest (West)
+        tex_direction:
+          LEFT: [18, 3]
+          TOP: [16, 3]
+          BOTTOM: [16, 3]
+      5: 
+        name: Chest (East)
+        tex_direction:
+          RIGHT: [18, 3]
+          TOP: [16, 3]
+          BOTTOM: [16, 3]
     opacity: 0
 
   - id: 55
@@ -1176,27 +1266,73 @@ blocks:
     idStr: furnace
     name: Furnace
     mapcolor: [96, 96, 96]
-    tex: [12, 2]
-    tex_direction:
-      FORWARD: [12, 2]
-      SIDES: [13, 2]
-      BACKWARD: [13, 2]
-      TOP: [14, 3]
-      BOTTOM: [14, 3]
-    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+    tex: [13, 2]
+#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+    data:
+#     0:
+#       null
+#     1:
+#       null
+      2: 
+        name: Furnace (North)
+        tex_direction:
+          FORWARD: [12, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      3: 
+        name: Furnace (South)
+        tex_direction:
+          BACKWARD: [12, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      4: 
+        name: Furnace (West)
+        tex_direction:
+          LEFT: [12, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      5: 
+        name: Furnace (East)
+        tex_direction:
+          RIGHT: [12, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
 
   - id: 62
     idStr: lit_furnace
     name: Lit Furnace
     mapcolor: [96, 96, 96]
-    tex: [13, 3]
-    tex_direction:
-      FORWARD: [13, 3]
-      SIDES: [13, 2]
-      BACKWARD: [13, 2]
-      TOP: [14, 3]
-      BOTTOM: [14, 3]
-    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+    tex: [13, 2]
+#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+    data:
+#     0:
+#       null
+#     1:
+#       null
+      2: 
+        name: Lit Furnace (North)
+        tex_direction:
+          FORWARD: [13, 3]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      3: 
+        name: Lit Furnace (South)
+        tex_direction:
+          BACKWARD: [13, 3]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      4: 
+        name: Lit Furnace (West)
+        tex_direction:
+          LEFT: [13, 3]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      5: 
+        name: Lit Furnace (East)
+        tex_direction:
+          RIGHT: [13, 3]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
     brightness: 13
 
   - id: 63
@@ -1397,11 +1533,32 @@ blocks:
     name: Pumpkin
     mapcolor: [227, 144, 29]
     tex: [6, 7]
-    tex_direction:
-      FORWARD: [7, 7]
-      TOP: [6, 6]
-      BOTTOM: [6, 6]
-    tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
+#   tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
+    data:
+      0: 
+        name: Pumpkin (South)
+        tex_direction:
+          BACKWARD: [7, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
+      1: 
+        name: Pumpkin (West)
+        tex_direction:
+          LEFT: [7, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
+      2: 
+        name: Pumpkin (North)
+        tex_direction:
+          FORWARD: [7, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
+      3: 
+        name: Pumpkin (East)
+        tex_direction:
+          RIGHT: [7, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
 
   - id: 87
     idStr: netherrack
@@ -1439,11 +1596,32 @@ blocks:
     mapcolor: [249, 255, 58]
     explored: true
     tex: [6, 7]
-    tex_direction:
-      FORWARD: [8, 7]
-      TOP: [6, 6]
-      BOTTOM: [6, 6]
-    tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
+#   tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
+    data:
+      0: 
+        name: Jack-o'-Lantern (South)
+        tex_direction:
+          BACKWARD: [8, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
+      1: 
+        name: Jack-o'-Lantern (West)
+        tex_direction:
+          LEFT: [8, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
+      2: 
+        name: Jack-o'-Lantern (North)
+        tex_direction:
+          FORWARD: [8, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
+      3: 
+        name: Jack-o'-Lantern (East)
+        tex_direction:
+          RIGHT: [8, 7]
+          TOP: [6, 6]
+          BOTTOM: [6, 6]
     brightness: 15
 
   - id: 92
@@ -1667,7 +1845,7 @@ blocks:
     name: Vines
     mapcolor: [117, 176, 73]
     tex: [15, 8]
-    type: VINE      #Only works with manipulating existing vines
+    type: VINE
     opacity: 0
 
   - id: 107
@@ -1771,9 +1949,9 @@ blocks:
     mapcolor: [79, 79, 79]
     tex: [10, 9]
     type: CAULDRON
-    tex_extra:
-      inside: [11, 8]
-      top: [10, 8]
+    tex_direction:
+      TOP: [11, 8]
+      BOTTOM: [11, 8]
     opacity: 0
 
   - id: 119
@@ -1901,13 +2079,39 @@ blocks:
     name: Ender Chest
     mapcolor: [200, 200, 200]
     tex: [18,2]
-    tex_direction:
-      FORWARD: [16, 2]
-      TOP: [17, 2]
-      BOTTOM: [17, 2]
-    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#   See chest entry
     opacity: 0
     brightness: 7
+    data:
+#     0:
+#       null
+#     1:
+#       null
+      2: 
+        name: Ender Chest (North)
+        tex_direction:
+          FORWARD: [16, 2]
+          TOP: [17, 2]
+          BOTTOM: [19, 2]
+      3: 
+        name: Ender Chest (South)
+        tex_direction:
+          BACKWARD: [16, 2]
+          TOP: [17, 2]
+          BOTTOM: [19, 2]
+      4: 
+        name: Ender Chest (West)
+        tex_direction:
+          LEFT: [16, 2]
+          TOP: [17, 2]
+          BOTTOM: [19, 2]
+      5: 
+        name: Ender Chest (East)
+        tex_direction:
+          RIGHT: [16, 2]
+          TOP: [17, 2]
+          BOTTOM: [19, 2]
 
   - id: 131
     idStr: tripwire_hook
@@ -2058,11 +2262,37 @@ blocks:
     name: Trapped Chest
     mapcolor: [100, 100, 100]
     tex: [17,6]
-    tex_direction:
-      FORWARD: [18, 6]
-      TOP: [16, 6]
-      BOTTOM: [16, 6]
-    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#   tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#   See chest entry
+    data:
+#     0:
+#       null
+#     1:
+#       null
+      2: 
+        name: Trapped Chest (North)
+        tex_direction:
+          FORWARD: [18, 6]
+          TOP: [16, 6]
+          BOTTOM: [16, 6]
+      3: 
+        name: Trapped Chest (South)
+        tex_direction:
+          BACKWARD: [18, 6]
+          TOP: [16, 6]
+          BOTTOM: [16, 6]
+      4: 
+        name: Trapped Chest (West)
+        tex_direction:
+          LEFT: [18, 6]
+          TOP: [16, 6]
+          BOTTOM: [16, 6]
+      5: 
+        name: Trapped Chest (East)
+        tex_direction:
+          RIGHT: [18, 6]
+          TOP: [16, 6]
+          BOTTOM: [16, 6]
     opacity: 0
     type: CHEST
 
@@ -2124,7 +2354,36 @@ blocks:
     name: Hopper
     mapcolor: [100, 100, 100]
     tex: [12, 15]
-    tex_direction:
+    data:
+      0: 
+        name: Hopper (Down)
+        tex_direction:
+          TOP: [13, 15]
+          BOTTOM: [13, 15]
+#     1:
+#       null
+      2: 
+        name: Hopper (North)
+        tex_direction:
+          FORWARD: [10, 8]
+          TOP: [13, 15]
+          BOTTOM: [13, 15]
+      3: 
+        name: Hopper (South)
+        tex_direction:
+          BACKWARD: [10, 8]
+          TOP: [13, 15]
+          BOTTOM: [13, 15]
+      4: 
+        name: Hopper (West)
+        tex_direction:
+          LEFT: [10, 8]
+          TOP: [13, 15]
+          BOTTOM: [13, 15]
+      5: 
+        name: Hopper (East)
+        tex_direction:
+          RIGHT: [10, 8]
           TOP: [13, 15]
           BOTTOM: [13, 15]
     opacity: 0
@@ -2170,12 +2429,43 @@ blocks:
     name: Dropper
     mapcolor: [100, 100, 100]
     tex: [13, 2]
-    tex_direction:
-      FORWARD: [10, 2]
-      TOP: [14, 3]
-      BOTTOM: [14, 3]
-    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
+#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
     opacity: 0
+    data:
+      0:
+        name: Dropper (Down)
+        tex_direction:
+          TOP: [14, 3]
+          BOTTOM: [18, 4]
+      1:
+        name: Dropper (Up)
+        tex_direction:
+          TOP: [18, 4]
+          BOTTOM: [14, 3]
+      2: 
+        name: Dropper (North)
+        tex_direction:
+          FORWARD: [10, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      3: 
+        name: Dropper (South)
+        tex_direction:
+          BACKWARD: [10, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      4: 
+        name: Dropper (West)
+        tex_direction:
+          LEFT: [10, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
+      5: 
+        name: Dropper (East)
+        tex_direction:
+          RIGHT: [10, 2]
+          TOP: [14, 3]
+          BOTTOM: [14, 3]
 
   - id: 159
     idStr: stained_hardened_clay
