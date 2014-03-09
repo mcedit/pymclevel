@@ -606,7 +606,6 @@ blocks:
         mapcolor: [74, 131, 66]
         tex: [5, 12]
 
-
   - id: 19
     idStr: sponge
     name: Sponge
@@ -785,7 +784,6 @@ blocks:
         name: Fern
     type: DECORATION_CROSS
     opacity: 0
-
 
   - id: 32
     idStr: deadbush
@@ -1165,7 +1163,6 @@ blocks:
     idStr: chest
     name: Chest
     mapcolor: [125, 91, 38]
-    tex: [18, 3]
     type: CHEST
 # For whatever reason the external file wasn't being loaded, put in something a bit simpler until it is fixed.
     tex: [17,3]
