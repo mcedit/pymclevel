@@ -374,10 +374,10 @@ blocks:
         tex: [14, 1]
       4:
         name: Acacia Sapling
-        tex: [1, 20]
+        tex: [20, 1]
       5:
         name: Dark Oak Sapling
-        tex: [0, 20]
+        tex: [20, 0]
 
   - id: 7
     idStr: bedrock
@@ -2409,6 +2409,7 @@ blocks:
   - id: 156
     idStr: quartz_stairs
     name: Quartz Stairs
+    tex: [9, 13]
     mapcolor: [255, 255, 255]
 
   - id: 157
