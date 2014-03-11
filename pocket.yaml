@@ -71,14 +71,14 @@ blocks:
     type: DECORATION_CROSS
     opacity: 0
     data:
-      0: 
+      0:
         name: Oak Sapling
         aka: Sapling
         tex: [4, 1]
-      1: 
+      1:
         name: Spruce Sapling
         tex: [6, 1]
-      2: 
+      2:
         name: Birch Sapling
         tex: [5, 1]
 
@@ -102,14 +102,14 @@ blocks:
     name: Water
     mapcolor: [38, 92, 255]
     type: WATER
-    tex: [15, 12]
+    tex: [22, 7]
     opacity: 3
 
   - id: 10
     idStr: LAVA
     name: Lava (Flowing)
     mapcolor: [255, 90, 0]
-    tex: [22, 7]
+    tex: [23, 7]
     type: SEMISOLID
     brightness: 15
 
@@ -199,7 +199,7 @@ blocks:
         name: Birch Wood (East/West)
         tex: [10, 1]
         tex_direction:
-          SIDES: [10, 14]
+          SIDES: [11, 1]
       7:
         name: Jungle Wood (East/West)
         tex: [14, 1]
@@ -333,33 +333,28 @@ blocks:
     idStr: SANDSTONE
     name: Sandstone
     mapcolor: [218, 210, 158]
-    tex: [0, 12]
+    tex: [15, 0]
     tex_direction:
-      TOP: [0, 11]
-      BOTTOM: [0, 13]
+      TOP: [18, 0]
+      BOTTOM: [19, 0]
     data:
       0:
         name: Sandstone
-        mapcolor: [218, 210, 158]
-        tex: [0, 12]
-        tex_direction:
-          TOP: [0, 11]
-          BOTTOM: [0, 13]
       1:
         name: Chiseled Sandstone
         aka: Decorative Sandstone
         mapcolor: [218, 210, 158]
-        tex: [5, 14]
+        tex: [16, 0]
         tex_direction:
-          TOP: [0, 11]
-          BOTTOM: [0, 11]
+          TOP: [18, 0]
+          BOTTOM: [19, 0]
       2:
         name: Smooth Sandstone
         mapcolor: [218, 210, 158]
-        tex: [6, 14]
+        tex: [17, 0]
         tex_direction:
-          TOP: [0, 11]
-          BOTTOM: [0, 11]
+          TOP: [18, 0]
+          BOTTOM: [19, 0]
 
   - id: 26
     idStr: BED
@@ -425,69 +420,69 @@ blocks:
     mapcolor: [222, 222, 222]
     tex: [24, 7]
     data:
-      0: 
+      0:
         tex: [24, 7]
         name: White Wool
         mapcolor: [222, 222, 222]
-      1: 
+      1:
         tex: [25, 7]
         name: Orange Wool
         mapcolor: [234, 127, 55]
-      2: 
+      2:
         tex: [26, 7]
         name: Magenta Wool
         mapcolor: [191, 75, 201]
-      3: 
+      3:
         tex: [27, 7]
         name: Light Blue Wool
         aka: Aqua Wool
         mapcolor: [104, 139, 212]
-      4: 
+      4:
         tex: [28, 7]
         name: Yellow Wool
         mapcolor: [104, 139, 212]
-      5: 
+      5:
         tex: [29, 7]
         name: Lime Wool
         mapcolor: [59, 189, 48]
-      6: 
+      6:
         tex: [30, 7]
         name: Pink Wool
         mapcolor: [217, 131, 155]
-      7: 
+      7:
         tex: [31, 7]
         name: Gray Wool
         mapcolor: [66, 66, 66]
-      8: 
+      8:
         tex: [0, 8]
         name: Light Gray Wool
         mapcolor: [166, 166, 166]
-      9: 
+      9:
         tex: [1, 8]
         name: Cyan Wool
         mapcolor: [39, 117, 149]
-      10: 
+      10:
         tex: [2, 8]
         name: Purple Wool
         aka: Indigo Wool, Violet Wool
         mapcolor: [129, 54, 196]
-      11: 
+      11:
         tex: [3, 8]
         name: Blue Wool
         mapcolor: [39, 51, 161]
-      12: 
+      12:
         tex: [4, 8]
         name: Brown Wool
         mapcolor: [86, 51, 28]
-      13: 
+      13:
         tex: [5, 8]
         name: Green Wool
         mapcolor: [56, 77, 24]
-      14: 
+      14:
         tex: [6, 8]
         name: Red Wool
         mapcolor: [164, 45, 41]
-      15: 
+      15:
         tex: [7, 8]
         name: Black Wool
         mapcolor: [0, 0, 0]
@@ -554,13 +549,13 @@ blocks:
         tex_direction:
           TOP: [0, 18]
           BOTTOM: [0, 19]
-      2: 
+      2:
         name: Double Wooden Slab (Old)
         tex: [22, 0]
-      3: 
+      3:
         name: Double Cobblestone Slab
         tex: [5, 0]
-      4: 
+      4:
         name: Double Brick Slab
         tex: [28, 0]
       5:
@@ -592,13 +587,13 @@ blocks:
         tex_direction:
           TOP: [0, 18]
           BOTTOM: [0, 19]
-      2: 
+      2:
         name: Wooden Slab
         tex: [22, 0]
-      3: 
+      3:
         name: Cobblestone Slab
         tex: [5, 0]
-      4: 
+      4:
         name: Brick Slab
         tex: [28, 0]
       5:
@@ -718,25 +713,25 @@ blocks:
 #       null
 #     1:
 #       null
-      2: 
+      2:
         name: Chest (North)
         tex_direction:
           FORWARD: [20, 7]
           TOP: [18, 7]
           BOTTOM: [18, 7]
-      3: 
+      3:
         name: Chest (South)
         tex_direction:
           BACKWARD: [20, 7]
           TOP: [18, 7]
           BOTTOM: [18, 7]
-      4: 
+      4:
         name: Chest (West)
         tex_direction:
           LEFT: [20, 7]
           TOP: [18, 7]
           BOTTOM: [18, 7]
-      5: 
+      5:
         name: Chest (East)
         tex_direction:
           RIGHT: [20, 7]
@@ -807,25 +802,25 @@ blocks:
 #       null
 #     1:
 #       null
-      2: 
+      2:
         name: Furnace (North)
         tex_direction:
           FORWARD: [16, 2]
           TOP: [19, 2]
           BOTTOM: [19, 2]
-      3: 
+      3:
         name: Furnace (South)
         tex_direction:
           BACKWARD: [16, 2]
           TOP: [19, 2]
           BOTTOM: [19, 2]
-      4: 
+      4:
         name: Furnace (West)
         tex_direction:
           LEFT: [16, 2]
           TOP: [19, 2]
           BOTTOM: [19, 2]
-      5: 
+      5:
         name: Furnace (East)
         tex_direction:
           RIGHT: [16, 2]
@@ -843,25 +838,25 @@ blocks:
 #       null
 #     1:
 #       null
-      2: 
+      2:
         name: Lit Furnace (North)
         tex_direction:
           FORWARD: [17 ,2]
           TOP: [19, 2]
           BOTTOM: [19, 2]
-      3: 
+      3:
         name: Lit Furnace (South)
         tex_direction:
           BACKWARD: [17 ,2]
           TOP: [19, 2]
           BOTTOM: [19, 2]
-      4: 
+      4:
         name: Lit Furnace (West)
         tex_direction:
           LEFT: [17 ,2]
           TOP: [19, 2]
           BOTTOM: [19, 2]
-      5: 
+      5:
         name: Lit Furnace (East)
         tex_direction:
           RIGHT: [17 ,2]
@@ -1005,25 +1000,25 @@ blocks:
     tex: [8, 4]
 #   tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
     data:
-      0: 
+      0:
         name: Pumpkin (South)
         tex_direction:
           BACKWARD: [9, 4]
           TOP: [7, 4]
           BOTTOM: [7, 4]
-      1: 
+      1:
         name: Pumpkin (West)
         tex_direction:
           LEFT: [9, 4]
           TOP: [7, 4]
           BOTTOM: [7, 4]
-      2: 
+      2:
         name: Pumpkin (North)
         tex_direction:
           FORWARD: [9, 4]
           TOP: [7, 4]
           BOTTOM: [7, 4]
-      3: 
+      3:
         name: Pumpkin (East)
         tex_direction:
           RIGHT: [9, 4]
@@ -1052,25 +1047,25 @@ blocks:
     tex: [8, 4]
 #   tex_direction_data: {0: SOUTH, 1: WEST, 2: NORTH, 3: EAST}
     data:
-      0: 
+      0:
         name: Jack-o'-Lantern (South)
         tex_direction:
           BACKWARD: [10, 4]
           TOP: [7, 4]
           BOTTOM: [7, 4]
-      1: 
+      1:
         name: Jack-o'-Lantern (West)
         tex_direction:
           LEFT: [10, 4]
           TOP: [7, 4]
           BOTTOM: [7, 4]
-      2: 
+      2:
         name: Jack-o'-Lantern (North)
         tex_direction:
           FORWARD: [10, 4]
           TOP: [7, 4]
           BOTTOM: [7, 4]
-      3: 
+      3:
         name: Jack-o'-Lantern (East)
         tex_direction:
           RIGHT: [10, 4]
@@ -1180,7 +1175,7 @@ blocks:
     mapcolor: [170, 86, 62]
     tex: [28, 0]
     type: STAIRS
-    
+
   - id: 109
     idStr: stairsStoneBrickSmooth
     name: Stone Brick Stairs
@@ -1193,7 +1188,7 @@ blocks:
     name: Nether Brick
     mapcolor: [54, 24, 30]
     tex: [12, 4]
-    
+
   - id: 114
     idStr: stairsNetherBrick
     name: Nether Brick Stairs
@@ -1280,20 +1275,20 @@ blocks:
         name: Block of Quartz
         tex: [25, 1]
         tex_direction:
-          TOP: [1, 24]
-          BOTTOM: [1, 23]
+          TOP: [24, 1]
+          BOTTOM: [23, 1]
       1:
         name: Chiseled Quartz Block
-        tex: [1, 28]
+        tex: [28, 1]
         tex_direction:
-          TOP: [1, 29]
-          BOTTOM: [1, 29]
+          TOP: [29, 1]
+          BOTTOM: [29, 1]
       2:
         name: Pillar Quartz Block
-        tex: [1, 26]
+        tex: [26, 1]
         tex_direction:
-          TOP: [1, 27]
-          BOTTOM: [1, 27]
+          TOP: [27, 1]
+          BOTTOM: [27, 1]
 
   - id: 156
     idStr: quartz_stairs
@@ -1355,67 +1350,67 @@ blocks:
     type: THINSLICE
     opacity: 0
     data:
-      0: 
+      0:
         name: White Carpet
         tex: [24, 7]
         mapcolor: [222, 222, 222]
-      1: 
+      1:
         name: Orange Carpet
         tex: [25, 7]
         mapcolor: [234, 127, 55]
-      2: 
+      2:
         name: Magenta Carpet
         tex: [26, 7]
         mapcolor: [191, 75, 201]
-      3: 
+      3:
         name: Light Blue Carpet
         tex: [27, 7]
         mapcolor: [104, 139, 212]
-      4: 
+      4:
         name: Yellow Carpet
         tex: [28, 7]
         mapcolor: [104, 139, 212]
-      5: 
+      5:
         name: Lime Carpet
         tex: [29, 7]
         mapcolor: [59, 189, 48]
-      6: 
+      6:
         name: Pink Carpet
         tex: [30, 7]
         mapcolor: [217, 131, 155]
-      7: 
+      7:
         name: Gray Carpet
         tex: [31, 7]
         mapcolor: [66, 66, 66]
-      8: 
+      8:
         name: Light Gray Carpet
         tex: [0, 8]
         mapcolor: [166, 166, 166]
-      9: 
+      9:
         name: Cyan Carpet
         tex: [1, 8]
         mapcolor: [39, 117, 149]
-      10: 
+      10:
         name: Purple Carpet
         tex: [2, 8]
         mapcolor: [129, 54, 196]
-      11: 
+      11:
         name: Blue Carpet
         tex: [3, 8]
         mapcolor: [39, 51, 161]
-      12: 
+      12:
         name: Brown Carpet
         tex: [4, 8]
         mapcolor: [86, 51, 28]
-      13: 
+      13:
         name: Green Carpet
         tex: [5, 8]
         mapcolor: [56, 77, 24]
-      14: 
+      14:
         name: Red Carpet
         tex: [6, 8]
         mapcolor: [164, 45, 41]
-      15: 
+      15:
         name: Black Carpet
         tex: [7, 8]
         mapcolor: [0, 0, 0]
