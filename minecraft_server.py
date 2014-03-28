@@ -2,7 +2,7 @@ import atexit
 import itertools
 import logging
 import os
-from os.path import dirname, join, basename
+from os.path import dirname, join, basename, expanduser
 import random
 import re
 import shutil
@@ -56,7 +56,11 @@ def sort_nicely(l):
 
 
 class ServerJarStorage(object):
-    defaultCacheDir = os.path.join(appSupportDir, u"ServerJarStorage")
+    if ((not sys.platform == "linux") and (not sys.platform=="linux2")):
+   		userHomeDir = expanduser("~")
+   		defaultCacheDir = os.path.join(userHomeDir, u"ServerJarStorage")
+   	else:
+		defaultCacheDir = os.path.join(appSupportDir, u"ServerJarStorage")
 
     def __init__(self, cacheDir=None):
         if cacheDir is None:
