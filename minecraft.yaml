@@ -2048,6 +2048,23 @@ blocks:
       5:
         tex: [1, 15]
         name: Dark Oak Wood Slab
+      9:
+        name: Oak Wood Slab (Upside-Down)
+      10:
+        tex: [6, 12]
+        name: Spruce Wood Slab (Upside-Down)
+      11:
+        tex: [6, 13]
+        name: Birch Wood Slab (Upside-Down)
+      12:
+        tex: [7, 12]
+        name: Jungle Wood Slab (Upside-Down)
+      13:
+        tex: [0, 15]
+        name: Acacia Wood Slab (Upside-Down)
+      14:
+        tex: [1, 15]
+        name: Dark Oak Wood Slab (Upside-Down)
     type: HALFHEIGHT
 
   - id: 127
