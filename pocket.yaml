@@ -286,7 +286,7 @@ blocks:
         mapcolor: [74, 131, 66]
         tex: [5, 3]
       4: # bit 0x8 - "Permanent"
-        name: Oak Leaves (Permanent)
+        name: Oak Leaves (No Decay)
         mapcolor: [60, 192, 41]
         tex: [2, 3]
       5:
@@ -1459,8 +1459,8 @@ blocks:
     tex: [21, 7]
 
   - id: 249
-    idStr: UpdateGameBlock
-    name: Update Game Block
+    idStr: UpdateGameBlock2
+    name: Update Game Block 2
     mapcolor: [201, 119, 240]
     tex: [21, 7]
 
