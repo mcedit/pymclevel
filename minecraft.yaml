@@ -571,7 +571,7 @@ blocks:
         tex: [5, 12]
 
       4: # bit 0x4 - "Permanent"
-        name: Oak Leaves (Permanent)
+        name: Oak Leaves (No Decay)
         mapcolor: [60, 192, 41]
         tex: [5, 3]
       5:
@@ -2468,7 +2468,6 @@ blocks:
     idStr: stained_hardened_clay
     name: Stained Clay
     mapcolor: [150, 100, 50]
-    name: Hardened Clay
     data:
       0:
         tex: [0, 18]
@@ -2759,7 +2758,7 @@ blocks:
     
   - id: 167
     idStr: iron_trapdoor
-    name: Trapdoor
+    name: Iron Trapdoor
     mapcolor: [191, 191, 191]
     tex: [3, 16]
     type: TRAPDOOR
