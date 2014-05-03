@@ -571,7 +571,7 @@ blocks:
         tex: [5, 12]
 
       4: # bit 0x4 - "Permanent"
-        name: Oak Leaves (Permanent)
+        name: Oak Leaves (No Decay)
         mapcolor: [60, 192, 41]
         tex: [5, 3]
       5:
@@ -1033,7 +1033,7 @@ blocks:
           BOTTOM: [0, 13]
       2:
         tex: [4, 0]
-        name: Wooden Slab (Old)
+        name: Oak Wood Slab (Old)
       3:
         tex: [0, 1]
         name: Cobblestone Slab
@@ -1063,7 +1063,7 @@ blocks:
           BOTTOM: [0, 13]
       10:
         tex: [4, 0]
-        name: Wooden Slab (Old) (Upper)
+        name: Oak Wood Slab (Old) (Upper)
       11:
         tex: [0, 1]
         name: Cobblestone Slab (Upper)
@@ -2048,6 +2048,23 @@ blocks:
       5:
         tex: [1, 15]
         name: Dark Oak Wood Slab
+      8:
+        name: Oak Wood Slab (Upper)
+      9:
+        tex: [6, 12]
+        name: Spruce Wood Slab (Upper)
+      10:
+        tex: [6, 13]
+        name: Birch Wood Slab (Upper)
+      11:
+        tex: [7, 12]
+        name: Jungle Wood Slab (Upper)
+      12:
+        tex: [0, 15]
+        name: Acacia Wood Slab (Upper)
+      13:
+        tex: [1, 15]
+        name: Dark Oak Wood Slab (Upper)
     type: HALFHEIGHT
 
   - id: 127
@@ -2469,7 +2486,6 @@ blocks:
     idStr: stained_hardened_clay
     name: Stained Clay
     mapcolor: [150, 100, 50]
-    name: Hardened Clay
     data:
       0:
         tex: [0, 18]
@@ -2626,11 +2642,11 @@ blocks:
         tex: [5, 3]
 
       4: # bit 0x4 - "Permanent"
-        name: Acacia Leaves (Permanent)
+        name: Acacia Leaves (No Decay)
         mapcolor: [60, 192, 41]
         tex: [5, 3]
       5:
-        name: Dark Oak Leaves (Permanent)
+        name: Dark Oak Leaves (No Decay)
         mapcolor: [74, 131, 66]
         tex: [5, 3]
 
@@ -2760,7 +2776,7 @@ blocks:
     
   - id: 167
     idStr: iron_trapdoor
-    name: Trapdoor
+    name: Iron Trapdoor
     mapcolor: [191, 191, 191]
     tex: [3, 16]
     type: TRAPDOOR
