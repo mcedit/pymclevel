@@ -987,7 +987,7 @@ blocks:
           TOP: [0, 11]
           BOTTOM: [0, 13]
       2:
-        name: Double Wooden Slab (Old)
+        name: Double Wooden Slab (Stone)
         tex: [4, 0]
       3:
         name: Double Cobblestone Slab
@@ -1033,7 +1033,7 @@ blocks:
           BOTTOM: [0, 13]
       2:
         tex: [4, 0]
-        name: Oak Wood Slab (Old)
+        name: Wooden Slab (Stone)
       3:
         tex: [0, 1]
         name: Cobblestone Slab
@@ -1063,7 +1063,7 @@ blocks:
           BOTTOM: [0, 13]
       10:
         tex: [4, 0]
-        name: Oak Wood Slab (Old) (Upper)
+        name: Wooden Slab (Stone) (Upper)
       11:
         tex: [0, 1]
         name: Cobblestone Slab (Upper)
