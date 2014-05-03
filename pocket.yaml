@@ -286,7 +286,7 @@ blocks:
         mapcolor: [74, 131, 66]
         tex: [5, 3]
       4: # bit 0x8 - "Permanent"
-        name: Oak Leaves (Permanent)
+        name: Oak Leaves (No Decay)
         mapcolor: [60, 192, 41]
         tex: [2, 3]
       5:
@@ -1334,16 +1334,16 @@ blocks:
         name: Jungle Wood Slab
         tex: [25, 0]
       9:
-        name: Oak Wood Slab (Upside-Down)
+        name: Oak Wood Slab (Upper)
       10:
         tex: [6, 12]
-        name: Spruce Wood Slab (Upside-Down)
+        name: Spruce Wood Slab (Upper)
       11:
         tex: [6, 13]
-        name: Birch Wood Slab (Upside-Down)
+        name: Birch Wood Slab (Upper)
       12:
         tex: [7, 12]
-        name: Jungle Wood Slab (Upside-Down)
+        name: Jungle Wood Slab (Upper)
     type: HALFHEIGHT
 
   - id: 170
