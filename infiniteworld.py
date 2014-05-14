@@ -339,6 +339,24 @@ class AnvilChunk(LightedChunk):
     def TerrainPopulated(self):
         return self.root_tag["Level"]["TerrainPopulated"].value
 
+    @property
+    def SlimeChunk(self):
+        seed = self.world.root_tag["Data"]["RandomSeed"].value
+        x = self.chunkPosition[0]
+        z = self.chunkPosition[1]
+        # based from filters/BanSlimes.py
+        randseed = long(seed) + long(x * x * 0x4c1906) + long(x * 0x5ac0db) + long(z * z) * 0x4307a7L + long(z * 0x5f24f) ^ 0x3ad8025f
+        # manually simulates Random(randseed).nextInt(10)
+        randseed = (randseed ^ 0x5deece66dl) & ((1L << 48) - 1);
+        while True:
+            randseed = long(randseed * 0x5deece66dL + 0xbL) & ((1L << 48) - 1)
+            bits = int(randseed >> (48 - 31))
+            val = bits % 10
+            if int(bits - val + (10 - 1)) >= 0:
+                break;
+
+        return val == 0
+
     @TerrainPopulated.setter
     def TerrainPopulated(self, val):
         """True or False. If False, the game will populate the chunk with
