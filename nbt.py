@@ -487,9 +487,10 @@ class TAG_List(TAG_Value, collections.MutableSequence):
         self.value.insert(index, value)
 
 
-tag_classes = { c.tagID: c for c in (TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String,
-    TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Short_Array) }
+tag_classes = {}
 
+for c in (TAG_Byte, TAG_Short, TAG_Int, TAG_Long, TAG_Float, TAG_Double, TAG_String, TAG_Byte_Array, TAG_List, TAG_Compound, TAG_Int_Array, TAG_Short_Array):
+    tag_classes[c.tagID] = c
 
 
 def gunzip(data):
