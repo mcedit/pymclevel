@@ -2338,7 +2338,6 @@ blocks:
     name: Block of Redstone
     mapcolor: [255, 100, 100]
     tex: [14, 11]
-    brightness: 8
 
   - id: 153
     idStr: quartz_ore
