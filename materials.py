@@ -1,3 +1,4 @@
+
 from logging import getLogger
 from numpy import zeros, rollaxis, indices
 import traceback
@@ -68,10 +69,11 @@ class MCMaterials(object):
 
 
         self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint16')
+        #Sets the array size for terrain.png
         self.blockTextures[:] = self.defaultTexture
         self.names = [[defaultName] * 16 for i in range(id_limit)]
         self.aka = [[""] * 16 for i in range(id_limit)]
-            #Sets terrain.png array size
+
         self.type = [["NORMAL"] * 16] * id_limit
         self.blocksByType = defaultdict(list)
         self.allBlocks = []
@@ -383,7 +385,6 @@ alphaMaterials.BirchLeavesDecaying = alphaMaterials[18, 10]
 alphaMaterials.JungleLeavesDecaying = alphaMaterials[18, 11]
 alphaMaterials.Sponge = alphaMaterials[19, 0]
 alphaMaterials.Glass = alphaMaterials[20, 0]
-
 alphaMaterials.LapisLazuliOre = alphaMaterials[21, 0]
 alphaMaterials.LapisLazuliBlock = alphaMaterials[22, 0]
 alphaMaterials.Dispenser = alphaMaterials[23, 0]
@@ -513,7 +514,6 @@ alphaMaterials.NetherBrick = alphaMaterials[112, 0]
 alphaMaterials.NetherBrickFence = alphaMaterials[113, 0]
 alphaMaterials.NetherBrickStairs = alphaMaterials[114, 0]
 alphaMaterials.NetherWart = alphaMaterials[115, 0]
-
 alphaMaterials.EnchantmentTable = alphaMaterials[116,0]
 alphaMaterials.BrewingStand = alphaMaterials[117,0]
 alphaMaterials.Cauldron = alphaMaterials[118,0]
@@ -564,6 +564,7 @@ alphaMaterials.BlockofQuartz = alphaMaterials[155,0]
 alphaMaterials.QuartzStairs = alphaMaterials[156,0]
 alphaMaterials.ActivatorRail = alphaMaterials[157,0]
 alphaMaterials.Dropper = alphaMaterials[158,0]
+alphaMaterials.Carpet = alphaMaterials[171,0]
 
 
 # --- Classic static block defs ---
