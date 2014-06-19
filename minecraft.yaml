@@ -611,6 +611,12 @@ blocks:
     name: Sponge
     mapcolor: [193, 193, 57]
     tex: [0, 3]
+    data:
+      0:
+        name: Sponge
+      1:
+        name: Wet Sponge
+        tex: [16, 18]
 
   - id: 20
     idStr: glass
@@ -2780,6 +2786,30 @@ blocks:
     tex: [3, 16]
     type: TRAPDOOR
     opacity: 0
+
+  - id: 168
+    idStr: prismarine
+    name: Prismarine
+    tex: [18, 17]
+    data:
+      0:
+        tex: [18, 17]
+        name: Prismarine
+        mapcolor: [39, 117, 149]
+      1:
+        tex: [16, 17]
+        name: Prismarine Bricks
+        mapcolor: [39, 117, 149]
+      2:
+        tex: [17, 17]
+        name: Dark Prismarine
+        mapcolor: [29, 87, 119]
+
+  - id: 169
+    idStr: sea_lantern
+    name: Sea Lantern
+    mapcolor: [49, 127, 159]
+    tex: [17, 18]
 
   - id: 170
     idStr: hay_block
