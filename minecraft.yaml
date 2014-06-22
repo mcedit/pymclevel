@@ -160,9 +160,7 @@
 #         be considered fully solid by X-Ray's rendering engine.  Examples
 #         are lava, fire, and mob spawners.
 #
-#         "FLOOR" is currently used for redstone wire and Water Lilies
-#
-#         "THINSLICE" is currently used for snow and carpet. Rendering may need cleaning up.
+#         Note: this setting doesn't actually do anything for most types. Most rendering is set via renderer.py
 #
 #   tex_extra: This is a section to provide extra texture information for
 #         block types which require it.  A list of the required tex_extra
@@ -1631,12 +1629,11 @@ blocks:
     idStr: cake
     name: Cake
     mapcolor: [234, 233, 235]
-    tex: [9, 7]
+    tex: [10, 7]
     type: CAKE
-    tex_extra:
-      side_uncut: [10, 7]
-      side_cut: [11, 7]
-      bottom: [12, 7]
+    tex_direction:
+      TOP: [9, 7]
+      BOTTOM: [12, 7]
     opacity: 0
 
   - id: 93
@@ -1644,8 +1641,25 @@ blocks:
     name: Redstone Repeater (Off)
     mapcolor: [245, 50, 50]
     tex: [3, 8]
-    type: THINSLICE #For now until PRESSURE_PLATE is made shorter.
+    type: THINSLICE
     opacity: 0
+    data:
+      0: 
+        name: Redstone Repeater (Off) (North)
+        tex_direction:
+          TOP: [3, 8]
+      1: 
+        name: Redstone Repeater (Off) (East)
+        tex_direction:
+          TOP: [18, 7]
+      2: 
+        name: Redstone Repeater (Off) (South)
+        tex_direction:
+          TOP: [18, 8]
+      3: 
+        name: Redstone Repeater (Off) (West)
+        tex_direction:
+          TOP: [18, 9]
 
   - id: 94
     idStr: powered_repeater
@@ -1655,6 +1669,23 @@ blocks:
     type: THINSLICE
     opacity: 0
     brightness: 9
+    data:
+      0: 
+        name: Redstone Repeater (On) (North)
+        tex_direction:
+          TOP: [3, 9]
+      1: 
+        name: Redstone Repeater (On) (East)
+        tex_direction:
+          TOP: [18, 10]
+      2: 
+        name: Redstone Repeater (On) (South)
+        tex_direction:
+          TOP: [18, 11]
+      3: 
+        name: Redstone Repeater (On) (West)
+        tex_direction:
+          TOP: [18, 12]
 
   - id: 95
     name: Stained Glass #Broken Transparency, added temporary texture until it is fixed.
@@ -1969,12 +2000,12 @@ blocks:
     idStr: end_portal_frame
     name: End Portal Frame
     mapcolor: [55, 142, 215]
-    tex: [14, 9]
+    tex: [15, 9]
     type: ENDER_PORTAL_FRAME
-    tex_extra:
-      sides: [15, 9]
-      bottom: [15, 10]
-      eye: [14, 10]
+    tex_direction:
+      BOTTOM: [15, 10]
+      TOP: [14, 9]
+    #  eye: [14, 10]
     opacity: 0
     brightness: 1
 
@@ -2339,6 +2370,23 @@ blocks:
     mapcolor: [100, 100, 100]
     tex: [11, 11] 
     opacity: 0
+    data:
+      0: 
+        name: Redstone Comparator (Off) (North)
+        tex_direction:
+          TOP: [11, 11]
+      1: 
+        name: Redstone Comparator (Off) (East)
+        tex_direction:
+          TOP: [18, 13]
+      2: 
+        name: Redstone Comparator (Off) (South)
+        tex_direction:
+          TOP: [18, 14]
+      3: 
+        name: Redstone Comparator (Off) (West)
+        tex_direction:
+          TOP: [18, 15]
 
   - id: 150
     idStr: powered_comparator
@@ -2348,12 +2396,32 @@ blocks:
     tex: [12, 11]
     opacity: 0
     brightness: 8
+    data:
+      0: 
+        name: Redstone Comparator (On) (North)
+        tex_direction:
+          TOP: [12, 11]
+      1: 
+        name: Redstone Comparator (On) (East)
+        tex_direction:
+          TOP: [19, 7]
+      2: 
+        name: Redstone Comparator (On) (South)
+        tex_direction:
+          TOP: [19, 8]
+      3: 
+        name: Redstone Comparator (On) (West)
+        tex_direction:
+          TOP: [19, 9]
 
   - id: 151
     idStr: daylight_detector
     name: Daylight Sensor
     mapcolor: [255, 100, 255]
-    tex: [13, 11]
+    tex: [20,2]
+    tex_direction:
+        TOP: [13, 11]
+        BOTTOM: [13, 11]
     opacity: 0
 
   - id: 152
@@ -2816,9 +2884,8 @@ blocks:
     name: Hay Block
     tex: [1, 16]
     tex_direction:
-      FORWARD: [2, 16]
-      SIDES: [2, 16]
-      BACKWARD: [2, 16]
+      TOP: [2, 16]
+      BOTTOM: [2, 16]
 
   - id: 171
     idStr: carpet
