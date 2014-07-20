@@ -482,6 +482,34 @@ class ChunkedLevelMixin(MCLevel):
         ch.dirty = True
         ch.needsLighting = True
 
+    def biomeAt(self, x, z):
+        """Returns biome value for this column."""
+        zc = z >> 4
+        xc = x >> 4
+        xInChunk = x & 0xf
+        zInChunk = z & 0xf
+
+        try:
+            ch = world.getChunk(xc, zc)
+        except ChunkNotPresent:
+            return 0
+
+        return ch.Biomes[xInChunk, zInChunk]
+
+    def setBiomeAt(self, x, z, biomeID):
+        """Sets biome value for this column."""
+        zc = z >> 4
+        xc = x >> 4
+        xInChunk = x & 0xf
+        zInChunk = z & 0xf
+
+        try:
+            ch = world.getChunk(xc, zc)
+        except ChunkNotPresent:
+            return 0
+
+        ch.Biomes[xInChunk, zInChunk] = biomeID
+
     def skylightAt(self, x, y, z):
 
         if y < 0 or y >= self.Height:
