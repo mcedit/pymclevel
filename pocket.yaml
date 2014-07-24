@@ -1654,7 +1654,7 @@ blocks:
         mapcolor: [74, 131, 66]
         tex: [29, 2]
         
-    - id: 162
+  - id: 162
     idStr: log2
     name: Wood (Acacia/Dark Oak)
     mapcolor: [102, 81, 51]
