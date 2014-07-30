@@ -36,6 +36,12 @@ setup(name='pymclevel',
       license='MIT License',
       package_dir={'pymclevel': '.'},
       packages=["pymclevel"],
+      package_data= {
+        "pymclevel": [
+            "minecraft.yaml",
+            "README.txt",
+            "LICENSE.txt"
+        ]},
       ext_modules=ext_modules,
       include_dirs=numpy.get_include(),
       include_package_data=True,
