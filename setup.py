@@ -39,6 +39,9 @@ setup(name='pymclevel',
       package_data= {
         "pymclevel": [
             "minecraft.yaml",
+            "pocket.yaml",
+            "classic.yaml",
+            "indev.yaml",
             "README.txt",
             "LICENSE.txt"
         ]},
