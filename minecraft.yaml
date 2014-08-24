@@ -3109,7 +3109,6 @@ blocks:
       1:
         name: Smooth Red Sandstone
         tex: [3, 20]
-    
       2:
         name: Chiseled Red Sandstone
         aka: Decorative Red Sandstone
@@ -3126,7 +3125,7 @@ blocks:
     type: STAIRS
 
   - id: 181
-    idStr: stone_slab2
+    idStr: double_stone_slab2
     name: Double Red Sandstone Slab
     mapcolor: [140, 90, 90]
     tex: [2, 20]
@@ -3135,7 +3134,7 @@ blocks:
       BOTTOM: [0, 20]
 
   - id: 182
-    idStr: double_stone_slab2
+    idStr: stone_slab2
     name: Red Sandstone Slab
     type: HALFHEIGHT
     mapcolor: [140, 90, 90]
@@ -3143,6 +3142,11 @@ blocks:
     tex_direction:
       TOP: [4, 20]
       BOTTOM: [0, 20]
+    data:
+      0:
+        name: Red Sandstone Slab
+      8:
+        name: Red Sandstone Slab (Upper)
     
   - id: 183
     idStr: spruce_fence_gate
