@@ -14,7 +14,7 @@
 #
 # Fields required by MCEdit: id, name, mapcolor, tex
 #
-# Fields also respected by MCEdit: data, tex_direction, tex_direction_data
+# Fields also respected by MCEdit: data, tex_direction
 #
 ###
 ###
@@ -160,9 +160,7 @@
 #         be considered fully solid by X-Ray's rendering engine.  Examples
 #         are lava, fire, and mob spawners.
 #
-#         "FLOOR" is currently used for redstone wire and Water Lilies
-#
-#         "THINSLICE" is currently used for snow and carpet. Rendering may need cleaning up.
+#         Note: this setting doesn't actually do anything for most types. Most rendering is set via renderer.py
 #
 #   tex_extra: This is a section to provide extra texture information for
 #         block types which require it.  A list of the required tex_extra
@@ -265,7 +263,6 @@ blocks:
     data:
       0:
         name: Stone
-        idStr: stone
         mapcolor: [120, 120, 120]
         tex: [1, 0]
       1:
@@ -308,7 +305,7 @@ blocks:
         name: Dirt
         tex: [2, 0]
       1:
-        name: Grassless Dirt
+        name: Coarse Dirt
         tex: [2, 0]
       2:
         name: Podzol
@@ -346,10 +343,10 @@ blocks:
         tex: [7, 12]
       4:
         name: Acacia Wood Planks
-        tex: [7, 12]
+        tex: [0, 15]
       5:
         name: Dark Oak Wood Planks
-        tex: [6, 12]
+        tex: [1, 15]
 
   - id: 6
     idStr: sapling
@@ -374,10 +371,10 @@ blocks:
         tex: [14, 1]
       4:
         name: Acacia Sapling
-        tex: [1, 20]
+        tex: [20, 1]
       5:
         name: Dark Oak Sapling
-        tex: [0, 20]
+        tex: [20, 0]
 
   - id: 7
     idStr: bedrock
@@ -464,6 +461,8 @@ blocks:
       0:
         name: Oak Wood (Upright)
         aka: Wood
+        variant: Oak
+        axis: x
         tex: [4, 1]
         tex_direction:
           TOP: [5, 1]
@@ -571,12 +570,12 @@ blocks:
         tex: [5, 12]
 
       4: # bit 0x4 - "Permanent"
-        name: Oak Leaves (Permanent)
+        name: Oak Leaves (No Decay)
         mapcolor: [60, 192, 41]
         tex: [5, 3]
       5:
         name: Spruce Leaves (No Decay)
-        aka: Pine Leaves (No Decay)
+        aka: Pine Leaves
         mapcolor: [74, 131, 66]
         tex: [5, 8]
       6:
@@ -594,7 +593,7 @@ blocks:
         tex: [5, 3]
       9:
         name: Spruce Leaves (Decaying)
-        aka: Pine Leaves (Decaying)
+        aka: Pine Leaves
         mapcolor: [74, 131, 66]
         tex: [5, 8]
       10:
@@ -611,6 +610,12 @@ blocks:
     name: Sponge
     mapcolor: [193, 193, 57]
     tex: [0, 3]
+    data:
+      0:
+        name: Sponge
+      1:
+        name: Wet Sponge
+        tex: [16, 18]
 
   - id: 20
     idStr: glass
@@ -678,7 +683,6 @@ blocks:
     idStr: sandstone
     name: Sandstone
     mapcolor: [218, 210, 158]
-    tex: [0, 12]
     tex_direction:
       TOP: [0, 11]
       BOTTOM: [0, 13]
@@ -687,24 +691,14 @@ blocks:
         name: Sandstone
         mapcolor: [218, 210, 158]
         tex: [0, 12]
-        tex_direction:
-          TOP: [0, 11]
-          BOTTOM: [0, 13]
       1:
         name: Chiseled Sandstone
-        aka: Decorative Sandstone
         mapcolor: [218, 210, 158]
         tex: [5, 14]
-        tex_direction:
-          TOP: [0, 11]
-          BOTTOM: [0, 11]
       2:
         name: Smooth Sandstone
         mapcolor: [218, 210, 158]
         tex: [6, 14]
-        tex_direction:
-          TOP: [0, 11]
-          BOTTOM: [0, 11]
 
   - id: 25
     idStr: noteblock
@@ -716,14 +710,11 @@ blocks:
     idStr: bed
     name: Bed
     mapcolor: [255, 0, 0]
-    tex: [7, 8]
+    tex: [5, 9]
+    tex_direction:
+        TOP: [7, 8]
+        BOTTOM: [0, 5]
     type: BED
-    tex_extra:
-      foot_top: [6, 8]
-      head_side: [7, 9]
-      foot_side: [6, 9]
-      foot: [5, 9]
-      head: [8, 9]
     opacity: 0
 
   - id: 27
@@ -775,13 +766,13 @@ blocks:
     data:
       0:
         tex: [7, 3]
-        name: (Unused Shrub)
+        name: Tall_Grass(Dead_Shrub)
       1:
         tex: [7, 2]
         name: Tall Grass
       2:
         tex: [8, 3]
-        name: Fern
+        name: Tall Grass (Fern)
     type: DECORATION_CROSS
     opacity: 0
 
@@ -970,7 +961,6 @@ blocks:
   - id: 43
     idStr: double_stone_slab
     name: Stone Slab (Double)
-    aka: Step
     mapcolor: [200, 200, 200]
     tex: [6, 0]
     data:
@@ -987,7 +977,7 @@ blocks:
           TOP: [0, 11]
           BOTTOM: [0, 13]
       2:
-        name: Double Wooden Slab (Old)
+        name: Double Wooden Slab (Stone)
         tex: [4, 0]
       3:
         name: Double Cobblestone Slab
@@ -1014,10 +1004,8 @@ blocks:
   - id: 44
     idStr: stone_slab
     name: Slab
-    aka: Half Step
     mapcolor: [200, 200, 200]
     tex: [6, 0]
-    type: HALFHEIGHT
     data:
       0:
         name: Stone Slab
@@ -1033,7 +1021,7 @@ blocks:
           BOTTOM: [0, 13]
       2:
         tex: [4, 0]
-        name: Wooden Slab (Old)
+        name: Wooden Slab (Stone)
       3:
         tex: [0, 1]
         name: Cobblestone Slab
@@ -1063,7 +1051,7 @@ blocks:
           BOTTOM: [0, 13]
       10:
         tex: [4, 0]
-        name: Wooden Slab (Old) (Upper)
+        name: Wooden Slab (Stone) (Upper)
       11:
         tex: [0, 1]
         name: Cobblestone Slab (Upper)
@@ -1079,6 +1067,7 @@ blocks:
       15:
         tex: [9, 13]
         name: Quartz Slab (Upper)
+
   - id: 45
     idStr: brick_block
     name: Brick
@@ -1164,10 +1153,9 @@ blocks:
     name: Chest
     mapcolor: [125, 91, 38]
     type: CHEST
-# For whatever reason the external file wasn't being loaded, put in something a bit simpler until it is fixed.
     tex: [17,3]
 #   tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
-#   Currently not working properly, using standard damage entries for now, null entries face north ingame.
+#   Currently not working properly, Will reuse for block rotate button later if possible.
     data:
 #     0:
 #       null
@@ -1357,6 +1345,19 @@ blocks:
     tex: [3, 5]
     type: LADDER
     opacity: 0
+    data:
+#     0:
+#       null
+#     1:
+#       null
+      2: 
+        name: Ladder (North)
+      3: 
+        name: Ladder (South)
+      4: 
+        name: Ladder (West)
+      5: 
+        name: Ladder (East)
 
   - id: 66
     idStr: rail
@@ -1368,6 +1369,11 @@ blocks:
     tex_extra:
       curve: [0, 7]
     opacity: 0
+    data:
+      0:
+        name: Rail
+      1:
+        name: Rail  
 
   - id: 67
     idStr: stone_stairs
@@ -1400,7 +1406,7 @@ blocks:
     name: Stone Pressure Plate
     mapcolor: [120, 120, 120]
     tex: [1, 0]
-    type: PRESSURE_PLATE #Possibly change this to thinslice?
+    type: PRESSURE_PLATE
     opacity: 0
 
   - id: 71
@@ -1519,7 +1525,7 @@ blocks:
 
   - id: 85
     idStr: fence
-    name: Fence
+    name: Oak Fence
     mapcolor: [157, 128, 79]
     tex: [4, 0]
     type: FENCE
@@ -1625,12 +1631,11 @@ blocks:
     idStr: cake
     name: Cake
     mapcolor: [234, 233, 235]
-    tex: [9, 7]
+    tex: [10, 7]
     type: CAKE
-    tex_extra:
-      side_uncut: [10, 7]
-      side_cut: [11, 7]
-      bottom: [12, 7]
+    tex_direction:
+      TOP: [9, 7]
+      BOTTOM: [12, 7]
     opacity: 0
 
   - id: 93
@@ -1638,8 +1643,25 @@ blocks:
     name: Redstone Repeater (Off)
     mapcolor: [245, 50, 50]
     tex: [3, 8]
-    type: THINSLICE #For now until PRESSURE_PLATE is made shorter.
+    type: THINSLICE
     opacity: 0
+    data:
+      0: 
+        name: Redstone Repeater (Off) (North)
+        tex_direction:
+          TOP: [3, 8]
+      1: 
+        name: Redstone Repeater (Off) (East)
+        tex_direction:
+          TOP: [18, 7]
+      2: 
+        name: Redstone Repeater (Off) (South)
+        tex_direction:
+          TOP: [18, 8]
+      3: 
+        name: Redstone Repeater (Off) (West)
+        tex_direction:
+          TOP: [18, 9]
 
   - id: 94
     idStr: powered_repeater
@@ -1649,9 +1671,27 @@ blocks:
     type: THINSLICE
     opacity: 0
     brightness: 9
+    data:
+      0: 
+        name: Redstone Repeater (On) (North)
+        tex_direction:
+          TOP: [3, 9]
+      1: 
+        name: Redstone Repeater (On) (East)
+        tex_direction:
+          TOP: [18, 10]
+      2: 
+        name: Redstone Repeater (On) (South)
+        tex_direction:
+          TOP: [18, 11]
+      3: 
+        name: Redstone Repeater (On) (West)
+        tex_direction:
+          TOP: [18, 12]
 
   - id: 95
-    name: Stained Glass #Broken Transparency, added temporary texture until it is fixed.
+    idStr: stained_glass
+    name: Stained Glass
     tex: [0, 19]
     data:
       0:
@@ -1797,6 +1837,9 @@ blocks:
     name: Iron Bars
     mapcolor: [77, 77, 78]
     tex: [5, 5]
+    tex_direction:
+        TOP: [4, 11]
+        BOTTOM: [4, 11]
     type: SOLID_PANE
     opacity: 0
 
@@ -1805,6 +1848,9 @@ blocks:
     name: Glass Pane
     mapcolor: [255, 255, 255]
     tex: [1, 3]
+    tex_direction:
+        TOP: [4, 9]
+        BOTTOM: [4, 9]
     type: SOLID_PANE
     opacity: 0
 
@@ -1844,10 +1890,21 @@ blocks:
     tex: [15, 8]
     type: VINE
     opacity: 0
+    data:
+      0:
+        name: Vines (Other)
+      1: 
+        name: Vines (North)
+      2: 
+        name: Vines (East)
+      4: 
+        name: Vines (South)
+      8: 
+        name: Vines (West)
 
   - id: 107
     idStr: fence_gate
-    name: Fence Gate
+    name: Oak Fence Gate
     mapcolor: [157, 128, 79]
     tex: [4, 0]
     type: FENCE_GATE
@@ -1922,7 +1979,7 @@ blocks:
     aka: Enchanting Table
     mapcolor: [88, 23, 22]
     tex: [6, 11]
-    type: ENCHANTMENT_TABLE #currently does nothing. Fix if possible.
+    type: ENCHANTMENT_TABLE
     opacity: 0
     tex_direction:
       TOP: [6, 10]
@@ -1963,12 +2020,12 @@ blocks:
     idStr: end_portal_frame
     name: End Portal Frame
     mapcolor: [55, 142, 215]
-    tex: [14, 9]
+    tex: [15, 9]
     type: ENDER_PORTAL_FRAME
-    tex_extra:
-      sides: [15, 9]
-      bottom: [15, 10]
-      eye: [14, 10]
+    tex_direction:
+      BOTTOM: [15, 10]
+      TOP: [14, 9]
+    #  eye: [14, 10]
     opacity: 0
     brightness: 1
 
@@ -2025,9 +2082,8 @@ blocks:
         name: Double Dark Oak Wood Slab
 
   - id: 126
-    idStr: woodSlab
+    idStr: wooden_slab
     name: Wooden Slab
-    aka: Wood Half Step
     mapcolor: [200, 200, 200]
     tex: [4, 0]
     data:
@@ -2048,7 +2104,23 @@ blocks:
       5:
         tex: [1, 15]
         name: Dark Oak Wood Slab
-    type: HALFHEIGHT
+      8:
+        name: Oak Wood Slab (Upper)
+      9:
+        tex: [6, 12]
+        name: Spruce Wood Slab (Upper)
+      10:
+        tex: [6, 13]
+        name: Birch Wood Slab (Upper)
+      11:
+        tex: [7, 12]
+        name: Jungle Wood Slab (Upper)
+      12:
+        tex: [0, 15]
+        name: Acacia Wood Slab (Upper)
+      13:
+        tex: [1, 15]
+        name: Dark Oak Wood Slab (Upper)
 
   - id: 127
     idStr: cocoa
@@ -2063,6 +2135,9 @@ blocks:
     name: Sandstone Stairs
     mapcolor: [157, 128, 79]
     tex: [0, 12]
+    tex_direction:
+      TOP: [0, 11]
+      BOTTOM: [0, 13]
     type: STAIRS
 
   - id: 129
@@ -2076,8 +2151,7 @@ blocks:
     name: Ender Chest
     mapcolor: [200, 200, 200]
     tex: [18,2]
-#    tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
-#   See chest entry
+#   tex_direction_data: {2: NORTH, 3: SOUTH, 4: WEST, 5: EAST}
     opacity: 0
     brightness: 7
     data:
@@ -2316,6 +2390,23 @@ blocks:
     mapcolor: [100, 100, 100]
     tex: [11, 11] 
     opacity: 0
+    data:
+      0: 
+        name: Redstone Comparator (Off) (North)
+        tex_direction:
+          TOP: [11, 11]
+      1: 
+        name: Redstone Comparator (Off) (East)
+        tex_direction:
+          TOP: [18, 13]
+      2: 
+        name: Redstone Comparator (Off) (South)
+        tex_direction:
+          TOP: [18, 14]
+      3: 
+        name: Redstone Comparator (Off) (West)
+        tex_direction:
+          TOP: [18, 15]
 
   - id: 150
     idStr: powered_comparator
@@ -2325,12 +2416,32 @@ blocks:
     tex: [12, 11]
     opacity: 0
     brightness: 8
+    data:
+      0: 
+        name: Redstone Comparator (On) (North)
+        tex_direction:
+          TOP: [12, 11]
+      1: 
+        name: Redstone Comparator (On) (East)
+        tex_direction:
+          TOP: [19, 7]
+      2: 
+        name: Redstone Comparator (On) (South)
+        tex_direction:
+          TOP: [19, 8]
+      3: 
+        name: Redstone Comparator (On) (West)
+        tex_direction:
+          TOP: [19, 9]
 
   - id: 151
     idStr: daylight_detector
     name: Daylight Sensor
     mapcolor: [255, 100, 255]
-    tex: [13, 11]
+    tex: [20,2]
+    tex_direction:
+        TOP: [13, 11]
+        BOTTOM: [13, 11]
     opacity: 0
 
   - id: 152
@@ -2338,7 +2449,6 @@ blocks:
     name: Block of Redstone
     mapcolor: [255, 100, 100]
     tex: [14, 11]
-    brightness: 8
 
   - id: 153
     idStr: quartz_ore
@@ -2409,6 +2519,7 @@ blocks:
   - id: 156
     idStr: quartz_stairs
     name: Quartz Stairs
+    tex: [9, 13]
     mapcolor: [255, 255, 255]
 
   - id: 157
@@ -2468,7 +2579,6 @@ blocks:
     idStr: stained_hardened_clay
     name: Stained Clay
     mapcolor: [150, 100, 50]
-    name: Hardened Clay
     data:
       0:
         tex: [0, 18]
@@ -2544,66 +2654,114 @@ blocks:
     data:
       0:
         name: White Stained Glass Pane
+        tex_direction:
+            TOP: [0, 17]
+            BOTTOM: [0, 17]
         mapcolor: [222, 222, 222]
       1:
-        tex: [1, 19]
         name: Orange Stained Glass Pane
+        tex: [1, 19]
+        tex_direction:
+            TOP: [1, 17]
+            BOTTOM: [1, 17]
         mapcolor: [234, 127, 55]
       2:
-        tex: [2, 19]
         name: Magenta Stained Glass Pane
+        tex: [2, 19]
+        tex_direction:
+            TOP: [2, 17]
+            BOTTOM: [2, 17]
         mapcolor: [191, 75, 201]
       3:
-        tex: [3, 19]
         name: Light Blue Stained Glass Pane
+        tex: [3, 19]
+        tex_direction:
+            TOP: [3, 17]
+            BOTTOM: [3, 17]
         mapcolor: [104, 139, 212]
       4:
-        tex: [4, 19]
         name: Yellow Stained Glass Pane
+        tex: [4, 19]
+        tex_direction:
+            TOP: [4, 17]
+            BOTTOM: [4, 17]
         mapcolor: [104, 139, 212]
       5:
-        tex: [5, 19]
         name: Lime Stained Glass Pane
+        tex: [5, 19]
+        tex_direction:
+            TOP: [5, 17]
+            BOTTOM: [5, 17]
         mapcolor: [59, 189, 48]
       6:
-        tex: [6, 19]
         name: Pink Stained Glass Pane
+        tex: [6, 19]
+        tex_direction:
+            TOP: [6, 17]
+            BOTTOM: [6, 17]
         mapcolor: [217, 131, 155]
       7:
-        tex: [7, 19]
         name: Gray Stained Glass Pane
+        tex: [7, 19]
+        tex_direction:
+            TOP: [7, 17]
+            BOTTOM: [7, 17]
         mapcolor: [66, 66, 66]
       8:
-        tex: [8, 19]
         name: Light Grey Stained Glass Pane
+        tex: [8, 19]
+        tex_direction:
+            TOP: [8, 17]
+            BOTTOM: [8, 17]
         mapcolor: [166, 166, 166]
       9:
-        tex: [9, 19]
         name: Cyan Stained Glass Pane
+        tex: [9, 19]
+        tex_direction:
+            TOP: [9, 17]
+            BOTTOM: [9, 17]
         mapcolor: [39, 117, 149]
       10:
-        tex: [10, 19]
         name: Purple Stained Glass Pane
+        tex: [10, 19]
+        tex_direction:
+            TOP: [10, 17]
+            BOTTOM: [10, 17]
         mapcolor: [129, 54, 196]
       11:
-        tex: [11, 19]
         name: Blue Stained Glass Pane
+        tex: [11, 19]
+        tex_direction:
+            TOP: [11, 17]
+            BOTTOM: [11, 17]
         mapcolor: [39, 51, 161]
       12:
-        tex: [12, 19]
         name: Brown Stained Glass Pane
+        tex: [12, 19]
+        tex_direction:
+            TOP: [12, 17]
+            BOTTOM: [12, 17]
         mapcolor: [86, 51, 28]
       13:
-        tex: [13, 19]
         name: Green Stained Glass Pane
+        tex: [13, 19]
+        tex_direction:
+            TOP: [13, 17]
+            BOTTOM: [13, 17]
         mapcolor: [56, 77, 24]
       14:
-        tex: [14, 19]
         name: Red Stained Glass Pane
+        tex: [14, 19]
+        tex_direction:
+            TOP: [14, 17]
+            BOTTOM: [14, 17]
         mapcolor: [164, 45, 41]
       15:
-        tex: [15, 19]
         name: Black Stained Glass Pane
+        tex: [15, 19]
+        tex_direction:
+            TOP: [15, 17]
+            BOTTOM: [15, 17]
         mapcolor: [0, 0, 0]
     opacity: 0
 
@@ -2611,8 +2769,7 @@ blocks:
     idStr: leaves2
     name: Leaves (Acacia/Dark Oak)
     mapcolor: [60, 192, 41]
-    tex: [5, 3] # The "correct" one is actually [4, 3] but with the current
-                # transparency rendering issues, this one looks better.
+    tex: [5, 3]
     opacity: 1
     data:
       0:
@@ -2625,11 +2782,11 @@ blocks:
         tex: [5, 3]
 
       4: # bit 0x4 - "Permanent"
-        name: Acacia Leaves (Permanent)
+        name: Acacia Leaves (No Decay)
         mapcolor: [60, 192, 41]
         tex: [5, 3]
       5:
-        name: Dark Oak Leaves (Permanent)
+        name: Dark Oak Leaves (No Decay)
         mapcolor: [74, 131, 66]
         tex: [5, 3]
 
@@ -2759,20 +2916,43 @@ blocks:
     
   - id: 167
     idStr: iron_trapdoor
-    name: Trapdoor
+    name: Iron Trapdoor
     mapcolor: [191, 191, 191]
     tex: [3, 16]
     type: TRAPDOOR
     opacity: 0
+
+  - id: 168
+    idStr: prismarine
+    name: Prismarine
+    tex: [18, 17]
+    data:
+      0:
+        tex: [18, 17]
+        name: Prismarine
+        mapcolor: [39, 117, 149]
+      1:
+        tex: [16, 17]
+        name: Prismarine Bricks
+        mapcolor: [39, 117, 149]
+      2:
+        tex: [17, 17]
+        name: Dark Prismarine
+        mapcolor: [29, 87, 119]
+
+  - id: 169
+    idStr: sea_lantern
+    name: Sea Lantern
+    mapcolor: [49, 127, 159]
+    tex: [17, 18]
 
   - id: 170
     idStr: hay_block
     name: Hay Block
     tex: [1, 16]
     tex_direction:
-      FORWARD: [2, 16]
-      SIDES: [2, 16]
-      BACKWARD: [2, 16]
+      TOP: [2, 16]
+      BOTTOM: [2, 16]
 
   - id: 171
     idStr: carpet
@@ -2906,3 +3086,217 @@ blocks:
       12:
         name: Tall Plant Top
         tex: [5, 3]
+
+  - id: 176
+    idStr: standing_banner
+    name: Free-Standing Banner 
+    mapcolor: [20, 20, 20]
+    tex: [19, 3]
+    opacity: 0
+    data:
+      0:
+        name: Free-Standing Banner
+#     1:
+#       null
+      2: 
+        name: Free-Standing Banner (North)
+      3: 
+        name: Free-Standing Banner (South)
+      4: 
+        name: Free-Standing Banner (West)
+      5: 
+        name: Free-Standing Banner (East)
+    
+  - id: 177
+    idStr: wall_banner
+    name: Wall-Mounted Banner
+    mapcolor: [20, 20, 20]
+    tex: [19, 3]
+    opacity: 0
+    data:
+      0:
+        name: Wall-Mounted Banner
+#     1:
+#       null
+      2: 
+        name: Wall-Mounted Banner (North)
+      3: 
+        name: Wall-Mounted Banner (South)
+      4: 
+        name: Wall-Mounted Banner (West)
+      5: 
+        name: Wall-Mounted Banner (East)
+
+  - id: 178
+    idStr: daylight_detector_inverted
+    name: Inverted Daylight Sensor
+    mapcolor: [255, 100, 255]
+    tex: [20,2]
+    tex_direction:
+        TOP: [19, 4]
+        BOTTOM: [13, 11]
+    opacity: 0
+
+  - id: 179
+    idStr: red_sandstone
+    name: Red Sandstone
+    mapcolor: [140, 90, 90]
+    opacity: 0
+    tex_direction:
+      TOP: [4, 20]
+      BOTTOM: [0, 20]
+    data:
+      0:
+        name: Red Sandstone
+        tex: [2, 20]
+      1:
+        name: Smooth Red Sandstone
+        tex: [3, 20]
+      2:
+        name: Chiseled Red Sandstone
+        tex: [1, 20]
+    
+  - id: 180
+    idStr: red_sandstone_stairs
+    name: Red Sandstone Stairs
+    mapcolor: [140, 90, 90]
+    tex: [2, 20]
+    tex_direction:
+      TOP: [4, 20]
+      BOTTOM: [0, 20]
+    type: STAIRS
+
+  - id: 181
+    idStr: double_stone_slab2
+    name: Double Red Sandstone Slab
+    mapcolor: [140, 90, 90]
+    tex: [2, 20]
+    tex_direction:
+      TOP: [4, 20]
+      BOTTOM: [0, 20]
+
+  - id: 182
+    idStr: stone_slab2
+    name: Red Sandstone Slab
+    type: HALFHEIGHT
+    mapcolor: [140, 90, 90]
+    tex: [2, 20]
+    tex_direction:
+      TOP: [4, 20]
+      BOTTOM: [0, 20]
+    data:
+      0:
+        name: Red Sandstone Slab
+      8:
+        name: Red Sandstone Slab (Upper)
+    
+  - id: 183
+    idStr: spruce_fence_gate
+    name: Spruce Fence Gate
+    mapcolor: [157, 128, 79]
+    tex: [6, 12]
+    type: FENCE_GATE
+    opacity: 0
+ 
+  - id: 184
+    idStr: birch_fence_gate
+    name: Birch Fence Gate
+    mapcolor: [157, 128, 79]
+    tex: [6, 13]
+    type: FENCE_GATE
+    opacity: 0
+    
+  - id: 185
+    idStr: jungle_fence_gate
+    name: Jungle Fence Gate
+    mapcolor: [157, 128, 79]
+    tex: [7, 12]
+    type: FENCE_GATE
+    opacity: 0
+
+  - id: 186
+    idStr: dark_oak_fence_gate
+    name: Dark Oak Fence Gate
+    mapcolor: [157, 128, 79]
+    tex: [1, 15]
+    type: FENCE_GATE
+    opacity: 0
+    
+  - id: 187
+    idStr: acacia_fence_gate
+    name: Acacia Fence Gate
+    mapcolor: [157, 128, 79]
+    tex: [0, 15]
+    type: FENCE_GATE
+    opacity: 0
+
+  - id: 188
+    idStr: spruce_fence
+    name: Spruce Fence
+    mapcolor: [157, 128, 79]
+    tex: [6, 12]
+    opacity: 0
+    
+  - id: 189
+    idStr: birch_fence
+    name: Birch Fence
+    mapcolor: [157, 128, 79]
+    tex: [6, 13]
+    opacity: 0
+  
+  - id: 190
+    idStr: jungle_fence
+    name: Jungle Fence
+    mapcolor: [157, 128, 79]
+    tex: [7, 12]
+    opacity: 0
+    
+  - id: 191
+    idStr: dark_oak_fence
+    name: Dark Oak Fence
+    mapcolor: [157, 128, 79]
+    tex: [1, 15]
+    opacity: 0
+   
+  - id: 192
+    idStr: acacia_fence
+    name: Acacia Fence
+    mapcolor: [157, 128, 79]
+    tex: [0, 15]
+    opacity: 0
+    
+  - id: 193
+    idStr: spruce_door
+    name: Spruce Door
+    mapcolor: [157, 128, 79]
+    tex: [5, 20]
+    opacity: 0
+    
+  - id: 194
+    idStr: birch_door
+    name: Birch Door
+    mapcolor: [157, 128, 79]
+    tex: [6, 20]
+    opacity: 0
+  
+  - id: 195
+    idStr: jungle_door
+    name: Jungle Door
+    mapcolor: [157, 128, 79]
+    tex: [7, 20]
+    opacity: 0
+
+  - id: 196
+    idStr: acacia_door
+    name: Acacia Door
+    mapcolor: [157, 128, 79]
+    tex: [8, 20]
+    opacity: 0
+    
+  - id: 197
+    idStr: dark_oak_door
+    name: Dark Oak Door
+    mapcolor: [157, 128, 79]
+    tex: [9, 20]
+    opacity: 0
+   

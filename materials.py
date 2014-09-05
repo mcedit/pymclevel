@@ -1,3 +1,4 @@
+
 from logging import getLogger
 from numpy import zeros, rollaxis, indices
 import traceback
@@ -68,10 +69,11 @@ class MCMaterials(object):
 
 
         self.blockTextures = zeros((id_limit, 16, 6, 2), dtype='uint16')
+        #Sets the array size for terrain.png
         self.blockTextures[:] = self.defaultTexture
         self.names = [[defaultName] * 16 for i in range(id_limit)]
         self.aka = [[""] * 16 for i in range(id_limit)]
-            #Sets terrain.png array size
+
         self.type = [["NORMAL"] * 16] * id_limit
         self.blocksByType = defaultdict(list)
         self.allBlocks = []
@@ -367,8 +369,9 @@ alphaMaterials.GoldOre = alphaMaterials[14, 0]
 alphaMaterials.IronOre = alphaMaterials[15, 0]
 alphaMaterials.CoalOre = alphaMaterials[16, 0]
 alphaMaterials.Wood = alphaMaterials[17, 0]
-alphaMaterials.Ironwood = alphaMaterials[17, 1]
+alphaMaterials.PineWood = alphaMaterials[17, 1]
 alphaMaterials.BirchWood = alphaMaterials[17, 2]
+alphaMaterials.JungleWood = alphaMaterials[17, 3]
 alphaMaterials.Leaves = alphaMaterials[18, 0]
 alphaMaterials.PineLeaves = alphaMaterials[18, 1]
 alphaMaterials.BirchLeaves = alphaMaterials[18, 2]
@@ -383,7 +386,6 @@ alphaMaterials.BirchLeavesDecaying = alphaMaterials[18, 10]
 alphaMaterials.JungleLeavesDecaying = alphaMaterials[18, 11]
 alphaMaterials.Sponge = alphaMaterials[19, 0]
 alphaMaterials.Glass = alphaMaterials[20, 0]
-
 alphaMaterials.LapisLazuliOre = alphaMaterials[21, 0]
 alphaMaterials.LapisLazuliBlock = alphaMaterials[22, 0]
 alphaMaterials.Dispenser = alphaMaterials[23, 0]
@@ -440,7 +442,6 @@ alphaMaterials.TNT = alphaMaterials[46, 0]
 alphaMaterials.Bookshelf = alphaMaterials[47, 0]
 alphaMaterials.MossStone = alphaMaterials[48, 0]
 alphaMaterials.Obsidian = alphaMaterials[49, 0]
-
 alphaMaterials.Torch = alphaMaterials[50, 0]
 alphaMaterials.Fire = alphaMaterials[51, 0]
 alphaMaterials.MonsterSpawner = alphaMaterials[52, 0]
@@ -472,7 +473,6 @@ alphaMaterials.Button = alphaMaterials[77, 0]
 alphaMaterials.SnowLayer = alphaMaterials[78, 0]
 alphaMaterials.Ice = alphaMaterials[79, 0]
 alphaMaterials.Snow = alphaMaterials[80, 0]
-
 alphaMaterials.Cactus = alphaMaterials[81, 0]
 alphaMaterials.Clay = alphaMaterials[82, 0]
 alphaMaterials.SugarCane = alphaMaterials[83, 0]
@@ -489,7 +489,6 @@ alphaMaterials.RedstoneRepeaterOff = alphaMaterials[93, 0]
 alphaMaterials.RedstoneRepeaterOn = alphaMaterials[94, 0]
 alphaMaterials.AprilFoolsChest = alphaMaterials[95, 0]
 alphaMaterials.Trapdoor = alphaMaterials[96, 0]
-
 alphaMaterials.HiddenSilverfishStone = alphaMaterials[97, 0]
 alphaMaterials.HiddenSilverfishCobblestone = alphaMaterials[97, 1]
 alphaMaterials.HiddenSilverfishStoneBrick = alphaMaterials[97, 2]
@@ -513,7 +512,6 @@ alphaMaterials.NetherBrick = alphaMaterials[112, 0]
 alphaMaterials.NetherBrickFence = alphaMaterials[113, 0]
 alphaMaterials.NetherBrickStairs = alphaMaterials[114, 0]
 alphaMaterials.NetherWart = alphaMaterials[115, 0]
-
 alphaMaterials.EnchantmentTable = alphaMaterials[116,0]
 alphaMaterials.BrewingStand = alphaMaterials[117,0]
 alphaMaterials.Cauldron = alphaMaterials[118,0]
@@ -564,7 +562,46 @@ alphaMaterials.BlockofQuartz = alphaMaterials[155,0]
 alphaMaterials.QuartzStairs = alphaMaterials[156,0]
 alphaMaterials.ActivatorRail = alphaMaterials[157,0]
 alphaMaterials.Dropper = alphaMaterials[158,0]
-
+alphaMaterials.StainedClay = alphaMaterials[159,0]
+alphaMaterials.StainedGlassPane = alphaMaterials[160,0]
+alphaMaterials.AcaciaLeaves = alphaMaterials[161,0]
+alphaMaterials.DarkOakLeaves = alphaMaterials[161,1]
+alphaMaterials.AcaciaLeavesPermanent = alphaMaterials[161,4]
+alphaMaterials.DarkOakLeavesPermanent = alphaMaterials[161,5]
+alphaMaterials.AcaciaLeavesDecaying = alphaMaterials[161,8]
+alphaMaterials.DarkOakLeavesDecaying = alphaMaterials[161,9]
+alphaMaterials.Wood2 = alphaMaterials[162,0]
+alphaMaterials.AcaciaStairs = alphaMaterials[163,0]
+alphaMaterials.DarkOakStairs = alphaMaterials[164,0]
+alphaMaterials.SlimeBlock = alphaMaterials[165,0]
+alphaMaterials.Barrier = alphaMaterials[166,0]
+alphaMaterials.IronTrapdoor = alphaMaterials[167,0]
+alphaMaterials.Prismarine = alphaMaterials[168,0]
+alphaMaterials.SeaLantern = alphaMaterials[169,0]
+alphaMaterials.HayBlock = alphaMaterials[170,0]
+alphaMaterials.Carpet = alphaMaterials[171,0]
+alphaMaterials.HardenedClay = alphaMaterials[172,0]
+alphaMaterials.CoalBlock = alphaMaterials[173,0]
+alphaMaterials.PackedIce = alphaMaterials[174,0]
+alphaMaterials.TallFlowers = alphaMaterials[175,0]
+alphaMaterials.StandingBanner = alphaMaterials[176,0]
+alphaMaterials.WallBanner = alphaMaterials[177,0]
+alphaMaterials.DaylightSensorOn = alphaMaterials[178,0]
+alphaMaterials.RedSandstone = alphaMaterials[179,0]
+alphaMaterials.SmooothRedSandstone = alphaMaterials[179,1]
+alphaMaterials.RedSandstoneSairs = alphaMaterials[180,0]
+alphaMaterials.DoubleRedSandstoneSlab = alphaMaterials[181,0]
+alphaMaterials.RedSandstoneSlab = alphaMaterials[182,0]
+alphaMaterials.SpruceFenceGate = alphaMaterials[183,0]
+alphaMaterials.BirchFenceGate = alphaMaterials[184,0]
+alphaMaterials.JungleFenceGate = alphaMaterials[185,0]
+alphaMaterials.DarkOakFenceGate = alphaMaterials[186,0]
+alphaMaterials.AcaciaFenceGate = alphaMaterials[187,0]
+alphaMaterials.SpruceFence = alphaMaterials[188,0]
+alphaMaterials.BirchFence = alphaMaterials[189,0]
+alphaMaterials.JungleFence = alphaMaterials[190,0]
+alphaMaterials.DarkOakFence = alphaMaterials[191,0]
+alphaMaterials.AcaciaFence = alphaMaterials[192,0]
 
 # --- Classic static block defs ---
 classicMaterials.Stone = classicMaterials[1]
