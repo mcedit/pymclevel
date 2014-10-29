@@ -2,6 +2,10 @@ from setuptools import setup
 from setuptools.extension import Extension
 from Cython.Distutils import build_ext
 
+from distutils.command.install import INSTALL_SCHEMES
+for scheme in INSTALL_SCHEMES.values():
+    scheme['data'] = scheme['purelib']
+
 import numpy
 
 version = '0.1'
@@ -39,6 +43,7 @@ setup(name='pymclevel',
       ext_modules=ext_modules,
       include_dirs=numpy.get_include(),
       include_package_data=True,
+      package_data={'pymclevel': ['*.yaml']},
       zip_safe=False,
       install_requires=install_requires,
       cmdclass={'build_ext': build_ext},
