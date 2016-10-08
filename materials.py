@@ -346,6 +346,8 @@ pocketMaterials = MCMaterials()
 pocketMaterials.name = "Pocket"
 pocketMaterials.addYamlBlocksFromFile("pocket.yaml")
 
+pocketMaterials.AllStairs = [b for b in pocketMaterials.allBlocks if b.name.endswith("Stairs")]
+
 # --- Static block defs ---
 
 alphaMaterials.Stone = alphaMaterials[1, 0]
