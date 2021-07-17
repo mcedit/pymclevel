@@ -256,7 +256,7 @@ def write_string(string, buf):
 
 
 class TAG_Compound(TAG_Value, collections.MutableMapping):
-    """A heterogenous list of named tags. Names must be unique within
+    """A heterogeneous list of named tags. Names must be unique within
     the TAG_Compound. Add tags to the compound using the subscript
     operator [].    This will automatically name the tags."""
 
